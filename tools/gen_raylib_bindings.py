@@ -112,7 +112,10 @@ def emit_fn(f):
 def main():
     """Main generation function."""
     try:
-        spec_path = pathlib.Path("specs/raylib_api.yaml")
+        # Look for the YAML file in the source directory
+        script_dir = pathlib.Path(__file__).parent
+        source_dir = script_dir.parent
+        spec_path = source_dir / "specs" / "raylib_api.yaml"
         if not spec_path.exists():
             print(f"Error: {spec_path} not found", file=sys.stderr)
             return 1
@@ -126,7 +129,12 @@ def main():
         
         out.append(FOOTER)
         
-        output_path = pathlib.Path("src/rt_raylib.gen.cpp")
+        # Write to build directory if it exists, otherwise source directory
+        build_dir = pathlib.Path.cwd()
+        if (build_dir / "src").exists():
+            output_path = build_dir / "src" / "rt_raylib.gen.cpp"
+        else:
+            output_path = source_dir / "src" / "rt_raylib.gen.cpp"
         output_path.write_text("".join(out), encoding="utf-8")
         
         print(f"Generated {output_path} with {len(spec['functions'])} functions")
