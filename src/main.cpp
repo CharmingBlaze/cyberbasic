@@ -5,6 +5,9 @@
 #include "bas/navigation.hpp"
 #include "bas/physics.hpp"
 #include "bas/ai.hpp"
+#include "bas/graphics.hpp"
+#include "bas/networking.hpp"
+#include "bas/audio.hpp"
 #include <fstream>
 #include <iostream>
 #include <iterator>
@@ -230,6 +233,9 @@ int main(int argc, char** argv) {
     bas::register_navigation_functions(R);
     bas::register_physics_functions(R);
     bas::register_ai_functions(R);
+    bas::register_graphics_functions(R);
+    bas::register_networking_functions(R);
+    bas::register_audio_functions(R);
     
     if (debug_mode) {
         std::cout << "  Built-in functions registered: " << R.size() << std::endl;
