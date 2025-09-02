@@ -1,0 +1,5836 @@
+functions:
+- name: INITWINDOW
+  map_to: InitWindow
+  args:
+  - int
+  - int
+  - string
+  ret: void
+- name: WINDOWSHOULDCLOSE
+  map_to: WindowShouldClose
+  args: []
+  ret: bool
+- name: ISWINDOWREADY
+  map_to: IsWindowReady
+  args: []
+  ret: bool
+- name: ISWINDOWFULLSCREEN
+  map_to: IsWindowFullscreen
+  args: []
+  ret: bool
+- name: ISWINDOWHIDDEN
+  map_to: IsWindowHidden
+  args: []
+  ret: bool
+- name: ISWINDOWMINIMIZED
+  map_to: IsWindowMinimized
+  args: []
+  ret: bool
+- name: ISWINDOWMAXIMIZED
+  map_to: IsWindowMaximized
+  args: []
+  ret: bool
+- name: ISWINDOWFOCUSED
+  map_to: IsWindowFocused
+  args: []
+  ret: bool
+- name: ISWINDOWRESIZED
+  map_to: IsWindowResized
+  args: []
+  ret: bool
+- name: ISWINDOWSTATE
+  map_to: IsWindowState
+  args:
+  - int
+  ret: bool
+- name: SETWINDOWSTATE
+  map_to: SetWindowState
+  args:
+  - int
+  ret: void
+- name: CLEARWINDOWSTATE
+  map_to: ClearWindowState
+  args:
+  - int
+  ret: void
+- name: TOGGLEFULLSCREEN
+  map_to: ToggleFullscreen
+  args: []
+  ret: void
+- name: TOGGLEBORDERLESSWINDOWED
+  map_to: ToggleBorderlessWindowed
+  args: []
+  ret: void
+- name: MAXIMIZEWINDOW
+  map_to: MaximizeWindow
+  args: []
+  ret: void
+- name: MINIMIZEWINDOW
+  map_to: MinimizeWindow
+  args: []
+  ret: void
+- name: RESTOREWINDOW
+  map_to: RestoreWindow
+  args: []
+  ret: void
+- name: SETWINDOWICON
+  map_to: SetWindowIcon
+  args:
+  - string
+  ret: void
+  custom_body: '// TODO: SetWindowIcon expects Image, not string
+
+    // For now, just return nil
+
+    return Value::nil();
+
+    '
+- name: SETWINDOWPOSITION
+  map_to: SetWindowPosition
+  args:
+  - int
+  - int
+  ret: void
+- name: SETWINDOWMONITOR
+  map_to: SetWindowMonitor
+  args:
+  - int
+  ret: void
+- name: SETWINDOWMINSIZE
+  map_to: SetWindowMinSize
+  args:
+  - int
+  - int
+  ret: void
+- name: SETWINDOWMAXSIZE
+  map_to: SetWindowMaxSize
+  args:
+  - int
+  - int
+  ret: void
+- name: SETWINDOWOPACITY
+  map_to: SetWindowOpacity
+  args:
+  - double
+  ret: void
+- name: SETWINDOWFOCUSED
+  map_to: SetWindowFocused
+  args: []
+  ret: void
+- name: GETWINDOWHANDLE
+  map_to: GetWindowHandle
+  args: []
+  ret: int
+  custom_body: 'return Value::from_int((long long)GetWindowHandle());
+
+    '
+- name: GETSCREENWIDTH
+  map_to: GetScreenWidth
+  args: []
+  ret: int
+- name: GETSCREENHEIGHT
+  map_to: GetScreenHeight
+  args: []
+  ret: int
+- name: GETRENDERWIDTH
+  map_to: GetRenderWidth
+  args: []
+  ret: int
+- name: GETRENDERHEIGHT
+  map_to: GetRenderHeight
+  args: []
+  ret: int
+- name: GETCURRENTMONITOR
+  map_to: GetCurrentMonitor
+  args: []
+  ret: int
+- name: GETMONITORPOSITION
+  map_to: GetMonitorPosition
+  args:
+  - int
+  ret: string
+  custom_body: '::Vector2 pos = ::GetMonitorPosition(args[0].as_int());
+
+    return Value::from_string(std::to_string(pos.x) + "," + std::to_string(pos.y));
+
+    '
+- name: GETMONITORNAME
+  map_to: GetMonitorName
+  args:
+  - int
+  ret: string
+- name: SETCLIPBOARDTEXT
+  map_to: SetClipboardText
+  args:
+  - string
+  ret: void
+- name: GETCLIPBOARDTEXT
+  map_to: GetClipboardText
+  args: []
+  ret: string
+- name: ENABLEEVENTWAITING
+  map_to: EnableEventWaiting
+  args: []
+  ret: void
+- name: DISABLEEVENTWAITING
+  map_to: DisableEventWaiting
+  args: []
+  ret: void
+- name: SHOWCURSOR
+  map_to: ShowCursor
+  args: []
+  ret: void
+- name: HIDECURSOR
+  map_to: HideCursor
+  args: []
+  ret: void
+- name: ISCURSORHIDDEN
+  map_to: IsCursorHidden
+  args: []
+  ret: bool
+- name: ENABLECURSOR
+  map_to: EnableCursor
+  args: []
+  ret: void
+- name: DISABLECURSOR
+  map_to: DisableCursor
+  args: []
+  ret: void
+- name: ISCURSORONSCREEN
+  map_to: IsCursorOnScreen
+  args: []
+  ret: bool
+- name: SETTARGETFPS
+  map_to: SetTargetFPS
+  args:
+  - int
+  ret: void
+- name: GETFPS
+  map_to: GetFPS
+  args: []
+  ret: int
+- name: GETDELTATIME
+  map_to: GetFrameTime
+  args: []
+  ret: double
+- name: GETTIME
+  map_to: GetTime
+  args: []
+  ret: double
+- name: BEGINDRAW
+  map_to: BeginDrawing
+  args: []
+  ret: void
+- name: ENDDRAW
+  map_to: EndDrawing
+  args: []
+  ret: void
+- name: BEGINMODE2D
+  map_to: BeginMode2D
+  args:
+  - int
+  ret: void
+  custom_body: '// Note: This requires a Camera2D object, simplified for BASIC
+
+    ::BeginMode2D(::Camera2D{});
+
+    '
+- name: ENDMODE2D
+  map_to: EndMode2D
+  args: []
+  ret: void
+- name: BEGINMODE3D
+  map_to: BeginMode3D
+  args:
+  - int
+  ret: void
+  custom_body: '// Note: This requires a Camera3D object, simplified for BASIC
+
+    ::BeginMode3D(::Camera3D{});
+
+    '
+- name: ENDMODE3D
+  map_to: EndMode3D
+  args: []
+  ret: void
+- name: BEGINTEXTUREMODE
+  map_to: BeginTextureMode
+  args:
+  - int
+  ret: void
+  custom_body: '// Note: This requires a RenderTexture2D object, simplified for BASIC
+
+    ::BeginTextureMode(::RenderTexture2D{});
+
+    '
+- name: ENDTEXTUREMODE
+  map_to: EndTextureMode
+  args: []
+  ret: void
+- name: BEGINBLENDMODE
+  map_to: BeginBlendMode
+  args:
+  - int
+  ret: void
+- name: ENDBLENDMODE
+  map_to: EndBlendMode
+  args: []
+  ret: void
+- name: BEGINSCISSORMODE
+  map_to: BeginScissorMode
+  args:
+  - int
+  - int
+  - int
+  - int
+  ret: void
+- name: ENDSCISSORMODE
+  map_to: EndScissorMode
+  args: []
+  ret: void
+- name: SETEXITKEY
+  map_to: SetExitKey
+  args:
+  - int
+  ret: void
+- name: TAKESCREENSHOT
+  map_to: TakeScreenshot
+  args:
+  - string
+  ret: void
+- name: DRAWFPS
+  map_to: DrawFPS
+  args:
+  - int
+  - int
+  ret: void
+- name: CLEARBACKGROUND
+  map_to: ClearBackground
+  args:
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Color c{(unsigned char)args[0].as_int(), (unsigned char)args[1].as_int(),
+    (unsigned char)args[2].as_int(), 255};
+
+    ::ClearBackground(c);
+
+    '
+- name: DRAWTEXT
+  map_to: DrawText
+  args:
+  - string
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Color c{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(),
+    (unsigned char)args[6].as_int(), 255};
+
+    ::DrawText(args[0].as_string().c_str(), args[1].as_int(), args[2].as_int(), args[3].as_int(),
+    c);
+
+    '
+- name: DRAWTEXTEX
+  map_to: DrawTextEx
+  args:
+  - int
+  - string
+  - int
+  - int
+  - double
+  - double
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Font font = rlreg::fonts.at(args[0].as_int());
+
+    ::Vector2 pos{(float)args[1].as_int(), (float)args[2].as_int()};
+
+    ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned
+    char)args[7].as_int(), 255};
+
+    ::DrawTextEx(font, args[1].as_string().c_str(), pos, (float)args[3].as_number(),
+    (float)args[4].as_number(), c);
+
+    '
+- name: DRAWTEXTPRO
+  map_to: DrawTextPro
+  args:
+  - int
+  - string
+  - int
+  - int
+  - int
+  - int
+  - double
+  - double
+  - double
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Font font = rlreg::fonts.at(args[0].as_int());
+
+    ::Vector2 pos{(float)args[1].as_int(), (float)args[2].as_int()};
+
+    ::Vector2 origin{(float)args[3].as_int(), (float)args[4].as_int()};
+
+    ::Color c{(unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), (unsigned
+    char)args[10].as_int(), 255};
+
+    ::DrawTextPro(font, args[1].as_string().c_str(), pos, origin, (float)args[5].as_number(),
+    (float)args[6].as_number(), (float)args[7].as_number(), c);
+
+    '
+- name: DRAWRECTANGLE
+  map_to: DrawRectangle
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Color c{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(),
+    (unsigned char)args[6].as_int(), 255};
+
+    ::DrawRectangle(args[0].as_int(), args[1].as_int(), args[2].as_int(), args[3].as_int(),
+    c);
+
+    '
+- name: DRAWRECTANGLEV
+  map_to: DrawRectangleV
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector2 pos{(float)args[0].as_int(), (float)args[1].as_int()};
+
+    ::Vector2 size{(float)args[2].as_int(), (float)args[3].as_int()};
+
+    ::Color c{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned
+    char)args[6].as_int(), 255};
+
+    ::DrawRectangleV(pos, size, c);
+
+    '
+- name: DRAWRECTANGLEREC
+  map_to: DrawRectangleRec
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Rectangle rec{(float)args[0].as_int(), (float)args[1].as_int(),
+    (float)args[2].as_int(), (float)args[3].as_int()};
+
+    ::Color c{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned
+    char)args[6].as_int(), 255};
+
+    ::DrawRectangleRec(rec, c);
+
+    '
+- name: DRAWRECTANGLEPRO
+  map_to: DrawRectanglePro
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - double
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Rectangle rec{(float)args[0].as_int(), (float)args[1].as_int(),
+    (float)args[2].as_int(), (float)args[3].as_int()};
+
+    ::Vector2 origin{(float)args[4].as_int(), (float)args[5].as_int()};
+
+    ::Color c{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned
+    char)args[9].as_int(), 255};
+
+    ::DrawRectanglePro(rec, origin, (float)args[6].as_number(), c);
+
+    '
+- name: DRAWRECTANGLEGRADIENTV
+  map_to: DrawRectangleGradientV
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Color top{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(),
+    (unsigned char)args[6].as_int(), 255};
+
+    ::Color bottom{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(),
+    (unsigned char)args[9].as_int(), 255};
+
+    ::DrawRectangleGradientV(args[0].as_int(), args[1].as_int(), args[2].as_int(),
+    args[3].as_int(), top, bottom);
+
+    '
+- name: DRAWRECTANGLEGRADIENTH
+  map_to: DrawRectangleGradientH
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Color left{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(),
+    (unsigned char)args[6].as_int(), 255};
+
+    ::Color right{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(),
+    (unsigned char)args[9].as_int(), 255};
+
+    ::DrawRectangleGradientH(args[0].as_int(), args[1].as_int(), args[2].as_int(),
+    args[3].as_int(), left, right);
+
+    '
+- name: DRAWRECTANGLEROUNDED
+  map_to: DrawRectangleRounded
+  args:
+  - int
+  - int
+  - int
+  - int
+  - double
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Rectangle rec{(float)args[0].as_int(), (float)args[1].as_int(),
+    (float)args[2].as_int(), (float)args[3].as_int()};
+
+    ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned
+    char)args[8].as_int(), 255};
+
+    ::DrawRectangleRounded(rec, (float)args[4].as_number(), args[5].as_int(), c);
+
+    '
+- name: DRAWRECTANGLELINES
+  map_to: DrawRectangleLines
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Color c{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(),
+    (unsigned char)args[6].as_int(), 255};
+
+    ::DrawRectangleLines(args[0].as_int(), args[1].as_int(), args[2].as_int(), args[3].as_int(),
+    c);
+
+    '
+- name: DRAWRECTANGLELINESEX
+  map_to: DrawRectangleLinesEx
+  args:
+  - int
+  - int
+  - int
+  - int
+  - double
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Rectangle rec{(float)args[0].as_int(), (float)args[1].as_int(),
+    (float)args[2].as_int(), (float)args[3].as_int()};
+
+    ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned
+    char)args[8].as_int(), 255};
+
+    ::DrawRectangleLinesEx(rec, (float)args[4].as_number(), c);
+
+    '
+- name: DRAWCIRCLE
+  map_to: DrawCircle
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Color c{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(),
+    (unsigned char)args[5].as_int(), 255};
+
+    ::DrawCircle(args[0].as_int(), args[1].as_int(), (float)args[2].as_int(), c);
+
+    '
+- name: DRAWCIRCLEV
+  map_to: DrawCircleV
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector2 center{(float)args[0].as_int(), (float)args[1].as_int()};
+
+    ::Color c{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned
+    char)args[5].as_int(), 255};
+
+    ::DrawCircleV(center, (float)args[2].as_int(), c);
+
+    '
+- name: DRAWCIRCLELINES
+  map_to: DrawCircleLines
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Color c{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(),
+    (unsigned char)args[5].as_int(), 255};
+
+    ::DrawCircleLines(args[0].as_int(), args[1].as_int(), (float)args[2].as_int(),
+    c);
+
+    '
+- name: DRAWCIRCLELINESV
+  map_to: DrawCircleLinesV
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector2 center{(float)args[0].as_int(), (float)args[1].as_int()};
+
+    ::Color c{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned
+    char)args[5].as_int(), 255};
+
+    ::DrawCircleLinesV(center, (float)args[2].as_int(), c);
+
+    '
+- name: DRAWCIRCLESECTOR
+  map_to: DrawCircleSector
+  args:
+  - int
+  - int
+  - int
+  - double
+  - double
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector2 center{(float)args[0].as_int(), (float)args[1].as_int()};
+
+    ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned
+    char)args[8].as_int(), 255};
+
+    ::DrawCircleSector(center, (float)args[2].as_int(), (float)args[3].as_number(),
+    (float)args[4].as_number(), args[5].as_int(), c);
+
+    '
+- name: DRAWCIRCLESECTORLINES
+  map_to: DrawCircleSectorLines
+  args:
+  - int
+  - int
+  - int
+  - double
+  - double
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector2 center{(float)args[0].as_int(), (float)args[1].as_int()};
+
+    ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned
+    char)args[8].as_int(), 255};
+
+    ::DrawCircleSectorLines(center, (float)args[2].as_int(), (float)args[3].as_number(),
+    (float)args[4].as_number(), args[5].as_int(), c);
+
+    '
+- name: DRAWCIRCLEGRADIENT
+  map_to: DrawCircleGradient
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Color inner{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(),
+    (unsigned char)args[5].as_int(), 255};
+
+    ::Color outer{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(),
+    (unsigned char)args[8].as_int(), 255};
+
+    ::DrawCircleGradient(args[0].as_int(), args[1].as_int(), (float)args[2].as_int(),
+    inner, outer);
+
+    '
+- name: DRAWELLIPSE
+  map_to: DrawEllipse
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Color c{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(),
+    (unsigned char)args[6].as_int(), 255};
+
+    ::DrawEllipse(args[0].as_int(), args[1].as_int(), (float)args[2].as_int(), (float)args[3].as_int(),
+    c);
+
+    '
+- name: DRAWELLIPSELINES
+  map_to: DrawEllipseLines
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Color c{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(),
+    (unsigned char)args[6].as_int(), 255};
+
+    ::DrawEllipseLines(args[0].as_int(), args[1].as_int(), (float)args[2].as_int(),
+    (float)args[3].as_int(), c);
+
+    '
+- name: DRAWRING
+  map_to: DrawRing
+  args:
+  - int
+  - int
+  - int
+  - int
+  - double
+  - double
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector2 center{(float)args[0].as_int(), (float)args[1].as_int()};
+
+    ::Color c{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned
+    char)args[9].as_int(), 255};
+
+    ::DrawRing(center, (float)args[2].as_int(), (float)args[3].as_int(), (float)args[4].as_number(),
+    (float)args[5].as_number(), args[6].as_int(), c);
+
+    '
+- name: DRAWRINGLINES
+  map_to: DrawRingLines
+  args:
+  - int
+  - int
+  - int
+  - int
+  - double
+  - double
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector2 center{(float)args[0].as_int(), (float)args[1].as_int()};
+
+    ::Color c{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned
+    char)args[9].as_int(), 255};
+
+    ::DrawRingLines(center, (float)args[2].as_int(), (float)args[3].as_int(), (float)args[4].as_number(),
+    (float)args[5].as_number(), args[6].as_int(), c);
+
+    '
+- name: DRAWLINE
+  map_to: DrawLine
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Color c{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(),
+    (unsigned char)args[6].as_int(), 255};
+
+    ::DrawLine(args[0].as_int(), args[1].as_int(), args[2].as_int(), args[3].as_int(),
+    c);
+
+    '
+- name: DRAWLINEV
+  map_to: DrawLineV
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector2 start{(float)args[0].as_int(), (float)args[1].as_int()};
+
+    ::Vector2 end{(float)args[2].as_int(), (float)args[3].as_int()};
+
+    ::Color c{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned
+    char)args[6].as_int(), 255};
+
+    ::DrawLineV(start, end, c);
+
+    '
+- name: DRAWLINEEX
+  map_to: DrawLineEx
+  args:
+  - int
+  - int
+  - int
+  - int
+  - double
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector2 start{(float)args[0].as_int(), (float)args[1].as_int()};
+
+    ::Vector2 end{(float)args[2].as_int(), (float)args[3].as_int()};
+
+    ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned
+    char)args[7].as_int(), 255};
+
+    ::DrawLineEx(start, end, (float)args[4].as_number(), c);
+
+    '
+- name: DRAWTRIANGLE
+  map_to: DrawTriangle
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector2 v1{(float)args[0].as_int(), (float)args[1].as_int()};
+
+    ::Vector2 v2{(float)args[2].as_int(), (float)args[3].as_int()};
+
+    ::Vector2 v3{(float)args[4].as_int(), (float)args[5].as_int()};
+
+    ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned
+    char)args[8].as_int(), 255};
+
+    ::DrawTriangle(v1, v2, v3, c);
+
+    '
+- name: DRAWTRIANGLELINES
+  map_to: DrawTriangleLines
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector2 v1{(float)args[0].as_int(), (float)args[1].as_int()};
+
+    ::Vector2 v2{(float)args[2].as_int(), (float)args[3].as_int()};
+
+    ::Vector2 v3{(float)args[4].as_int(), (float)args[5].as_int()};
+
+    ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned
+    char)args[8].as_int(), 255};
+
+    ::DrawTriangleLines(v1, v2, v3, c);
+
+    '
+- name: DRAWPOLY
+  map_to: DrawPoly
+  args:
+  - int
+  - int
+  - int
+  - double
+  - double
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector2 center{(float)args[0].as_int(), (float)args[1].as_int()};
+
+    ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned
+    char)args[7].as_int(), 255};
+
+    ::DrawPoly(center, args[2].as_int(), (float)args[3].as_int(), (float)args[4].as_number(),
+    c);
+
+    '
+- name: DRAWPOLYLINES
+  map_to: DrawPolyLines
+  args:
+  - int
+  - int
+  - int
+  - double
+  - double
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector2 center{(float)args[0].as_int(), (float)args[1].as_int()};
+
+    ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned
+    char)args[7].as_int(), 255};
+
+    ::DrawPolyLines(center, args[2].as_int(), (float)args[3].as_int(), (float)args[4].as_number(),
+    c);
+
+    '
+- name: DRAWPIXEL
+  map_to: DrawPixel
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Color c{(unsigned char)args[2].as_int(), (unsigned char)args[3].as_int(),
+    (unsigned char)args[4].as_int(), 255};
+
+    ::DrawPixel(args[0].as_int(), args[1].as_int(), c);
+
+    '
+- name: DRAWPIXELV
+  map_to: DrawPixelV
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector2 pos{(float)args[0].as_int(), (float)args[1].as_int()};
+
+    ::Color c{(unsigned char)args[2].as_int(), (unsigned char)args[3].as_int(), (unsigned
+    char)args[4].as_int(), 255};
+
+    ::DrawPixelV(pos, c);
+
+    '
+- name: ISKEYPRESSEDREPEAT
+  map_to: IsKeyPressedRepeat
+  args:
+  - int
+  ret: bool
+- name: ISKEYUP
+  map_to: IsKeyUp
+  args:
+  - int
+  ret: bool
+- name: GETKEYPRESSED
+  map_to: GetKeyPressed
+  args: []
+  ret: int
+- name: GETCHARPRESSED
+  map_to: GetCharPressed
+  args: []
+  ret: int
+- name: ISMOUSEBUTTONPRESSED
+  map_to: IsMouseButtonPressed
+  args:
+  - int
+  ret: bool
+- name: ISMOUSEBUTTONRELEASED
+  map_to: IsMouseButtonReleased
+  args:
+  - int
+  ret: bool
+- name: ISMOUSEBUTTONUP
+  map_to: IsMouseButtonUp
+  args:
+  - int
+  ret: bool
+- name: GETMOUSEPOSITION
+  map_to: GetMousePosition
+  args: []
+  ret: string
+  custom_body: '::Vector2 pos = ::GetMousePosition();
+
+    return Value::from_string(std::to_string(pos.x) + "," + std::to_string(pos.y));
+
+    '
+- name: GETMOUSEDELTA
+  map_to: GetMouseDelta
+  args: []
+  ret: string
+  custom_body: '::Vector2 delta = ::GetMouseDelta();
+
+    return Value::from_string(std::to_string(delta.x) + "," + std::to_string(delta.y));
+
+    '
+- name: GETMOUSEWHEELMOVE
+  map_to: GetMouseWheelMove
+  args: []
+  ret: int
+- name: GETMOUSEWHEELMOVEV
+  map_to: GetMouseWheelMoveV
+  args: []
+  ret: string
+  custom_body: '::Vector2 wheel = ::GetMouseWheelMoveV();
+
+    return Value::from_string(std::to_string(wheel.x) + "," + std::to_string(wheel.y));
+
+    '
+- name: SETMOUSEPOSITION
+  map_to: SetMousePosition
+  args:
+  - int
+  - int
+  ret: void
+- name: SETMOUSEOFFSET
+  map_to: SetMouseOffset
+  args:
+  - int
+  - int
+  ret: void
+- name: SETMOUSESCALE
+  map_to: SetMouseScale
+  args:
+  - double
+  - double
+  ret: void
+- name: SETMOUSECURSOR
+  map_to: SetMouseCursor
+  args:
+  - int
+  ret: void
+- name: GETTOUCHX
+  map_to: GetTouchX
+  args: []
+  ret: int
+- name: GETTOUCHY
+  map_to: GetTouchY
+  args: []
+  ret: int
+- name: GETTOUCHPOSITION
+  map_to: GetTouchPosition
+  args:
+  - int
+  ret: string
+  custom_body: '::Vector2 pos = ::GetTouchPosition(args[0].as_int());
+
+    return Value::from_string(std::to_string(pos.x) + "," + std::to_string(pos.y));
+
+    '
+- name: GETTOUCHPOINTID
+  map_to: GetTouchPointId
+  args:
+  - int
+  ret: int
+- name: GETTOUCHPOINTCOUNT
+  map_to: GetTouchPointCount
+  args: []
+  ret: int
+- name: ISGAMEPADAVAILABLE
+  map_to: IsGamepadAvailable
+  args:
+  - int
+  ret: bool
+  custom_body: 'return Value::from_bool(::IsGamepadAvailable(args[0].as_int()));
+
+    '
+- name: GETGAMEPADNAME
+  map_to: GetGamepadName
+  args:
+  - int
+  ret: string
+  custom_body: 'return Value::from_string(::GetGamepadName(args[0].as_int()));
+
+    '
+- name: ISGAMEPADBUTTONPRESSED
+  map_to: IsGamepadButtonPressed
+  args:
+  - int
+  - int
+  ret: bool
+  custom_body: 'return Value::from_bool(::IsGamepadButtonPressed(args[0].as_int(),
+    args[1].as_int()));
+
+    '
+- name: ISGAMEPADBUTTONDOWN
+  map_to: IsGamepadButtonDown
+  args:
+  - int
+  - int
+  ret: bool
+  custom_body: 'return Value::from_bool(::IsGamepadButtonDown(args[0].as_int(), args[1].as_int()));
+
+    '
+- name: ISGAMEPADBUTTONRELEASED
+  map_to: IsGamepadButtonReleased
+  args:
+  - int
+  - int
+  ret: bool
+  custom_body: 'return Value::from_bool(::IsGamepadButtonReleased(args[0].as_int(),
+    args[1].as_int()));
+
+    '
+- name: ISGAMEPADBUTTONUP
+  map_to: IsGamepadButtonUp
+  args:
+  - int
+  - int
+  ret: bool
+  custom_body: 'return Value::from_bool(::IsGamepadButtonUp(args[0].as_int(), args[1].as_int()));
+
+    '
+- name: GETGAMEPADBUTTONPRESSED
+  map_to: GetGamepadButtonPressed
+  args: []
+  ret: int
+  custom_body: 'return Value::from_int(::GetGamepadButtonPressed());
+
+    '
+- name: GETGAMEPADAXISCOUNT
+  map_to: GetGamepadAxisCount
+  args:
+  - int
+  ret: int
+  custom_body: 'return Value::from_int(::GetGamepadAxisCount(args[0].as_int()));
+
+    '
+- name: GETGAMEPADAXISMOVEMENT
+  map_to: GetGamepadAxisMovement
+  args:
+  - int
+  - int
+  ret: double
+  custom_body: 'return Value::from_number(::GetGamepadAxisMovement(args[0].as_int(),
+    args[1].as_int()));
+
+    '
+- name: SETGAMEPADMAPPINGS
+  map_to: SetGamepadMappings
+  args:
+  - string
+  ret: int
+  custom_body: 'return Value::from_int(::SetGamepadMappings(args[0].as_string().c_str()));
+
+    '
+- name: SETGAMEPADVIBRATION
+  map_to: SetGamepadVibration
+  args:
+  - int
+  - double
+  - double
+  - double
+  ret: void
+  custom_body: '// TODO: SetGamepadVibration function not found in current Raylib
+    version
+
+    // For now, just return nil
+
+    return Value::nil();
+
+    '
+- name: LOADTEXTURE
+  map_to: LoadTexture
+  args:
+  - string
+  ret: int
+  custom_body: '::Texture2D tex = ::LoadTexture(args[0].as_string().c_str());
+
+    int id = rlreg::next_tex_id++;
+
+    rlreg::textures[id] = tex;
+
+    return Value::from_int(id);
+
+    '
+- name: LOADTEXTUREFROMIMAGE
+  map_to: LoadTextureFromImage
+  args:
+  - int
+  ret: int
+  custom_body: '::Texture2D tex = ::LoadTextureFromImage(rlreg::images.at(args[0].as_int()));
+
+    int id = rlreg::next_tex_id++;
+
+    rlreg::textures[id] = tex;
+
+    return Value::from_int(id);
+
+    '
+- name: LOADTEXTURECUBEMAP
+  map_to: LoadTextureCubemap
+  args:
+  - int
+  - int
+  ret: int
+  custom_body: '::TextureCubemap tex = ::LoadTextureCubemap(rlreg::images.at(args[0].as_int()),
+    args[1].as_int());
+
+    int id = rlreg::next_cubemap_id++;
+
+    rlreg::cubemaps[id] = tex;
+
+    return Value::from_int(id);
+
+    '
+- name: LOADRENDERTEXTURE
+  map_to: LoadRenderTexture
+  args:
+  - int
+  - int
+  ret: int
+  custom_body: '::RenderTexture2D tex = ::LoadRenderTexture(args[0].as_int(), args[1].as_int());
+
+    int id = rlreg::next_rendertex_id++;
+
+    rlreg::rendertextures[id] = tex;
+
+    return Value::from_int(id);
+
+    '
+- name: ISTEXTUREVALID
+  map_to: IsTextureReady
+  args:
+  - int
+  ret: bool
+  custom_body: 'return Value::from_bool(::IsTextureReady(rlreg::textures.at(args[0].as_int())));
+
+    '
+- name: ISRENDERTEXTUREVALID
+  map_to: IsRenderTextureReady
+  args:
+  - int
+  ret: bool
+  custom_body: 'return Value::from_bool(::IsRenderTextureReady(rlreg::rendertextures.at(args[0].as_int())));
+
+    '
+- name: UPDATETEXTURE
+  map_to: UpdateTexture
+  args:
+  - int
+  - string
+  ret: void
+  custom_body: '// Note: This is simplified - would need proper pixel data handling
+
+    ::UpdateTexture(rlreg::textures.at(args[0].as_int()), nullptr);
+
+    '
+- name: UPDATETEXTUREREC
+  map_to: UpdateTextureRec
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - string
+  ret: void
+  custom_body: '::Rectangle rec{(float)args[1].as_int(), (float)args[2].as_int(),
+    (float)args[3].as_int(), (float)args[4].as_int()};
+
+    // Note: This is simplified - would need proper pixel data handling
+
+    ::UpdateTextureRec(rlreg::textures.at(args[0].as_int()), rec, nullptr);
+
+    '
+- name: GENTEXTUREMIPMAPS
+  map_to: GenTextureMipmaps
+  args:
+  - int
+  ret: void
+  custom_body: '::GenTextureMipmaps(&rlreg::textures[args[0].as_int()]);
+
+    '
+- name: SETTEXTUREFILTER
+  map_to: SetTextureFilter
+  args:
+  - int
+  - int
+  ret: void
+  custom_body: '::SetTextureFilter(rlreg::textures.at(args[0].as_int()), args[1].as_int());
+
+    '
+- name: SETTEXTUREWRAP
+  map_to: SetTextureWrap
+  args:
+  - int
+  - int
+  ret: void
+  custom_body: '::SetTextureWrap(rlreg::textures.at(args[0].as_int()), args[1].as_int());
+
+    '
+- name: DRAWTEXTURE
+  map_to: DrawTexture
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Color c{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(),
+    (unsigned char)args[5].as_int(), 255};
+
+    ::DrawTexture(rlreg::textures.at(args[0].as_int()), args[1].as_int(), args[2].as_int(),
+    c);
+
+    '
+- name: DRAWTEXTUREV
+  map_to: DrawTextureV
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector2 pos{(float)args[1].as_int(), (float)args[2].as_int()};
+
+    ::Color c{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned
+    char)args[5].as_int(), 255};
+
+    ::DrawTextureV(rlreg::textures.at(args[0].as_int()), pos, c);
+
+    '
+- name: DRAWTEXTUREEX
+  map_to: DrawTextureEx
+  args:
+  - int
+  - int
+  - int
+  - double
+  - double
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector2 pos{(float)args[1].as_int(), (float)args[2].as_int()};
+
+    ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned
+    char)args[7].as_int(), 255};
+
+    ::DrawTextureEx(rlreg::textures.at(args[0].as_int()), pos, (float)args[3].as_number(),
+    (float)args[4].as_number(), c);
+
+    '
+- name: DRAWTEXTUREREC
+  map_to: DrawTextureRec
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Rectangle src{(float)args[1].as_int(), (float)args[2].as_int(),
+    (float)args[3].as_int(), (float)args[4].as_int()};
+
+    ::Vector2 pos{(float)args[5].as_int(), (float)args[6].as_int()};
+
+    ::Color c{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned
+    char)args[9].as_int(), 255};
+
+    ::DrawTextureRec(rlreg::textures.at(args[0].as_int()), src, pos, c);
+
+    '
+- name: DRAWTEXTUREPRO
+  map_to: DrawTexturePro
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Rectangle src{(float)args[1].as_int(), (float)args[2].as_int(),
+    (float)args[3].as_int(), (float)args[4].as_int()};
+
+    ::Rectangle dest{(float)args[5].as_int(), (float)args[6].as_int(), (float)args[7].as_int(),
+    (float)args[8].as_int()};
+
+    ::Vector2 origin{(float)args[9].as_int(), (float)args[10].as_int()};
+
+    ::Color c{(unsigned char)args[11].as_int(), (unsigned char)args[12].as_int(),
+    (unsigned char)args[13].as_int(), 255};
+
+    ::DrawTexturePro(rlreg::textures.at(args[0].as_int()), src, dest, origin, 0.0f,
+    c);
+
+    '
+- name: DRAWTEXTURENPATCH
+  map_to: DrawTextureNPatch
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - double
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::NPatchInfo nPatchInfo;
+
+    nPatchInfo.source = {(float)args[1].as_int(), (float)args[2].as_int(), (float)args[3].as_int(),
+    (float)args[4].as_int()};
+
+    nPatchInfo.left = args[5].as_int();
+
+    nPatchInfo.top = args[6].as_int();
+
+    nPatchInfo.right = args[7].as_int();
+
+    nPatchInfo.bottom = args[8].as_int();
+
+    nPatchInfo.layout = args[9].as_int();
+
+    ::Rectangle dest{(float)args[10].as_int(), (float)args[11].as_int(), (float)args[12].as_int(),
+    (float)args[13].as_int()};
+
+    ::Vector2 origin{(float)args[14].as_int(), (float)args[15].as_int()};
+
+    ::Color c{(unsigned char)args[16].as_int(), (unsigned char)args[17].as_int(),
+    (unsigned char)args[18].as_int(), 255};
+
+    ::DrawTextureNPatch(rlreg::textures.at(args[0].as_int()), nPatchInfo, dest, origin,
+    (float)args[14].as_number(), c);
+
+    '
+- name: UNLOADTEXTURE
+  map_to: UnloadTexture
+  args:
+  - int
+  ret: void
+  custom_body: "int id = args[0].as_int();\nauto it = rlreg::textures.find(id);\n\
+    if (it != rlreg::textures.end()) {\n  ::UnloadTexture(it->second);\n  rlreg::textures.erase(it);\n\
+    }\n"
+- name: UNLOADRENDERTEXTURE
+  map_to: UnloadRenderTexture
+  args:
+  - int
+  ret: void
+  custom_body: "int id = args[0].as_int();\nauto it = rlreg::rendertextures.find(id);\n\
+    if (it != rlreg::rendertextures.end()) {\n  ::UnloadRenderTexture(it->second);\n\
+    \  rlreg::rendertextures.erase(it);\n}\n"
+- name: INITAUDIODEVICE
+  map_to: InitAudioDevice
+  args: []
+  ret: void
+- name: CLOSEAUDIODEVICE
+  map_to: CloseAudioDevice
+  args: []
+  ret: void
+- name: ISAUDIODEVICEREADY
+  map_to: IsAudioDeviceReady
+  args: []
+  ret: bool
+- name: SETMASTERVOLUME
+  map_to: SetMasterVolume
+  args:
+  - double
+  ret: void
+- name: GETMASTERVOLUME
+  map_to: GetMasterVolume
+  args: []
+  ret: double
+- name: LOADWAVE
+  map_to: LoadWave
+  args:
+  - string
+  ret: int
+  custom_body: '::Wave wave = ::LoadWave(args[0].as_string().c_str());
+
+    int id = rlreg::next_wave_id++;
+
+    rlreg::waves[id] = wave;
+
+    return Value::from_int(id);
+
+    '
+- name: LOADWAVEFROMMEMORY
+  map_to: LoadWaveFromMemory
+  args:
+  - string
+  - string
+  ret: int
+  custom_body: '::Wave wave = ::LoadWaveFromMemory(args[0].as_string().c_str(), (const
+    unsigned char*)args[1].as_string().c_str(), args[1].as_string().length());
+
+    int id = rlreg::next_wave_id++;
+
+    rlreg::waves[id] = wave;
+
+    return Value::from_int(id);
+
+    '
+- name: ISWAVEVALID
+  map_to: IsWaveReady
+  args:
+  - int
+  ret: bool
+  custom_body: 'return Value::from_bool(::IsWaveReady(rlreg::waves.at(args[0].as_int())));
+
+    '
+- name: LOADSOUNDFROMWAVE
+  map_to: LoadSoundFromWave
+  args:
+  - int
+  ret: int
+  custom_body: '::Sound sound = ::LoadSoundFromWave(rlreg::waves.at(args[0].as_int()));
+
+    int id = rlreg::next_sound_id++;
+
+    rlreg::sounds[id] = sound;
+
+    return Value::from_int(id);
+
+    '
+- name: LOADSOUNDALIAS
+  map_to: LoadSoundAlias
+  args:
+  - int
+  ret: int
+  custom_body: '::Sound sound = ::LoadSoundAlias(rlreg::sounds.at(args[0].as_int()));
+
+    int id = rlreg::next_sound_id++;
+
+    rlreg::sounds[id] = sound;
+
+    return Value::from_int(id);
+
+    '
+- name: ISSOUNDVALID
+  map_to: IsSoundReady
+  args:
+  - int
+  ret: bool
+  custom_body: 'return Value::from_bool(::IsSoundReady(rlreg::sounds.at(args[0].as_int())));
+
+    '
+- name: UPDATESOUND
+  map_to: UpdateSound
+  args:
+  - int
+  - string
+  ret: void
+  custom_body: '// Note: This is simplified - would need proper audio data handling
+
+    ::UpdateSound(rlreg::sounds.at(args[0].as_int()), nullptr, 0);
+
+    '
+- name: PAUSESOUND
+  map_to: PauseSound
+  args:
+  - int
+  ret: void
+  custom_body: '::PauseSound(rlreg::sounds.at(args[0].as_int()));
+
+    '
+- name: RESUMESOUND
+  map_to: ResumeSound
+  args:
+  - int
+  ret: void
+  custom_body: '::ResumeSound(rlreg::sounds.at(args[0].as_int()));
+
+    '
+- name: ISSOUNDPLAYING
+  map_to: IsSoundPlaying
+  args:
+  - int
+  ret: bool
+  custom_body: 'return Value::from_bool(::IsSoundPlaying(rlreg::sounds.at(args[0].as_int())));
+
+    '
+- name: SETSOUNDVOLUME
+  map_to: SetSoundVolume
+  args:
+  - int
+  - double
+  ret: void
+  custom_body: '::SetSoundVolume(rlreg::sounds.at(args[0].as_int()), (float)args[1].as_number());
+
+    '
+- name: SETSOUNDPITCH
+  map_to: SetSoundPitch
+  args:
+  - int
+  - double
+  ret: void
+  custom_body: '::SetSoundPitch(rlreg::sounds.at(args[0].as_int()), (float)args[1].as_number());
+
+    '
+- name: SETSOUNDPAN
+  map_to: SetSoundPan
+  args:
+  - int
+  - double
+  ret: void
+  custom_body: '::SetSoundPan(rlreg::sounds.at(args[0].as_int()), (float)args[1].as_number());
+
+    '
+- name: WAVECOPY
+  map_to: WaveCopy
+  args:
+  - int
+  ret: int
+  custom_body: '::Wave wave = ::WaveCopy(rlreg::waves.at(args[0].as_int()));
+
+    int id = rlreg::next_wave_id++;
+
+    rlreg::waves[id] = wave;
+
+    return Value::from_int(id);
+
+    '
+- name: WAVECROP
+  map_to: WaveCrop
+  args:
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::WaveCrop(&rlreg::waves[args[0].as_int()], args[1].as_int(), args[2].as_int());
+
+    '
+- name: WAVEFORMAT
+  map_to: WaveFormat
+  args:
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::WaveFormat(&rlreg::waves[args[0].as_int()], args[1].as_int(), args[2].as_int(),
+    args[3].as_int());
+
+    '
+- name: LOADWAVESAMPLES
+  map_to: LoadWaveSamples
+  args:
+  - int
+  ret: string
+  custom_body: 'float* samples = ::LoadWaveSamples(rlreg::waves.at(args[0].as_int()));
+
+    (void)samples; // Suppress unused variable warning
+
+    // Note: This returns a pointer, simplified for BASIC
+
+    return Value::from_string("samples_loaded");
+
+    '
+- name: UNLOADWAVESAMPLES
+  map_to: UnloadWaveSamples
+  args:
+  - string
+  ret: void
+  custom_body: '// Note: This is simplified - would need proper sample data handling
+
+    ::UnloadWaveSamples(nullptr);
+
+    '
+- name: LOADMUSICSTREAM
+  map_to: LoadMusicStream
+  args:
+  - string
+  ret: int
+  custom_body: '::Music music = ::LoadMusicStream(args[0].as_string().c_str());
+
+    int id = rlreg::next_music_id++;
+
+    rlreg::musics[id] = music;
+
+    return Value::from_int(id);
+
+    '
+- name: LOADMUSICSTREAMFROMMEMORY
+  map_to: LoadMusicStreamFromMemory
+  args:
+  - string
+  - string
+  ret: int
+  custom_body: '::Music music = ::LoadMusicStreamFromMemory(args[0].as_string().c_str(),
+    (const unsigned char*)args[1].as_string().c_str(), args[1].as_string().length());
+
+    int id = rlreg::next_music_id++;
+
+    rlreg::musics[id] = music;
+
+    return Value::from_int(id);
+
+    '
+- name: ISMUSICSTREAMVALID
+  map_to: IsMusicStreamPlaying
+  args:
+  - int
+  ret: bool
+  custom_body: 'return Value::from_bool(::IsMusicStreamPlaying(rlreg::musics.at(args[0].as_int())));
+
+    '
+- name: UNLOADMUSICSTREAM
+  map_to: UnloadMusicStream
+  args:
+  - int
+  ret: void
+  custom_body: "int id = args[0].as_int();\nauto it = rlreg::musics.find(id);\nif\
+    \ (it != rlreg::musics.end()) {\n  ::UnloadMusicStream(it->second);\n  rlreg::musics.erase(it);\n\
+    }\n"
+- name: PLAYMUSICSTREAM
+  map_to: PlayMusicStream
+  args:
+  - int
+  ret: void
+  custom_body: '::PlayMusicStream(rlreg::musics.at(args[0].as_int()));
+
+    '
+- name: ISMUSICSTREAMPLAYING
+  map_to: IsMusicStreamPlaying
+  args:
+  - int
+  ret: bool
+  custom_body: 'return Value::from_bool(::IsMusicStreamPlaying(rlreg::musics.at(args[0].as_int())));
+
+    '
+- name: UPDATEMUSICSTREAM
+  map_to: UpdateMusicStream
+  args:
+  - int
+  ret: void
+  custom_body: '::UpdateMusicStream(rlreg::musics.at(args[0].as_int()));
+
+    '
+- name: STOPMUSICSTREAM
+  map_to: StopMusicStream
+  args:
+  - int
+  ret: void
+  custom_body: '::StopMusicStream(rlreg::musics.at(args[0].as_int()));
+
+    '
+- name: PAUSEMUSICSTREAM
+  map_to: PauseMusicStream
+  args:
+  - int
+  ret: void
+  custom_body: '::PauseMusicStream(rlreg::musics.at(args[0].as_int()));
+
+    '
+- name: RESUMEMUSICSTREAM
+  map_to: ResumeMusicStream
+  args:
+  - int
+  ret: void
+  custom_body: '::ResumeMusicStream(rlreg::musics.at(args[0].as_int()));
+
+    '
+- name: SEEKMUSICSTREAM
+  map_to: SeekMusicStream
+  args:
+  - int
+  - double
+  ret: void
+  custom_body: '::SeekMusicStream(rlreg::musics.at(args[0].as_int()), (float)args[1].as_number());
+
+    '
+- name: SETMUSICVOLUME
+  map_to: SetMusicVolume
+  args:
+  - int
+  - double
+  ret: void
+  custom_body: '::SetMusicVolume(rlreg::musics.at(args[0].as_int()), (float)args[1].as_number());
+
+    '
+- name: SETMUSICPITCH
+  map_to: SetMusicPitch
+  args:
+  - int
+  - double
+  ret: void
+  custom_body: '::SetMusicPitch(rlreg::musics.at(args[0].as_int()), (float)args[1].as_number());
+
+    '
+- name: SETMUSICPAN
+  map_to: SetMusicPan
+  args:
+  - int
+  - double
+  ret: void
+  custom_body: '::SetMusicPan(rlreg::musics.at(args[0].as_int()), (float)args[1].as_number());
+
+    '
+- name: GETMUSICTIMELENGTH
+  map_to: GetMusicTimeLength
+  args:
+  - int
+  ret: double
+  custom_body: 'return Value::from_number(::GetMusicTimeLength(rlreg::musics.at(args[0].as_int())));
+
+    '
+- name: GETMUSICTIMEPLAYED
+  map_to: GetMusicTimePlayed
+  args:
+  - int
+  ret: double
+  custom_body: 'return Value::from_number(::GetMusicTimePlayed(rlreg::musics.at(args[0].as_int())));
+
+    '
+- name: LOADAUDIOSTREAM
+  map_to: LoadAudioStream
+  args:
+  - int
+  - int
+  - int
+  ret: int
+  custom_body: '::AudioStream stream = ::LoadAudioStream(args[0].as_int(), args[1].as_int(),
+    args[2].as_int());
+
+    int id = rlreg::next_audiostream_id++;
+
+    rlreg::audiostreams[id] = stream;
+
+    return Value::from_int(id);
+
+    '
+- name: ISAUDIOSTREAMVALID
+  map_to: IsAudioStreamReady
+  args:
+  - int
+  ret: bool
+  custom_body: 'return Value::from_bool(::IsAudioStreamReady(rlreg::audiostreams.at(args[0].as_int())));
+
+    '
+- name: UNLOADAUDIOSTREAM
+  map_to: UnloadAudioStream
+  args:
+  - int
+  ret: void
+  custom_body: "int id = args[0].as_int();\nauto it = rlreg::audiostreams.find(id);\n\
+    if (it != rlreg::audiostreams.end()) {\n  ::UnloadAudioStream(it->second);\n \
+    \ rlreg::audiostreams.erase(it);\n}\n"
+- name: UPDATEAUDIOSTREAM
+  map_to: UpdateAudioStream
+  args:
+  - int
+  - string
+  ret: void
+  custom_body: '// Note: This is simplified - would need proper audio data handling
+
+    ::UpdateAudioStream(rlreg::audiostreams.at(args[0].as_int()), nullptr, 0);
+
+    '
+- name: ISAUDIOSTREAMPROCESSED
+  map_to: IsAudioStreamProcessed
+  args:
+  - int
+  ret: bool
+  custom_body: 'return Value::from_bool(::IsAudioStreamProcessed(rlreg::audiostreams.at(args[0].as_int())));
+
+    '
+- name: PLAYAUDIOSTREAM
+  map_to: PlayAudioStream
+  args:
+  - int
+  ret: void
+  custom_body: '::PlayAudioStream(rlreg::audiostreams.at(args[0].as_int()));
+
+    '
+- name: PAUSEAUDIOSTREAM
+  map_to: PauseAudioStream
+  args:
+  - int
+  ret: void
+  custom_body: '::PauseAudioStream(rlreg::audiostreams.at(args[0].as_int()));
+
+    '
+- name: RESUMEAUDIOSTREAM
+  map_to: ResumeAudioStream
+  args:
+  - int
+  ret: void
+  custom_body: '::ResumeAudioStream(rlreg::audiostreams.at(args[0].as_int()));
+
+    '
+- name: ISAUDIOSTREAMPLAYING
+  map_to: IsAudioStreamPlaying
+  args:
+  - int
+  ret: bool
+  custom_body: 'return Value::from_bool(::IsAudioStreamPlaying(rlreg::audiostreams.at(args[0].as_int())));
+
+    '
+- name: STOPAUDIOSTREAM
+  map_to: StopAudioStream
+  args:
+  - int
+  ret: void
+  custom_body: '::StopAudioStream(rlreg::audiostreams.at(args[0].as_int()));
+
+    '
+- name: SETAUDIOSTREAMVOLUME
+  map_to: SetAudioStreamVolume
+  args:
+  - int
+  - double
+  ret: void
+  custom_body: '::SetAudioStreamVolume(rlreg::audiostreams.at(args[0].as_int()), (float)args[1].as_number());
+
+    '
+- name: SETAUDIOSTREAMPITCH
+  map_to: SetAudioStreamPitch
+  args:
+  - int
+  - double
+  ret: void
+  custom_body: '::SetAudioStreamPitch(rlreg::audiostreams.at(args[0].as_int()), (float)args[1].as_number());
+
+    '
+- name: SETAUDIOSTREAMPAN
+  map_to: SetAudioStreamPan
+  args:
+  - int
+  - double
+  ret: void
+  custom_body: '::SetAudioStreamPan(rlreg::audiostreams.at(args[0].as_int()), (float)args[1].as_number());
+
+    '
+- name: SETAUDIOSTREAMBUFFERSIZEDEFAULT
+  map_to: SetAudioStreamBufferSizeDefault
+  args:
+  - int
+  ret: void
+- name: SETAUDIOSTREAMCALLBACK
+  map_to: SetAudioStreamCallback
+  args:
+  - int
+  - string
+  ret: void
+  custom_body: '// Note: This is simplified - would need proper callback handling
+
+    ::SetAudioStreamCallback(rlreg::audiostreams.at(args[0].as_int()), nullptr);
+
+    '
+- name: ATTACHAUDIOSTREAMPROCESSOR
+  map_to: AttachAudioStreamProcessor
+  args:
+  - int
+  - string
+  ret: void
+  custom_body: '// Note: This is simplified - would need proper processor handling
+
+    ::AttachAudioStreamProcessor(rlreg::audiostreams.at(args[0].as_int()), nullptr);
+
+    '
+- name: DETACHAUDIOSTREAMPROCESSOR
+  map_to: DetachAudioStreamProcessor
+  args:
+  - int
+  - string
+  ret: void
+  custom_body: '// Note: This is simplified - would need proper processor handling
+
+    ::DetachAudioStreamProcessor(rlreg::audiostreams.at(args[0].as_int()), nullptr);
+
+    '
+- name: ATTACHAUDIOMIXEDPROCESSOR
+  map_to: AttachAudioMixedProcessor
+  args:
+  - string
+  ret: void
+  custom_body: '// Note: This is simplified - would need proper processor handling
+
+    ::AttachAudioMixedProcessor(nullptr);
+
+    '
+- name: DETACHAUDIOMIXEDPROCESSOR
+  map_to: DetachAudioMixedProcessor
+  args:
+  - string
+  ret: void
+  custom_body: '// Note: This is simplified - would need proper processor handling
+
+    ::DetachAudioMixedProcessor(nullptr);
+
+    '
+- name: UNLOADWAVE
+  map_to: UnloadWave
+  args:
+  - int
+  ret: void
+  custom_body: "int id = args[0].as_int();\nauto it = rlreg::waves.find(id);\nif (it\
+    \ != rlreg::waves.end()) {\n  ::UnloadWave(it->second);\n  rlreg::waves.erase(it);\n\
+    }\n"
+- name: UNLOADSOUNDALIAS
+  map_to: UnloadSoundAlias
+  args:
+  - int
+  ret: void
+  custom_body: "int id = args[0].as_int();\nauto it = rlreg::sounds.find(id);\nif\
+    \ (it != rlreg::sounds.end()) {\n  ::UnloadSoundAlias(it->second);\n  rlreg::sounds.erase(it);\n\
+    }\n"
+- name: EXPORTWAVE
+  map_to: ExportWave
+  args:
+  - int
+  - string
+  ret: bool
+  custom_body: 'return Value::from_bool(::ExportWave(rlreg::waves.at(args[0].as_int()),
+    args[1].as_string().c_str()));
+
+    '
+- name: EXPORTWAVEASCODE
+  map_to: ExportWaveAsCode
+  args:
+  - int
+  - string
+  ret: bool
+  custom_body: 'return Value::from_bool(::ExportWaveAsCode(rlreg::waves.at(args[0].as_int()),
+    args[1].as_string().c_str()));
+
+    '
+- name: LOADMODEL
+  map_to: LoadModel
+  args:
+  - string
+  ret: int
+  custom_body: '::Model model = ::LoadModel(args[0].as_string().c_str());
+
+    int id = rlreg::next_model_id++;
+
+    rlreg::models[id] = model;
+
+    return Value::from_int(id);
+
+    '
+- name: LOADMODELFROMMESH
+  map_to: LoadModelFromMesh
+  args:
+  - int
+  ret: int
+  custom_body: '::Model model = ::LoadModelFromMesh(rlreg::meshes.at(args[0].as_int()));
+
+    int id = rlreg::next_model_id++;
+
+    rlreg::models[id] = model;
+
+    return Value::from_int(id);
+
+    '
+- name: ISMODELVALID
+  map_to: IsModelReady
+  args:
+  - int
+  ret: bool
+  custom_body: 'return Value::from_bool(::IsModelReady(rlreg::models.at(args[0].as_int())));
+
+    '
+- name: GETMODELBOUNDINGBOX
+  map_to: GetModelBoundingBox
+  args:
+  - int
+  ret: string
+  custom_body: "::BoundingBox box = ::GetModelBoundingBox(rlreg::models.at(args[0].as_int()));\n\
+    return Value::from_string(std::to_string(box.min.x) + \",\" + std::to_string(box.min.y)\
+    \ + \",\" + std::to_string(box.min.z) + \",\" + \n                         std::to_string(box.max.x)\
+    \ + \",\" + std::to_string(box.max.y) + \",\" + std::to_string(box.max.z));\n"
+- name: DRAWMODEL
+  map_to: DrawModel
+  args:
+  - int
+  - double
+  - double
+  - double
+  - double
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector3 position{(float)args[1].as_number(), (float)args[2].as_number(),
+    (float)args[3].as_number()};
+
+    float scale = (float)args[4].as_number();
+
+    ::Color tint{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(),
+    (unsigned char)args[7].as_int(), 255};
+
+    ::DrawModel(rlreg::models.at(args[0].as_int()), position, scale, tint);
+
+    '
+- name: DRAWMODELEX
+  map_to: DrawModelEx
+  args:
+  - int
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector3 position{(float)args[1].as_number(), (float)args[2].as_number(),
+    (float)args[3].as_number()};
+
+    ::Vector3 rotationAxis{(float)args[4].as_number(), (float)args[5].as_number(),
+    (float)args[6].as_number()};
+
+    ::Vector3 scale{(float)args[7].as_number(), (float)args[7].as_number(), (float)args[7].as_number()};
+
+    ::Color tint{(unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(),
+    (unsigned char)args[10].as_int(), 255};
+
+    ::DrawModelEx(rlreg::models.at(args[0].as_int()), position, rotationAxis, 0.0f,
+    scale, tint);
+
+    '
+- name: DRAWMODELWIRES
+  map_to: DrawModelWires
+  args:
+  - int
+  - double
+  - double
+  - double
+  - double
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector3 position{(float)args[1].as_number(), (float)args[2].as_number(),
+    (float)args[3].as_number()};
+
+    float scale = (float)args[4].as_number();
+
+    ::Color tint{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(),
+    (unsigned char)args[7].as_int(), 255};
+
+    ::DrawModelWires(rlreg::models.at(args[0].as_int()), position, scale, tint);
+
+    '
+- name: DRAWMODELWIRESEX
+  map_to: DrawModelWiresEx
+  args:
+  - int
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector3 position{(float)args[1].as_number(), (float)args[2].as_number(),
+    (float)args[3].as_number()};
+
+    ::Vector3 rotationAxis{(float)args[4].as_number(), (float)args[5].as_number(),
+    (float)args[6].as_number()};
+
+    ::Vector3 scale{(float)args[7].as_number(), (float)args[7].as_number(), (float)args[7].as_number()};
+
+    ::Color tint{(unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(),
+    (unsigned char)args[10].as_int(), 255};
+
+    ::DrawModelWiresEx(rlreg::models.at(args[0].as_int()), position, rotationAxis,
+    0.0f, scale, tint);
+
+    '
+- name: DRAWBOUNDINGBOX
+  map_to: DrawBoundingBox
+  args:
+  - string
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: "// Parse bounding box string format: \"minX,minY,minZ,maxX,maxY,maxZ\"\
+    \nstd::string boxStr = args[0].as_string();\nsize_t pos = 0;\nstd::vector<float>\
+    \ coords;\nwhile ((pos = boxStr.find(\",\")) != std::string::npos) {\n  coords.push_back(std::stof(boxStr.substr(0,\
+    \ pos)));\n  boxStr.erase(0, pos + 1);\n}\ncoords.push_back(std::stof(boxStr));\n\
+    if (coords.size() >= 6) {\n  ::BoundingBox box{{coords[0], coords[1], coords[2]},\
+    \ {coords[3], coords[4], coords[5]}};\n  ::Color c{(unsigned char)args[1].as_int(),\
+    \ (unsigned char)args[2].as_int(), (unsigned char)args[3].as_int(), 255};\n  ::DrawBoundingBox(box,\
+    \ c);\n}\n"
+- name: DRAWBILLBOARD
+  map_to: DrawBillboard
+  args:
+  - int
+  - int
+  - double
+  - double
+  - double
+  - double
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '// Note: This requires a Camera object, simplified for BASIC
+
+    ::Camera camera = ::Camera{};
+
+    ::Vector3 position{(float)args[2].as_number(), (float)args[3].as_number(), (float)args[4].as_number()};
+
+    ::Color tint{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(),
+    (unsigned char)args[8].as_int(), 255};
+
+    ::DrawBillboard(camera, rlreg::textures.at(args[1].as_int()), position, (float)args[5].as_number(),
+    tint);
+
+    '
+- name: DRAWBILLBOARDREC
+  map_to: DrawBillboardRec
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - double
+  - double
+  - double
+  - double
+  - double
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '// Note: This requires a Camera object, simplified for BASIC
+
+    ::Camera camera = ::Camera{};
+
+    ::Rectangle source{(float)args[2].as_int(), (float)args[3].as_int(), (float)args[4].as_int(),
+    (float)args[5].as_int()};
+
+    ::Vector3 position{(float)args[6].as_number(), (float)args[7].as_number(), (float)args[8].as_number()};
+
+    ::Vector2 size{(float)args[9].as_number(), (float)args[10].as_number()};
+
+    ::Color tint{(unsigned char)args[11].as_int(), (unsigned char)args[12].as_int(),
+    (unsigned char)args[13].as_int(), 255};
+
+    ::DrawBillboardRec(camera, rlreg::textures.at(args[1].as_int()), source, position,
+    size, tint);
+
+    '
+- name: DRAWBILLBOARDPRO
+  map_to: DrawBillboardPro
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '// Note: This requires a Camera object, simplified for BASIC
+
+    ::Camera camera = ::Camera{};
+
+    ::Rectangle source{(float)args[2].as_int(), (float)args[3].as_int(), (float)args[4].as_int(),
+    (float)args[5].as_int()};
+
+    ::Vector3 position{(float)args[6].as_number(), (float)args[7].as_number(), (float)args[8].as_number()};
+
+    ::Vector3 up{(float)args[9].as_number(), (float)args[10].as_number(), (float)args[11].as_number()};
+
+    ::Vector2 size{(float)args[12].as_number(), (float)args[13].as_number()};
+
+    ::Vector2 origin{(float)args[14].as_number(), (float)args[15].as_number()};
+
+    ::Color tint{(unsigned char)args[16].as_int(), (unsigned char)args[17].as_int(),
+    (unsigned char)args[18].as_int(), 255};
+
+    ::DrawBillboardPro(camera, rlreg::textures.at(args[1].as_int()), source, position,
+    up, size, origin, 0.0f, tint);
+
+    '
+- name: UPLOADMESH
+  map_to: UploadMesh
+  args:
+  - int
+  - bool
+  ret: void
+  custom_body: '::UploadMesh(&rlreg::meshes[args[0].as_int()], args[1].as_bool());
+
+    '
+- name: UPDATEMESHBUFFER
+  map_to: UpdateMeshBuffer
+  args:
+  - int
+  - int
+  - string
+  - int
+  - int
+  ret: void
+  custom_body: '// Note: This is simplified - would need proper buffer data handling
+
+    ::UpdateMeshBuffer(rlreg::meshes.at(args[0].as_int()), args[1].as_int(), nullptr,
+    args[3].as_int(), args[4].as_int());
+
+    '
+- name: UNLOADMESH
+  map_to: UnloadMesh
+  args:
+  - int
+  ret: void
+  custom_body: "int id = args[0].as_int();\nauto it = rlreg::meshes.find(id);\nif\
+    \ (it != rlreg::meshes.end()) {\n  ::UnloadMesh(it->second);\n  rlreg::meshes.erase(it);\n\
+    }\n"
+- name: DRAWMESH
+  map_to: DrawMesh
+  args:
+  - int
+  - int
+  - string
+  ret: void
+  custom_body: '// Note: This requires a Material object and Matrix transform, simplified
+    for BASIC
+
+    ::Material material = ::Material{};
+
+    ::Matrix transform = MatrixIdentity();
+
+    ::DrawMesh(rlreg::meshes.at(args[0].as_int()), material, transform);
+
+    '
+- name: DRAWMESHINSTANCED
+  map_to: DrawMeshInstanced
+  args:
+  - int
+  - int
+  - string
+  ret: void
+  custom_body: '// Note: This requires a Material object and Matrix transforms array,
+    simplified for BASIC
+
+    ::Material material = ::Material{};
+
+    ::Matrix transform = MatrixIdentity();
+
+    ::DrawMeshInstanced(rlreg::meshes.at(args[0].as_int()), material, &transform,
+    1);
+
+    '
+- name: GETMESHBOUNDINGBOX
+  map_to: GetMeshBoundingBox
+  args:
+  - int
+  ret: string
+  custom_body: "::BoundingBox box = ::GetMeshBoundingBox(rlreg::meshes.at(args[0].as_int()));\n\
+    return Value::from_string(std::to_string(box.min.x) + \",\" + std::to_string(box.min.y)\
+    \ + \",\" + std::to_string(box.min.z) + \",\" + \n                         std::to_string(box.max.x)\
+    \ + \",\" + std::to_string(box.max.y) + \",\" + std::to_string(box.max.z));\n"
+- name: GENMESHTANGENTS
+  map_to: GenMeshTangents
+  args:
+  - int
+  ret: void
+  custom_body: '::GenMeshTangents(&rlreg::meshes[args[0].as_int()]);
+
+    '
+- name: EXPORTMESH
+  map_to: ExportMesh
+  args:
+  - int
+  - string
+  ret: bool
+  custom_body: 'return Value::from_bool(::ExportMesh(rlreg::meshes.at(args[0].as_int()),
+    args[1].as_string().c_str()));
+
+    '
+- name: GENMESHPOLY
+  map_to: GenMeshPoly
+  args:
+  - int
+  - double
+  ret: int
+  custom_body: '::Mesh mesh = ::GenMeshPoly(args[0].as_int(), (float)args[1].as_number());
+
+    int id = rlreg::next_mesh_id++;
+
+    rlreg::meshes[id] = mesh;
+
+    return Value::from_int(id);
+
+    '
+- name: GENMESHPLANE
+  map_to: GenMeshPlane
+  args:
+  - double
+  - double
+  - int
+  - int
+  ret: int
+  custom_body: '::Mesh mesh = ::GenMeshPlane((float)args[0].as_number(), (float)args[1].as_number(),
+    args[2].as_int(), args[3].as_int());
+
+    int id = rlreg::next_mesh_id++;
+
+    rlreg::meshes[id] = mesh;
+
+    return Value::from_int(id);
+
+    '
+- name: GENMESHCUBE
+  map_to: GenMeshCube
+  args:
+  - double
+  - double
+  - double
+  ret: int
+  custom_body: '::Mesh mesh = ::GenMeshCube((float)args[0].as_number(), (float)args[1].as_number(),
+    (float)args[2].as_number());
+
+    int id = rlreg::next_mesh_id++;
+
+    rlreg::meshes[id] = mesh;
+
+    return Value::from_int(id);
+
+    '
+- name: GENMESHSPHERE
+  map_to: GenMeshSphere
+  args:
+  - double
+  - int
+  - int
+  ret: int
+  custom_body: '::Mesh mesh = ::GenMeshSphere((float)args[0].as_number(), args[1].as_int(),
+    args[2].as_int());
+
+    int id = rlreg::next_mesh_id++;
+
+    rlreg::meshes[id] = mesh;
+
+    return Value::from_int(id);
+
+    '
+- name: GENMESHHEMISPHERE
+  map_to: GenMeshHemiSphere
+  args:
+  - double
+  - int
+  - int
+  ret: int
+  custom_body: '::Mesh mesh = ::GenMeshHemiSphere((float)args[0].as_number(), args[1].as_int(),
+    args[2].as_int());
+
+    int id = rlreg::next_mesh_id++;
+
+    rlreg::meshes[id] = mesh;
+
+    return Value::from_int(id);
+
+    '
+- name: GENMESHCYLINDER
+  map_to: GenMeshCylinder
+  args:
+  - double
+  - double
+  - int
+  ret: int
+  custom_body: '::Mesh mesh = ::GenMeshCylinder((float)args[0].as_number(), (float)args[1].as_number(),
+    args[2].as_int());
+
+    int id = rlreg::next_mesh_id++;
+
+    rlreg::meshes[id] = mesh;
+
+    return Value::from_int(id);
+
+    '
+- name: GENMESHCONE
+  map_to: GenMeshCone
+  args:
+  - double
+  - double
+  - int
+  ret: int
+  custom_body: '::Mesh mesh = ::GenMeshCone((float)args[0].as_number(), (float)args[1].as_number(),
+    args[2].as_int());
+
+    int id = rlreg::next_mesh_id++;
+
+    rlreg::meshes[id] = mesh;
+
+    return Value::from_int(id);
+
+    '
+- name: GENMESHTORUS
+  map_to: GenMeshTorus
+  args:
+  - double
+  - double
+  - int
+  - int
+  ret: int
+  custom_body: '::Mesh mesh = ::GenMeshTorus((float)args[0].as_number(), (float)args[1].as_number(),
+    args[2].as_int(), args[3].as_int());
+
+    int id = rlreg::next_mesh_id++;
+
+    rlreg::meshes[id] = mesh;
+
+    return Value::from_int(id);
+
+    '
+- name: GENMESHKNOT
+  map_to: GenMeshKnot
+  args:
+  - double
+  - double
+  - int
+  - int
+  ret: int
+  custom_body: '::Mesh mesh = ::GenMeshKnot((float)args[0].as_number(), (float)args[1].as_number(),
+    args[2].as_int(), args[3].as_int());
+
+    int id = rlreg::next_mesh_id++;
+
+    rlreg::meshes[id] = mesh;
+
+    return Value::from_int(id);
+
+    '
+- name: GENMESHHEIGHTMAP
+  map_to: GenMeshHeightmap
+  args:
+  - int
+  - double
+  - double
+  - double
+  ret: int
+  custom_body: '::Vector3 size{(float)args[1].as_number(), (float)args[2].as_number(),
+    (float)args[3].as_number()};
+
+    ::Mesh mesh = ::GenMeshHeightmap(rlreg::images.at(args[0].as_int()), size);
+
+    int id = rlreg::next_mesh_id++;
+
+    rlreg::meshes[id] = mesh;
+
+    return Value::from_int(id);
+
+    '
+- name: GENMESHCUBICMAP
+  map_to: GenMeshCubicmap
+  args:
+  - int
+  - double
+  - double
+  - double
+  ret: int
+  custom_body: '::Vector3 cubeSize{(float)args[1].as_number(), (float)args[2].as_number(),
+    (float)args[3].as_number()};
+
+    ::Mesh mesh = ::GenMeshCubicmap(rlreg::images.at(args[0].as_int()), cubeSize);
+
+    int id = rlreg::next_mesh_id++;
+
+    rlreg::meshes[id] = mesh;
+
+    return Value::from_int(id);
+
+    '
+- name: LOADMATERIALS
+  map_to: LoadMaterials
+  args:
+  - string
+  ret: string
+  custom_body: 'int materialCount;
+
+    ::Material* materials = ::LoadMaterials(args[0].as_string().c_str(), &materialCount);
+
+    (void)materials; // Suppress unused variable warning
+
+    // Note: This returns a pointer array, simplified for BASIC
+
+    return Value::from_string("materials_loaded:" + std::to_string(materialCount));
+
+    '
+- name: LOADMATERIALDEFAULT
+  map_to: LoadMaterialDefault
+  args: []
+  ret: int
+  custom_body: '::Material material = ::LoadMaterialDefault();
+
+    int id = rlreg::next_material_id++;
+
+    rlreg::materials[id] = material;
+
+    return Value::from_int(id);
+
+    '
+- name: ISMATERIALVALID
+  map_to: IsMaterialReady
+  args:
+  - int
+  ret: bool
+  custom_body: 'return Value::from_bool(::IsMaterialReady(rlreg::materials.at(args[0].as_int())));
+
+    '
+- name: UNLOADMATERIAL
+  map_to: UnloadMaterial
+  args:
+  - int
+  ret: void
+  custom_body: "int id = args[0].as_int();\nauto it = rlreg::materials.find(id);\n\
+    if (it != rlreg::materials.end()) {\n  ::UnloadMaterial(it->second);\n  rlreg::materials.erase(it);\n\
+    }\n"
+- name: SETMATERIALTEXTURE
+  map_to: SetMaterialTexture
+  args:
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::SetMaterialTexture(&rlreg::materials[args[0].as_int()], args[1].as_int(),
+    rlreg::textures.at(args[2].as_int()));
+
+    '
+- name: SETMODELMESHMATERIAL
+  map_to: SetModelMeshMaterial
+  args:
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::SetModelMeshMaterial(&rlreg::models[args[0].as_int()], args[1].as_int(),
+    args[2].as_int());
+
+    '
+- name: LOADMODELANIMATIONS
+  map_to: LoadModelAnimations
+  args:
+  - string
+  ret: string
+  custom_body: 'int animCount;
+
+    ::ModelAnimation* animations = ::LoadModelAnimations(args[0].as_string().c_str(),
+    &animCount);
+
+    (void)animations; // Suppress unused variable warning
+
+    // Note: This returns a pointer array, simplified for BASIC
+
+    return Value::from_string("animations_loaded:" + std::to_string(animCount));
+
+    '
+- name: UPDATEMODELANIMATION
+  map_to: UpdateModelAnimation
+  args:
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '// Note: This requires a ModelAnimation object, simplified for BASIC
+
+    ::ModelAnimation anim = ::ModelAnimation{};
+
+    ::UpdateModelAnimation(rlreg::models.at(args[0].as_int()), anim, args[2].as_int());
+
+    '
+- name: UNLOADMODELANIMATION
+  map_to: UnloadModelAnimation
+  args:
+  - int
+  ret: void
+  custom_body: '// Note: This requires a ModelAnimation object, simplified for BASIC
+
+    ::ModelAnimation anim = ::ModelAnimation{};
+
+    ::UnloadModelAnimation(anim);
+
+    '
+- name: UNLOADMODELANIMATIONS
+  map_to: UnloadModelAnimations
+  args:
+  - string
+  ret: void
+  custom_body: '// Note: This requires a ModelAnimation array, simplified for BASIC
+
+    ::UnloadModelAnimations(nullptr, 0);
+
+    '
+- name: ISMODELANIMATIONVALID
+  map_to: IsModelAnimationValid
+  args:
+  - int
+  - int
+  ret: bool
+  custom_body: '// Note: This requires a ModelAnimation object, simplified for BASIC
+
+    ::ModelAnimation anim = ::ModelAnimation{};
+
+    return Value::from_bool(::IsModelAnimationValid(rlreg::models.at(args[0].as_int()),
+    anim));
+
+    '
+- name: CHECKCOLLISIONSPHERES
+  map_to: CheckCollisionSpheres
+  args:
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  ret: bool
+  custom_body: '::Vector3 center1{(float)args[0].as_number(), (float)args[1].as_number(),
+    (float)args[2].as_number()};
+
+    float radius1 = (float)args[3].as_number();
+
+    ::Vector3 center2{(float)args[4].as_number(), (float)args[5].as_number(), (float)args[6].as_number()};
+
+    float radius2 = (float)args[7].as_number();
+
+    return Value::from_bool(::CheckCollisionSpheres(center1, radius1, center2, radius2));
+
+    '
+- name: CHECKCOLLISIONBOXES
+  map_to: CheckCollisionBoxes
+  args:
+  - string
+  - string
+  ret: bool
+  custom_body: '// Parse bounding box strings
+
+    std::string box1Str = args[0].as_string();
+
+    std::string box2Str = args[1].as_string();
+
+    // Note: This is simplified - would need proper parsing
+
+    ::BoundingBox box1 = ::BoundingBox{{0,0,0}, {1,1,1}};
+
+    ::BoundingBox box2 = ::BoundingBox{{0,0,0}, {1,1,1}};
+
+    return Value::from_bool(::CheckCollisionBoxes(box1, box2));
+
+    '
+- name: CHECKCOLLISIONBOXSPHERE
+  map_to: CheckCollisionBoxSphere
+  args:
+  - string
+  - double
+  - double
+  - double
+  - double
+  ret: bool
+  custom_body: '// Parse bounding box string
+
+    std::string boxStr = args[0].as_string();
+
+    // Note: This is simplified - would need proper parsing
+
+    ::BoundingBox box = ::BoundingBox{{0,0,0}, {1,1,1}};
+
+    ::Vector3 center{(float)args[1].as_number(), (float)args[2].as_number(), (float)args[3].as_number()};
+
+    float radius = (float)args[4].as_number();
+
+    return Value::from_bool(::CheckCollisionBoxSphere(box, center, radius));
+
+    '
+- name: GETRAYCOLLISIONSPHERE
+  map_to: GetRayCollisionSphere
+  args:
+  - string
+  - double
+  - double
+  - double
+  - double
+  ret: string
+  custom_body: "// Parse ray string format: \"posX,posY,posZ,dirX,dirY,dirZ\"\nstd::string\
+    \ rayStr = args[0].as_string();\nsize_t pos = 0;\nstd::vector<float> coords;\n\
+    while ((pos = rayStr.find(\",\")) != std::string::npos) {\n  coords.push_back(std::stof(rayStr.substr(0,\
+    \ pos)));\n  rayStr.erase(0, pos + 1);\n}\ncoords.push_back(std::stof(rayStr));\n\
+    if (coords.size() >= 6) {\n  ::Ray ray{{coords[0], coords[1], coords[2]}, {coords[3],\
+    \ coords[4], coords[5]}};\n  ::Vector3 center{(float)args[1].as_number(), (float)args[2].as_number(),\
+    \ (float)args[3].as_number()};\n  float radius = (float)args[4].as_number();\n\
+    \  ::RayCollision collision = ::GetRayCollisionSphere(ray, center, radius);\n\
+    \  return Value::from_string(std::to_string(collision.hit) + \",\" + std::to_string(collision.distance)\
+    \ + \",\" + \n                           std::to_string(collision.point.x) + \"\
+    ,\" + std::to_string(collision.point.y) + \",\" + std::to_string(collision.point.z));\n\
+    }\nreturn Value::from_string(\"0,0,0,0,0\");\n"
+- name: GETRAYCOLLISIONBOX
+  map_to: GetRayCollisionBox
+  args:
+  - string
+  - string
+  ret: string
+  custom_body: "// Parse ray and bounding box strings\nstd::string rayStr = args[0].as_string();\n\
+    std::string boxStr = args[1].as_string();\n// Note: This is simplified - would\
+    \ need proper parsing\n::Ray ray = ::Ray{{0,0,0}, {0,0,1}};\n::BoundingBox box\
+    \ = ::BoundingBox{{0,0,0}, {1,1,1}};\n::RayCollision collision = ::GetRayCollisionBox(ray,\
+    \ box);\nreturn Value::from_string(std::to_string(collision.hit) + \",\" + std::to_string(collision.distance)\
+    \ + \",\" + \n                         std::to_string(collision.point.x) + \"\
+    ,\" + std::to_string(collision.point.y) + \",\" + std::to_string(collision.point.z));\n"
+- name: GETRAYCOLLISIONMESH
+  map_to: GetRayCollisionMesh
+  args:
+  - string
+  - int
+  - string
+  ret: string
+  custom_body: "// Parse ray and matrix strings\nstd::string rayStr = args[0].as_string();\n\
+    std::string matrixStr = args[2].as_string();\n// Note: This is simplified - would\
+    \ need proper parsing\n::Ray ray = ::Ray{{0,0,0}, {0,0,1}};\n::Matrix transform\
+    \ = MatrixIdentity();\n::RayCollision collision = ::GetRayCollisionMesh(ray, rlreg::meshes.at(args[1].as_int()),\
+    \ transform);\nreturn Value::from_string(std::to_string(collision.hit) + \",\"\
+    \ + std::to_string(collision.distance) + \",\" + \n                         std::to_string(collision.point.x)\
+    \ + \",\" + std::to_string(collision.point.y) + \",\" + std::to_string(collision.point.z));\n"
+- name: GETRAYCOLLISIONTRIANGLE
+  map_to: GetRayCollisionTriangle
+  args:
+  - string
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  ret: string
+  custom_body: "// Parse ray string format: \"posX,posY,posZ,dirX,dirY,dirZ\"\nstd::string\
+    \ rayStr = args[0].as_string();\nsize_t pos = 0;\nstd::vector<float> coords;\n\
+    while ((pos = rayStr.find(\",\")) != std::string::npos) {\n  coords.push_back(std::stof(rayStr.substr(0,\
+    \ pos)));\n  rayStr.erase(0, pos + 1);\n}\ncoords.push_back(std::stof(rayStr));\n\
+    if (coords.size() >= 6) {\n  ::Ray ray{{coords[0], coords[1], coords[2]}, {coords[3],\
+    \ coords[4], coords[5]}};\n  ::Vector3 p1{(float)args[1].as_number(), (float)args[2].as_number(),\
+    \ (float)args[3].as_number()};\n  ::Vector3 p2{(float)args[4].as_number(), (float)args[5].as_number(),\
+    \ (float)args[6].as_number()};\n  ::Vector3 p3{(float)args[7].as_number(), (float)args[8].as_number(),\
+    \ (float)args[9].as_number()};\n  ::RayCollision collision = ::GetRayCollisionTriangle(ray,\
+    \ p1, p2, p3);\n  return Value::from_string(std::to_string(collision.hit) + \"\
+    ,\" + std::to_string(collision.distance) + \",\" + \n                        \
+    \   std::to_string(collision.point.x) + \",\" + std::to_string(collision.point.y)\
+    \ + \",\" + std::to_string(collision.point.z));\n}\nreturn Value::from_string(\"\
+    0,0,0,0,0\");\n"
+- name: GETRAYCOLLISIONQUAD
+  map_to: GetRayCollisionQuad
+  args:
+  - string
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  ret: string
+  custom_body: "// Parse ray string format: \"posX,posY,posZ,dirX,dirY,dirZ\"\nstd::string\
+    \ rayStr = args[0].as_string();\nsize_t pos = 0;\nstd::vector<float> coords;\n\
+    while ((pos = rayStr.find(\",\")) != std::string::npos) {\n  coords.push_back(std::stof(rayStr.substr(0,\
+    \ pos)));\n  rayStr.erase(0, pos + 1);\n}\ncoords.push_back(std::stof(rayStr));\n\
+    if (coords.size() >= 6) {\n  ::Ray ray{{coords[0], coords[1], coords[2]}, {coords[3],\
+    \ coords[4], coords[5]}};\n  ::Vector3 p1{(float)args[1].as_number(), (float)args[2].as_number(),\
+    \ (float)args[3].as_number()};\n  ::Vector3 p2{(float)args[4].as_number(), (float)args[5].as_number(),\
+    \ (float)args[6].as_number()};\n  ::Vector3 p3{(float)args[7].as_number(), (float)args[8].as_number(),\
+    \ (float)args[9].as_number()};\n  ::Vector3 p4{(float)args[10].as_number(), (float)args[11].as_number(),\
+    \ (float)args[12].as_number()};\n  ::RayCollision collision = ::GetRayCollisionQuad(ray,\
+    \ p1, p2, p3, p4);\n  return Value::from_string(std::to_string(collision.hit)\
+    \ + \",\" + std::to_string(collision.distance) + \",\" + \n                  \
+    \         std::to_string(collision.point.x) + \",\" + std::to_string(collision.point.y)\
+    \ + \",\" + std::to_string(collision.point.z));\n}\nreturn Value::from_string(\"\
+    0,0,0,0,0\");\n"
+- name: UNLOADMODEL
+  map_to: UnloadModel
+  args:
+  - int
+  ret: void
+  custom_body: "int id = args[0].as_int();\nauto it = rlreg::models.find(id);\nif\
+    \ (it != rlreg::models.end()) {\n  ::UnloadModel(it->second);\n  rlreg::models.erase(it);\n\
+    }\n"
+- name: DRAWLINE3D
+  map_to: DrawLine3D
+  args:
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector3 start{(float)args[0].as_number(), (float)args[1].as_number(),
+    (float)args[2].as_number()};
+
+    ::Vector3 end{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+
+    ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned
+    char)args[8].as_int(), 255};
+
+    ::DrawLine3D(start, end, c);
+
+    '
+- name: DRAWPOINT3D
+  map_to: DrawPoint3D
+  args:
+  - double
+  - double
+  - double
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(),
+    (float)args[2].as_number()};
+
+    ::Color c{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned
+    char)args[5].as_int(), 255};
+
+    ::DrawPoint3D(position, c);
+
+    '
+- name: DRAWCIRCLE3D
+  map_to: DrawCircle3D
+  args:
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector3 center{(float)args[0].as_number(), (float)args[1].as_number(),
+    (float)args[2].as_number()};
+
+    ::Vector3 rotationAxis{(float)args[4].as_number(), (float)args[5].as_number(),
+    (float)args[6].as_number()};
+
+    ::Color c{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned
+    char)args[9].as_int(), 255};
+
+    ::DrawCircle3D(center, (float)args[3].as_number(), rotationAxis, 0.0f, c);
+
+    '
+- name: DRAWTRIANGLE3D
+  map_to: DrawTriangle3D
+  args:
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector3 v1{(float)args[0].as_number(), (float)args[1].as_number(),
+    (float)args[2].as_number()};
+
+    ::Vector3 v2{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+
+    ::Vector3 v3{(float)args[6].as_number(), (float)args[7].as_number(), (float)args[8].as_number()};
+
+    ::Color c{(unsigned char)args[9].as_int(), (unsigned char)args[10].as_int(), (unsigned
+    char)args[11].as_int(), 255};
+
+    ::DrawTriangle3D(v1, v2, v3, c);
+
+    '
+- name: DRAWTRIANGLESTRIP3D
+  map_to: DrawTriangleStrip3D
+  args:
+  - string
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '// Note: This is simplified - would need proper Vector3 array handling
+
+    ::Vector3 points[4] = {{0,0,0}, {1,0,0}, {0,1,0}, {1,1,0}};
+
+    ::Color c{(unsigned char)args[1].as_int(), (unsigned char)args[2].as_int(), (unsigned
+    char)args[3].as_int(), 255};
+
+    ::DrawTriangleStrip3D(points, 4, c);
+
+    '
+- name: DRAWCUBE
+  map_to: DrawCube
+  args:
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(),
+    (float)args[2].as_number()};
+
+    ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned
+    char)args[8].as_int(), 255};
+
+    ::DrawCube(position, (float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number(),
+    c);
+
+    '
+- name: DRAWCUBEV
+  map_to: DrawCubeV
+  args:
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(),
+    (float)args[2].as_number()};
+
+    ::Vector3 size{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+
+    ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned
+    char)args[8].as_int(), 255};
+
+    ::DrawCubeV(position, size, c);
+
+    '
+- name: DRAWCUBEWIRES
+  map_to: DrawCubeWires
+  args:
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(),
+    (float)args[2].as_number()};
+
+    ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned
+    char)args[8].as_int(), 255};
+
+    ::DrawCubeWires(position, (float)args[3].as_number(), (float)args[4].as_number(),
+    (float)args[5].as_number(), c);
+
+    '
+- name: DRAWCUBEWIRESV
+  map_to: DrawCubeWiresV
+  args:
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(),
+    (float)args[2].as_number()};
+
+    ::Vector3 size{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+
+    ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned
+    char)args[8].as_int(), 255};
+
+    ::DrawCubeWiresV(position, size, c);
+
+    '
+- name: DRAWSPHERE
+  map_to: DrawSphere
+  args:
+  - double
+  - double
+  - double
+  - double
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector3 center{(float)args[0].as_number(), (float)args[1].as_number(),
+    (float)args[2].as_number()};
+
+    ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned
+    char)args[7].as_int(), 255};
+
+    ::DrawSphere(center, (float)args[3].as_number(), c);
+
+    '
+- name: DRAWSPHEREEX
+  map_to: DrawSphereEx
+  args:
+  - double
+  - double
+  - double
+  - double
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector3 center{(float)args[0].as_number(), (float)args[1].as_number(),
+    (float)args[2].as_number()};
+
+    ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned
+    char)args[8].as_int(), 255};
+
+    ::DrawSphereEx(center, (float)args[3].as_number(), args[4].as_int(), args[5].as_int(),
+    c);
+
+    '
+- name: DRAWSPHEREWIRES
+  map_to: DrawSphereWires
+  args:
+  - double
+  - double
+  - double
+  - double
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector3 center{(float)args[0].as_number(), (float)args[1].as_number(),
+    (float)args[2].as_number()};
+
+    ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned
+    char)args[8].as_int(), 255};
+
+    ::DrawSphereWires(center, (float)args[3].as_number(), args[4].as_int(), args[5].as_int(),
+    c);
+
+    '
+- name: DRAWCYLINDER
+  map_to: DrawCylinder
+  args:
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(),
+    (float)args[2].as_number()};
+
+    ::Color c{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned
+    char)args[9].as_int(), 255};
+
+    ::DrawCylinder(position, (float)args[3].as_number(), (float)args[4].as_number(),
+    (float)args[5].as_number(), args[6].as_int(), c);
+
+    '
+- name: DRAWCYLINDEREX
+  map_to: DrawCylinderEx
+  args:
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector3 start{(float)args[0].as_number(), (float)args[1].as_number(),
+    (float)args[2].as_number()};
+
+    ::Vector3 end{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+
+    ::Color c{(unsigned char)args[10].as_int(), (unsigned char)args[11].as_int(),
+    (unsigned char)args[12].as_int(), 255};
+
+    ::DrawCylinderEx(start, end, (float)args[6].as_number(), (float)args[7].as_number(),
+    args[8].as_int(), c);
+
+    '
+- name: DRAWCYLINDERWIRES
+  map_to: DrawCylinderWires
+  args:
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(),
+    (float)args[2].as_number()};
+
+    ::Color c{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned
+    char)args[9].as_int(), 255};
+
+    ::DrawCylinderWires(position, (float)args[3].as_number(), (float)args[4].as_number(),
+    (float)args[5].as_number(), args[6].as_int(), c);
+
+    '
+- name: DRAWCYLINDERWIRESEX
+  map_to: DrawCylinderWiresEx
+  args:
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector3 start{(float)args[0].as_number(), (float)args[1].as_number(),
+    (float)args[2].as_number()};
+
+    ::Vector3 end{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+
+    ::Color c{(unsigned char)args[10].as_int(), (unsigned char)args[11].as_int(),
+    (unsigned char)args[12].as_int(), 255};
+
+    ::DrawCylinderWiresEx(start, end, (float)args[6].as_number(), (float)args[7].as_number(),
+    args[8].as_int(), c);
+
+    '
+- name: DRAWCAPSULE
+  map_to: DrawCapsule
+  args:
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector3 start{(float)args[0].as_number(), (float)args[1].as_number(),
+    (float)args[2].as_number()};
+
+    ::Vector3 end{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+
+    ::Color c{(unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), (unsigned
+    char)args[10].as_int(), 255};
+
+    ::DrawCapsule(start, end, (float)args[6].as_number(), args[7].as_int(), args[8].as_int(),
+    c);
+
+    '
+- name: DRAWCAPSULEWIRES
+  map_to: DrawCapsuleWires
+  args:
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - double
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector3 start{(float)args[0].as_number(), (float)args[1].as_number(),
+    (float)args[2].as_number()};
+
+    ::Vector3 end{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+
+    ::Color c{(unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), (unsigned
+    char)args[10].as_int(), 255};
+
+    ::DrawCapsuleWires(start, end, (float)args[6].as_number(), args[7].as_int(), args[8].as_int(),
+    c);
+
+    '
+- name: DRAWPLANE
+  map_to: DrawPlane
+  args:
+  - double
+  - double
+  - double
+  - double
+  - double
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector3 center{(float)args[0].as_number(), (float)args[1].as_number(),
+    (float)args[2].as_number()};
+
+    ::Vector2 size{(float)args[3].as_number(), (float)args[4].as_number()};
+
+    ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned
+    char)args[7].as_int(), 255};
+
+    ::DrawPlane(center, size, c);
+
+    '
+- name: DRAWRAY
+  map_to: DrawRay
+  args:
+  - string
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: "// Parse ray string format: \"posX,posY,posZ,dirX,dirY,dirZ\"\nstd::string\
+    \ rayStr = args[0].as_string();\nsize_t pos = 0;\nstd::vector<float> coords;\n\
+    while ((pos = rayStr.find(\",\")) != std::string::npos) {\n  coords.push_back(std::stof(rayStr.substr(0,\
+    \ pos)));\n  rayStr.erase(0, pos + 1);\n}\ncoords.push_back(std::stof(rayStr));\n\
+    if (coords.size() >= 6) {\n  ::Ray ray{{coords[0], coords[1], coords[2]}, {coords[3],\
+    \ coords[4], coords[5]}};\n  ::Color c{(unsigned char)args[1].as_int(), (unsigned\
+    \ char)args[2].as_int(), (unsigned char)args[3].as_int(), 255};\n  ::DrawRay(ray,\
+    \ c);\n}\n"
+- name: DRAWGRID
+  map_to: DrawGrid
+  args:
+  - int
+  - double
+  ret: void
+  custom_body: '::DrawGrid(args[0].as_int(), (float)args[1].as_number());
+
+    '
+- name: CHECKCOLLISIONRECS
+  map_to: CheckCollisionRecs
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: bool
+  custom_body: '::Rectangle rec1{(float)args[0].as_int(), (float)args[1].as_int(),
+    (float)args[2].as_int(), (float)args[3].as_int()};
+
+    ::Rectangle rec2{(float)args[4].as_int(), (float)args[5].as_int(), (float)args[6].as_int(),
+    (float)args[7].as_int()};
+
+    return Value::from_bool(::CheckCollisionRecs(rec1, rec2));
+
+    '
+- name: CHECKCOLLISIONCIRCLES
+  map_to: CheckCollisionCircles
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: bool
+  custom_body: '::Vector2 center1{(float)args[0].as_int(), (float)args[1].as_int()};
+
+    float radius1 = (float)args[2].as_int();
+
+    ::Vector2 center2{(float)args[3].as_int(), (float)args[4].as_int()};
+
+    float radius2 = (float)args[5].as_int();
+
+    return Value::from_bool(::CheckCollisionCircles(center1, radius1, center2, radius2));
+
+    '
+- name: CHECKCOLLISIONCIRCLEREC
+  map_to: CheckCollisionCircleRec
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: bool
+  custom_body: '::Vector2 center{(float)args[0].as_int(), (float)args[1].as_int()};
+
+    float radius = (float)args[2].as_int();
+
+    ::Rectangle rec{(float)args[3].as_int(), (float)args[4].as_int(), (float)args[5].as_int(),
+    (float)args[6].as_int()};
+
+    return Value::from_bool(::CheckCollisionCircleRec(center, radius, rec));
+
+    '
+- name: CHECKCOLLISIONPOINTREC
+  map_to: CheckCollisionPointRec
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: bool
+  custom_body: '::Vector2 point{(float)args[0].as_int(), (float)args[1].as_int()};
+
+    ::Rectangle rec{(float)args[2].as_int(), (float)args[3].as_int(), (float)args[4].as_int(),
+    (float)args[5].as_int()};
+
+    return Value::from_bool(::CheckCollisionPointRec(point, rec));
+
+    '
+- name: CHECKCOLLISIONPOINTCIRCLE
+  map_to: CheckCollisionPointCircle
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: bool
+  custom_body: '::Vector2 point{(float)args[0].as_int(), (float)args[1].as_int()};
+
+    ::Vector2 center{(float)args[2].as_int(), (float)args[3].as_int()};
+
+    float radius = (float)args[4].as_int();
+
+    return Value::from_bool(::CheckCollisionPointCircle(point, center, radius));
+
+    '
+- name: CHECKCOLLISIONPOINTTRIANGLE
+  map_to: CheckCollisionPointTriangle
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: bool
+  custom_body: '::Vector2 point{(float)args[0].as_int(), (float)args[1].as_int()};
+
+    ::Vector2 p1{(float)args[2].as_int(), (float)args[3].as_int()};
+
+    ::Vector2 p2{(float)args[4].as_int(), (float)args[5].as_int()};
+
+    ::Vector2 p3{(float)args[6].as_int(), (float)args[7].as_int()};
+
+    return Value::from_bool(::CheckCollisionPointTriangle(point, p1, p2, p3));
+
+    '
+- name: CHECKCOLLISIONPOINTLINE
+  map_to: CheckCollisionPointLine
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: bool
+  custom_body: '::Vector2 point{(float)args[0].as_int(), (float)args[1].as_int()};
+
+    ::Vector2 p1{(float)args[2].as_int(), (float)args[3].as_int()};
+
+    ::Vector2 p2{(float)args[4].as_int(), (float)args[5].as_int()};
+
+    return Value::from_bool(::CheckCollisionPointLine(point, p1, p2, args[6].as_int()));
+
+    '
+- name: CHECKCOLLISIONPOINTPOLY
+  map_to: CheckCollisionPointPoly
+  args:
+  - int
+  - int
+  - string
+  ret: bool
+  custom_body: '::Vector2 point{(float)args[0].as_int(), (float)args[1].as_int()};
+
+    // Note: This is simplified - would need proper polygon parsing
+
+    ::Vector2 points[4] = {{0,0}, {1,0}, {1,1}, {0,1}};
+
+    return Value::from_bool(::CheckCollisionPointPoly(point, points, 4));
+
+    '
+- name: CHECKCOLLISIONLINES
+  map_to: CheckCollisionLines
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - string
+  ret: bool
+  custom_body: '::Vector2 startPos1{(float)args[0].as_int(), (float)args[1].as_int()};
+
+    ::Vector2 endPos1{(float)args[2].as_int(), (float)args[3].as_int()};
+
+    ::Vector2 startPos2{(float)args[4].as_int(), (float)args[5].as_int()};
+
+    ::Vector2 endPos2{(float)args[6].as_int(), (float)args[7].as_int()};
+
+    ::Vector2 collisionPoint;
+
+    bool result = ::CheckCollisionLines(startPos1, endPos1, startPos2, endPos2, &collisionPoint);
+
+    // Note: collisionPoint would need to be returned somehow
+
+    return Value::from_bool(result);
+
+    '
+- name: GETCOLLISIONREC
+  map_to: GetCollisionRec
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: string
+  custom_body: "::Rectangle rec1{(float)args[0].as_int(), (float)args[1].as_int(),\
+    \ (float)args[2].as_int(), (float)args[3].as_int()};\n::Rectangle rec2{(float)args[4].as_int(),\
+    \ (float)args[5].as_int(), (float)args[6].as_int(), (float)args[7].as_int()};\n\
+    ::Rectangle collision = ::GetCollisionRec(rec1, rec2);\nreturn Value::from_string(std::to_string(collision.x)\
+    \ + \",\" + std::to_string(collision.y) + \",\" + \n                         std::to_string(collision.width)\
+    \ + \",\" + std::to_string(collision.height));\n"
+- name: LOADSHADER
+  map_to: LoadShader
+  args:
+  - string
+  - string
+  ret: int
+  custom_body: '::Shader shader = ::LoadShader(args[0].as_string().c_str(), args[1].as_string().c_str());
+
+    int id = rlreg::next_shader_id++;
+
+    rlreg::shaders[id] = shader;
+
+    return Value::from_int(id);
+
+    '
+- name: LOADSHADERFROMMEMORY
+  map_to: LoadShaderFromMemory
+  args:
+  - string
+  - string
+  ret: int
+  custom_body: '::Shader shader = ::LoadShaderFromMemory(args[0].as_string().c_str(),
+    args[1].as_string().c_str());
+
+    int id = rlreg::next_shader_id++;
+
+    rlreg::shaders[id] = shader;
+
+    return Value::from_int(id);
+
+    '
+- name: ISSHADERVALID
+  map_to: IsShaderReady
+  args:
+  - int
+  ret: bool
+  custom_body: 'return Value::from_bool(::IsShaderReady(rlreg::shaders.at(args[0].as_int())));
+
+    '
+- name: GETSHADERLOCATION
+  map_to: GetShaderLocation
+  args:
+  - int
+  - string
+  ret: int
+  custom_body: 'return Value::from_int(::GetShaderLocation(rlreg::shaders.at(args[0].as_int()),
+    args[1].as_string().c_str()));
+
+    '
+- name: GETSHADERLOCATIONATTRIB
+  map_to: GetShaderLocationAttrib
+  args:
+  - int
+  - string
+  ret: int
+  custom_body: 'return Value::from_int(::GetShaderLocationAttrib(rlreg::shaders.at(args[0].as_int()),
+    args[1].as_string().c_str()));
+
+    '
+- name: SETSHADERVALUE
+  map_to: SetShaderValue
+  args:
+  - int
+  - int
+  - string
+  - int
+  ret: void
+  custom_body: '// Note: This is simplified - would need proper value handling
+
+    ::SetShaderValue(rlreg::shaders.at(args[0].as_int()), args[1].as_int(), nullptr,
+    args[3].as_int());
+
+    '
+- name: SETSHADERVALUEV
+  map_to: SetShaderValueV
+  args:
+  - int
+  - int
+  - string
+  - int
+  - int
+  ret: void
+  custom_body: '// Note: This is simplified - would need proper value handling
+
+    ::SetShaderValueV(rlreg::shaders.at(args[0].as_int()), args[1].as_int(), nullptr,
+    args[3].as_int(), args[4].as_int());
+
+    '
+- name: SETSHADERVALUEMATRIX
+  map_to: SetShaderValueMatrix
+  args:
+  - int
+  - int
+  - string
+  ret: void
+  custom_body: '// Note: This is simplified - would need proper matrix handling
+
+    ::Matrix matrix = MatrixIdentity();
+
+    ::SetShaderValueMatrix(rlreg::shaders.at(args[0].as_int()), args[1].as_int(),
+    matrix);
+
+    '
+- name: SETSHADERVALUETEXTURE
+  map_to: SetShaderValueTexture
+  args:
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::SetShaderValueTexture(rlreg::shaders.at(args[0].as_int()), args[1].as_int(),
+    rlreg::textures.at(args[2].as_int()));
+
+    '
+- name: BEGINSHADERMODE
+  map_to: BeginShaderMode
+  args:
+  - int
+  ret: void
+  custom_body: '::BeginShaderMode(rlreg::shaders.at(args[0].as_int()));
+
+    '
+- name: ENDSHADERMODE
+  map_to: EndShaderMode
+  args: []
+  ret: void
+- name: UNLOADSHADER
+  map_to: UnloadShader
+  args:
+  - int
+  ret: void
+  custom_body: "int id = args[0].as_int();\nauto it = rlreg::shaders.find(id);\nif\
+    \ (it != rlreg::shaders.end()) {\n  ::UnloadShader(it->second);\n  rlreg::shaders.erase(it);\n\
+    }\n"
+- name: GETRANDOMVALUE
+  map_to: GetRandomValue
+  args:
+  - int
+  - int
+  ret: int
+- name: SETRANDOMSEED
+  map_to: SetRandomSeed
+  args:
+  - int
+  ret: void
+- name: GETMONITORCOUNT
+  map_to: GetMonitorCount
+  args: []
+  ret: int
+- name: GETMONITORWIDTH
+  map_to: GetMonitorWidth
+  args:
+  - int
+  ret: int
+- name: GETMONITORHEIGHT
+  map_to: GetMonitorHeight
+  args:
+  - int
+  ret: int
+- name: GETMONITORPHYSICALWIDTH
+  map_to: GetMonitorPhysicalWidth
+  args:
+  - int
+  ret: int
+- name: GETMONITORPHYSICALHEIGHT
+  map_to: GetMonitorPhysicalHeight
+  args:
+  - int
+  ret: int
+- name: GETMONITORREFRESHRATE
+  map_to: GetMonitorRefreshRate
+  args:
+  - int
+  ret: int
+- name: GETWINDOWPOSITION
+  map_to: GetWindowPosition
+  args: []
+  ret: string
+  custom_body: '::Vector2 pos = ::GetWindowPosition();
+
+    return Value::from_string(std::to_string(pos.x) + "," + std::to_string(pos.y));
+
+    '
+- name: GETWINDOWSCALEDPI
+  map_to: GetWindowScaleDPI
+  args: []
+  ret: string
+  custom_body: '::Vector2 scale = ::GetWindowScaleDPI();
+
+    return Value::from_string(std::to_string(scale.x) + "," + std::to_string(scale.y));
+
+    '
+- name: SETWINDOWMIN
+  map_to: SetWindowMinSize
+  args:
+  - int
+  - int
+  ret: void
+- name: SETWINDOWMAX
+  map_to: SetWindowMaxSize
+  args:
+  - int
+  - int
+  ret: void
+- name: SETCONFIGFLAGS
+  map_to: SetConfigFlags
+  args:
+  - int
+  ret: void
+- name: OPENURL
+  map_to: OpenURL
+  args:
+  - string
+  ret: void
+- name: TRACELOG
+  map_to: TraceLog
+  args:
+  - int
+  - string
+  ret: void
+- name: SETTRACELOGLEVEL
+  map_to: SetTraceLogLevel
+  args:
+  - int
+  ret: void
+- name: MEMALLOC
+  map_to: MemAlloc
+  args:
+  - int
+  ret: int
+  custom_body: 'void* ptr = ::MemAlloc(args[0].as_int());
+
+    return Value::from_int((intptr_t)ptr);
+
+    '
+- name: MEMREALLOC
+  map_to: MemRealloc
+  args:
+  - int
+  - int
+  ret: int
+  custom_body: 'void* ptr = ::MemRealloc((void*)(intptr_t)args[0].as_int(), args[1].as_int());
+
+    return Value::from_int((intptr_t)ptr);
+
+    '
+- name: MEMFREE
+  map_to: MemFree
+  args:
+  - int
+  ret: void
+  custom_body: '::MemFree((void*)(intptr_t)args[0].as_int());
+
+    '
+- name: LOADFILEDATA
+  map_to: LoadFileData
+  args:
+  - string
+  ret: string
+  custom_body: 'int dataSize;
+
+    unsigned char* data = ::LoadFileData(args[0].as_string().c_str(), &dataSize);
+
+    (void)data; // Suppress unused variable warning
+
+    // Note: This returns binary data, simplified for BASIC
+
+    return Value::from_string("data_loaded:" + std::to_string(dataSize));
+
+    '
+- name: UNLOADFILEDATA
+  map_to: UnloadFileData
+  args:
+  - string
+  ret: void
+  custom_body: '// Note: This is simplified - would need proper data handling
+
+    ::UnloadFileData(nullptr);
+
+    '
+- name: SAVEFILEDATA
+  map_to: SaveFileData
+  args:
+  - string
+  - string
+  ret: bool
+  custom_body: '// Note: This is simplified - would need proper data handling
+
+    return Value::from_bool(::SaveFileData(args[0].as_string().c_str(), nullptr, 0));
+
+    '
+- name: EXPORTDATAASCODE
+  map_to: ExportDataAsCode
+  args:
+  - string
+  - string
+  ret: bool
+  custom_body: '// Note: This is simplified - would need proper data handling
+
+    return Value::from_bool(::ExportDataAsCode(nullptr, 0, args[1].as_string().c_str()));
+
+    '
+- name: LOADFILETEXT
+  map_to: LoadFileText
+  args:
+  - string
+  ret: string
+  custom_body: 'char* text = ::LoadFileText(args[0].as_string().c_str());
+
+    std::string result(text);
+
+    ::UnloadFileText(text);
+
+    return Value::from_string(result);
+
+    '
+- name: UNLOADFILETEXT
+  map_to: UnloadFileText
+  args:
+  - string
+  ret: void
+  custom_body: '// Note: This is simplified - would need proper text handling
+
+    ::UnloadFileText(nullptr);
+
+    '
+- name: DIRECTORYEXISTS
+  map_to: DirectoryExists
+  args:
+  - string
+  ret: bool
+- name: ISFILEEXTENSION
+  map_to: IsFileExtension
+  args:
+  - string
+  - string
+  ret: bool
+- name: GETFILELENGTH
+  map_to: GetFileLength
+  args:
+  - string
+  ret: int
+- name: GETFILEEXTENSION
+  map_to: GetFileExtension
+  args:
+  - string
+  ret: string
+- name: GETFILENAME
+  map_to: GetFileName
+  args:
+  - string
+  ret: string
+- name: GETFILENAMEWITHOUTEXT
+  map_to: GetFileNameWithoutExt
+  args:
+  - string
+  ret: string
+- name: GETDIRECTORYPATH
+  map_to: GetDirectoryPath
+  args:
+  - string
+  ret: string
+- name: GETPREVDIRECTORYPATH
+  map_to: GetPrevDirectoryPath
+  args:
+  - string
+  ret: string
+- name: GETWORKINGDIRECTORY
+  map_to: GetWorkingDirectory
+  args: []
+  ret: string
+- name: GETAPPLICATIONDIRECTORY
+  map_to: GetApplicationDirectory
+  args: []
+  ret: string
+- name: CHANGEDIRECTORY
+  map_to: ChangeDirectory
+  args:
+  - string
+  ret: bool
+- name: ISPATHFILE
+  map_to: IsPathFile
+  args:
+  - string
+  ret: bool
+- name: LOADDIRECTORYFILES
+  map_to: LoadDirectoryFiles
+  args:
+  - string
+  ret: string
+  custom_body: '::FilePathList files = ::LoadDirectoryFiles(args[0].as_string().c_str());
+
+    // Note: This returns a FilePathList struct, simplified for BASIC
+
+    return Value::from_string("files_loaded:" + std::to_string(files.count));
+
+    '
+- name: LOADDIRECTORYFILESEX
+  map_to: LoadDirectoryFilesEx
+  args:
+  - string
+  - string
+  - bool
+  ret: string
+  custom_body: '::FilePathList files = ::LoadDirectoryFilesEx(args[0].as_string().c_str(),
+    args[1].as_string().c_str(), args[2].as_bool());
+
+    // Note: This returns a FilePathList struct, simplified for BASIC
+
+    return Value::from_string("files_loaded:" + std::to_string(files.count));
+
+    '
+- name: UNLOADDIRECTORYFILES
+  map_to: UnloadDirectoryFiles
+  args:
+  - string
+  ret: void
+  custom_body: '// Note: This is simplified - would need proper FilePathList handling
+
+    ::FilePathList files = ::FilePathList{};
+
+    ::UnloadDirectoryFiles(files);
+
+    '
+- name: ISFILEDROPPED
+  map_to: IsFileDropped
+  args: []
+  ret: bool
+- name: LOADDROPPEDFILES
+  map_to: LoadDroppedFiles
+  args: []
+  ret: string
+  custom_body: '::FilePathList files = ::LoadDroppedFiles();
+
+    // Note: This returns a FilePathList struct, simplified for BASIC
+
+    return Value::from_string("files_loaded:" + std::to_string(files.count));
+
+    '
+- name: UNLOADDROPPEDFILES
+  map_to: UnloadDroppedFiles
+  args:
+  - string
+  ret: void
+  custom_body: '// Note: This is simplified - would need proper FilePathList handling
+
+    ::FilePathList files = ::FilePathList{};
+
+    ::UnloadDroppedFiles(files);
+
+    '
+- name: GETFILEMODTIME
+  map_to: GetFileModTime
+  args:
+  - string
+  ret: int
+- name: COMPRESSDATA
+  map_to: CompressData
+  args:
+  - string
+  ret: string
+  custom_body: '// Note: This is simplified - would need proper data handling
+
+    int compDataSize;
+
+    unsigned char* compData = ::CompressData(nullptr, 0, &compDataSize);
+
+    (void)compData; // Suppress unused variable warning
+
+    return Value::from_string("compressed:" + std::to_string(compDataSize));
+
+    '
+- name: DECOMPRESSDATA
+  map_to: DecompressData
+  args:
+  - string
+  ret: string
+  custom_body: '// Note: This is simplified - would need proper data handling
+
+    int dataSize;
+
+    unsigned char* data = ::DecompressData(nullptr, 0, &dataSize);
+
+    (void)data; // Suppress unused variable warning
+
+    return Value::from_string("decompressed:" + std::to_string(dataSize));
+
+    '
+- name: ENCODEDATABASE64
+  map_to: EncodeDataBase64
+  args:
+  - string
+  ret: string
+  custom_body: '// Note: This is simplified - would need proper data handling
+
+    int outputSize;
+
+    char* encoded = ::EncodeDataBase64(nullptr, 0, &outputSize);
+
+    std::string result(encoded);
+
+    ::MemFree(encoded);
+
+    return Value::from_string(result);
+
+    '
+- name: LOADIMAGERAW
+  map_to: LoadImageRaw
+  args:
+  - string
+  - int
+  - int
+  - int
+  - int
+  ret: int
+  custom_body: '::Image image = ::LoadImageRaw(args[0].as_string().c_str(), args[1].as_int(),
+    args[2].as_int(), args[3].as_int(), args[4].as_int());
+
+    int id = rlreg::next_image_id++;
+
+    rlreg::images[id] = image;
+
+    return Value::from_int(id);
+
+    '
+- name: LOADIMAGEANIM
+  map_to: LoadImageAnim
+  args:
+  - string
+  ret: string
+  custom_body: 'int frames;
+
+    ::Image image = ::LoadImageAnim(args[0].as_string().c_str(), &frames);
+
+    int id = rlreg::next_image_id++;
+
+    rlreg::images[id] = image;
+
+    return Value::from_string("image_loaded:" + std::to_string(frames));
+
+    '
+- name: LOADIMAGEFROMMEMORY
+  map_to: LoadImageFromMemory
+  args:
+  - string
+  - string
+  ret: int
+  custom_body: '::Image image = ::LoadImageFromMemory(args[0].as_string().c_str(),
+    (const unsigned char*)args[1].as_string().c_str(), args[1].as_string().length());
+
+    int id = rlreg::next_image_id++;
+
+    rlreg::images[id] = image;
+
+    return Value::from_int(id);
+
+    '
+- name: LOADIMAGEFROMTEXTURE
+  map_to: LoadImageFromTexture
+  args:
+  - int
+  ret: int
+  custom_body: '::Image image = ::LoadImageFromTexture(rlreg::textures.at(args[0].as_int()));
+
+    int id = rlreg::next_image_id++;
+
+    rlreg::images[id] = image;
+
+    return Value::from_int(id);
+
+    '
+- name: LOADIMAGEFROMSCREEN
+  map_to: LoadImageFromScreen
+  args: []
+  ret: int
+  custom_body: '::Image image = ::LoadImageFromScreen();
+
+    int id = rlreg::next_image_id++;
+
+    rlreg::images[id] = image;
+
+    return Value::from_int(id);
+
+    '
+- name: ISIMAGEVALID
+  map_to: IsImageReady
+  args:
+  - int
+  ret: bool
+  custom_body: 'return Value::from_bool(::IsImageReady(rlreg::images.at(args[0].as_int())));
+
+    '
+- name: EXPORTIMAGE
+  map_to: ExportImage
+  args:
+  - int
+  - string
+  ret: bool
+  custom_body: 'return Value::from_bool(::ExportImage(rlreg::images.at(args[0].as_int()),
+    args[1].as_string().c_str()));
+
+    '
+- name: EXPORTIMAGETOMEMORY
+  map_to: ExportImageToMemory
+  args:
+  - int
+  - string
+  ret: string
+  custom_body: 'int fileSize;
+
+    unsigned char* data = ::ExportImageToMemory(rlreg::images.at(args[0].as_int()),
+    args[1].as_string().c_str(), &fileSize);
+
+    (void)data; // Suppress unused variable warning
+
+    // Note: This returns binary data, simplified for BASIC
+
+    return Value::from_string("data_exported:" + std::to_string(fileSize));
+
+    '
+- name: EXPORTIMAGEASCODE
+  map_to: ExportImageAsCode
+  args:
+  - int
+  - string
+  ret: bool
+  custom_body: 'return Value::from_bool(::ExportImageAsCode(rlreg::images.at(args[0].as_int()),
+    args[1].as_string().c_str()));
+
+    '
+- name: GENIMAGECOLOR
+  map_to: GenImageColor
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: int
+  custom_body: '::Color color{(unsigned char)args[2].as_int(), (unsigned char)args[3].as_int(),
+    (unsigned char)args[4].as_int(), 255};
+
+    ::Image image = ::GenImageColor(args[0].as_int(), args[1].as_int(), color);
+
+    int id = rlreg::next_image_id++;
+
+    rlreg::images[id] = image;
+
+    return Value::from_int(id);
+
+    '
+- name: GENIMAGEGRADIENTLINEAR
+  map_to: GenImageGradientLinear
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: int
+  custom_body: '::Color start{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(),
+    (unsigned char)args[6].as_int(), 255};
+
+    ::Color end{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(),
+    (unsigned char)args[9].as_int(), 255};
+
+    ::Image image = ::GenImageGradientLinear(args[0].as_int(), args[1].as_int(), args[2].as_int(),
+    start, end);
+
+    int id = rlreg::next_image_id++;
+
+    rlreg::images[id] = image;
+
+    return Value::from_int(id);
+
+    '
+- name: GENIMAGEGRADIENTRADIAL
+  map_to: GenImageGradientRadial
+  args:
+  - int
+  - int
+  - double
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: int
+  custom_body: '::Color inner{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(),
+    (unsigned char)args[5].as_int(), 255};
+
+    ::Color outer{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(),
+    (unsigned char)args[8].as_int(), 255};
+
+    ::Image image = ::GenImageGradientRadial(args[0].as_int(), args[1].as_int(), (float)args[2].as_number(),
+    inner, outer);
+
+    int id = rlreg::next_image_id++;
+
+    rlreg::images[id] = image;
+
+    return Value::from_int(id);
+
+    '
+- name: GENIMAGEGRADIENTSQUARE
+  map_to: GenImageGradientSquare
+  args:
+  - int
+  - int
+  - double
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: int
+  custom_body: '::Color inner{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(),
+    (unsigned char)args[5].as_int(), 255};
+
+    ::Color outer{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(),
+    (unsigned char)args[8].as_int(), 255};
+
+    ::Image image = ::GenImageGradientSquare(args[0].as_int(), args[1].as_int(), (float)args[2].as_number(),
+    inner, outer);
+
+    int id = rlreg::next_image_id++;
+
+    rlreg::images[id] = image;
+
+    return Value::from_int(id);
+
+    '
+- name: GENIMAGECHECKED
+  map_to: GenImageChecked
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: int
+  custom_body: '::Color col1{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(),
+    (unsigned char)args[6].as_int(), 255};
+
+    ::Color col2{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(),
+    (unsigned char)args[9].as_int(), 255};
+
+    ::Image image = ::GenImageChecked(args[0].as_int(), args[1].as_int(), args[2].as_int(),
+    args[3].as_int(), col1, col2);
+
+    int id = rlreg::next_image_id++;
+
+    rlreg::images[id] = image;
+
+    return Value::from_int(id);
+
+    '
+- name: GENIMAGEWHITENOISE
+  map_to: GenImageWhiteNoise
+  args:
+  - int
+  - int
+  - double
+  ret: int
+  custom_body: '::Image image = ::GenImageWhiteNoise(args[0].as_int(), args[1].as_int(),
+    (float)args[2].as_number());
+
+    int id = rlreg::next_image_id++;
+
+    rlreg::images[id] = image;
+
+    return Value::from_int(id);
+
+    '
+- name: GENIMAGEPERLINNOISE
+  map_to: GenImagePerlinNoise
+  args:
+  - int
+  - int
+  - int
+  - int
+  - double
+  ret: int
+  custom_body: '::Image image = ::GenImagePerlinNoise(args[0].as_int(), args[1].as_int(),
+    args[2].as_int(), args[3].as_int(), (float)args[4].as_number());
+
+    int id = rlreg::next_image_id++;
+
+    rlreg::images[id] = image;
+
+    return Value::from_int(id);
+
+    '
+- name: GENIMAGECELLULAR
+  map_to: GenImageCellular
+  args:
+  - int
+  - int
+  - int
+  ret: int
+  custom_body: '::Image image = ::GenImageCellular(args[0].as_int(), args[1].as_int(),
+    args[2].as_int());
+
+    int id = rlreg::next_image_id++;
+
+    rlreg::images[id] = image;
+
+    return Value::from_int(id);
+
+    '
+- name: GENIMAGETEXT
+  map_to: GenImageText
+  args:
+  - int
+  - int
+  - string
+  ret: int
+  custom_body: '::Image image = ::GenImageText(args[0].as_int(), args[1].as_int(),
+    args[2].as_string().c_str());
+
+    int id = rlreg::next_image_id++;
+
+    rlreg::images[id] = image;
+
+    return Value::from_int(id);
+
+    '
+- name: GETFONTDEFAULT
+  map_to: GetFontDefault
+  args: []
+  ret: int
+  custom_body: '::Font font = ::GetFontDefault();
+
+    int id = rlreg::next_font_id++;
+
+    rlreg::fonts[id] = font;
+
+    return Value::from_int(id);
+
+    '
+- name: LOADFONT
+  map_to: LoadFont
+  args:
+  - string
+  ret: int
+  custom_body: '::Font font = ::LoadFont(args[0].as_string().c_str());
+
+    int id = rlreg::next_font_id++;
+
+    rlreg::fonts[id] = font;
+
+    return Value::from_int(id);
+
+    '
+- name: LOADFONTEX
+  map_to: LoadFontEx
+  args:
+  - string
+  - int
+  - string
+  ret: int
+  custom_body: '// Note: This is simplified - would need proper codepoints array handling
+
+    ::Font font = ::LoadFontEx(args[0].as_string().c_str(), args[1].as_int(), nullptr,
+    0);
+
+    int id = rlreg::next_font_id++;
+
+    rlreg::fonts[id] = font;
+
+    return Value::from_int(id);
+
+    '
+- name: LOADFONTFROMIMAGE
+  map_to: LoadFontFromImage
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: int
+  custom_body: '::Color key{(unsigned char)args[1].as_int(), (unsigned char)args[2].as_int(),
+    (unsigned char)args[3].as_int(), 255};
+
+    ::Font font = ::LoadFontFromImage(rlreg::images.at(args[0].as_int()), key, args[4].as_int());
+
+    int id = rlreg::next_font_id++;
+
+    rlreg::fonts[id] = font;
+
+    return Value::from_int(id);
+
+    '
+- name: LOADFONTFROMMEMORY
+  map_to: LoadFontFromMemory
+  args:
+  - string
+  - string
+  - int
+  - string
+  ret: int
+  custom_body: '// Note: This is simplified - would need proper codepoints array handling
+
+    ::Font font = ::LoadFontFromMemory(args[0].as_string().c_str(), (const unsigned
+    char*)args[1].as_string().c_str(), args[1].as_string().length(), args[2].as_int(),
+    nullptr, 0);
+
+    int id = rlreg::next_font_id++;
+
+    rlreg::fonts[id] = font;
+
+    return Value::from_int(id);
+
+    '
+- name: ISFONTVALID
+  map_to: IsFontReady
+  args:
+  - int
+  ret: bool
+  custom_body: 'return Value::from_bool(::IsFontReady(rlreg::fonts.at(args[0].as_int())));
+
+    '
+- name: LOADFONTDATA
+  map_to: LoadFontData
+  args:
+  - string
+  - int
+  - string
+  - int
+  ret: string
+  custom_body: '// Note: This is simplified - would need proper codepoints array handling
+
+    int glyphCount = 0;
+
+    ::GlyphInfo* glyphs = ::LoadFontData((const unsigned char*)args[0].as_string().c_str(),
+    args[0].as_string().length(), args[1].as_int(), nullptr, 0, args[3].as_int());
+
+    (void)glyphs; // Suppress unused variable warning
+
+    // Note: This returns a GlyphInfo array, simplified for BASIC
+
+    return Value::from_string("glyphs_loaded:" + std::to_string(glyphCount));
+
+    '
+- name: GENIMAGEFONTATLAS
+  map_to: GenImageFontAtlas
+  args:
+  - string
+  - int
+  - int
+  - int
+  - int
+  ret: int
+  custom_body: '// Note: This is simplified - would need proper GlyphInfo array handling
+
+    ::GlyphInfo glyphs[1] = {::GlyphInfo{}};
+
+    ::Rectangle* glyphRecs = nullptr;
+
+    ::Image image = ::GenImageFontAtlas(glyphs, &glyphRecs, 1, args[2].as_int(), args[3].as_int(),
+    args[4].as_int());
+
+    int id = rlreg::next_image_id++;
+
+    rlreg::images[id] = image;
+
+    return Value::from_int(id);
+
+    '
+- name: UNLOADFONTDATA
+  map_to: UnloadFontData
+  args:
+  - string
+  ret: void
+  custom_body: '// Note: This is simplified - would need proper GlyphInfo array handling
+
+    ::UnloadFontData(nullptr, 0);
+
+    '
+- name: UNLOADFONT
+  map_to: UnloadFont
+  args:
+  - int
+  ret: void
+  custom_body: "int id = args[0].as_int();\nauto it = rlreg::fonts.find(id);\nif (it\
+    \ != rlreg::fonts.end()) {\n  ::UnloadFont(it->second);\n  rlreg::fonts.erase(it);\n\
+    }\n"
+- name: EXPORTFONTASCODE
+  map_to: ExportFontAsCode
+  args:
+  - int
+  - string
+  ret: bool
+  custom_body: 'return Value::from_bool(::ExportFontAsCode(rlreg::fonts.at(args[0].as_int()),
+    args[1].as_string().c_str()));
+
+    '
+- name: SETTEXTLINESPACING
+  map_to: SetTextLineSpacing
+  args:
+  - int
+  ret: void
+- name: MEASURETEXT
+  map_to: MeasureText
+  args:
+  - string
+  - int
+  ret: int
+- name: MEASURETEXTEX
+  map_to: MeasureTextEx
+  args:
+  - int
+  - string
+  - double
+  - double
+  ret: string
+  custom_body: '::Vector2 size = ::MeasureTextEx(rlreg::fonts.at(args[0].as_int()),
+    args[1].as_string().c_str(), (float)args[2].as_number(), (float)args[3].as_number());
+
+    return Value::from_string(std::to_string(size.x) + "," + std::to_string(size.y));
+
+    '
+- name: GETGLYPHINDEX
+  map_to: GetGlyphIndex
+  args:
+  - int
+  - int
+  ret: int
+  custom_body: 'return Value::from_int(::GetGlyphIndex(rlreg::fonts.at(args[0].as_int()),
+    args[1].as_int()));
+
+    '
+- name: GETGLYPHINFO
+  map_to: GetGlyphInfo
+  args:
+  - int
+  - int
+  ret: string
+  custom_body: '::GlyphInfo info = ::GetGlyphInfo(rlreg::fonts.at(args[0].as_int()),
+    args[1].as_int());
+
+    return Value::from_string(std::to_string(info.value) + "," + std::to_string(info.offsetX)
+    + "," + std::to_string(info.offsetY) + "," + std::to_string(info.advanceX));
+
+    '
+- name: GETGLYPHATLASREC
+  map_to: GetGlyphAtlasRec
+  args:
+  - int
+  - int
+  ret: string
+  custom_body: '::Rectangle rec = ::GetGlyphAtlasRec(rlreg::fonts.at(args[0].as_int()),
+    args[1].as_int());
+
+    return Value::from_string(std::to_string(rec.x) + "," + std::to_string(rec.y)
+    + "," + std::to_string(rec.width) + "," + std::to_string(rec.height));
+
+    '
+- name: LOADUTF8
+  map_to: LoadUTF8
+  args:
+  - string
+  ret: string
+  custom_body: '// Note: This is simplified - would need proper codepoints array handling
+
+    char* text = ::LoadUTF8(nullptr, 0);
+
+    std::string result(text);
+
+    ::UnloadUTF8(text);
+
+    return Value::from_string(result);
+
+    '
+- name: UNLOADUTF8
+  map_to: UnloadUTF8
+  args:
+  - string
+  ret: void
+  custom_body: '// Note: This is simplified - would need proper text handling
+
+    ::UnloadUTF8(nullptr);
+
+    '
+- name: LOADCODEPOINTS
+  map_to: LoadCodepoints
+  args:
+  - string
+  ret: string
+  custom_body: '// Note: This is simplified - would need proper codepoints array handling
+
+    int count;
+
+    int* codepoints = ::LoadCodepoints(args[0].as_string().c_str(), &count);
+
+    (void)codepoints; // Suppress unused variable warning
+
+    return Value::from_string("codepoints_loaded:" + std::to_string(count));
+
+    '
+- name: UNLOADCODEPOINTS
+  map_to: UnloadCodepoints
+  args:
+  - string
+  ret: void
+  custom_body: '// Note: This is simplified - would need proper codepoints array handling
+
+    ::UnloadCodepoints(nullptr);
+
+    '
+- name: GETCODEPOINTCOUNT
+  map_to: GetCodepointCount
+  args:
+  - string
+  ret: int
+- name: GETCODEPOINT
+  map_to: GetCodepoint
+  args:
+  - string
+  ret: string
+  custom_body: '// Note: This is simplified - would need proper text handling
+
+    int codepointSize;
+
+    int codepoint = ::GetCodepoint(args[0].as_string().c_str(), &codepointSize);
+
+    return Value::from_string(std::to_string(codepoint) + "," + std::to_string(codepointSize));
+
+    '
+- name: GETCODEPOINTNEXT
+  map_to: GetCodepointNext
+  args:
+  - string
+  ret: string
+  custom_body: '// Note: This is simplified - would need proper text handling
+
+    int codepointSize;
+
+    int codepoint = ::GetCodepointNext(args[0].as_string().c_str(), &codepointSize);
+
+    return Value::from_string(std::to_string(codepoint) + "," + std::to_string(codepointSize));
+
+    '
+- name: GETCODEPOINTPREVIOUS
+  map_to: GetCodepointPrevious
+  args:
+  - string
+  ret: string
+  custom_body: '// Note: This is simplified - would need proper text handling
+
+    int codepointSize;
+
+    int codepoint = ::GetCodepointPrevious(args[0].as_string().c_str(), &codepointSize);
+
+    return Value::from_string(std::to_string(codepoint) + "," + std::to_string(codepointSize));
+
+    '
+- name: CODEPOINTTOUTF8
+  map_to: CodepointToUTF8
+  args:
+  - int
+  ret: string
+  custom_body: 'int utf8Size;
+
+    const char* text = ::CodepointToUTF8(args[0].as_int(), &utf8Size);
+
+    std::string result(text);
+
+    return Value::from_string(result);
+
+    '
+- name: TEXTCOPY
+  map_to: TextCopy
+  args:
+  - string
+  - string
+  ret: int
+  custom_body: '// Note: This is simplified - would need proper text handling
+
+    return Value::from_int(::TextCopy(nullptr, args[1].as_string().c_str()));
+
+    '
+- name: TEXTISEQUAL
+  map_to: TextIsEqual
+  args:
+  - string
+  - string
+  ret: bool
+- name: TEXTLENGTH
+  map_to: TextLength
+  args:
+  - string
+  ret: int
+- name: TEXTFORMAT
+  map_to: TextFormat
+  args:
+  - string
+  ret: string
+  custom_body: '// Note: This is simplified - would need proper formatting handling
+
+    return Value::from_string(::TextFormat(args[0].as_string().c_str()));
+
+    '
+- name: TEXTSUBTEXT
+  map_to: TextSubtext
+  args:
+  - string
+  - int
+  - int
+  ret: string
+- name: TEXTINSERT
+  map_to: TextInsert
+  args:
+  - string
+  - string
+  - int
+  ret: string
+  custom_body: 'char* result = ::TextInsert(args[0].as_string().c_str(), args[1].as_string().c_str(),
+    args[2].as_int());
+
+    std::string text(result);
+
+    ::MemFree(result);
+
+    return Value::from_string(text);
+
+    '
+- name: TEXTTOINTEGER
+  map_to: TextToInteger
+  args:
+  - string
+  ret: int
+- name: DRAWTEXTCODEPOINT
+  map_to: DrawTextCodepoint
+  args:
+  - int
+  - int
+  - double
+  - double
+  - double
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Vector2 position{(float)args[2].as_number(), (float)args[3].as_number()};
+
+    ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned
+    char)args[7].as_int(), 255};
+
+    ::DrawTextCodepoint(rlreg::fonts.at(args[0].as_int()), args[1].as_int(), position,
+    (float)args[4].as_number(), c);
+
+    '
+- name: DRAWLINES
+  map_to: DrawLine
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '::Color c{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(),
+    (unsigned char)args[6].as_int(), 255};
+
+    ::DrawLine(args[0].as_int(), args[1].as_int(), args[2].as_int(), args[3].as_int(),
+    c);
+
+    '
+- name: MIN
+  map_to: min
+  args:
+  - double
+  - double
+  ret: double
+  custom_body: 'return Value::from_number(std::min(args[0].as_number(), args[1].as_number()));
+
+    '
+- name: MAX
+  map_to: max
+  args:
+  - double
+  - double
+  ret: double
+  custom_body: 'return Value::from_number(std::max(args[0].as_number(), args[1].as_number()));
+
+    '
+- name: CLAMP
+  map_to: clamp
+  args:
+  - double
+  - double
+  - double
+  ret: double
+  custom_body: 'double value = args[0].as_number();
+
+    double min_val = args[1].as_number();
+
+    double max_val = args[2].as_number();
+
+    if (value < min_val) value = min_val;
+
+    if (value > max_val) value = max_val;
+
+    return Value::from_number(value);
+
+    '
+- name: COLLISIONRECTANGLES
+  map_to: collision_rectangles
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: bool
+  custom_body: '// Check if two rectangles overlap
+
+    int x1 = args[0].as_int();
+
+    int y1 = args[1].as_int();
+
+    int w1 = args[2].as_int();
+
+    int h1 = args[3].as_int();
+
+    int x2 = args[4].as_int();
+
+    int y2 = args[5].as_int();
+
+    int w2 = args[6].as_int();
+
+    int h2 = args[7].as_int();
+
+
+    bool collision = !(x1 + w1 < x2 || x2 + w2 < x1 || y1 + h1 < y2 || y2 + h2 < y1);
+
+    return Value::from_bool(collision);
+
+    '
+- name: POINTINRECTANGLE
+  map_to: point_in_rectangle
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: bool
+  custom_body: '// Check if a point is inside a rectangle
+
+    int px = args[0].as_int();
+
+    int py = args[1].as_int();
+
+    int rx = args[2].as_int();
+
+    int ry = args[3].as_int();
+
+    int rw = args[4].as_int();
+
+    int rh = args[5].as_int();
+
+
+    bool inside = (px >= rx && px <= rx + rw && py >= ry && py <= ry + rh);
+
+    return Value::from_bool(inside);
+
+    '
+- name: DISTANCE
+  map_to: distance
+  args:
+  - int
+  - int
+  - int
+  - int
+  ret: double
+  custom_body: '// Calculate distance between two points (squared to avoid sqrt)
+
+    int x1 = args[0].as_int();
+
+    int y1 = args[1].as_int();
+
+    int x2 = args[2].as_int();
+
+    int y2 = args[3].as_int();
+
+
+    double dx = (double)(x2 - x1);
+
+    double dy = (double)(y2 - y1);
+
+    double distance_squared = dx * dx + dy * dy;
+
+    return Value::from_number(distance_squared);
+
+    '
+- name: SPLIT
+  map_to: split
+  args:
+  - string
+  - string
+  ret: int
+  custom_body: "// Simple split function - returns array index of first occurrence\n\
+    std::string text = args[0].as_string();\nstd::string delimiter = args[1].as_string();\n\
+    size_t pos = text.find(delimiter);\nif (pos == std::string::npos) {\n  return\
+    \ Value::from_int(-1); // Not found\n}\nreturn Value::from_int((int)pos);\n"
+- name: LOADMUSIC
+  map_to: LoadMusicStream
+  args:
+  - string
+  ret: int
+  custom_body: '::Music music = ::LoadMusicStream(args[0].as_string().c_str());
+
+    int id = rlreg::next_music_id++;
+
+    rlreg::musics[id] = music;
+
+    return Value::from_int(id);
+
+    '
+- name: UNLOADMUSIC
+  map_to: UnloadMusicStream
+  args:
+  - int
+  ret: void
+  custom_body: "int id = args[0].as_int();\nauto it = rlreg::musics.find(id);\nif\
+    \ (it != rlreg::musics.end()) {\n  ::UnloadMusicStream(it->second);\n  rlreg::musics.erase(it);\n\
+    }\nreturn Value::nil();\n"
+- name: PLAYMUSIC
+  map_to: PlayMusicStream
+  args:
+  - int
+  ret: void
+  custom_body: "int id = args[0].as_int();\nauto it = rlreg::musics.find(id);\nif\
+    \ (it != rlreg::musics.end()) {\n  ::PlayMusicStream(it->second);\n}\nreturn Value::nil();\n"
+- name: STOPMUSIC
+  map_to: StopMusicStream
+  args:
+  - int
+  ret: void
+  custom_body: "int id = args[0].as_int();\nauto it = rlreg::musics.find(id);\nif\
+    \ (it != rlreg::musics.end()) {\n  ::StopMusicStream(it->second);\n}\nreturn Value::nil();\n"
+- name: PAUSEMUSIC
+  map_to: PauseMusicStream
+  args:
+  - int
+  ret: void
+  custom_body: "int id = args[0].as_int();\nauto it = rlreg::musics.find(id);\nif\
+    \ (it != rlreg::musics.end()) {\n  ::PauseMusicStream(it->second);\n}\nreturn\
+    \ Value::nil();\n"
+- name: RESUMEMUSIC
+  map_to: ResumeMusicStream
+  args:
+  - int
+  ret: void
+  custom_body: "int id = args[0].as_int();\nauto it = rlreg::musics.find(id);\nif\
+    \ (it != rlreg::musics.end()) {\n  ::ResumeMusicStream(it->second);\n}\nreturn\
+    \ Value::nil();\n"
+- name: UPDATEMUSIC
+  map_to: UpdateMusicStream
+  args:
+  - int
+  ret: void
+  custom_body: "int id = args[0].as_int();\nauto it = rlreg::musics.find(id);\nif\
+    \ (it != rlreg::musics.end()) {\n  ::UpdateMusicStream(it->second);\n}\nreturn\
+    \ Value::nil();\n"
+- name: ISMUSICPLAYING
+  map_to: IsMusicStreamPlaying
+  args:
+  - int
+  ret: bool
+  custom_body: "int id = args[0].as_int();\nauto it = rlreg::musics.find(id);\nif\
+    \ (it != rlreg::musics.end()) {\n  return Value::from_bool(::IsMusicStreamPlaying(it->second));\n\
+    }\nreturn Value::from_bool(false);\n"
+- name: GETTEXTUREWIDTH
+  map_to: GetTextureWidth
+  args:
+  - int
+  ret: int
+  custom_body: "int id = args[0].as_int();\nauto it = rlreg::textures.find(id);\n\
+    if (it != rlreg::textures.end()) {\n  return Value::from_int(it->second.width);\n\
+    }\nreturn Value::from_int(0);\n"
+- name: GETTEXTUREHEIGHT
+  map_to: GetTextureHeight
+  args:
+  - int
+  ret: int
+  custom_body: "int id = args[0].as_int();\nauto it = rlreg::textures.find(id);\n\
+    if (it != rlreg::textures.end()) {\n  return Value::from_int(it->second.height);\n\
+    }\nreturn Value::from_int(0);\n"
+- name: IMAGEFROMTEXTURE
+  map_to: GetTextureData
+  args:
+  - int
+  ret: int
+  custom_body: '// GetTextureData not available in current Raylib version
+
+    // Return -1 to indicate failure
+
+    return Value::from_int(-1);
+
+    '
+- name: TEXTUREFROMIMAGE
+  map_to: LoadTextureFromImage
+  args:
+  - int
+  ret: int
+  custom_body: "int id = args[0].as_int();\nauto it = rlreg::images.find(id);\nif\
+    \ (it != rlreg::images.end()) {\n  ::Texture2D texture = ::LoadTextureFromImage(it->second);\n\
+    \  int texture_id = rlreg::next_tex_id++;\n  rlreg::textures[texture_id] = texture;\n\
+    \  return Value::from_int(texture_id);\n}\nreturn Value::from_int(-1);\n"
+- name: RESIZEIMAGE
+  map_to: ImageResize
+  args:
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: "int id = args[0].as_int();\nint new_width = args[1].as_int();\nint\
+    \ new_height = args[2].as_int();\nauto it = rlreg::images.find(id);\nif (it !=\
+    \ rlreg::images.end()) {\n  ::ImageResize(&it->second, new_width, new_height);\n\
+    }\nreturn Value::nil();\n"
+- name: CROPIMAGE
+  map_to: ImageCrop
+  args:
+  - int
+  - int
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: "int id = args[0].as_int();\nint x = args[1].as_int();\nint y = args[2].as_int();\n\
+    int width = args[3].as_int();\nint height = args[4].as_int();\nauto it = rlreg::images.find(id);\n\
+    if (it != rlreg::images.end()) {\n  ::Rectangle crop{(float)x, (float)y, (float)width,\
+    \ (float)height};\n  ::ImageCrop(&it->second, crop);\n}\nreturn Value::nil();\n"
+- name: FLIPIMAGE
+  map_to: ImageFlipVertical
+  args:
+  - int
+  ret: void
+  custom_body: "int id = args[0].as_int();\nauto it = rlreg::images.find(id);\nif\
+    \ (it != rlreg::images.end()) {\n  ::ImageFlipVertical(&it->second);\n}\nreturn\
+    \ Value::nil();\n"
+- name: ROTATEIMAGE
+  map_to: ImageRotate
+  args:
+  - int
+  - int
+  ret: void
+  custom_body: "int id = args[0].as_int();\nint degrees = args[1].as_int();\nauto\
+    \ it = rlreg::images.find(id);\nif (it != rlreg::images.end()) {\n  ::ImageRotate(&it->second,\
+    \ degrees);\n}\nreturn Value::nil();\n"
+- name: REPLACE
+  map_to: replace
+  args:
+  - string
+  - string
+  - string
+  ret: string
+  custom_body: "std::string text = args[0].as_string();\nstd::string search = args[1].as_string();\n\
+    std::string replace = args[2].as_string();\nsize_t pos = 0;\nwhile ((pos = text.find(search,\
+    \ pos)) != std::string::npos) {\n  text.replace(pos, search.length(), replace);\n\
+    \  pos += replace.length();\n}\nreturn Value::from_string(text);\n"
+- name: INSTRREV
+  map_to: instrrev
+  args:
+  - string
+  - string
+  ret: int
+  custom_body: 'std::string text = args[0].as_string();
+
+    std::string search = args[1].as_string();
+
+    size_t pos = text.rfind(search);
+
+    if (pos == std::string::npos) return Value::from_int(0);
+
+    return Value::from_int((int)pos + 1); // BASIC uses 1-based indexing
+
+    '
+- name: STRREPEAT
+  map_to: strrepeat
+  args:
+  - string
+  - int
+  ret: string
+  custom_body: "std::string text = args[0].as_string();\nint count = args[1].as_int();\n\
+    std::string result;\nfor (int i = 0; i < count; i++) {\n  result += text;\n}\n\
+    return Value::from_string(result);\n"
+- name: STRREVERSE
+  map_to: strreverse
+  args:
+  - string
+  ret: string
+  custom_body: 'std::string text = args[0].as_string();
+
+    std::reverse(text.begin(), text.end());
+
+    return Value::from_string(text);
+
+    '
+- name: SETGESTURESENABLED
+  map_to: SetGesturesEnabled
+  args:
+  - int
+  ret: void
+  custom_body: '::SetGesturesEnabled(args[0].as_int());
+
+    return Value::nil();
+
+    '
+- name: ISGESTUREDETECTED
+  map_to: IsGestureDetected
+  args:
+  - int
+  ret: bool
+  custom_body: 'return Value::from_bool(::IsGestureDetected(args[0].as_int()));
+
+    '
+- name: GETGESTUREDETECTED
+  map_to: GetGestureDetected
+  args: []
+  ret: int
+  custom_body: 'return Value::from_int(::GetGestureDetected());
+
+    '
+- name: GETGESTUREHOLDTIME
+  map_to: GetGestureHoldDuration
+  args: []
+  ret: double
+  custom_body: 'return Value::from_number(::GetGestureHoldDuration());
+
+    '
+- name: GETGESTUREDRAGVECTOR
+  map_to: GetGestureDragVector
+  args: []
+  ret: string
+  custom_body: '::Vector2 vec = ::GetGestureDragVector();
+
+    return Value::from_string(std::to_string((int)vec.x) + "," + std::to_string((int)vec.y));
+
+    '
+- name: GETGESTUREDRAGANGLE
+  map_to: GetGestureDragAngle
+  args: []
+  ret: double
+  custom_body: 'return Value::from_number(::GetGestureDragAngle());
+
+    '
+- name: GETGESTUREPINCHVECTOR
+  map_to: GetGesturePinchVector
+  args: []
+  ret: string
+  custom_body: '::Vector2 vec = ::GetGesturePinchVector();
+
+    return Value::from_string(std::to_string((int)vec.x) + "," + std::to_string((int)vec.y));
+
+    '
+- name: GETGESTUREPINCHANGLE
+  map_to: GetGesturePinchAngle
+  args: []
+  ret: double
+  custom_body: 'return Value::from_number(::GetGesturePinchAngle());
+
+    '
+- name: SORT
+  map_to: sort
+  args:
+  - int
+  ret: void
+  custom_body: '// SORT function for arrays - sorts the array in ascending order
+
+    // This is a placeholder - actual implementation would need array access
+
+    return Value::nil();
+
+    '
+- name: REVERSE
+  map_to: reverse
+  args:
+  - int
+  ret: void
+  custom_body: '// REVERSE function for arrays - reverses the order of elements
+
+    // This is a placeholder - actual implementation would need array access
+
+    return Value::nil();
+
+    '
+- name: FIND
+  map_to: find
+  args:
+  - int
+  - string
+  ret: int
+  custom_body: '// FIND function for arrays - finds the first occurrence of a value
+
+    // This is a placeholder - actual implementation would need array access
+
+    return Value::from_int(-1);
+
+    '
+- name: BINARYSEARCH
+  map_to: binarysearch
+  args:
+  - int
+  - string
+  ret: int
+  custom_body: '// BINARYSEARCH function for sorted arrays
+
+    // This is a placeholder - actual implementation would need array access
+
+    return Value::from_int(-1);
+
+    '
+- name: ISNUMBER
+  map_to: isnumber
+  args:
+  - string
+  ret: bool
+  custom_body: "std::string text = args[0].as_string();\nif (text.empty()) return\
+    \ Value::from_bool(false);\nsize_t pos = 0;\nif (text[0] == '+' || text[0] ==\
+    \ '-') pos = 1;\nif (pos >= text.length()) return Value::from_bool(false);\nbool\
+    \ has_digit = false;\nbool has_dot = false;\nfor (size_t i = pos; i < text.length();\
+    \ i++) {\n  if (text[i] >= '0' && text[i] <= '9') {\n    has_digit = true;\n \
+    \ } else if (text[i] == '.' && !has_dot) {\n    has_dot = true;\n  } else {\n\
+    \    return Value::from_bool(false);\n  }\n}\nreturn Value::from_bool(has_digit);\n"
+- name: ISSTRING
+  map_to: isstring
+  args:
+  - string
+  ret: bool
+  custom_body: '// Always returns true for string arguments
+
+    return Value::from_bool(true);
+
+    '
+- name: ISARRAY
+  map_to: isarray
+  args:
+  - string
+  ret: bool
+  custom_body: '// This would need to check if the variable is an array
+
+    // For now, return false as placeholder
+
+    return Value::from_bool(false);
+
+    '
+- name: ARRAYLENGTH
+  map_to: arraylength
+  args:
+  - string
+  ret: int
+  custom_body: '// Returns the length of an array
+
+    // This is a placeholder - actual implementation would need array access
+
+    return Value::from_int(0);
+
+    '
+- name: ARRAYCOPY
+  map_to: arraycopy
+  args:
+  - string
+  - string
+  ret: void
+  custom_body: '// Copies one array to another
+
+    // This is a placeholder - actual implementation would need array access
+
+    return Value::nil();
+
+    '
+- name: ARRAYFILL
+  map_to: arrayfill
+  args:
+  - string
+  - string
+  ret: void
+  custom_body: '// Fills an array with a specified value
+
+    // This is a placeholder - actual implementation would need array access
+
+    return Value::nil();
+
+    '
+- name: ARRAYSHUFFLE
+  map_to: arrayshuffle
+  args:
+  - string
+  ret: void
+  custom_body: '// Randomly shuffles the elements of an array
+
+    // This is a placeholder - actual implementation would need array access
+
+    return Value::nil();
+
+    '
+- name: ARRAYUNIQUE
+  map_to: arrayunique
+  args:
+  - string
+  ret: void
+  custom_body: '// Removes duplicate elements from an array
+
+    // This is a placeholder - actual implementation would need array access
+
+    return Value::nil();
+
+    '
+- name: ARRAYJOIN
+  map_to: arrayjoin
+  args:
+  - int
+  - string
+  ret: string
+  custom_body: '// Joins array elements into a string with a delimiter
+
+    // This is a placeholder - actual implementation would need array access
+
+    return Value::from_string("");
+
+    '
+- name: ARRAYSPLIT
+  map_to: arraysplit
+  args:
+  - string
+  - string
+  ret: int
+  custom_body: '// Splits a string into an array using a delimiter
+
+    // This is a placeholder - actual implementation would need array access
+
+    return Value::from_int(0);
+
+    '
+- name: HTTPGET
+  map_to: httpget
+  args:
+  - string
+  ret: string
+  custom_body: '// HTTP GET request - placeholder for future implementation
+
+    // Would use libcurl or similar for actual HTTP requests
+
+    return Value::from_string("HTTP GET not yet implemented");
+
+    '
+- name: HTTPPOST
+  map_to: httppost
+  args:
+  - string
+  - string
+  ret: string
+  custom_body: '// HTTP POST request - placeholder for future implementation
+
+    // Would use libcurl or similar for actual HTTP requests
+
+    return Value::from_string("HTTP POST not yet implemented");
+
+    '
+- name: DOWNLOADFILE
+  map_to: downloadfile
+  args:
+  - string
+  - string
+  ret: bool
+  custom_body: '// Download file from URL - placeholder for future implementation
+
+    // Would use libcurl or similar for actual file downloads
+
+    return Value::from_bool(false);
+
+    '
+- name: UPLOADFILE
+  map_to: uploadfile
+  args:
+  - string
+  - string
+  ret: bool
+  custom_body: '// Upload file to URL - placeholder for future implementation
+
+    // Would use libcurl or similar for actual file uploads
+
+    return Value::from_bool(false);
+
+    '
+- name: WEBSOCKETCONNECT
+  map_to: websocketconnect
+  args:
+  - string
+  ret: int
+  custom_body: '// WebSocket connection - placeholder for future implementation
+
+    // Would use a WebSocket library for actual connections
+
+    return Value::from_int(-1);
+
+    '
+- name: WEBSOCKETSEND
+  map_to: websocketsend
+  args:
+  - int
+  - string
+  ret: bool
+  custom_body: '// WebSocket send message - placeholder for future implementation
+
+    return Value::from_bool(false);
+
+    '
+- name: WEBSOCKETRECEIVE
+  map_to: websocketreceive
+  args:
+  - int
+  ret: string
+  custom_body: '// WebSocket receive message - placeholder for future implementation
+
+    return Value::from_string("");
+
+    '
+- name: WEBSOCKETCLOSE
+  map_to: websocketclose
+  args:
+  - int
+  ret: void
+  custom_body: '// WebSocket close connection - placeholder for future implementation
+
+    return Value::nil();
+
+    '
+- name: TCPCONNECT
+  map_to: tcpconnect
+  args:
+  - string
+  - int
+  ret: int
+  custom_body: '// TCP connection - placeholder for future implementation
+
+    // Would use socket library for actual TCP connections
+
+    return Value::from_int(-1);
+
+    '
+- name: TCPSEND
+  map_to: tcpsend
+  args:
+  - int
+  - string
+  ret: bool
+  custom_body: '// TCP send data - placeholder for future implementation
+
+    return Value::from_bool(false);
+
+    '
+- name: TCPRECEIVE
+  map_to: tcpreceive
+  args:
+  - int
+  ret: string
+  custom_body: '// TCP receive data - placeholder for future implementation
+
+    return Value::from_string("");
+
+    '
+- name: TCPCLOSE
+  map_to: tcpclose
+  args:
+  - int
+  ret: void
+  custom_body: '// TCP close connection - placeholder for future implementation
+
+    return Value::nil();
+
+    '
+- name: UDPCREATE
+  map_to: udpcreate
+  args:
+  - int
+  ret: int
+  custom_body: '// UDP socket creation - placeholder for future implementation
+
+    return Value::from_int(-1);
+
+    '
+- name: UDPSEND
+  map_to: udpsend
+  args:
+  - int
+  - string
+  - int
+  - string
+  ret: bool
+  custom_body: '// UDP send data - placeholder for future implementation
+
+    return Value::from_bool(false);
+
+    '
+- name: UDPRECEIVE
+  map_to: udpreceive
+  args:
+  - int
+  ret: string
+  custom_body: '// UDP receive data - placeholder for future implementation
+
+    return Value::from_string("");
+
+    '
+- name: UDPCLOSE
+  map_to: udpclose
+  args:
+  - int
+  ret: void
+  custom_body: '// UDP close socket - placeholder for future implementation
+
+    return Value::nil();
+
+    '
+- name: DRAWCONE
+  map_to: DrawCone
+  args:
+  - double
+  - double
+  - double
+  - double
+  - double
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '// DrawCone not available in current Raylib version
+
+    // Using DrawCylinder as alternative
+
+    ::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+
+    ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned
+    char)args[7].as_int(), 255};
+
+    ::DrawCylinder(position, (float)args[3].as_number(), 0.0f, (float)args[4].as_number(),
+    8, c);
+
+    '
+- name: DRAWCONEWIRES
+  map_to: DrawConeWires
+  args:
+  - double
+  - double
+  - double
+  - double
+  - double
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '// DrawConeWires not available in current Raylib version
+
+    // Using DrawCylinderWires as alternative
+
+    ::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+
+    ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned
+    char)args[7].as_int(), 255};
+
+    ::DrawCylinderWires(position, (float)args[3].as_number(), 0.0f, (float)args[4].as_number(),
+    8, c);
+
+    '
+- name: DRAWTORUS
+  map_to: DrawTorus
+  args:
+  - double
+  - double
+  - double
+  - double
+  - double
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '// DrawTorus not available in current Raylib version
+
+    // Using DrawCylinder as alternative
+
+    ::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+
+    ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned
+    char)args[7].as_int(), 255};
+
+    ::DrawCylinder(position, (float)args[3].as_number(), (float)args[3].as_number(),
+    (float)args[4].as_number(), 8, c);
+
+    '
+- name: DRAWTORUSWIRES
+  map_to: DrawTorusWires
+  args:
+  - double
+  - double
+  - double
+  - double
+  - double
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '// DrawTorusWires not available in current Raylib version
+
+    // Using DrawCylinderWires as alternative
+
+    ::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+
+    ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned
+    char)args[7].as_int(), 255};
+
+    ::DrawCylinderWires(position, (float)args[3].as_number(), (float)args[3].as_number(),
+    (float)args[4].as_number(), 8, c);
+
+    '
+- name: DRAWPOLYWIRES
+  map_to: DrawPolyWires
+  args:
+  - double
+  - double
+  - double
+  - int
+  - double
+  - int
+  - int
+  - int
+  ret: void
+  custom_body: '// DrawPolyWires not available in current Raylib version
+
+    // Using DrawPoly as alternative
+
+    ::Vector2 center{(float)args[0].as_number(), (float)args[1].as_number()};
+
+    ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned
+    char)args[8].as_int(), 255};
+
+    ::DrawPoly(center, args[3].as_int(), (float)args[4].as_number(), 0.0f, c);
+
+    '

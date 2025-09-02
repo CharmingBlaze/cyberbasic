@@ -1,0 +1,67 @@
+# Build directories
+build/
+build_*/
+build-*/
+_deps/
+out/
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CPackConfig.cmake
+CPackSourceConfig.cmake
+compile_commands.json
+build.ninja
+rules.ninja
+.ninja_deps
+.ninja_log
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Object files
+*.o
+*.obj
+*.so
+*.dylib
+*.dll
+*.a
+*.lib
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# Test output
+*.txt
+!requirements.txt
+
+# Legacy directories (if any)
+basic-raylib/
+raylib/
+raylib-cpp/

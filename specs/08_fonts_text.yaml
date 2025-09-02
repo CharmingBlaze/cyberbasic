@@ -1,0 +1,167 @@
+# Font and Text System Functions
+# Font loading, text rendering, and text manipulation
+# Following best practices: proper font and text handling
+
+functions:
+  # === FONT FUNCTIONS ===
+  - name: LOADFONT
+    raylib_name: LoadFont
+    args: [string]
+    ret: font
+    category: fonts
+    description: "Load font from file"
+    working: true
+    custom_body: "LoadFont(args[0].as_string().c_str())"
+
+
+
+  - name: UNLOADFONT
+    raylib_name: UnloadFont
+    args: [int]
+    ret: void
+    category: fonts
+    description: "Unload font from memory (pass font ID)"
+    working: true
+    custom_body: "UnloadFont(*(Font*)args[0].as_int())"
+
+  - name: GETFONTDEFAULT
+    raylib_name: GetFontDefault
+    args: []
+    ret: font
+    category: fonts
+    description: "Get default font"
+    working: true
+    custom_body: "GetFontDefault()"
+
+  # === TEXT RENDERING ===
+  - name: DRAWTEXT
+    raylib_name: DrawText
+    args: [string, int, int, int, int, int, int]
+    ret: void
+    category: fonts
+    description: "Draw text at x,y with fontSize and RGB color (text, x, y, fontSize, R, G, B)"
+    working: true
+    custom_body: "DrawText(args[0].as_string().c_str(), args[1].as_int(), args[2].as_int(), args[3].as_int(), Color{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), 255})"
+
+  - name: DRAWTEXTEX
+    raylib_name: DrawTextEx
+    args: [int, string, int, int, float, float, int, int, int]
+    ret: void
+    category: fonts
+    description: "Draw text with font at x,y with fontSize, spacing and RGB color (pass font ID, text, x, y, fontSize, spacing, R, G, B)"
+    working: true
+    custom_body: "DrawTextEx(*(Font*)args[0].as_int(), args[1].as_string().c_str(), Vector2{(float)args[2].as_int(), (float)args[3].as_int()}, args[4].as_number(), args[5].as_number(), Color{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255})"
+
+  - name: DRAWTEXTPRO
+    raylib_name: DrawTextPro
+    args: [int, string, int, int, float, float, float, float, int, int, int]
+    ret: void
+    category: fonts
+    description: "Draw text with font, rotation and RGB color (pass font ID, text, x, y, originX, originY, rotation, fontSize, spacing, R, G, B)"
+    working: true
+    custom_body: "DrawTextPro(*(Font*)args[0].as_int(), args[1].as_string().c_str(), Vector2{(float)args[2].as_int(), (float)args[3].as_int()}, Vector2{(float)args[4].as_number(), (float)args[5].as_number()}, args[6].as_number(), args[7].as_number(), args[8].as_number(), Color{(unsigned char)args[9].as_int(), (unsigned char)args[10].as_int(), (unsigned char)args[11].as_int(), 255})"
+
+  - name: DRAWTEXTCODEPOINT
+    raylib_name: DrawTextCodepoint
+    args: [int, int, int, int, int, int, int]
+    ret: void
+    category: fonts
+    description: "Draw one character (codepoint) with font at x,y with fontSize and RGB color (pass font ID, codepoint, x, y, fontSize, R, G, B)"
+    working: true
+    custom_body: "DrawTextCodepoint(*(Font*)args[0].as_int(), args[1].as_int(), Vector2{(float)args[2].as_int(), (float)args[3].as_int()}, args[4].as_number(), Color{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255})"
+
+  # === TEXT MEASUREMENT ===
+  - name: MEASURETEXT
+    raylib_name: MeasureText
+    args: [string, int]
+    ret: int
+    category: fonts
+    description: "Measure string width for default font (text, fontSize)"
+    working: true
+    custom_body: "MeasureText(args[0].as_string().c_str(), args[1].as_int())"
+
+  - name: MEASURETEXTEX
+    raylib_name: MeasureTextEx
+    args: [int, string, float, float]
+    ret: vector2
+    category: fonts
+    description: "Measure string size for font (pass font ID, text, fontSize, spacing)"
+    working: true
+    custom_body: "MeasureTextEx(*(Font*)args[0].as_int(), args[1].as_string().c_str(), args[2].as_number(), args[3].as_number())"
+
+
+
+  # === TEXT MANIPULATION ===
+  - name: TEXTISEQUAL
+    raylib_name: TextIsEqual
+    args: [string, string]
+    ret: bool
+    category: fonts
+    description: "Check if two text strings are equal"
+    working: true
+    custom_body: "TextIsEqual(args[0].as_string().c_str(), args[1].as_string().c_str())"
+
+  - name: TEXTLENGTH
+    raylib_name: TextLength
+    args: [string]
+    ret: int
+    category: fonts
+    description: "Get text length, checks for '\0' ending"
+    working: true
+    custom_body: "TextLength(args[0].as_string().c_str())"
+
+  - name: TEXTSUB
+    raylib_name: TextSubtext
+    args: [string, int, int]
+    ret: string
+    category: fonts
+    description: "Get a piece of a text string (text, position, length)"
+    working: true
+    custom_body: "TextSubtext(args[0].as_string().c_str(), args[1].as_int(), args[2].as_int())"
+
+
+
+  - name: TEXTFINDINDEX
+    raylib_name: TextFindIndex
+    args: [string, string]
+    ret: int
+    category: fonts
+    description: "Find first text occurrence within a string (text, find)"
+    working: true
+    custom_body: "TextFindIndex(args[0].as_string().c_str(), args[1].as_string().c_str())"
+
+  - name: TEXTTOLOWER
+    raylib_name: TextToLower
+    args: [string]
+    ret: string
+    category: fonts
+    description: "Get uppercase version of provided string"
+    working: true
+    custom_body: "TextToLower(args[0].as_string().c_str())"
+
+  - name: TEXTTOUPPER
+    raylib_name: TextToUpper
+    args: [string]
+    ret: string
+    category: fonts
+    description: "Get uppercase version of provided string"
+    working: true
+    custom_body: "TextToUpper(args[0].as_string().c_str())"
+
+  - name: TEXTTOPASCAL
+    raylib_name: TextToPascal
+    args: [string]
+    ret: string
+    category: fonts
+    description: "Get Pascal case notation version of provided string"
+    working: true
+    custom_body: "TextToPascal(args[0].as_string().c_str())"
+
+  - name: TEXTTOINTEGER
+    raylib_name: TextToInteger
+    args: [string]
+    ret: int
+    category: fonts
+    description: "Get integer value from text (negative values not supported)"
+    working: true
+    custom_body: "TextToInteger(args[0].as_string().c_str())"

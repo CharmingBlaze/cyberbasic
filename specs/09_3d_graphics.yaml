@@ -1,0 +1,177 @@
+# 3D Graphics System Functions
+# Models, meshes, materials, shaders, and 3D rendering
+# Following best practices: proper 3D graphics handling
+
+functions:
+  # === MODEL FUNCTIONS ===
+  - name: LOADMODEL
+    raylib_name: LoadModel
+    args: [string]
+    ret: model
+    category: 3d
+    description: "Load model from file"
+    working: true
+    custom_body: "LoadModel(args[0].as_string().c_str())"
+
+  - name: LOADMODELFROMMESH
+    raylib_name: LoadModelFromMesh
+    args: [int]
+    ret: model
+    category: 3d
+    description: "Load model from mesh (pass mesh ID)"
+    working: true
+    custom_body: "LoadModelFromMesh(*(Mesh*)args[0].as_int())"
+
+  - name: UNLOADMODEL
+    raylib_name: UnloadModel
+    args: [int]
+    ret: void
+    category: 3d
+    description: "Unload model from memory (pass model ID)"
+    working: true
+    custom_body: "UnloadModel(*(Model*)args[0].as_int())"
+
+  - name: DRAWMODEL
+    raylib_name: DrawModel
+    args: [int, int, int, int, float, int, int, int]
+    ret: void
+    category: 3d
+    description: "Draw model at x,y,z with scale and RGB color (pass model ID, x, y, z, scale, R, G, B)"
+    working: true
+    custom_body: "DrawModel(*(Model*)args[0].as_int(), Vector3{(float)args[1].as_int(), (float)args[2].as_int(), (float)args[3].as_int()}, args[4].as_number(), Color{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255})"
+
+  - name: DRAWMODELWIREFRAME
+    raylib_name: DrawModelWires
+    args: [int, int, int, int, float, int, int, int]
+    ret: void
+    category: 3d
+    description: "Draw model wireframe at x,y,z with scale and RGB color (pass model ID, x, y, z, scale, R, G, B)"
+    working: true
+    custom_body: "DrawModelWires(*(Model*)args[0].as_int(), Vector3{(float)args[1].as_int(), (float)args[2].as_int(), (float)args[3].as_int()}, args[4].as_number(), Color{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255})"
+
+  # === MESH FUNCTIONS ===
+
+
+  - name: UNLOADMESH
+    raylib_name: UnloadMesh
+    args: [int]
+    ret: void
+    category: 3d
+    description: "Unload mesh from memory (pass mesh ID)"
+    working: true
+    custom_body: "UnloadMesh(*(Mesh*)args[0].as_int())"
+
+
+
+
+
+  # === MATERIAL FUNCTIONS ===
+  - name: LOADMATERIAL
+    raylib_name: LoadMaterialDefault
+    args: []
+    ret: material
+    category: 3d
+    description: "Load default material"
+    working: true
+    custom_body: "LoadMaterialDefault()"
+
+  - name: UNLOADMATERIAL
+    raylib_name: UnloadMaterial
+    args: [int]
+    ret: void
+    category: 3d
+    description: "Unload material from memory (pass material ID)"
+    working: true
+    custom_body: "UnloadMaterial(*(Material*)args[0].as_int())"
+
+
+
+  # === SHADER FUNCTIONS ===
+  - name: LOADSHADER
+    raylib_name: LoadShader
+    args: [string, string]
+    ret: shader
+    category: 3d
+    description: "Load shader from files (vertex, fragment)"
+    working: true
+    custom_body: "LoadShader(args[0].as_string().c_str(), args[1].as_string().c_str())"
+
+  - name: LOADSHADERFROMMEMORY
+    raylib_name: LoadShaderFromMemory
+    args: [string, string]
+    ret: shader
+    category: 3d
+    description: "Load shader from memory (vertex, fragment)"
+    working: true
+    custom_body: "LoadShaderFromMemory(args[0].as_string().c_str(), args[1].as_string().c_str())"
+
+  - name: UNLOADSHADER
+    raylib_name: UnloadShader
+    args: [int]
+    ret: void
+    category: 3d
+    description: "Unload shader from memory (pass shader ID)"
+    working: true
+    custom_body: "UnloadShader(*(Shader*)args[0].as_int())"
+
+  - name: BEGINSHADERMODE
+    raylib_name: BeginShaderMode
+    args: [int]
+    ret: void
+    category: 3d
+    description: "Begin custom shader drawing (pass shader ID)"
+    working: true
+    custom_body: "BeginShaderMode(*(Shader*)args[0].as_int())"
+
+  - name: ENDSHADERMODE
+    raylib_name: EndShaderMode
+    args: []
+    ret: void
+    category: 3d
+    description: "End custom shader drawing"
+    working: true
+
+  # === 3D SHAPES ===
+  - name: DRAWSPHERE
+    raylib_name: DrawSphere
+    args: [int, int, int, float, int, int, int]
+    ret: void
+    category: 3d
+    description: "Draw sphere at x,y,z with radius and RGB color (x, y, z, radius, R, G, B)"
+    working: true
+    custom_body: "DrawSphere(Vector3{(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()}, args[3].as_number(), Color{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), 255})"
+
+  - name: DRAWSPHEREWIRES
+    raylib_name: DrawSphereWires
+    args: [int, int, int, float, int, int, int, int, int, int]
+    ret: void
+    category: 3d
+    description: "Draw sphere wireframe at x,y,z with radius, rings, slices and RGB color (x, y, z, radius, rings, slices, R, G, B)"
+    working: true
+    custom_body: "DrawSphereWires(Vector3{(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()}, args[3].as_number(), args[4].as_int(), args[5].as_int(), Color{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255})"
+
+  - name: DRAWCUBE
+    raylib_name: DrawCube
+    args: [int, int, int, float, float, float, int, int, int]
+    ret: void
+    category: 3d
+    description: "Draw cube at x,y,z with size and RGB color (x, y, z, width, height, length, R, G, B)"
+    working: true
+    custom_body: "DrawCube(Vector3{(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()}, args[3].as_number(), args[4].as_number(), args[5].as_number(), Color{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255})"
+
+  - name: DRAWCUBEWIRES
+    raylib_name: DrawCubeWires
+    args: [int, int, int, float, float, float, int, int, int]
+    ret: void
+    category: 3d
+    description: "Draw cube wireframe at x,y,z with size and RGB color (x, y, z, width, height, length, R, G, B)"
+    working: true
+    custom_body: "DrawCubeWires(Vector3{(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()}, args[3].as_number(), args[4].as_number(), args[5].as_number(), Color{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255})"
+
+
+
+  # === 3D CAMERA ===
+
+
+  # === 3D RENDERING ===
+

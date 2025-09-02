@@ -1,0 +1,177 @@
+functions:
+  # === INPUT & GAMEPAD SYSTEM ===
+  - name: ISKEYPRESSED
+    map_to: IsKeyPressed
+    args: [int]
+    ret: bool
+  
+  - name: ISKEYDOWN
+    map_to: IsKeyDown
+    args: [int]
+    ret: bool
+  
+  - name: ISKEYRELEASED
+    map_to: IsKeyReleased
+    args: [int]
+    ret: bool
+  
+  - name: ISKEYUP
+    map_to: IsKeyUp
+    args: [int]
+    ret: bool
+  
+  - name: GETKEYPRESSED
+    map_to: GetKeyPressed
+    args: []
+    ret: int
+  
+  - name: SETEXITKEY
+    map_to: SetExitKey
+    args: [int]
+    ret: void
+  
+  - name: ISMOUSEBUTTONPRESSED
+    map_to: IsMouseButtonPressed
+    args: [int]
+    ret: bool
+  
+  - name: ISMOUSEBUTTONDOWN
+    map_to: IsMouseButtonDown
+    args: [int]
+    ret: bool
+  
+  - name: ISMOUSEBUTTONRELEASED
+    map_to: IsMouseButtonReleased
+    args: [int]
+    ret: bool
+  
+  - name: ISMOUSEBUTTONUP
+    map_to: IsMouseButtonUp
+    args: [int]
+    ret: bool
+  
+  - name: GETMOUSEBUTTONPRESSED
+    map_to: GetMouseButtonPressed
+    args: []
+    ret: int
+  
+  - name: GETMOUSEX
+    map_to: GetMouseX
+    args: []
+    ret: int
+  
+  - name: GETMOUSEY
+    map_to: GetMouseY
+    args: []
+    ret: int
+  
+  - name: GETMOUSEPOSITION
+    map_to: GetMousePosition
+    args: []
+    ret: string
+    custom_body: |
+      ::Vector2 pos = ::GetMousePosition();
+      return Value::from_string(std::to_string((int)pos.x) + "," + std::to_string((int)pos.y));
+  
+  - name: SETMOUSEPOSITION
+    map_to: SetMousePosition
+    args: [int, int]
+    ret: void
+  
+  - name: SETMOUSEOFFSET
+    map_to: SetMouseOffset
+    args: [int, int]
+    ret: void
+  
+  - name: SETMOUSESCALE
+    map_to: SetMouseScale
+    args: [double, double]
+    ret: void
+  
+  - name: GETMOUSEWHEELMOVE
+    map_to: GetMouseWheelMove
+    args: []
+    ret: double
+  
+  - name: SETMOUSECURSOR
+    map_to: SetMouseCursor
+    args: [int]
+    ret: void
+  
+  - name: ISGAMEPADAVAILABLE
+    map_to: IsGamepadAvailable
+    args: [int]
+    ret: bool
+    custom_body: |
+      return Value::from_bool(::IsGamepadAvailable(args[0].as_int()));
+  
+  - name: GETGAMEPADNAME
+    map_to: GetGamepadName
+    args: [int]
+    ret: string
+    custom_body: |
+      return Value::from_string(::GetGamepadName(args[0].as_int()));
+  
+  - name: ISGAMEPADBUTTONPRESSED
+    map_to: IsGamepadButtonPressed
+    args: [int, int]
+    ret: bool
+    custom_body: |
+      return Value::from_bool(::IsGamepadButtonPressed(args[0].as_int(), args[1].as_int()));
+  
+  - name: ISGAMEPADBUTTONDOWN
+    map_to: IsGamepadButtonDown
+    args: [int, int]
+    ret: bool
+    custom_body: |
+      return Value::from_bool(::IsGamepadButtonDown(args[0].as_int(), args[1].as_int()));
+  
+  - name: ISGAMEPADBUTTONRELEASED
+    map_to: IsGamepadButtonReleased
+    args: [int, int]
+    ret: bool
+    custom_body: |
+      return Value::from_bool(::IsGamepadButtonReleased(args[0].as_int(), args[1].as_int()));
+  
+  - name: ISGAMEPADBUTTONUP
+    map_to: IsGamepadButtonUp
+    args: [int, int]
+    ret: bool
+    custom_body: |
+      return Value::from_bool(::IsGamepadButtonUp(args[0].as_int(), args[1].as_int()));
+  
+  - name: GETGAMEPADBUTTONPRESSED
+    map_to: GetGamepadButtonPressed
+    args: []
+    ret: int
+    custom_body: |
+      return Value::from_int(::GetGamepadButtonPressed());
+  
+  - name: GETGAMEPADAXISCOUNT
+    map_to: GetGamepadAxisCount
+    args: [int]
+    ret: int
+    custom_body: |
+      return Value::from_int(::GetGamepadAxisCount(args[0].as_int()));
+  
+  - name: GETGAMEPADAXISMOVEMENT
+    map_to: GetGamepadAxisMovement
+    args: [int, int]
+    ret: double
+    custom_body: |
+      return Value::from_number(::GetGamepadAxisMovement(args[0].as_int(), args[1].as_int()));
+  
+  - name: SETGAMEPADMAPPINGS
+    map_to: SetGamepadMappings
+    args: [string]
+    ret: int
+    custom_body: |
+      return Value::from_int(::SetGamepadMappings(args[0].as_string().c_str()));
+  
+  - name: SETGAMEPADVIBRATION
+    map_to: SetGamepadVibration
+    args: [int, double, double]
+    ret: void
+    custom_body: |
+      // SetGamepadVibration not available in current Raylib version
+      return Value::nil();

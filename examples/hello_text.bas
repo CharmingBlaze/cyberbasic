@@ -1,0 +1,2 @@
+PRINT "Hello BASIC"
+PRINT 1 + 2 * 3
