@@ -57,6 +57,11 @@ private:
 void register_builtins(FunctionRegistry&);
 void register_raylib_bindings(FunctionRegistry&);
 
+// Enhanced Game Development Systems
+void register_level_editor_functions(FunctionRegistry&);
+void register_asset_pipeline_functions(FunctionRegistry&);
+void register_sprite_animation_functions(FunctionRegistry&);
+
 // Call a native function by name with arguments.
 Value call(FunctionRegistry&, const std::string& name, const std::vector<Value>&);
 

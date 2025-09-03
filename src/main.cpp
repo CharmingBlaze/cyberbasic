@@ -251,6 +251,11 @@ int main(int argc, char** argv) {
     bas::register_lighting3d_functions(R);
     bas::register_models3d_functions(R);
     
+    // Enhanced game development systems
+    bas::register_level_editor_functions(R);
+    bas::register_asset_pipeline_functions(R);
+    bas::register_sprite_animation_functions(R);
+    
     if (debug_mode) {
         std::cout << "  Built-in functions registered: " << R.size() << std::endl;
     }

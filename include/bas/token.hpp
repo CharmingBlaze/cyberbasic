@@ -14,7 +14,9 @@ enum class Tok {
   LParen, RParen, Comma, Assign, Plus, Minus, Star, Slash, Mod,
   Eq, Neq, Lt, Lte, Gt, Gte, LBracket, RBracket,
   Select, Case, EndSelect, Is, Break, Continue, Do, Loop, Repeat, Until,
-  Var, Const
+  Var, Const,
+  Option, Explicit,
+  Local, Global
 };
 
 // Token with lexeme and position.

@@ -29,13 +29,39 @@ static bool is_verbose(){
 struct Env {
   std::unordered_map<std::string, Value> vars;
   std::unordered_set<std::string> consts;
+  std::unordered_set<std::string> declared;
+  std::unordered_set<std::string> globals_here; // names in this scope that should bind to root env
+  bool strict{false};
   const Env* parent{nullptr};
   static std::string up(const std::string& s){ std::string r; r.reserve(s.size()); for(char c:s) r.push_back((char)std::toupper((unsigned char)c)); return r; }
+  bool is_declared_here(const std::string& ukey) const { return declared.find(ukey) != declared.end(); }
+  bool is_declared(const std::string& n) const {
+    auto key = up(n);
+    if(is_declared_here(key)) return true;
+    return parent ? parent->is_declared(n) : false;
+  }
+  void declare(const std::string& n){ declared.insert(up(n)); }
+  bool is_global_here(const std::string& ukey) const { return globals_here.find(ukey) != globals_here.end(); }
+  Env* root(){ Env* r = this; while(r->parent) r = const_cast<Env*>(r->parent); return r; }
+  const Env* root() const { auto* r = this; while(r->parent) r = r->parent; return r; }
   Value get(const std::string& n) const {
     auto key = up(n);
+    // If marked GLOBAL in this scope, read from root env
+    if(is_global_here(key)){
+      const Env* r = root();
+      auto it = r->vars.find(key);
+      if(it!=r->vars.end()) return it->second;
+      if(strict && !r->is_declared(n)){
+        throw std::runtime_error("Use of undeclared variable '" + key + "'");
+      }
+      return Value::nil();
+    }
     auto it = vars.find(key);
     if(it!=vars.end()) return it->second;
     if(parent) return parent->get(n);
+    if(strict && !is_declared(n)){
+      throw std::runtime_error("Use of undeclared variable '" + key + "'");
+    }
     return Value::nil();
   }
   bool is_const_here(const std::string& ukey) const { return consts.find(ukey) != consts.end(); }
@@ -49,11 +75,27 @@ struct Env {
     // Defining a const shades any parent value; local const wins
     vars[key] = std::move(v);
     consts.insert(key);
+    declare(n);
   }
   void set(const std::string& n, Value v){
     auto key = up(n);
+    if(is_global_here(key)){
+      // Route assignment to root env but enforce const/strict using current scope's rules
+      Env* r = root();
+      if(r->is_const(n)){
+        throw std::runtime_error("Assignment to constant '" + key + "'");
+      }
+      if(strict && !r->is_declared(n)){
+        throw std::runtime_error("Assignment to undeclared variable '" + key + "'");
+      }
+      r->vars[key] = std::move(v);
+      return;
+    }
     if(is_const(key)){
       throw std::runtime_error("Assignment to constant '" + key + "'");
+    }
+    if(strict && !is_declared(n)){
+      throw std::runtime_error("Assignment to undeclared variable '" + key + "'");
     }
     vars[key]=std::move(v);
   }
@@ -285,12 +327,37 @@ static Value eval(Env& env, FunctionRegistry& R, const Expr* e){
 }
 
 static void exec(Env& env, FunctionRegistry& R, const Stmt* s){
+  if(auto ox = dynamic_cast<const OptionExplicit*>(s)){
+    env.strict = ox->enabled;
+    return;
+  }
+  if(auto ld = dynamic_cast<const LocalDecl*>(s)){
+    // Declare locals and create a local slot (nil) so they shadow outer/global
+    for(const auto& name : ld->names){
+      env.declare(name);
+      env.vars[Env::up(name)] = Value::nil();
+    }
+    return;
+  }
+  if(auto gd = dynamic_cast<const GlobalDecl*>(s)){
+    // Mark names as global in this scope; declare at root if in strict mode
+    for(const auto& name : gd->names){
+      const std::string key = Env::up(name);
+      env.globals_here.insert(key);
+      Env* r = env.root();
+      if(env.strict && !r->is_declared(name)){
+        r->declare(name);
+      }
+    }
+    return;
+  }
   if(auto p = dynamic_cast<const Print*>(s)){
     Value v = eval(env,R,p->value.get());
     call(R, "PRINT", {v});
     return;
   }
   if(auto l = dynamic_cast<const Let*>(s)){
+    env.declare(l->name);
     env.set(l->name, eval(env,R,l->value.get())); return;
   }
   if(auto cd = dynamic_cast<const ConstDecl*>(s)){
@@ -329,6 +396,7 @@ static void exec(Env& env, FunctionRegistry& R, const Stmt* s){
     double init = eval(env,R,f->init.get()).as_number();
     double limit = eval(env,R,f->limit.get()).as_number();
     double step = f->step ? eval(env,R,f->step.get()).as_number() : 1.0;
+    env.declare(f->var);
     env.set(f->var, Value::from_number(init));
     auto cond = [&](double v){ return step >= 0 ? (v <= limit) : (v >= limit); };
     while(cond(env.get(f->var).as_number())){
@@ -399,6 +467,7 @@ static void exec(Env& env, FunctionRegistry& R, const Stmt* s){
   }
   if(auto d = dynamic_cast<const Dim*>(s)){
     Value v = make_array_from_sizes(env, R, d->sizes, 0);
+    env.declare(d->name);
     env.set(d->name, std::move(v));
     return;
   }
@@ -538,10 +607,13 @@ static void call_sub(Env& caller, FunctionRegistry& R, const std::string& name, 
   auto it = g_subs.find(Env::up(name));
   if(it==g_subs.end()) return;
   const SubDecl* sd = it->second;
-  Env local; local.parent = &caller;
+  Env local; local.parent = &caller; local.strict = caller.strict;
   // Bind parameters
   size_t n = std::min(sd->params.size(), args.size());
-  for(size_t i=0;i<n;++i) local.set(sd->params[i], args[i]);
+  for(size_t i=0;i<n;++i){
+    local.declare(sd->params[i]);
+    local.set(sd->params[i], args[i]);
+  }
   try{
     for(auto& s : sd->body) exec(local, R, s.get());
   } catch(const ReturnSignal&){ /* swallow */ }
@@ -551,9 +623,12 @@ static Value call_func(Env& caller, FunctionRegistry& R, const std::string& name
   auto it = g_funcs.find(Env::up(name));
   if(it==g_funcs.end()) return Value::nil();
   const FunctionDecl* fd = it->second;
-  Env local; local.parent = &caller;
+  Env local; local.parent = &caller; local.strict = caller.strict;
   size_t n = std::min(fd->params.size(), args.size());
-  for(size_t i=0;i<n;++i) local.set(fd->params[i], args[i]);
+  for(size_t i=0;i<n;++i){
+    local.declare(fd->params[i]);
+    local.set(fd->params[i], args[i]);
+  }
   try{
     for(auto& s : fd->body) exec(local, R, s.get());
   } catch(const ReturnSignal& rs){ return rs.v; }

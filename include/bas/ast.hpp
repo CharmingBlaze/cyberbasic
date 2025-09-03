@@ -47,9 +47,13 @@ struct ArrayLiteral : Expr {
 };
 
 struct Stmt { virtual ~Stmt() = default; };
+// OPTION EXPLICIT directive (enable strict undeclared-variable checks)
+struct OptionExplicit : Stmt { bool enabled{true}; };
 struct Let : Stmt { std::string name; std::unique_ptr<Expr> value; };
 struct ConstDecl : Stmt { std::string name; std::unique_ptr<Expr> value; };
 struct Assign : Stmt { std::string name; std::unique_ptr<Expr> value; };
+struct LocalDecl : Stmt { std::vector<std::string> names; };
+struct GlobalDecl : Stmt { std::vector<std::string> names; };
 struct Print : Stmt { std::unique_ptr<Expr> value; };
 struct ExprStmt : Stmt { std::unique_ptr<Expr> expr; };
 struct CallStmt : Stmt { std::string name; std::vector<std::unique_ptr<Expr>> args; };

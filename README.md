@@ -142,6 +142,35 @@ Run the included test programs:
 - **File I/O**: `OPEN`, `CLOSE`, `READ`, `WRITE`, `INPUT`
 - **Built-in Functions**: Math, string manipulation, file operations
 
+### Scoping and Strict Mode (Optional)
+
+CyberBasic supports optional strict declaration and explicit scope controls. These are opt-in and maintain backward compatibility:
+
+- OPTION EXPLICIT: Enable strict undeclared-variable checks per file.
+- LOCAL: Declare names as locals within the current SUB/FUNCTION (shadows outer/global).
+- GLOBAL: Within a SUB/FUNCTION, bind names to the program's root/global environment.
+
+Example:
+
+```basic
+OPTION EXPLICIT
+
+GLOBAL score
+LET score = 0
+
+SUB AddPoints(p)
+  LOCAL temp
+  LET temp = p
+  GLOBAL score
+  LET score = score + temp
+ENDSUB
+
+CALL AddPoints(10)
+PRINT score  ' 10
+```
+
+See `examples/local_global_demo.bas` for a complete demo.
+
 ## Raylib Integration
 
 All 517 Raylib functions are available:

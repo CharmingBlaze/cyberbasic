@@ -81,9 +81,26 @@
 
 * `CONST PI AS DOUBLE = 3.141592653589793`
 
-**Scope Modifiers**
+**Strict Mode (Optional)**
 
-* `GLOBAL`, `LOCAL`, `STATIC` (for persistent locals)
+* `OPTION EXPLICIT` (per file) enables strict undeclared-variable checks.
+  * Assigning/reading an undeclared name raises an error.
+  * Declarations (see below) or prior `LET` at scope establish names.
+
+**Scope Modifiers (Optional)**
+
+These are opt-in and preserve backward compatibility. If unused, the default behavior remains unchanged.
+
+* `LOCAL name1, name2, ...`
+  * Declares names local to the current `SUB`/`FUNCTION`.
+  * Locals shadow outer/global variables and are initialized to `NULL`.
+  * Helps satisfy `OPTION EXPLICIT` without assigning immediately.
+
+* `GLOBAL name1, name2, ...`
+  * Inside a `SUB`/`FUNCTION`, binds these names to the program's root/global environment for reads and writes.
+  * With `OPTION EXPLICIT`, declaring `GLOBAL` ensures the name is declared at the root.
+
+* `STATIC` (planned) – persistent locals across calls.
 
 **User Types (UDT / Records)**
 

@@ -59,4 +59,9 @@ namespace bas {
     void register_ai_bindings(FunctionRegistry& R);
     void register_navigation_bindings(FunctionRegistry& R);
     void register_physics_bindings(FunctionRegistry& R);
+    
+    // Enhanced Game Development Systems
+    void register_level_editor_functions(FunctionRegistry& R);
+    void register_asset_pipeline_functions(FunctionRegistry& R);
+    void register_sprite_animation_functions(FunctionRegistry& R);
 }

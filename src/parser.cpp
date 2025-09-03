@@ -27,6 +27,65 @@ Program Parser::parse(){
 std::unique_ptr<Stmt> Parser::statement(){
   skipNewlines();
   const Token& t = peek();
+  if(t.kind==Tok::Option){
+    // OPTION EXPLICIT
+    advance();
+    if(!check(Tok::Explicit)){
+      diag.err(peek().line, peek().col,
+               "OPTION directive: expected EXPLICIT",
+               "Use: OPTION EXPLICIT",
+               "OPTION EXPLICIT");
+      return nullptr;
+    }
+    advance();
+    auto s = std::make_unique<OptionExplicit>();
+    s->enabled = true;
+    return s;
+  }
+  if(t.kind==Tok::Local){
+    advance();
+    auto node = std::make_unique<LocalDecl>();
+    if(!check(Tok::Ident)){
+      diag.err(peek().line, peek().col,
+               "LOCAL: expected one or more variable names",
+               "Use: LOCAL a[, b, c]",
+               "LOCAL x, y");
+      return nullptr;
+    }
+    do {
+      node->names.push_back(advance().lex);
+    } while(check(Tok::Comma) && (advance(), check(Tok::Ident)));
+    if(check(Tok::Comma)){
+      diag.err(peek().line, peek().col,
+               "LOCAL: trailing comma without name",
+               "Remove trailing comma",
+               "LOCAL a, b");
+      return nullptr;
+    }
+    return node;
+  }
+  if(t.kind==Tok::Global){
+    advance();
+    auto node = std::make_unique<GlobalDecl>();
+    if(!check(Tok::Ident)){
+      diag.err(peek().line, peek().col,
+               "GLOBAL: expected one or more variable names",
+               "Use: GLOBAL a[, b, c]",
+               "GLOBAL x, y");
+      return nullptr;
+    }
+    do {
+      node->names.push_back(advance().lex);
+    } while(check(Tok::Comma) && (advance(), check(Tok::Ident)));
+    if(check(Tok::Comma)){
+      diag.err(peek().line, peek().col,
+               "GLOBAL: trailing comma without name",
+               "Remove trailing comma",
+               "GLOBAL a, b");
+      return nullptr;
+    }
+    return node;
+  }
   if(t.kind==Tok::Let){
     advance();
     if(!check(Tok::Ident)){
