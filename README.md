@@ -1,14 +1,18 @@
 # CyberBasic
 
+![CyberBasic Logo](images/logo.png)
+
+*Above: The official logo for CyberBasic, a modern take on classic BASIC programming.*
+
 **The Modern BASIC Language for Game Development**
 
 CyberBasic combines the simplicity and elegance of classic BASIC programming with the full power of modern game development. Write games, graphics applications, and interactive programs using familiar BASIC syntax while leveraging the complete Raylib graphics library.
 
-![CyberBasic Pong Game](https://github.com/CharmingBlaze/cyberbasic/raw/main/pong_screenshot.png)
+![CyberBasic Pong Game](images/CyberBasicPong.png)
 
 *Above: A fully functional Pong game written in CyberBasic, demonstrating real-time graphics, input handling, and collision detection.*
 
-![CyberBasic Smooth Animation Demo](https://github.com/CharmingBlaze/cyberbasic/raw/main/animation_demo_screenshot.png)
+![CyberBasic Smooth Animation Demo](images/smoothanimationdemo.png)
 
 *Above: A smooth animation demo showcasing real-time graphics, particle effects, smooth movement, and performance metrics - all in just a few lines of BASIC code.*
 
