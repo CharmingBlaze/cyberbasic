@@ -38,8 +38,8 @@ WHILE running AND NOT WINDOWSHOULDCLOSE()
     
     REM Print counter every 10 frames (without MOD operator)
     IF counter = 10 OR counter = 20 OR counter = 30 OR counter = 40 OR counter = 50 OR counter = 60 OR counter = 70 OR counter = 80 OR counter = 90 OR counter = 100 THEN
-        PRINT "Counter: " + STR(counter)
-    ENDIF
+    PRINT "Counter: " + STR(counter)
+ENDIF
     
     BEGINDRAW()
     

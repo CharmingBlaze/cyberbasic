@@ -27,10 +27,18 @@ LET path_found = 0
 REM Game loop
 WHILE NOT WINDOWSHOULDCLOSE()
     REM Handle input
-    IF ISKEYDOWN(87) THEN LET player_y = player_y - player_speed ENDIF
-    IF ISKEYDOWN(83) THEN LET player_y = player_y + player_speed ENDIF
-    IF ISKEYDOWN(65) THEN LET player_x = player_x - player_speed ENDIF
-    IF ISKEYDOWN(68) THEN LET player_x = player_x + player_speed ENDIF
+    IF ISKEYDOWN(87) THEN
+        LET player_y = player_y - player_speed
+    ENDIF
+    IF ISKEYDOWN(83) THEN
+        LET player_y = player_y + player_speed
+    ENDIF
+    IF ISKEYDOWN(65) THEN
+        LET player_x = player_x - player_speed
+    ENDIF
+    IF ISKEYDOWN(68) THEN
+        LET player_x = player_x + player_speed
+    ENDIF
     
     REM Set target with mouse
     IF ISMOUSEBUTTONPRESSED(0) THEN
@@ -60,10 +68,18 @@ WHILE NOT WINDOWSHOULDCLOSE()
     ENDIF
     
     REM Keep player on screen
-    IF player_x < 0 THEN LET player_x = 0 ENDIF
-    IF player_x > 800 THEN LET player_x = 800 ENDIF
-    IF player_y < 0 THEN LET player_y = 0 ENDIF
-    IF player_y > 600 THEN LET player_y = 600 ENDIF
+    IF player_x < 0 THEN
+        LET player_x = 0
+    ENDIF
+    IF player_x > 800 THEN
+        LET player_x = 800
+    ENDIF
+    IF player_y < 0 THEN
+        LET player_y = 0
+    ENDIF
+    IF player_y > 600 THEN
+        LET player_y = 600
+    ENDIF
     
     REM Drawing
     BEGINDRAW()

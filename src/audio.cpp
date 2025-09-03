@@ -794,10 +794,10 @@ void register_audio_functions(FunctionRegistry& registry) {
     registry.add("INITAUDIO", NativeFn{"INITAUDIO", 0, audio_init_system});
     registry.add("CREATESOUNDEFFECT", NativeFn{"CREATESOUNDEFFECT", 2, audio_create_sound_effect});
     registry.add("CREATEMUSICTRACK", NativeFn{"CREATEMUSICTRACK", 2, audio_create_music_track});
-    registry.add("PLAYSOUND", NativeFn{"PLAYSOUND", 1, audio_play_sound});
-    registry.add("PLAYMUSIC", NativeFn{"PLAYMUSIC", 1, audio_play_music});
-    registry.add("SETMASTERVOLUME", NativeFn{"SETMASTERVOLUME", 1, audio_set_master_volume});
-    registry.add("SETMUSICVOLUME", NativeFn{"SETMUSICVOLUME", 1, audio_set_music_volume});
+
+
+
+
     registry.add("SETSFXVOLUME", NativeFn{"SETSFXVOLUME", 1, audio_set_sfx_volume});
     registry.add("CREATEREVERBEFFECT", NativeFn{"CREATEREVERBEFFECT", 1, audio_create_reverb_effect});
     registry.add("UPDATEAUDIOSYSTEM", NativeFn{"UPDATEAUDIOSYSTEM", 0, audio_update_audio_system});

@@ -2,10 +2,10 @@ REM Minimal sprite demo
 REM Ensure you have an image file, e.g. player.png, in project root
 
 SETWINDOWSIZE 640, 360
-sid = LOADIMAGE("player.png")
-sp = CREATESPRITE(sid)
+LET sid = LOADIMAGE("player.png")
+LET sp = CREATESPRITE(sid)
 SETSPRITESIZE sp, 128, 128
-x = 100 : y = 100
+LET x = 100 : y = 100
 SETSYNCRATE 60
 DO
   CLS

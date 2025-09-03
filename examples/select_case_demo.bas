@@ -1,5 +1,5 @@
 PRINT "-- SELECT CASE Demo --"
-value = INPUT("Enter a value (1, 2, hello): ")
+LET value = INPUT("Enter a value (1, 2, hello): ")
 SELECT CASE value
 CASE "1", 1
   PRINT "Got one"

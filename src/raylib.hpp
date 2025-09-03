@@ -52,4 +52,11 @@ namespace bas {
     void register_remaining_raylib_bindings(FunctionRegistry& R);
     void register_platform_specific_bindings(FunctionRegistry& R);
     void register_custom_cyberbasic_bindings(FunctionRegistry& R);
+    
+    // Game Programming Systems
+    void register_game_systems_bindings(FunctionRegistry& R);
+    void register_networking_bindings(FunctionRegistry& R);
+    void register_ai_bindings(FunctionRegistry& R);
+    void register_navigation_bindings(FunctionRegistry& R);
+    void register_physics_bindings(FunctionRegistry& R);
 }

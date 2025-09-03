@@ -672,7 +672,7 @@ void NavigationSystem::remove_path_3d(int path_id) {
 }
 
 float NavigationSystem::calculate_distance_3d(float x1, float y1, float z1, float x2, float y2, float z2) const {
-    return calculate_distance_3d(Point3D(x1, y1, z1), Point3D(x2, y2, z2));
+    return std::sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1) + (z2-z1)*(z2-z1));
 }
 
 Point3D NavigationSystem::get_random_walkable_point_3d() const {

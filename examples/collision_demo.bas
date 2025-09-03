@@ -27,16 +27,32 @@ WHILE running AND NOT WINDOWSHOULDCLOSE()
     LET game_time = game_time + 1
     
     REM Handle input
-    IF ISKEYDOWN(87) THEN LET player_y = player_y - player_speed ENDIF
-    IF ISKEYDOWN(83) THEN LET player_y = player_y + player_speed ENDIF
-    IF ISKEYDOWN(65) THEN LET player_x = player_x - player_speed ENDIF
-    IF ISKEYDOWN(68) THEN LET player_x = player_x + player_speed ENDIF
+    IF ISKEYDOWN(87) THEN
+        LET player_y = player_y - player_speed
+    ENDIF
+    IF ISKEYDOWN(83) THEN
+        LET player_y = player_y + player_speed
+    ENDIF
+    IF ISKEYDOWN(65) THEN
+        LET player_x = player_x - player_speed
+    ENDIF
+    IF ISKEYDOWN(68) THEN
+        LET player_x = player_x + player_speed
+    ENDIF
     
     REM Keep player on screen
-    IF player_x < 0 THEN LET player_x = 0 ENDIF
-    IF player_x > 800 - player_w THEN LET player_x = 800 - player_w ENDIF
-    IF player_y < 0 THEN LET player_y = 0 ENDIF
-    IF player_y > 600 - player_h THEN LET player_y = 0 ENDIF
+    IF player_x < 0 THEN
+        LET player_x = 0
+    ENDIF
+    IF player_x > 800 - player_w THEN
+        LET player_x = 800 - player_w
+    ENDIF
+    IF player_y < 0 THEN
+        LET player_y = 0
+    ENDIF
+    IF player_y > 600 - player_h THEN
+        LET player_y = 0
+    ENDIF
     
     REM Check collisions
     LET hit_obstacle = COLLISIONRECTANGLES(player_x, player_y, player_w, player_h, obstacle_x, obstacle_y, obstacle_w, obstacle_h)
@@ -79,19 +95,31 @@ WHILE running AND NOT WINDOWSHOULDCLOSE()
     
     REM Draw obstacle (red)
     LET obstacle_color = 255
-    IF hit_obstacle THEN LET obstacle_color = 255 ELSE LET obstacle_color = 200 ENDIF
+    IF hit_obstacle THEN
+        LET obstacle_color = 255
+    ELSE
+        LET obstacle_color = 200
+    ENDIF
     DRAWRECTANGLE(obstacle_x, obstacle_y, obstacle_w, obstacle_h, obstacle_color, 0, 0)
     DRAWTEXT("Obstacle", obstacle_x, obstacle_y - 20, 16, 255, 255, 255)
     
     REM Draw target (green)
     LET target_color = 0
-    IF hit_target THEN LET target_color = 100 ELSE LET target_color = 255 ENDIF
+    IF hit_target THEN
+        LET target_color = 100
+    ELSE
+        LET target_color = 255
+    ENDIF
     DRAWRECTANGLE(target_x, target_y, target_w, target_h, 0, target_color, 0)
     DRAWTEXT("Target", target_x, target_y - 20, 16, 255, 255, 255)
     
     REM Draw player (blue, changes color on collision)
     LET player_color = 0
-    IF hit_obstacle THEN LET player_color = 255 ELSE LET player_color = 100 ENDIF
+    IF hit_obstacle THEN
+        LET player_color = 255
+    ELSE
+        LET player_color = 100
+    ENDIF
     DRAWRECTANGLE(player_x, player_y, player_w, player_h, 0, 0, player_color)
     DRAWTEXT("Player", player_x, player_y - 20, 16, 255, 255, 255)
     
@@ -128,7 +156,9 @@ WHILE running AND NOT WINDOWSHOULDCLOSE()
     ENDDRAW()
     
     REM Exit on ESC
-    IF ISKEYPRESSED(256) THEN LET running = FALSE ENDIF
+    IF ISKEYPRESSED(256) THEN
+        LET running = FALSE
+    ENDIF
 WEND
 
 CLOSEWINDOW()

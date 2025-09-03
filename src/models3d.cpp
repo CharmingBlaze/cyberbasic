@@ -571,7 +571,7 @@ Value models3d_load_model(const std::vector<Value>& args) {
     if (!g_model_system_3d) g_model_system_3d = std::make_unique<ModelSystem3D>();
     std::string name = args[0].as_string();
     std::string file_path = args[1].as_string();
-    return Value(g_model_system_3d->load_model(name, file_path));
+    return Value::from_int(g_model_system_3d->load_model(name, file_path));
 }
 
 Value models3d_unload_model(const std::vector<Value>& args) {
@@ -615,7 +615,7 @@ Value models3d_create_material(const std::vector<Value>& args) {
     else if (type_str == "BLINN_PHONG") type = MaterialType::BLINN_PHONG;
     else if (type_str == "EMISSIVE") type = MaterialType::EMISSIVE;
     
-    return Value(g_model_system_3d->create_material(name, type));
+    return Value::from_int(g_model_system_3d->create_material(name, type));
 }
 
 Value models3d_set_material_color(const std::vector<Value>& args) {
@@ -641,7 +641,7 @@ Value models3d_create_animation(const std::vector<Value>& args) {
     else if (type_str == "MORPH_TARGET") type = AnimationType::MORPH_TARGET;
     else if (type_str == "SKELETAL") type = AnimationType::SKELETAL;
     
-    return Value(g_model_system_3d->create_animation(name, type));
+    return Value::from_int(g_model_system_3d->create_animation(name, type));
 }
 
 Value models3d_play_animation(const std::vector<Value>& args) {
@@ -666,25 +666,30 @@ Value models3d_create_cube(const std::vector<Value>& args) {
     if (!g_model_system_3d) g_model_system_3d = std::make_unique<ModelSystem3D>();
     std::string name = args[0].as_string();
     float size = args[1].as_number();
-    return Value(g_model_system_3d->create_cube_model(name, size));
+    return Value::from_int(g_model_system_3d->create_cube_model(name, size));
 }
 
 Value models3d_create_sphere(const std::vector<Value>& args) {
     if (!g_model_system_3d) g_model_system_3d = std::make_unique<ModelSystem3D>();
     std::string name = args[0].as_string();
     float radius = args[1].as_number();
-    return Value(g_model_system_3d->create_sphere_model(name, radius));
+    return Value::from_int(g_model_system_3d->create_sphere_model(name, radius));
 }
 
 Value models3d_get_position(const std::vector<Value>& args) {
     if (!g_model_system_3d) return Value::nil();
     Vector3D pos = g_model_system_3d->get_model_position(args[0].as_int());
-    return Value(std::vector<Value>{Value(pos.x), Value(pos.y), Value(pos.z)});
+    Value::Array pos_array;
+    pos_array.push_back(Value::from_number(pos.x));
+    pos_array.push_back(Value::from_number(pos.y));
+    pos_array.push_back(Value::from_number(pos.z));
+    return Value::from_array(pos_array);
 }
 
 Value models3d_get_count(const std::vector<Value>& args) {
-    if (!g_model_system_3d) return Value(0);
-    return Value(g_model_system_3d->get_model_count());
+    (void)args; // Suppress unused parameter warning
+    if (!g_model_system_3d) return Value::from_int(0);
+    return Value::from_int(g_model_system_3d->get_model_count());
 }
 
 void register_models3d_functions(FunctionRegistry& registry) {

@@ -585,7 +585,7 @@ Value camera3d_create_camera(const std::vector<Value>& args) {
     
     CameraMode3D camera_mode = static_cast<CameraMode3D>(mode);
     int id = g_camera_system_3d->create_camera(name, camera_mode);
-    return Value::number(id);
+    return Value::from_int(id);
 }
 
 Value camera3d_set_position(const std::vector<Value>& args) {
@@ -657,7 +657,11 @@ Value camera3d_get_position(const std::vector<Value>& args) {
     
     if (g_camera_system_3d) {
         Vector3D pos = g_camera_system_3d->get_camera_position(camera_id);
-        return Value::array({Value::number(pos.x), Value::number(pos.y), Value::number(pos.z)});
+        Value::Array pos_array;
+        pos_array.push_back(Value::from_number(pos.x));
+        pos_array.push_back(Value::from_number(pos.y));
+        pos_array.push_back(Value::from_number(pos.z));
+        return Value::from_array(pos_array);
     }
     return Value::nil();
 }
@@ -669,7 +673,11 @@ Value camera3d_get_target(const std::vector<Value>& args) {
     
     if (g_camera_system_3d) {
         Vector3D target = g_camera_system_3d->get_camera_target(camera_id);
-        return Value::array({Value::number(target.x), Value::number(target.y), Value::number(target.z)});
+        Value::Array target_array;
+        target_array.push_back(Value::from_number(target.x));
+        target_array.push_back(Value::from_number(target.y));
+        target_array.push_back(Value::from_number(target.z));
+        return Value::from_array(target_array);
     }
     return Value::nil();
 }
@@ -678,9 +686,9 @@ Value camera3d_get_count(const std::vector<Value>& args) {
     (void)args; // Suppress unused parameter warning
     
     if (g_camera_system_3d) {
-        return Value::number(g_camera_system_3d->get_camera_count());
+        return Value::from_int(g_camera_system_3d->get_camera_count());
     }
-    return Value::number(0);
+    return Value::from_int(0);
 }
 
 // Function registration

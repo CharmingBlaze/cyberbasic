@@ -2,6 +2,7 @@
 
 #include "value.hpp"
 #include "runtime.hpp"
+#include "vector3d.hpp"
 #include <vector>
 #include <memory>
 #include <functional>
@@ -11,7 +12,6 @@ namespace bas {
 
 // Forward declarations
 struct Vector2D;
-struct Vector3D;
 struct RigidBody;
 struct PhysicsJoint;
 class PhysicsWorld;
@@ -27,16 +27,7 @@ struct Vector2D {
     Vector2D normalized() const { float len = length(); return len > 0 ? Vector2D(x / len, y / len) : Vector2D(0, 0); }
 };
 
-// 3D Vector
-struct Vector3D {
-    float x, y, z;
-    Vector3D(float x = 0, float y = 0, float z = 0) : x(x), y(y), z(z) {}
-    Vector3D operator+(const Vector3D& other) const { return Vector3D(x + other.x, y + other.y, z + other.z); }
-    Vector3D operator-(const Vector3D& other) const { return Vector3D(x - other.x, y - other.y, z - other.z); }
-    Vector3D operator*(float scalar) const { return Vector3D(x * scalar, y * scalar, z * scalar); }
-    float length() const { return std::sqrt(x * x + y * y + z * z); }
-    Vector3D normalized() const { float len = length(); return len > 0 ? Vector3D(x / len, y / len, z / len) : Vector3D(0, 0, 0); }
-};
+
 
 // Physics body types
 enum class BodyType {

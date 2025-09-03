@@ -37,8 +37,8 @@ WHILE running AND NOT WINDOWSHOULDCLOSE()
     ENDIF
     
     IF counter MOD 10 = 0 THEN
-        PRINT "Counter: " + STR(counter)
-    ENDIF
+    PRINT "Counter: " + STR(counter)
+ENDIF
     
     BEGINDRAW()
     

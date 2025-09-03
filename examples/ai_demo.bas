@@ -103,8 +103,12 @@ WHILE NOT WINDOWSHOULDCLOSE()
     ENDIF
     
     REM Keep health in bounds
-    IF player_health < 0 THEN LET player_health = 0 ENDIF
-    IF player_health > max_health THEN LET player_health = max_health ENDIF
+    IF player_health < 0 THEN
+        LET player_health = 0
+    ENDIF
+    IF player_health > max_health THEN
+        LET player_health = max_health
+    ENDIF
     
     REM Drawing
     BEGINDRAW()

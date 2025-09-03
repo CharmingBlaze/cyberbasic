@@ -47,6 +47,7 @@ WHILE NOT WINDOWSHOULDCLOSE()
     IF ISKEYPRESSED(82) THEN  REM R to reset
         REM Remove all bodies except ground
         REM (In a real implementation, you'd track body IDs)
+        PRINT "Reset key pressed (not implemented)"
     ENDIF
     
     REM Apply forces with mouse

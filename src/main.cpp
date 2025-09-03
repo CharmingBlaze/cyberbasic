@@ -11,6 +11,7 @@
 #include "bas/camera3d.hpp"
 #include "bas/lighting3d.hpp"
 #include "bas/models3d.hpp"
+#include "bas/game_systems.hpp"
 #include <fstream>
 #include <iostream>
 #include <iterator>
@@ -231,8 +232,15 @@ int main(int argc, char** argv) {
     // Runtime setup
     if (debug_mode) std::cout << "Phase 3: Runtime Setup..." << std::endl;
     bas::FunctionRegistry R;
+    
+    // Core BASIC functions
     bas::register_builtins(R);
+    
+    // Raylib graphics and multimedia
     bas::register_raylib_bindings(R);
+    
+    // Game programming systems
+    bas::register_game_systems_bindings(R);
     bas::register_navigation_functions(R);
     bas::register_physics_functions(R);
     bas::register_ai_functions(R);

@@ -333,9 +333,9 @@ Vector3D LightingSystem3D::calculate_lighting(const Vector3D& point, const Vecto
     for (const auto& light : lights) {
         if (!light->enabled) continue;
         
-        Vector3D light_direction = calculate_light_direction(*light, point);
+        Vector3D light_direction = const_cast<LightingSystem3D*>(this)->calculate_light_direction(*light, point);
         float distance = (light->position - point).length();
-        float attenuation = calculate_attenuation(*light, distance);
+        float attenuation = const_cast<LightingSystem3D*>(this)->calculate_attenuation(*light, distance);
         
         // Diffuse lighting
         float diffuse = std::max(0.0f, normal.dot(light_direction));
@@ -354,6 +354,7 @@ Vector3D LightingSystem3D::calculate_lighting(const Vector3D& point, const Vecto
 }
 
 float LightingSystem3D::calculate_shadow_factor(const Vector3D& point, int light_id) const {
+    (void)point; // Suppress unused parameter warning
     const Light3D* light = const_cast<LightingSystem3D*>(this)->get_light(light_id);
     if (!light || !light->cast_shadows) return 1.0f;
     
@@ -390,7 +391,7 @@ float LightingSystem3D::calculate_attenuation(const Light3D& light, float distan
 Vector3D LightingSystem3D::calculate_light_direction(const Light3D& light, const Vector3D& point) {
     switch (light.type) {
         case LightType3D::DIRECTIONAL:
-            return -light.direction;
+            return Vector3D(-light.direction.x, -light.direction.y, -light.direction.z);
         case LightType3D::POINT:
         case LightType3D::SPOT:
         case LightType3D::AREA:
@@ -434,7 +435,7 @@ Value lighting3d_create_light(const std::vector<Value>& args) {
     
     LightType3D light_type = static_cast<LightType3D>(type);
     int id = g_lighting_system_3d->create_light(name, light_type);
-    return Value::number(id);
+    return Value::from_int(id);
 }
 
 Value lighting3d_set_position(const std::vector<Value>& args) {
@@ -504,9 +505,9 @@ Value lighting3d_get_count(const std::vector<Value>& args) {
     (void)args; // Suppress unused parameter warning
     
     if (g_lighting_system_3d) {
-        return Value::number(g_lighting_system_3d->get_light_count());
+        return Value::from_int(g_lighting_system_3d->get_light_count());
     }
-    return Value::number(0);
+    return Value::from_int(0);
 }
 
 // Function registration

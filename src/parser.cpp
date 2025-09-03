@@ -76,6 +76,77 @@ std::unique_ptr<Stmt> Parser::statement(){
       auto s = std::make_unique<Let>(); s->name=std::move(name); s->value=std::move(v); return s;
     }
   }
+  if(t.kind==Tok::Var){
+    // VAR x = expr  -> sugar for LET x = expr (also supports indexed assignment same as LET)
+    advance();
+    if(!check(Tok::Ident)){
+      diag.err(peek().line, peek().col,
+               "VAR statement: expected variable name",
+               "Make sure you have a valid variable name after VAR",
+               "VAR x = 10");
+      return nullptr;
+    }
+    std::string name = advance().lex;
+    if(check(Tok::LBracket)){
+      std::vector<std::unique_ptr<Expr>> indices;
+      do {
+        advance();
+        indices.push_back(expression());
+        if(!check(Tok::RBracket)){
+          diag.err_at(peek().line, peek().col, "VAR index: expected ']' ");
+          return nullptr;
+        }
+        advance();
+      } while(check(Tok::LBracket));
+      if(!check(Tok::Eq)){
+        diag.err(peek().line, peek().col,
+                 "VAR indexed assignment: expected '=' after indexes",
+                 "Add '=' to assign a value",
+                 "VAR " + name + "[i] = value");
+        return nullptr;
+      }
+      advance();
+      auto val = expression();
+      auto s = std::make_unique<AssignIndex>();
+      s->name = std::move(name);
+      s->indices = std::move(indices);
+      s->value = std::move(val);
+      return s;
+    } else {
+      if(!check(Tok::Eq)){
+        diag.err(peek().line, peek().col,
+                 "VAR statement: expected '=' after variable name",
+                 "Add an equals sign to assign a value",
+                 "VAR " + name + " = value");
+        return nullptr;
+      }
+      advance();
+      auto v = expression();
+      auto s = std::make_unique<Let>(); s->name=std::move(name); s->value=std::move(v); return s;
+    }
+  }
+  if(t.kind==Tok::Const){
+    // CONST NAME = expr
+    advance();
+    if(!check(Tok::Ident)){
+      diag.err(peek().line, peek().col,
+               "CONST: expected constant name",
+               "Provide an identifier after CONST",
+               "CONST PI = 3.14159");
+      return nullptr;
+    }
+    std::string name = advance().lex;
+    if(!check(Tok::Eq)){
+      diag.err(peek().line, peek().col,
+               "CONST: expected '=' after name",
+               "Add '=' and a value expression",
+               "CONST NAME = expr");
+      return nullptr;
+    }
+    advance();
+    auto v = expression();
+    auto s = std::make_unique<ConstDecl>(); s->name = std::move(name); s->value = std::move(v); return s;
+  }
   if(t.kind==Tok::Print){
     advance(); auto e = expression(); auto s = std::make_unique<Print>(); s->value=std::move(e); return s;
   }

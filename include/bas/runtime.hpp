@@ -27,6 +27,22 @@ public:
     }
     fns[upper_name] = fn;
   }
+  
+  // Add with collision policy for generated bindings
+  void add_with_policy(const std::string& name, const NativeFn& fn, bool allow_override = false){
+    std::string upper_name;
+    for (char c : name) upper_name += toupper(c);
+    if (fns.find(upper_name) != fns.end()) {
+      if (!allow_override) {
+        throw std::runtime_error(std::string("Duplicate native function registration: ") + upper_name);
+      }
+      // Log override in debug builds
+      #ifdef DEBUG
+      std::cerr << "Warning: Overriding function " << upper_name << std::endl;
+      #endif
+    }
+    fns[upper_name] = fn;
+  }
   const NativeFn* find(const std::string& name) const {
     std::string upper_name;
     for (char c : name) upper_name += toupper(c);

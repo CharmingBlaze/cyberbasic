@@ -7,15 +7,15 @@ INITGRAPHICS
 PRINT "Creating particle systems..."
 
 REM Create fire effect
-fire_id = CREATEFIREEFFECT(400, 300)
+LET fire_id = CREATEFIREEFFECT(400, 300)
 PRINT "Fire effect created with ID: "; fire_id
 
 REM Create explosion effect
-explosion_id = CREATEEXPLOSIONEFFECT(200, 200)
+LET explosion_id = CREATEEXPLOSIONEFFECT(200, 200)
 PRINT "Explosion effect created with ID: "; explosion_id
 
 REM Create custom particle system (sparkles)
-sparkle_id = CREATEPARTICLESYSTEM("sparkles", 5)
+LET sparkle_id = CREATEPARTICLESYSTEM("sparkles", 5)
 PRINT "Sparkle system created with ID: "; sparkle_id
 
 REM Configure sparkle system
@@ -24,10 +24,10 @@ SETPARTICLESYSTEMEMISSIONRATE(sparkle_id, 20)
 SETPARTICLESYSTEMCOLOR(sparkle_id, 1, 1, 0, 1)
 
 REM Create post-processing effects
-blur_id = CREATEPOSTEFFECT("blur", 0)
+LET blur_id = CREATEPOSTEFFECT("blur", 0)
 PRINT "Blur effect created with ID: "; blur_id
 
-bloom_id = CREATEPOSTEFFECT("bloom", 5)
+LET bloom_id = CREATEPOSTEFFECT("bloom", 5)
 PRINT "Bloom effect created with ID: "; bloom_id
 
 PRINT "Graphics system initialized successfully!"
@@ -50,7 +50,7 @@ FOR i = 1 TO 100
     
     REM Trigger explosion
     IF i = 75 THEN
-        explosion_id = CREATEEXPLOSIONEFFECT(600, 300)
+        LET explosion_id = CREATEEXPLOSIONEFFECT(600, 300)
         PRINT "Triggered explosion at position 600, 300"
     END IF
 NEXT i

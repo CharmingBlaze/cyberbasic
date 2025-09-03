@@ -48,6 +48,7 @@ struct ArrayLiteral : Expr {
 
 struct Stmt { virtual ~Stmt() = default; };
 struct Let : Stmt { std::string name; std::unique_ptr<Expr> value; };
+struct ConstDecl : Stmt { std::string name; std::unique_ptr<Expr> value; };
 struct Assign : Stmt { std::string name; std::unique_ptr<Expr> value; };
 struct Print : Stmt { std::unique_ptr<Expr> value; };
 struct ExprStmt : Stmt { std::unique_ptr<Expr> expr; };

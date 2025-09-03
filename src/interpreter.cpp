@@ -1,6 +1,7 @@
 #include "bas/ast.hpp"
 #include "bas/runtime.hpp"
 #include <unordered_map>
+#include <unordered_set>
 #include <stdexcept>
 #include <cmath>
 #include <cctype>
@@ -9,6 +10,7 @@
 #include <iostream>
 #include <sstream>
 #include <locale>
+#include <cstdlib>
 
 using namespace bas;
 
@@ -26,6 +28,7 @@ static bool is_verbose(){
 }
 struct Env {
   std::unordered_map<std::string, Value> vars;
+  std::unordered_set<std::string> consts;
   const Env* parent{nullptr};
   static std::string up(const std::string& s){ std::string r; r.reserve(s.size()); for(char c:s) r.push_back((char)std::toupper((unsigned char)c)); return r; }
   Value get(const std::string& n) const {
@@ -35,7 +38,25 @@ struct Env {
     if(parent) return parent->get(n);
     return Value::nil();
   }
-  void set(const std::string& n, Value v){ vars[up(n)]=std::move(v); }
+  bool is_const_here(const std::string& ukey) const { return consts.find(ukey) != consts.end(); }
+  bool is_const(const std::string& n) const {
+    auto key = up(n);
+    if(is_const_here(key)) return true;
+    return parent ? parent->is_const(n) : false;
+  }
+  void define_const(const std::string& n, Value v){
+    auto key = up(n);
+    // Defining a const shades any parent value; local const wins
+    vars[key] = std::move(v);
+    consts.insert(key);
+  }
+  void set(const std::string& n, Value v){
+    auto key = up(n);
+    if(is_const(key)){
+      throw std::runtime_error("Assignment to constant '" + key + "'");
+    }
+    vars[key]=std::move(v);
+  }
 };
 
 // Global storage for subroutines and functions
@@ -272,6 +293,11 @@ static void exec(Env& env, FunctionRegistry& R, const Stmt* s){
   if(auto l = dynamic_cast<const Let*>(s)){
     env.set(l->name, eval(env,R,l->value.get())); return;
   }
+  if(auto cd = dynamic_cast<const ConstDecl*>(s)){
+    Value v = eval(env,R,cd->value.get());
+    env.define_const(cd->name, std::move(v));
+    return;
+  }
   if(auto a = dynamic_cast<const Assign*>(s)){
     env.set(a->name, eval(env,R,a->value.get())); return;
   }
@@ -377,6 +403,9 @@ static void exec(Env& env, FunctionRegistry& R, const Stmt* s){
     return;
   }
   if(auto rd = dynamic_cast<const Redim*>(s)){
+    if(env.is_const(rd->name)){
+      throw std::runtime_error("REDIM on constant '" + Env::up(rd->name) + "'");
+    }
     if(rd->preserve){
       // Evaluate sizes once, construct new array and copy overlap
       std::vector<size_t> lens = eval_sizes_to_vec(env, R, rd->sizes);
@@ -430,6 +459,9 @@ static void exec(Env& env, FunctionRegistry& R, const Stmt* s){
     return;
   }
   if(auto ai = dynamic_cast<const AssignIndex*>(s)){
+    if(env.is_const(ai->name)){
+      throw std::runtime_error("Indexed assignment to constant '" + Env::up(ai->name) + "'");
+    }
     Value target = env.get(ai->name);
     if(!target.is_array()) target = Value::from_array({});
     // Traverse/create nested arrays according to indices except last

@@ -5,17 +5,17 @@ PRINT "Initializing Networking System..."
 INITNETWORKING
 
 PRINT "Creating network server..."
-server_id = CREATENETWORKSERVER("GameServer", 8080, 16)
+LET server_id = CREATENETWORKSERVER("GameServer", 8080, 16)
 PRINT "Server created with ID: "; server_id
 
 PRINT "Creating network clients..."
-client1_id = CREATENETWORKCLIENT("Player1", "127.0.0.1", 8080)
-client2_id = CREATENETWORKCLIENT("Player2", "127.0.0.1", 8080)
+LET client1_id = CREATENETWORKCLIENT("Player1", "127.0.0.1", 8080)
+LET client2_id = CREATENETWORKCLIENT("Player2", "127.0.0.1", 8080)
 PRINT "Client 1 created with ID: "; client1_id
 PRINT "Client 2 created with ID: "; client2_id
 
 PRINT "Starting server..."
-server_started = STARTNETWORKSERVER(server_id)
+LET server_started = STARTNETWORKSERVER(server_id)
 IF server_started THEN
     PRINT "Server started successfully!"
 ELSE
@@ -23,8 +23,8 @@ ELSE
 END IF
 
 PRINT "Connecting clients..."
-client1_connected = CONNECTNETWORKCLIENT(client1_id)
-client2_connected = CONNECTNETWORKCLIENT(client2_id)
+LET client1_connected = CONNECTNETWORKCLIENT(client1_id)
+LET client2_connected = CONNECTNETWORKCLIENT(client2_id)
 
 IF client1_connected THEN
     PRINT "Client 1 connected successfully!"
@@ -61,7 +61,7 @@ FOR i = 1 TO 50
     
     REM Check for incoming messages
     IF NETWORKHASMESSAGES THEN
-        message = NETWORKGETNEXTMESSAGE
+        LET message = NETWORKGETNEXTMESSAGE
         PRINT "Received message: "; message
     END IF
     
