@@ -20,6 +20,9 @@ $cases = @{
   "redim_preserve_test.bas"    = "1,2,3,,`n10,,"
   # agklite auto-detect + loops/continue demo
   "do_repeat_continue.bas"     = "D`n1`n3`n3"
+  # New features
+  "for_in_basic.bas"           = "10`n20`n30"
+  "import_basic_main.bas"      = "Hello from utils"
 }
 $fails = 0
 foreach ($t in $cases.Keys) {

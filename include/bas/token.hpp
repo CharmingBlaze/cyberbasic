@@ -16,7 +16,8 @@ enum class Tok {
   Select, Case, EndSelect, Is, Break, Continue, Do, Loop, Repeat, Until,
   Var, Const,
   Option, Explicit,
-  Local, Global
+  Local, Global,
+  Import, In
 };
 
 // Token with lexeme and position.

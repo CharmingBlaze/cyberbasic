@@ -12,12 +12,15 @@
 #include "bas/lighting3d.hpp"
 #include "bas/models3d.hpp"
 #include "bas/game_systems.hpp"
+#include "bas/gui.hpp"
 #include <fstream>
 #include <iostream>
 #include <iterator>
 #include <string>
 #include <cstring>
 #include <algorithm>
+#include <filesystem>
+#include <unordered_set>
 
 void print_usage(const char* program_name) {
     std::cout << "BASIC + Raylib Interpreter v1.0" << std::endl;
@@ -229,6 +232,73 @@ int main(int argc, char** argv) {
         diag.print_warnings();
     }
     
+    // Expand IMPORT statements before runtime
+    if (debug_mode) std::cout << "Phase 3: Resolving imports..." << std::endl;
+    auto expand_imports = [&](auto&& self, bas::Program& program, const std::filesystem::path& baseDir, std::unordered_set<std::string>& loaded)->bool{
+        std::vector<std::unique_ptr<bas::Stmt>> result;
+        result.reserve(program.stmts.size());
+        for (auto& up : program.stmts) {
+            if (auto imp = dynamic_cast<bas::ImportStmt*>(up.get())) {
+                std::filesystem::path rel(imp->path);
+                std::filesystem::path full = rel.is_absolute() ? rel : (baseDir / rel);
+                std::error_code ec;
+                std::filesystem::path canon = std::filesystem::weakly_canonical(full, ec);
+                if (ec) canon = full.lexically_normal();
+                std::string canonStr = canon.string();
+                if (verbose_mode) {
+                    std::cout << "  IMPORT: '" << imp->path << "' -> " << canonStr << std::endl;
+                }
+                if (loaded.find(canonStr) != loaded.end()) {
+                    // Already loaded; skip
+                    continue;
+                }
+                // Load file
+                std::ifstream fin(canon, std::ios::binary);
+                if (!fin.good()) {
+                    std::cerr << "Error: Cannot open imported file '" << canonStr << "'" << std::endl;
+                    return false;
+                }
+                std::string src2((std::istreambuf_iterator<char>(fin)), std::istreambuf_iterator<char>());
+                bas::Lexer lx2(std::move(src2));
+                auto toks2 = lx2.lex();
+                bas::Diag d2; d2.set_debug_mode(debug_mode);
+                bas::Parser ps2(std::move(toks2), d2, agk_mode);
+                bas::Program p2 = ps2.parse();
+                if (d2.has_errors()) {
+                    std::cerr << "Parsing failed in imported file: " << canonStr << std::endl;
+                    d2.print_errors();
+                    return false;
+                }
+                // Mark loaded and recursively expand its imports
+                loaded.insert(canonStr);
+                if (!self(self, p2, canon.parent_path(), loaded)) return false;
+                // Splice imported statements into result
+                for (auto& s2 : p2.stmts) {
+                    result.push_back(std::move(s2));
+                }
+            } else {
+                result.push_back(std::move(up));
+            }
+        }
+        program.stmts = std::move(result);
+        return true;
+    };
+    {
+        std::unordered_set<std::string> loaded;
+        // Consider the main file as loaded to prevent accidental self-import if used
+        std::error_code ec;
+        std::filesystem::path mainPath = std::filesystem::weakly_canonical(std::filesystem::path(filename), ec);
+        if (ec) mainPath = std::filesystem::path(filename).lexically_normal();
+        loaded.insert(mainPath.string());
+        std::filesystem::path baseDir = mainPath.parent_path();
+        if (!expand_imports(expand_imports, prog, baseDir, loaded)) {
+            return 65;
+        }
+        if (debug_mode) {
+            std::cout << "  After imports, statements: " << prog.stmts.size() << std::endl;
+        }
+    }
+
     // Runtime setup
     if (debug_mode) std::cout << "Phase 3: Runtime Setup..." << std::endl;
     bas::FunctionRegistry R;
@@ -255,6 +325,7 @@ int main(int argc, char** argv) {
     bas::register_level_editor_functions(R);
     bas::register_asset_pipeline_functions(R);
     bas::register_sprite_animation_functions(R);
+    bas::register_gui_functions(R);
     
     if (debug_mode) {
         std::cout << "  Built-in functions registered: " << R.size() << std::endl;

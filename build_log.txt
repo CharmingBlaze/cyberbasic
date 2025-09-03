@@ -1,0 +1,9 @@
+rm: cannot remove 'build': Device or resource busy
+CMake Warning:
+  Ignoring extra path from command line:
+
+   ".."
+
+
+CMake Error: The source directory "C:/Users/rain/Downloads" does not appear to contain CMakeLists.txt.
+Specify --help for usage, or press the help button on the CMake GUI.

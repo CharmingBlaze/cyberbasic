@@ -1,4 +1,6 @@
 #include "bas/parser.hpp"
+#include "bas/value.hpp"
+#include "bas/ast.hpp"
 #include <stdexcept>
 
 using namespace bas;
@@ -11,6 +13,13 @@ Program Parser::parse(){
   while(peek().kind!=Tok::Eof){
     skipNewlines();
     if(peek().kind==Tok::Eof) break;
+    // Emit any pending desugared statements first
+    if(!pending.empty()){
+      auto s = std::move(pending.front());
+      pending.erase(pending.begin());
+      p.stmts.push_back(std::move(s));
+      continue;
+    }
     if(auto s = statement()) {
       p.stmts.push_back(std::move(s));
     } else {
@@ -85,6 +94,20 @@ std::unique_ptr<Stmt> Parser::statement(){
       return nullptr;
     }
     return node;
+  }
+  if(t.kind==Tok::Import){
+    advance();
+    if(!check(Tok::String)){
+      diag.err(peek().line, peek().col,
+               "IMPORT: expected string literal path",
+               "Use: IMPORT \"file.bas\"",
+               "IMPORT \"utils.bas\"");
+      return nullptr;
+    }
+    std::string path = advance().lex;
+    auto s = std::make_unique<ImportStmt>();
+    s->path = std::move(path);
+    return s;
   }
   if(t.kind==Tok::Let){
     advance();
@@ -649,6 +672,70 @@ std::unique_ptr<Stmt> Parser::statement(){
       return nullptr; 
     }
     std::string var = advance().lex;
+    // Desugar FOR v IN expr ... NEXT
+    if(check(Tok::In)){
+      advance();
+      // Parse container expression once
+      auto arrExpr = expression();
+      // Parse loop body as usual
+      auto body = stmt_list_until(Tok::Next, Tok::Next);
+      if(!check(Tok::Next)){
+        diag.err(peek().line, peek().col,
+                 "FOR-IN loop: expected NEXT to close the loop",
+                 "Add NEXT to close the loop",
+                 "FOR x IN items\n  ...\nNEXT");
+        return nullptr;
+      }
+      advance();
+      if(check(Tok::Ident)) advance(); // optional var after NEXT
+
+      int n = ++gensym;
+      std::string arrN = "__it_arr" + std::to_string(n);
+      std::string lenN = "__it_len" + std::to_string(n);
+      std::string iN   = "__it_i" + std::to_string(n);
+
+      // LET __it_arrN = (arrExpr)
+      auto letArr = std::make_unique<Let>();
+      letArr->name = arrN;
+      letArr->value = std::move(arrExpr);
+      pending.push_back(std::move(letArr));
+
+      // LET __it_lenN = LEN(__it_arrN)
+      auto lenCall = std::make_unique<Call>("LEN", std::vector<std::unique_ptr<Expr>>{});
+      lenCall->args.push_back(std::make_unique<Variable>(arrN));
+      auto letLen = std::make_unique<Let>();
+      letLen->name = lenN;
+      letLen->value = std::move(lenCall);
+      pending.push_back(std::move(letLen));
+
+      // FOR iN = 0 TO (lenN - 1)
+      auto loop = std::make_unique<ForNext>();
+      loop->var = iN;
+      Token zero_token;
+      zero_token.kind = Tok::Number;
+      zero_token.lex = "0";
+      loop->init = std::make_unique<Literal>(zero_token);
+      loop->limit = std::make_unique<Binary>(
+        std::make_unique<Variable>(lenN),
+        Tok::Minus,
+        std::make_unique<Literal>(zero_token)
+      );
+      loop->step = std::make_unique<Literal>(zero_token);
+
+      // First stmt inside body: var = arrN[iN]
+      auto assign = std::make_unique<Let>();
+      assign->name = var;
+      assign->value = std::make_unique<Index>(
+        std::make_unique<Variable>(arrN),
+        std::make_unique<Variable>(iN)
+      );
+      loop->body.push_back(std::move(assign));
+
+      // Add original body statements
+      for(auto& s : body) loop->body.push_back(std::move(s));
+
+      return loop;
+    }
     if(!check(Tok::Eq)){
       diag.err(peek().line, peek().col, 
                "FOR loop: expected '=' after variable name", 

@@ -59,6 +59,8 @@ struct ExprStmt : Stmt { std::unique_ptr<Expr> expr; };
 struct CallStmt : Stmt { std::string name; std::vector<std::unique_ptr<Expr>> args; };
 struct Break : Stmt {}; // Simple break statement
 struct Continue : Stmt {}; // Continue current loop
+// IMPORT "file.bas"
+struct ImportStmt : Stmt { std::string path; };
 struct IfChain : Stmt {
   struct Branch { std::unique_ptr<Expr> cond; std::vector<std::unique_ptr<Stmt>> body; };
   std::vector<Branch> branches; // evaluated in order

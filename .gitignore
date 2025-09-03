@@ -58,7 +58,7 @@ __pycache__/
 *.log
 
 # Test output
-*.txt
+# *.txt
 !requirements.txt
 
 # Legacy directories (if any)

@@ -12,6 +12,9 @@ public:
   Program parse();
 private:
   std::vector<Token> ts; size_t i=0; Diag& diag; bool agk=false;
+  // Queue of statements to emit before parsing the next statement (for desugaring)
+  std::vector<std::unique_ptr<Stmt>> pending;
+  int gensym{0};
   const Token& peek() const { return i<ts.size()? ts[i] : ts.back(); }
   const Token& advance(){ if(i<ts.size()) ++i; return ts[i-1]; }
   bool match(Tok k){ if(peek().kind==k){ advance(); return true;} return false; }

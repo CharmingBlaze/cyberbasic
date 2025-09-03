@@ -21,11 +21,8 @@ struct BreakSignal {};
 struct ContinueSignal {};
 
 // Simple verbose flag controlled by environment variable BAS_VERBOSE (non-zero => verbose)
-static bool is_verbose(){
-  const char* v = std::getenv("BAS_VERBOSE");
-  if(!v) return false;
-  return v[0] != '\0' && v[0] != '0';
-}
+static bool is_verbose() { return true; }
+
 struct Env {
   std::unordered_map<std::string, Value> vars;
   std::unordered_set<std::string> consts;
@@ -107,6 +104,10 @@ static std::unordered_map<std::string, const FunctionDecl*> g_funcs;
 
 // Forward declarations
 static Value eval(Env& env, FunctionRegistry& R, const Expr* e);
+
+static double to_num(const Value& v) {
+    return v.as_number();
+}
 static void exec(Env& env, FunctionRegistry& R, const Stmt* s);
 static void call_sub(Env& caller, FunctionRegistry& R, const std::string& name, const std::vector<Value>& args);
 static Value call_func(Env& caller, FunctionRegistry& R, const std::string& name, const std::vector<Value>& args);
@@ -177,17 +178,26 @@ static bool safe_total_elems(const std::vector<size_t>& lens, size_t& outTotal, 
 
 
 
-static double to_num(const Value& v){ return v.as_number(); }
+
+
 static bool truthy(const Value& v){ return v.as_bool(); }
 
-// Stringify a Value similar to PRINT semantics (nil -> empty string)
-static std::string value_to_string(const Value& v){
-  if(auto s = std::get_if<std::string>(&v.v)) return *s;
-  if(auto b = std::get_if<bool>(&v.v)) return *b?"TRUE":"FALSE";
-  if(auto i = std::get_if<long long>(&v.v)) { std::ostringstream os; os.imbue(std::locale::classic()); os<<*i; return os.str(); }
-  if(auto d = std::get_if<double>(&v.v)) { std::ostringstream os; os.imbue(std::locale::classic()); os<<*d; return os.str(); }
-  return std::string{};
+// Safe string conversion for any value type
+static std::string value_to_string_safe(const Value& v) {
+    if (std::holds_alternative<std::string>(v.v)) {
+        return std::get<std::string>(v.v);
+    } else if (std::holds_alternative<double>(v.v)) {
+        return std::to_string(std::get<double>(v.v));
+    } else if (std::holds_alternative<long long>(v.v)) {
+        return std::to_string(std::get<long long>(v.v));
+    } else if (std::holds_alternative<bool>(v.v)) {
+        return std::get<bool>(v.v) ? "TRUE" : "FALSE";
+    } else {
+        return ""; // nil
+    }
 }
+
+
 
 // String and generic comparison helpers (lexicographic for strings)
 static int cmp_strings(const std::string& a, const std::string& b){
@@ -243,6 +253,8 @@ static Value make_array_from_sizes(Env& env, FunctionRegistry& R,
 }
 
 static Value eval(Env& env, FunctionRegistry& R, const Expr* e){
+  (void)env; (void)R; // Suppress unused parameter warnings
+  if (is_verbose()) std::cout << "eval: " << typeid(*e).name() << std::endl;
   if(auto lit = dynamic_cast<const Literal*>(e)){
     switch(lit->tok.kind){
       case Tok::Number: return Value::from_number(std::stod(lit->tok.lex));
@@ -252,8 +264,8 @@ static Value eval(Env& env, FunctionRegistry& R, const Expr* e){
       default: return Value::nil();
     }
   }
-  if(auto v = dynamic_cast<const Variable*>(e)){
-    return env.get(v->name);
+  if(auto i = dynamic_cast<const Variable*>(e)) {
+    return env.get(i->name);
   }
   if(auto u = dynamic_cast<const Unary*>(e)){
     Value r = eval(env, R, u->right.get());
@@ -264,34 +276,33 @@ static Value eval(Env& env, FunctionRegistry& R, const Expr* e){
   }
   if(auto b = dynamic_cast<const Binary*>(e)){
     Value L = eval(env, R, b->left.get());
-    Value Rv = eval(env, R, b->right.get());
+    Value right_val = eval(env, R, b->right.get());
+    if (is_verbose()) std::cout << "binary op L: " << value_to_string_safe(L) << ", R: " << value_to_string_safe(right_val) << std::endl;
+
     switch(b->op){
       case Tok::Plus: {
-        const bool ls = std::holds_alternative<std::string>(L.v);
-        const bool rs = std::holds_alternative<std::string>(Rv.v);
-        if(ls || rs){
-          const std::string sa = ls ? std::get<std::string>(L.v) : value_to_string(L);
-          const std::string sb = rs ? std::get<std::string>(Rv.v) : value_to_string(Rv);
-          return Value::from_string(sa + sb);
+        if (std::holds_alternative<std::string>(L.v) || std::holds_alternative<std::string>(right_val.v)) {
+          return Value::from_string(value_to_string_safe(L) + value_to_string_safe(right_val));
+        } else {
+          return Value::from_number(to_num(L) + to_num(right_val));
         }
-        return Value::from_number(to_num(L)+to_num(Rv));
       }
-      case Tok::Minus: return Value::from_number(to_num(L)-to_num(Rv));
-      case Tok::Star: return Value::from_number(to_num(L)*to_num(Rv));
-      case Tok::Slash: return Value::from_number(to_num(L)/to_num(Rv));
+      case Tok::Minus: return Value::from_number(to_num(L) - to_num(right_val));
+      case Tok::Star: return Value::from_number(to_num(L) * to_num(right_val));
+      case Tok::Slash: return Value::from_number(to_num(L) / to_num(right_val));
       case Tok::Mod: {
-        double rhs = to_num(Rv);
+        double rhs = to_num(right_val);
         if(rhs == 0.0) throw std::runtime_error("Modulo by zero");
         return Value::from_number(std::fmod(to_num(L), rhs));
       }
-      case Tok::Eq:  return Value::from_bool(cmp_values(L,Rv) == 0);
-      case Tok::Neq: return Value::from_bool(cmp_values(L,Rv) != 0);
-      case Tok::Lt:  return Value::from_bool(cmp_values(L,Rv) <  0);
-      case Tok::Lte: return Value::from_bool(cmp_values(L,Rv) <= 0);
-      case Tok::Gt:  return Value::from_bool(cmp_values(L,Rv) >  0);
-      case Tok::Gte: return Value::from_bool(cmp_values(L,Rv) >= 0);
-      case Tok::And: return Value::from_bool(truthy(L) && truthy(Rv));
-      case Tok::Or:  return Value::from_bool(truthy(L) || truthy(Rv));
+      case Tok::Eq:  return Value::from_bool(cmp_values(L,right_val) == 0);
+      case Tok::Neq: return Value::from_bool(cmp_values(L,right_val) != 0);
+      case Tok::Lt:  return Value::from_bool(cmp_values(L,right_val) <  0);
+      case Tok::Lte: return Value::from_bool(cmp_values(L,right_val) <= 0);
+      case Tok::Gt:  return Value::from_bool(cmp_values(L,right_val) >  0);
+      case Tok::Gte: return Value::from_bool(cmp_values(L,right_val) >= 0);
+      case Tok::And: return Value::from_bool(truthy(L) && truthy(right_val));
+      case Tok::Or:  return Value::from_bool(truthy(L) || truthy(right_val));
       default: break;
     }
     throw std::runtime_error("invalid binary op");
@@ -324,6 +335,7 @@ static Value eval(Env& env, FunctionRegistry& R, const Expr* e){
     return call(R, c->callee, args);
   }
   throw std::runtime_error("unknown expr");
+  return Value::nil(); // This line will never be reached, but satisfies the compiler
 }
 
 static void exec(Env& env, FunctionRegistry& R, const Stmt* s){
@@ -365,6 +377,10 @@ static void exec(Env& env, FunctionRegistry& R, const Stmt* s){
     env.define_const(cd->name, std::move(v));
     return;
   }
+  if(dynamic_cast<const ImportStmt*>(s)){
+    // Imports are expanded before interpretation; nothing to do at runtime
+    return;
+  }
   if(auto a = dynamic_cast<const Assign*>(s)){
     env.set(a->name, eval(env,R,a->value.get())); return;
   }
@@ -393,13 +409,35 @@ static void exec(Env& env, FunctionRegistry& R, const Stmt* s){
   }
   if(auto f = dynamic_cast<const ForNext*>(s)){
     // Initialize loop variable
-    double init = eval(env,R,f->init.get()).as_number();
-    double limit = eval(env,R,f->limit.get()).as_number();
-    double step = f->step ? eval(env,R,f->step.get()).as_number() : 1.0;
+    Value start_val = eval(env, R, f->init.get());
+    if (is_verbose()) std::cout << "FOR start: " << start_val.as_string() << std::endl;
+    Value limit_val = eval(env, R, f->limit.get());
+    if (is_verbose()) std::cout << "FOR limit: " << limit_val.as_string() << std::endl;
+    Value step_val = f->step ? eval(env, R, f->step.get()) : Value::from_number(1.0);
+    if (is_verbose()) std::cout << "FOR step: " << step_val.as_string() << std::endl;
+    double init = start_val.as_number();
+    double limit = limit_val.as_number();
+    double step = step_val.as_number();
+    if(is_verbose()){
+      std::cout << "[FOR] var=" << f->var
+                << " init=" << init
+                << " limit=" << limit
+                << " step=" << step << std::endl;
+    }
     env.declare(f->var);
     env.set(f->var, Value::from_number(init));
     auto cond = [&](double v){ return step >= 0 ? (v <= limit) : (v >= limit); };
-    while(cond(env.get(f->var).as_number())){
+    while(true){
+      double cur;
+      try {
+        cur = env.get(f->var).as_number();
+      } catch(const std::exception& e){
+        if(is_verbose()){
+          std::cerr << "[FOR] non-numeric loop var '" << f->var << "' encountered: " << e.what() << std::endl;
+        }
+        throw; // rethrow
+      }
+      if(!cond(cur)) break;
       try {
         for(auto& ss : f->body) exec(env,R,ss.get());
       } catch(const BreakSignal&) {
@@ -407,8 +445,7 @@ static void exec(Env& env, FunctionRegistry& R, const Stmt* s){
       } catch(const ContinueSignal&) {
         // fallthrough to step update
       }
-      double v = env.get(f->var).as_number();
-      env.set(f->var, Value::from_number(v + step));
+      env.set(f->var, Value::from_number(env.get(f->var).as_number() + step));
     }
     return;
   }

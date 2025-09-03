@@ -21,7 +21,8 @@ static Tok kw(const std::string& w){
     {"MOD",Tok::Mod},{"BREAK",Tok::Break},{"CONTINUE",Tok::Continue},{"DO",Tok::Do},{"LOOP",Tok::Loop},{"REPEAT",Tok::Repeat},{"UNTIL",Tok::Until},
     {"VAR",Tok::Var},{"CONST",Tok::Const},
     {"OPTION",Tok::Option},{"EXPLICIT",Tok::Explicit},
-    {"LOCAL",Tok::Local},{"GLOBAL",Tok::Global}
+    {"LOCAL",Tok::Local},{"GLOBAL",Tok::Global},
+    {"IMPORT",Tok::Import},{"IN",Tok::In}
   };
   auto it=k.find(w); return it==k.end()?Tok::Ident:it->second;
 }
