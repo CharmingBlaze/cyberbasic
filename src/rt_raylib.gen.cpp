@@ -49,6 +49,112 @@ namespace rlreg {
 void register_raylib_bindings(FunctionRegistry& R) {
     R.add_with_policy("INITWINDOW", Fn{"INITWINDOW", 3, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 3) throw std::runtime_error("INITWINDOW: expected 3 args");
+        InitWindow(args[0].as_int(), args[1].as_int(), args[2].as_string().c_str());
+        return Value::nil();
+    }}, true);    R.add_with_policy("CLOSEWINDOW", Fn{"CLOSEWINDOW", 0, [] (const std::vector<Value>& args) -> Value {
+        if (args.size() != 0) throw std::runtime_error("CLOSEWINDOW: expected 0 args");
+        CloseWindow();
+        return Value::nil();
+    }}, true);    R.add_with_policy("WINDOWSHOULDCLOSE", Fn{"WINDOWSHOULDCLOSE", 0, [] (const std::vector<Value>& args) -> Value {
+        if (args.size() != 0) throw std::runtime_error("WINDOWSHOULDCLOSE: expected 0 args");
+        return Value::from_bool(WindowShouldClose());
+    }}, true);    R.add_with_policy("ISWINDOWREADY", Fn{"ISWINDOWREADY", 0, [] (const std::vector<Value>& args) -> Value {
+        if (args.size() != 0) throw std::runtime_error("ISWINDOWREADY: expected 0 args");
+        return Value::from_bool(IsWindowReady());
+    }}, true);    R.add_with_policy("ISWINDOWFULLSCREEN", Fn{"ISWINDOWFULLSCREEN", 0, [] (const std::vector<Value>& args) -> Value {
+        if (args.size() != 0) throw std::runtime_error("ISWINDOWFULLSCREEN: expected 0 args");
+        return Value::from_bool(IsWindowFullscreen());
+    }}, true);    R.add_with_policy("ISWINDOWHIDDEN", Fn{"ISWINDOWHIDDEN", 0, [] (const std::vector<Value>& args) -> Value {
+        if (args.size() != 0) throw std::runtime_error("ISWINDOWHIDDEN: expected 0 args");
+        return Value::from_bool(IsWindowHidden());
+    }}, true);    R.add_with_policy("ISWINDOWMINIMIZED", Fn{"ISWINDOWMINIMIZED", 0, [] (const std::vector<Value>& args) -> Value {
+        if (args.size() != 0) throw std::runtime_error("ISWINDOWMINIMIZED: expected 0 args");
+        return Value::from_bool(IsWindowMinimized());
+    }}, true);    R.add_with_policy("ISWINDOWMAXIMIZED", Fn{"ISWINDOWMAXIMIZED", 0, [] (const std::vector<Value>& args) -> Value {
+        if (args.size() != 0) throw std::runtime_error("ISWINDOWMAXIMIZED: expected 0 args");
+        return Value::from_bool(IsWindowMaximized());
+    }}, true);    R.add_with_policy("ISWINDOWFOCUSED", Fn{"ISWINDOWFOCUSED", 0, [] (const std::vector<Value>& args) -> Value {
+        if (args.size() != 0) throw std::runtime_error("ISWINDOWFOCUSED: expected 0 args");
+        return Value::from_bool(IsWindowFocused());
+    }}, true);    R.add_with_policy("ISWINDOWRESIZED", Fn{"ISWINDOWRESIZED", 0, [] (const std::vector<Value>& args) -> Value {
+        if (args.size() != 0) throw std::runtime_error("ISWINDOWRESIZED: expected 0 args");
+        return Value::from_bool(IsWindowResized());
+    }}, true);    R.add_with_policy("ISWINDOWSTATE", Fn{"ISWINDOWSTATE", 1, [] (const std::vector<Value>& args) -> Value {
+        if (args.size() != 1) throw std::runtime_error("ISWINDOWSTATE: expected 1 args");
+        return Value::from_bool(IsWindowState(args[0].as_int()));
+    }}, true);    R.add_with_policy("SETWINDOWTITLE", Fn{"SETWINDOWTITLE", 1, [] (const std::vector<Value>& args) -> Value {
+        if (args.size() != 1) throw std::runtime_error("SETWINDOWTITLE: expected 1 args");
+        SetWindowTitle(args[0].as_string().c_str());
+        return Value::nil();
+    }}, true);    R.add_with_policy("SETWINDOWMINIMUMSIZE", Fn{"SETWINDOWMINIMUMSIZE", 2, [] (const std::vector<Value>& args) -> Value {
+        if (args.size() != 2) throw std::runtime_error("SETWINDOWMINIMUMSIZE: expected 2 args");
+        SetWindowMinSize(args[0].as_int(), args[1].as_int());
+        return Value::nil();
+    }}, true);    R.add_with_policy("SETWINDOWPOSITION", Fn{"SETWINDOWPOSITION", 2, [] (const std::vector<Value>& args) -> Value {
+        if (args.size() != 2) throw std::runtime_error("SETWINDOWPOSITION: expected 2 args");
+        SetWindowPosition(args[0].as_int(), args[1].as_int());
+        return Value::nil();
+    }}, true);    R.add_with_policy("SETWINDOWMONITOR", Fn{"SETWINDOWMONITOR", 1, [] (const std::vector<Value>& args) -> Value {
+        if (args.size() != 1) throw std::runtime_error("SETWINDOWMONITOR: expected 1 args");
+        SetWindowMonitor(args[0].as_int());
+        return Value::nil();
+    }}, true);    R.add_with_policy("SETWINDOWSTATE", Fn{"SETWINDOWSTATE", 1, [] (const std::vector<Value>& args) -> Value {
+        if (args.size() != 1) throw std::runtime_error("SETWINDOWSTATE: expected 1 args");
+        SetWindowState(args[0].as_int());
+        return Value::nil();
+    }}, true);    R.add_with_policy("GETMONITORCOUNT", Fn{"GETMONITORCOUNT", 0, [] (const std::vector<Value>& args) -> Value {
+        if (args.size() != 0) throw std::runtime_error("GETMONITORCOUNT: expected 0 args");
+        return Value::from_int(GetMonitorCount());
+    }}, true);    R.add_with_policy("GETMONITORWIDTH", Fn{"GETMONITORWIDTH", 1, [] (const std::vector<Value>& args) -> Value {
+        if (args.size() != 1) throw std::runtime_error("GETMONITORWIDTH: expected 1 args");
+        return Value::from_int(GetMonitorWidth(args[0].as_int()));
+    }}, true);    R.add_with_policy("GETMONITORHEIGHT", Fn{"GETMONITORHEIGHT", 1, [] (const std::vector<Value>& args) -> Value {
+        if (args.size() != 1) throw std::runtime_error("GETMONITORHEIGHT: expected 1 args");
+        return Value::from_int(GetMonitorHeight(args[0].as_int()));
+    }}, true);    R.add_with_policy("GETMONITORPHYSICALWIDTH", Fn{"GETMONITORPHYSICALWIDTH", 1, [] (const std::vector<Value>& args) -> Value {
+        if (args.size() != 1) throw std::runtime_error("GETMONITORPHYSICALWIDTH: expected 1 args");
+        return Value::from_int(GetMonitorPhysicalWidth(args[0].as_int()));
+    }}, true);    R.add_with_policy("GETMONITORPHYSICALHEIGHT", Fn{"GETMONITORPHYSICALHEIGHT", 1, [] (const std::vector<Value>& args) -> Value {
+        if (args.size() != 1) throw std::runtime_error("GETMONITORPHYSICALHEIGHT: expected 1 args");
+        return Value::from_int(GetMonitorPhysicalHeight(args[0].as_int()));
+    }}, true);    R.add_with_policy("GETMONITORREFRESHRATE", Fn{"GETMONITORREFRESHRATE", 1, [] (const std::vector<Value>& args) -> Value {
+        if (args.size() != 1) throw std::runtime_error("GETMONITORREFRESHRATE: expected 1 args");
+        return Value::from_int(GetMonitorRefreshRate(args[0].as_int()));
+    }}, true);    R.add_with_policy("GETCURRENTMONITOR", Fn{"GETCURRENTMONITOR", 0, [] (const std::vector<Value>& args) -> Value {
+        if (args.size() != 0) throw std::runtime_error("GETCURRENTMONITOR: expected 0 args");
+        return Value::from_int(GetCurrentMonitor());
+    }}, true);    R.add_with_policy("BEGINDRAWING", Fn{"BEGINDRAWING", 0, [] (const std::vector<Value>& args) -> Value {
+        if (args.size() != 0) throw std::runtime_error("BEGINDRAWING: expected 0 args");
+        BeginDrawing();
+        return Value::nil();
+    }}, true);    R.add_with_policy("ENDDRAWING", Fn{"ENDDRAWING", 0, [] (const std::vector<Value>& args) -> Value {
+        if (args.size() != 0) throw std::runtime_error("ENDDRAWING: expected 0 args");
+        EndDrawing();
+        return Value::nil();
+    }}, true);    R.add_with_policy("BEGINBLENDMODE", Fn{"BEGINBLENDMODE", 1, [] (const std::vector<Value>& args) -> Value {
+        if (args.size() != 1) throw std::runtime_error("BEGINBLENDMODE: expected 1 args");
+        BeginBlendMode(args[0].as_int());
+        return Value::nil();
+    }}, true);    R.add_with_policy("ENDBLENDMODE", Fn{"ENDBLENDMODE", 0, [] (const std::vector<Value>& args) -> Value {
+        if (args.size() != 0) throw std::runtime_error("ENDBLENDMODE: expected 0 args");
+        EndBlendMode();
+        return Value::nil();
+    }}, true);    R.add_with_policy("SETTARGETFPS", Fn{"SETTARGETFPS", 1, [] (const std::vector<Value>& args) -> Value {
+        if (args.size() != 1) throw std::runtime_error("SETTARGETFPS: expected 1 args");
+        SetTargetFPS(args[0].as_int());
+        return Value::nil();
+    }}, true);    R.add_with_policy("GETFPS", Fn{"GETFPS", 0, [] (const std::vector<Value>& args) -> Value {
+        if (args.size() != 0) throw std::runtime_error("GETFPS: expected 0 args");
+        return Value::from_int(GetFPS());
+    }}, true);    R.add_with_policy("GETFRAMETIME", Fn{"GETFRAMETIME", 0, [] (const std::vector<Value>& args) -> Value {
+        if (args.size() != 0) throw std::runtime_error("GETFRAMETIME: expected 0 args");
+        return Value::from_number(GetFrameTime());
+    }}, true);    R.add_with_policy("GETTIME", Fn{"GETTIME", 0, [] (const std::vector<Value>& args) -> Value {
+        if (args.size() != 0) throw std::runtime_error("GETTIME: expected 0 args");
+        return Value::from_number(GetTime());
+    }}, true);    R.add_with_policy("INITWINDOW", Fn{"INITWINDOW", 3, [] (const std::vector<Value>& args) -> Value {
+        if (args.size() != 3) throw std::runtime_error("INITWINDOW: expected 3 args");
+        InitWindow(args[0].as_int(), args[1].as_int(), args[2].as_string().c_str());
         return Value::nil();
     }}, true);    R.add_with_policy("WINDOWSHOULDCLOSE", Fn{"WINDOWSHOULDCLOSE", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("WINDOWSHOULDCLOSE: expected 0 args");
@@ -79,48 +185,62 @@ void register_raylib_bindings(FunctionRegistry& R) {
         return Value::from_bool(IsWindowState(args[0].as_int()));
     }}, true);    R.add_with_policy("SETWINDOWSTATE", Fn{"SETWINDOWSTATE", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("SETWINDOWSTATE: expected 1 args");
+        SetWindowState(args[0].as_int());
         return Value::nil();
     }}, true);    R.add_with_policy("CLEARWINDOWSTATE", Fn{"CLEARWINDOWSTATE", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("CLEARWINDOWSTATE: expected 1 args");
+        ClearWindowState(args[0].as_int());
         return Value::nil();
     }}, true);    R.add_with_policy("TOGGLEFULLSCREEN", Fn{"TOGGLEFULLSCREEN", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("TOGGLEFULLSCREEN: expected 0 args");
+        ToggleFullscreen();
         return Value::nil();
     }}, true);    R.add_with_policy("TOGGLEBORDERLESSWINDOWED", Fn{"TOGGLEBORDERLESSWINDOWED", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("TOGGLEBORDERLESSWINDOWED: expected 0 args");
+        ToggleBorderlessWindowed();
         return Value::nil();
     }}, true);    R.add_with_policy("MAXIMIZEWINDOW", Fn{"MAXIMIZEWINDOW", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("MAXIMIZEWINDOW: expected 0 args");
+        MaximizeWindow();
         return Value::nil();
     }}, true);    R.add_with_policy("MINIMIZEWINDOW", Fn{"MINIMIZEWINDOW", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("MINIMIZEWINDOW: expected 0 args");
+        MinimizeWindow();
         return Value::nil();
     }}, true);    R.add_with_policy("RESTOREWINDOW", Fn{"RESTOREWINDOW", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("RESTOREWINDOW: expected 0 args");
+        RestoreWindow();
         return Value::nil();
     }}, true);    R.add_with_policy("SETWINDOWICON", Fn{"SETWINDOWICON", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("SETWINDOWICON: expected 1 args");
         // TODO: SetWindowIcon expects Image, not string
         // For now, just return nil
         return Value::nil();
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("SETWINDOWPOSITION", Fn{"SETWINDOWPOSITION", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("SETWINDOWPOSITION: expected 2 args");
+        SetWindowPosition(args[0].as_int(), args[1].as_int());
         return Value::nil();
     }}, true);    R.add_with_policy("SETWINDOWMONITOR", Fn{"SETWINDOWMONITOR", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("SETWINDOWMONITOR: expected 1 args");
+        SetWindowMonitor(args[0].as_int());
         return Value::nil();
     }}, true);    R.add_with_policy("SETWINDOWMINSIZE", Fn{"SETWINDOWMINSIZE", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("SETWINDOWMINSIZE: expected 2 args");
+        SetWindowMinSize(args[0].as_int(), args[1].as_int());
         return Value::nil();
     }}, true);    R.add_with_policy("SETWINDOWMAXSIZE", Fn{"SETWINDOWMAXSIZE", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("SETWINDOWMAXSIZE: expected 2 args");
+        SetWindowMaxSize(args[0].as_int(), args[1].as_int());
         return Value::nil();
     }}, true);    R.add_with_policy("SETWINDOWOPACITY", Fn{"SETWINDOWOPACITY", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("SETWINDOWOPACITY: expected 1 args");
+        SetWindowOpacity(args[0].as_number());
         return Value::nil();
     }}, true);    R.add_with_policy("SETWINDOWFOCUSED", Fn{"SETWINDOWFOCUSED", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("SETWINDOWFOCUSED: expected 0 args");
+        SetWindowFocused();
         return Value::nil();
     }}, true);    R.add_with_policy("GETWINDOWHANDLE", Fn{"GETWINDOWHANDLE", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("GETWINDOWHANDLE: expected 0 args");
@@ -151,36 +271,44 @@ void register_raylib_bindings(FunctionRegistry& R) {
         return Value::from_string(GetMonitorName(args[0].as_int()));
     }}, true);    R.add_with_policy("SETCLIPBOARDTEXT", Fn{"SETCLIPBOARDTEXT", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("SETCLIPBOARDTEXT: expected 1 args");
+        SetClipboardText(args[0].as_string().c_str());
         return Value::nil();
     }}, true);    R.add_with_policy("GETCLIPBOARDTEXT", Fn{"GETCLIPBOARDTEXT", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("GETCLIPBOARDTEXT: expected 0 args");
         return Value::from_string(GetClipboardText());
     }}, true);    R.add_with_policy("ENABLEEVENTWAITING", Fn{"ENABLEEVENTWAITING", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("ENABLEEVENTWAITING: expected 0 args");
+        EnableEventWaiting();
         return Value::nil();
     }}, true);    R.add_with_policy("DISABLEEVENTWAITING", Fn{"DISABLEEVENTWAITING", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("DISABLEEVENTWAITING: expected 0 args");
+        DisableEventWaiting();
         return Value::nil();
     }}, true);    R.add_with_policy("SHOWCURSOR", Fn{"SHOWCURSOR", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("SHOWCURSOR: expected 0 args");
+        ShowCursor();
         return Value::nil();
     }}, true);    R.add_with_policy("HIDECURSOR", Fn{"HIDECURSOR", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("HIDECURSOR: expected 0 args");
+        HideCursor();
         return Value::nil();
     }}, true);    R.add_with_policy("ISCURSORHIDDEN", Fn{"ISCURSORHIDDEN", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("ISCURSORHIDDEN: expected 0 args");
         return Value::from_bool(IsCursorHidden());
     }}, true);    R.add_with_policy("ENABLECURSOR", Fn{"ENABLECURSOR", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("ENABLECURSOR: expected 0 args");
+        EnableCursor();
         return Value::nil();
     }}, true);    R.add_with_policy("DISABLECURSOR", Fn{"DISABLECURSOR", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("DISABLECURSOR: expected 0 args");
+        DisableCursor();
         return Value::nil();
     }}, true);    R.add_with_policy("ISCURSORONSCREEN", Fn{"ISCURSORONSCREEN", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("ISCURSORONSCREEN: expected 0 args");
         return Value::from_bool(IsCursorOnScreen());
     }}, true);    R.add_with_policy("SETTARGETFPS", Fn{"SETTARGETFPS", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("SETTARGETFPS: expected 1 args");
+        SetTargetFPS(args[0].as_int());
         return Value::nil();
     }}, true);    R.add_with_policy("GETFPS", Fn{"GETFPS", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("GETFPS: expected 0 args");
@@ -193,64 +321,81 @@ void register_raylib_bindings(FunctionRegistry& R) {
         return Value::from_number(GetTime());
     }}, true);    R.add_with_policy("BEGINDRAW", Fn{"BEGINDRAW", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("BEGINDRAW: expected 0 args");
+        BeginDrawing();
         return Value::nil();
     }}, true);    R.add_with_policy("ENDDRAW", Fn{"ENDDRAW", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("ENDDRAW: expected 0 args");
+        EndDrawing();
         return Value::nil();
     }}, true);    R.add_with_policy("BEGINMODE2D", Fn{"BEGINMODE2D", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("BEGINMODE2D: expected 1 args");
         // Note: This requires a Camera2D object, simplified for BASIC
         ::BeginMode2D(::Camera2D{});
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("ENDMODE2D", Fn{"ENDMODE2D", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("ENDMODE2D: expected 0 args");
+        EndMode2D();
         return Value::nil();
     }}, true);    R.add_with_policy("BEGINMODE3D", Fn{"BEGINMODE3D", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("BEGINMODE3D: expected 1 args");
         // Note: This requires a Camera3D object, simplified for BASIC
         ::BeginMode3D(::Camera3D{});
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("ENDMODE3D", Fn{"ENDMODE3D", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("ENDMODE3D: expected 0 args");
+        EndMode3D();
         return Value::nil();
     }}, true);    R.add_with_policy("BEGINTEXTUREMODE", Fn{"BEGINTEXTUREMODE", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("BEGINTEXTUREMODE: expected 1 args");
         // Note: This requires a RenderTexture2D object, simplified for BASIC
         ::BeginTextureMode(::RenderTexture2D{});
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("ENDTEXTUREMODE", Fn{"ENDTEXTUREMODE", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("ENDTEXTUREMODE: expected 0 args");
+        EndTextureMode();
         return Value::nil();
     }}, true);    R.add_with_policy("BEGINBLENDMODE", Fn{"BEGINBLENDMODE", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("BEGINBLENDMODE: expected 1 args");
+        BeginBlendMode(args[0].as_int());
         return Value::nil();
     }}, true);    R.add_with_policy("ENDBLENDMODE", Fn{"ENDBLENDMODE", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("ENDBLENDMODE: expected 0 args");
+        EndBlendMode();
         return Value::nil();
     }}, true);    R.add_with_policy("BEGINSCISSORMODE", Fn{"BEGINSCISSORMODE", 4, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 4) throw std::runtime_error("BEGINSCISSORMODE: expected 4 args");
+        BeginScissorMode(args[0].as_int(), args[1].as_int(), args[2].as_int(), args[3].as_int());
         return Value::nil();
     }}, true);    R.add_with_policy("ENDSCISSORMODE", Fn{"ENDSCISSORMODE", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("ENDSCISSORMODE: expected 0 args");
+        EndScissorMode();
         return Value::nil();
     }}, true);    R.add_with_policy("SETEXITKEY", Fn{"SETEXITKEY", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("SETEXITKEY: expected 1 args");
+        SetExitKey(args[0].as_int());
         return Value::nil();
     }}, true);    R.add_with_policy("TAKESCREENSHOT", Fn{"TAKESCREENSHOT", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("TAKESCREENSHOT: expected 1 args");
+        TakeScreenshot(args[0].as_string().c_str());
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWFPS", Fn{"DRAWFPS", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("DRAWFPS: expected 2 args");
+        DrawFPS(args[0].as_int(), args[1].as_int());
         return Value::nil();
     }}, true);    R.add_with_policy("CLEARBACKGROUND", Fn{"CLEARBACKGROUND", 3, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 3) throw std::runtime_error("CLEARBACKGROUND: expected 3 args");
         ::Color c{(unsigned char)args[0].as_int(), (unsigned char)args[1].as_int(), (unsigned char)args[2].as_int(), 255};
         ::ClearBackground(c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWTEXT", Fn{"DRAWTEXT", 7, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 7) throw std::runtime_error("DRAWTEXT: expected 7 args");
         ::Color c{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), 255};
         ::DrawText(args[0].as_string().c_str(), args[1].as_int(), args[2].as_int(), args[3].as_int(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWTEXTEX", Fn{"DRAWTEXTEX", 9, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 9) throw std::runtime_error("DRAWTEXTEX: expected 9 args");
@@ -258,6 +403,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         ::Vector2 pos{(float)args[1].as_int(), (float)args[2].as_int()};
         ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255};
         ::DrawTextEx(font, args[1].as_string().c_str(), pos, (float)args[3].as_number(), (float)args[4].as_number(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWTEXTPRO", Fn{"DRAWTEXTPRO", 12, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 12) throw std::runtime_error("DRAWTEXTPRO: expected 12 args");
@@ -266,11 +412,13 @@ void register_raylib_bindings(FunctionRegistry& R) {
         ::Vector2 origin{(float)args[3].as_int(), (float)args[4].as_int()};
         ::Color c{(unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), (unsigned char)args[10].as_int(), 255};
         ::DrawTextPro(font, args[1].as_string().c_str(), pos, origin, (float)args[5].as_number(), (float)args[6].as_number(), (float)args[7].as_number(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWRECTANGLE", Fn{"DRAWRECTANGLE", 7, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 7) throw std::runtime_error("DRAWRECTANGLE: expected 7 args");
         ::Color c{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), 255};
         ::DrawRectangle(args[0].as_int(), args[1].as_int(), args[2].as_int(), args[3].as_int(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWRECTANGLEV", Fn{"DRAWRECTANGLEV", 7, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 7) throw std::runtime_error("DRAWRECTANGLEV: expected 7 args");
@@ -278,12 +426,14 @@ void register_raylib_bindings(FunctionRegistry& R) {
         ::Vector2 size{(float)args[2].as_int(), (float)args[3].as_int()};
         ::Color c{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), 255};
         ::DrawRectangleV(pos, size, c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWRECTANGLEREC", Fn{"DRAWRECTANGLEREC", 7, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 7) throw std::runtime_error("DRAWRECTANGLEREC: expected 7 args");
         ::Rectangle rec{(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int(), (float)args[3].as_int()};
         ::Color c{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), 255};
         ::DrawRectangleRec(rec, c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWRECTANGLEPRO", Fn{"DRAWRECTANGLEPRO", 11, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 11) throw std::runtime_error("DRAWRECTANGLEPRO: expected 11 args");
@@ -291,102 +441,120 @@ void register_raylib_bindings(FunctionRegistry& R) {
         ::Vector2 origin{(float)args[4].as_int(), (float)args[5].as_int()};
         ::Color c{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), 255};
         ::DrawRectanglePro(rec, origin, (float)args[6].as_number(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWRECTANGLEGRADIENTV", Fn{"DRAWRECTANGLEGRADIENTV", 15, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 15) throw std::runtime_error("DRAWRECTANGLEGRADIENTV: expected 15 args");
         ::Color top{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), 255};
         ::Color bottom{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), 255};
         ::DrawRectangleGradientV(args[0].as_int(), args[1].as_int(), args[2].as_int(), args[3].as_int(), top, bottom);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWRECTANGLEGRADIENTH", Fn{"DRAWRECTANGLEGRADIENTH", 15, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 15) throw std::runtime_error("DRAWRECTANGLEGRADIENTH: expected 15 args");
         ::Color left{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), 255};
         ::Color right{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), 255};
         ::DrawRectangleGradientH(args[0].as_int(), args[1].as_int(), args[2].as_int(), args[3].as_int(), left, right);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWRECTANGLEROUNDED", Fn{"DRAWRECTANGLEROUNDED", 9, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 9) throw std::runtime_error("DRAWRECTANGLEROUNDED: expected 9 args");
         ::Rectangle rec{(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int(), (float)args[3].as_int()};
         ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
         ::DrawRectangleRounded(rec, (float)args[4].as_number(), args[5].as_int(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWRECTANGLELINES", Fn{"DRAWRECTANGLELINES", 7, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 7) throw std::runtime_error("DRAWRECTANGLELINES: expected 7 args");
         ::Color c{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), 255};
         ::DrawRectangleLines(args[0].as_int(), args[1].as_int(), args[2].as_int(), args[3].as_int(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWRECTANGLELINESEX", Fn{"DRAWRECTANGLELINESEX", 8, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 8) throw std::runtime_error("DRAWRECTANGLELINESEX: expected 8 args");
         ::Rectangle rec{(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int(), (float)args[3].as_int()};
         ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
         ::DrawRectangleLinesEx(rec, (float)args[4].as_number(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWCIRCLE", Fn{"DRAWCIRCLE", 6, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 6) throw std::runtime_error("DRAWCIRCLE: expected 6 args");
         ::Color c{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), 255};
         ::DrawCircle(args[0].as_int(), args[1].as_int(), (float)args[2].as_int(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWCIRCLEV", Fn{"DRAWCIRCLEV", 6, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 6) throw std::runtime_error("DRAWCIRCLEV: expected 6 args");
         ::Vector2 center{(float)args[0].as_int(), (float)args[1].as_int()};
         ::Color c{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), 255};
         ::DrawCircleV(center, (float)args[2].as_int(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWCIRCLELINES", Fn{"DRAWCIRCLELINES", 6, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 6) throw std::runtime_error("DRAWCIRCLELINES: expected 6 args");
         ::Color c{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), 255};
         ::DrawCircleLines(args[0].as_int(), args[1].as_int(), (float)args[2].as_int(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWCIRCLELINESV", Fn{"DRAWCIRCLELINESV", 6, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 6) throw std::runtime_error("DRAWCIRCLELINESV: expected 6 args");
         ::Vector2 center{(float)args[0].as_int(), (float)args[1].as_int()};
         ::Color c{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), 255};
         ::DrawCircleLinesV(center, (float)args[2].as_int(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWCIRCLESECTOR", Fn{"DRAWCIRCLESECTOR", 9, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 9) throw std::runtime_error("DRAWCIRCLESECTOR: expected 9 args");
         ::Vector2 center{(float)args[0].as_int(), (float)args[1].as_int()};
         ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
         ::DrawCircleSector(center, (float)args[2].as_int(), (float)args[3].as_number(), (float)args[4].as_number(), args[5].as_int(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWCIRCLESECTORLINES", Fn{"DRAWCIRCLESECTORLINES", 9, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 9) throw std::runtime_error("DRAWCIRCLESECTORLINES: expected 9 args");
         ::Vector2 center{(float)args[0].as_int(), (float)args[1].as_int()};
         ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
         ::DrawCircleSectorLines(center, (float)args[2].as_int(), (float)args[3].as_number(), (float)args[4].as_number(), args[5].as_int(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWCIRCLEGRADIENT", Fn{"DRAWCIRCLEGRADIENT", 12, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 12) throw std::runtime_error("DRAWCIRCLEGRADIENT: expected 12 args");
         ::Color inner{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), 255};
         ::Color outer{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
         ::DrawCircleGradient(args[0].as_int(), args[1].as_int(), (float)args[2].as_int(), inner, outer);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWELLIPSE", Fn{"DRAWELLIPSE", 7, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 7) throw std::runtime_error("DRAWELLIPSE: expected 7 args");
         ::Color c{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), 255};
         ::DrawEllipse(args[0].as_int(), args[1].as_int(), (float)args[2].as_int(), (float)args[3].as_int(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWELLIPSELINES", Fn{"DRAWELLIPSELINES", 7, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 7) throw std::runtime_error("DRAWELLIPSELINES: expected 7 args");
         ::Color c{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), 255};
         ::DrawEllipseLines(args[0].as_int(), args[1].as_int(), (float)args[2].as_int(), (float)args[3].as_int(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWRING", Fn{"DRAWRING", 10, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 10) throw std::runtime_error("DRAWRING: expected 10 args");
         ::Vector2 center{(float)args[0].as_int(), (float)args[1].as_int()};
         ::Color c{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), 255};
         ::DrawRing(center, (float)args[2].as_int(), (float)args[3].as_int(), (float)args[4].as_number(), (float)args[5].as_number(), args[6].as_int(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWRINGLINES", Fn{"DRAWRINGLINES", 10, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 10) throw std::runtime_error("DRAWRINGLINES: expected 10 args");
         ::Vector2 center{(float)args[0].as_int(), (float)args[1].as_int()};
         ::Color c{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), 255};
         ::DrawRingLines(center, (float)args[2].as_int(), (float)args[3].as_int(), (float)args[4].as_number(), (float)args[5].as_number(), args[6].as_int(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWLINE", Fn{"DRAWLINE", 7, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 7) throw std::runtime_error("DRAWLINE: expected 7 args");
         ::Color c{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), 255};
         ::DrawLine(args[0].as_int(), args[1].as_int(), args[2].as_int(), args[3].as_int(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWLINEV", Fn{"DRAWLINEV", 7, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 7) throw std::runtime_error("DRAWLINEV: expected 7 args");
@@ -394,6 +562,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         ::Vector2 end{(float)args[2].as_int(), (float)args[3].as_int()};
         ::Color c{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), 255};
         ::DrawLineV(start, end, c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWLINEEX", Fn{"DRAWLINEEX", 8, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 8) throw std::runtime_error("DRAWLINEEX: expected 8 args");
@@ -401,6 +570,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         ::Vector2 end{(float)args[2].as_int(), (float)args[3].as_int()};
         ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255};
         ::DrawLineEx(start, end, (float)args[4].as_number(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWTRIANGLE", Fn{"DRAWTRIANGLE", 9, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 9) throw std::runtime_error("DRAWTRIANGLE: expected 9 args");
@@ -409,6 +579,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         ::Vector2 v3{(float)args[4].as_int(), (float)args[5].as_int()};
         ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
         ::DrawTriangle(v1, v2, v3, c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWTRIANGLELINES", Fn{"DRAWTRIANGLELINES", 9, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 9) throw std::runtime_error("DRAWTRIANGLELINES: expected 9 args");
@@ -417,29 +588,34 @@ void register_raylib_bindings(FunctionRegistry& R) {
         ::Vector2 v3{(float)args[4].as_int(), (float)args[5].as_int()};
         ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
         ::DrawTriangleLines(v1, v2, v3, c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWPOLY", Fn{"DRAWPOLY", 8, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 8) throw std::runtime_error("DRAWPOLY: expected 8 args");
         ::Vector2 center{(float)args[0].as_int(), (float)args[1].as_int()};
         ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255};
         ::DrawPoly(center, args[2].as_int(), (float)args[3].as_int(), (float)args[4].as_number(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWPOLYLINES", Fn{"DRAWPOLYLINES", 8, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 8) throw std::runtime_error("DRAWPOLYLINES: expected 8 args");
         ::Vector2 center{(float)args[0].as_int(), (float)args[1].as_int()};
         ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255};
         ::DrawPolyLines(center, args[2].as_int(), (float)args[3].as_int(), (float)args[4].as_number(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWPIXEL", Fn{"DRAWPIXEL", 5, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 5) throw std::runtime_error("DRAWPIXEL: expected 5 args");
         ::Color c{(unsigned char)args[2].as_int(), (unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), 255};
         ::DrawPixel(args[0].as_int(), args[1].as_int(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWPIXELV", Fn{"DRAWPIXELV", 5, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 5) throw std::runtime_error("DRAWPIXELV: expected 5 args");
         ::Vector2 pos{(float)args[0].as_int(), (float)args[1].as_int()};
         ::Color c{(unsigned char)args[2].as_int(), (unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), 255};
         ::DrawPixelV(pos, c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("ISKEYPRESSEDREPEAT", Fn{"ISKEYPRESSEDREPEAT", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("ISKEYPRESSEDREPEAT: expected 1 args");
@@ -482,15 +658,19 @@ void register_raylib_bindings(FunctionRegistry& R) {
         
     }}, true);    R.add_with_policy("SETMOUSEPOSITION", Fn{"SETMOUSEPOSITION", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("SETMOUSEPOSITION: expected 2 args");
+        SetMousePosition(args[0].as_int(), args[1].as_int());
         return Value::nil();
     }}, true);    R.add_with_policy("SETMOUSEOFFSET", Fn{"SETMOUSEOFFSET", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("SETMOUSEOFFSET: expected 2 args");
+        SetMouseOffset(args[0].as_int(), args[1].as_int());
         return Value::nil();
     }}, true);    R.add_with_policy("SETMOUSESCALE", Fn{"SETMOUSESCALE", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("SETMOUSESCALE: expected 2 args");
+        SetMouseScale(args[0].as_number(), args[1].as_number());
         return Value::nil();
     }}, true);    R.add_with_policy("SETMOUSECURSOR", Fn{"SETMOUSECURSOR", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("SETMOUSECURSOR: expected 1 args");
+        SetMouseCursor(args[0].as_int());
         return Value::nil();
     }}, true);    R.add_with_policy("GETTOUCHX", Fn{"GETTOUCHX", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("GETTOUCHX: expected 0 args");
@@ -554,6 +734,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         // TODO: SetGamepadVibration function not found in current Raylib version
         // For now, just return nil
         return Value::nil();
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("LOADTEXTURE", Fn{"LOADTEXTURE", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("LOADTEXTURE: expected 1 args");
@@ -595,41 +776,49 @@ void register_raylib_bindings(FunctionRegistry& R) {
         if (args.size() != 2) throw std::runtime_error("UPDATETEXTURE: expected 2 args");
         // Note: This is simplified - would need proper pixel data handling
         ::UpdateTexture(rlreg::textures.at(args[0].as_int()), nullptr);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("UPDATETEXTUREREC", Fn{"UPDATETEXTUREREC", 6, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 6) throw std::runtime_error("UPDATETEXTUREREC: expected 6 args");
         ::Rectangle rec{(float)args[1].as_int(), (float)args[2].as_int(), (float)args[3].as_int(), (float)args[4].as_int()};
         // Note: This is simplified - would need proper pixel data handling
         ::UpdateTextureRec(rlreg::textures.at(args[0].as_int()), rec, nullptr);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("GENTEXTUREMIPMAPS", Fn{"GENTEXTUREMIPMAPS", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("GENTEXTUREMIPMAPS: expected 1 args");
         ::GenTextureMipmaps(&rlreg::textures[args[0].as_int()]);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("SETTEXTUREFILTER", Fn{"SETTEXTUREFILTER", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("SETTEXTUREFILTER: expected 2 args");
         ::SetTextureFilter(rlreg::textures.at(args[0].as_int()), args[1].as_int());
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("SETTEXTUREWRAP", Fn{"SETTEXTUREWRAP", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("SETTEXTUREWRAP: expected 2 args");
         ::SetTextureWrap(rlreg::textures.at(args[0].as_int()), args[1].as_int());
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWTEXTURE", Fn{"DRAWTEXTURE", 6, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 6) throw std::runtime_error("DRAWTEXTURE: expected 6 args");
         ::Color c{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), 255};
         ::DrawTexture(rlreg::textures.at(args[0].as_int()), args[1].as_int(), args[2].as_int(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWTEXTUREV", Fn{"DRAWTEXTUREV", 6, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 6) throw std::runtime_error("DRAWTEXTUREV: expected 6 args");
         ::Vector2 pos{(float)args[1].as_int(), (float)args[2].as_int()};
         ::Color c{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), 255};
         ::DrawTextureV(rlreg::textures.at(args[0].as_int()), pos, c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWTEXTUREEX", Fn{"DRAWTEXTUREEX", 8, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 8) throw std::runtime_error("DRAWTEXTUREEX: expected 8 args");
         ::Vector2 pos{(float)args[1].as_int(), (float)args[2].as_int()};
         ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255};
         ::DrawTextureEx(rlreg::textures.at(args[0].as_int()), pos, (float)args[3].as_number(), (float)args[4].as_number(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWTEXTUREREC", Fn{"DRAWTEXTUREREC", 9, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 9) throw std::runtime_error("DRAWTEXTUREREC: expected 9 args");
@@ -637,6 +826,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         ::Vector2 pos{(float)args[5].as_int(), (float)args[6].as_int()};
         ::Color c{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), 255};
         ::DrawTextureRec(rlreg::textures.at(args[0].as_int()), src, pos, c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWTEXTUREPRO", Fn{"DRAWTEXTUREPRO", 12, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 12) throw std::runtime_error("DRAWTEXTUREPRO: expected 12 args");
@@ -645,6 +835,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         ::Vector2 origin{(float)args[9].as_int(), (float)args[10].as_int()};
         ::Color c{(unsigned char)args[11].as_int(), (unsigned char)args[12].as_int(), (unsigned char)args[13].as_int(), 255};
         ::DrawTexturePro(rlreg::textures.at(args[0].as_int()), src, dest, origin, 0.0f, c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWTEXTURENPATCH", Fn{"DRAWTEXTURENPATCH", 16, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 16) throw std::runtime_error("DRAWTEXTURENPATCH: expected 16 args");
@@ -659,6 +850,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         ::Vector2 origin{(float)args[14].as_int(), (float)args[15].as_int()};
         ::Color c{(unsigned char)args[16].as_int(), (unsigned char)args[17].as_int(), (unsigned char)args[18].as_int(), 255};
         ::DrawTextureNPatch(rlreg::textures.at(args[0].as_int()), nPatchInfo, dest, origin, (float)args[14].as_number(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("UNLOADTEXTURE", Fn{"UNLOADTEXTURE", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("UNLOADTEXTURE: expected 1 args");
@@ -668,6 +860,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
           ::UnloadTexture(it->second);
           rlreg::textures.erase(it);
         }
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("UNLOADRENDERTEXTURE", Fn{"UNLOADRENDERTEXTURE", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("UNLOADRENDERTEXTURE: expected 1 args");
@@ -677,18 +870,22 @@ void register_raylib_bindings(FunctionRegistry& R) {
           ::UnloadRenderTexture(it->second);
           rlreg::rendertextures.erase(it);
         }
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("INITAUDIODEVICE", Fn{"INITAUDIODEVICE", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("INITAUDIODEVICE: expected 0 args");
+        InitAudioDevice();
         return Value::nil();
     }}, true);    R.add_with_policy("CLOSEAUDIODEVICE", Fn{"CLOSEAUDIODEVICE", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("CLOSEAUDIODEVICE: expected 0 args");
+        CloseAudioDevice();
         return Value::nil();
     }}, true);    R.add_with_policy("ISAUDIODEVICEREADY", Fn{"ISAUDIODEVICEREADY", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("ISAUDIODEVICEREADY: expected 0 args");
         return Value::from_bool(IsAudioDeviceReady());
     }}, true);    R.add_with_policy("SETMASTERVOLUME", Fn{"SETMASTERVOLUME", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("SETMASTERVOLUME: expected 1 args");
+        SetMasterVolume(args[0].as_number());
         return Value::nil();
     }}, true);    R.add_with_policy("GETMASTERVOLUME", Fn{"GETMASTERVOLUME", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("GETMASTERVOLUME: expected 0 args");
@@ -733,14 +930,17 @@ void register_raylib_bindings(FunctionRegistry& R) {
         if (args.size() != 2) throw std::runtime_error("UPDATESOUND: expected 2 args");
         // Note: This is simplified - would need proper audio data handling
         ::UpdateSound(rlreg::sounds.at(args[0].as_int()), nullptr, 0);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("PAUSESOUND", Fn{"PAUSESOUND", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("PAUSESOUND: expected 1 args");
         ::PauseSound(rlreg::sounds.at(args[0].as_int()));
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("RESUMESOUND", Fn{"RESUMESOUND", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("RESUMESOUND: expected 1 args");
         ::ResumeSound(rlreg::sounds.at(args[0].as_int()));
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("ISSOUNDPLAYING", Fn{"ISSOUNDPLAYING", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("ISSOUNDPLAYING: expected 1 args");
@@ -749,14 +949,17 @@ void register_raylib_bindings(FunctionRegistry& R) {
     }}, true);    R.add_with_policy("SETSOUNDVOLUME", Fn{"SETSOUNDVOLUME", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("SETSOUNDVOLUME: expected 2 args");
         ::SetSoundVolume(rlreg::sounds.at(args[0].as_int()), (float)args[1].as_number());
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("SETSOUNDPITCH", Fn{"SETSOUNDPITCH", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("SETSOUNDPITCH: expected 2 args");
         ::SetSoundPitch(rlreg::sounds.at(args[0].as_int()), (float)args[1].as_number());
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("SETSOUNDPAN", Fn{"SETSOUNDPAN", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("SETSOUNDPAN: expected 2 args");
         ::SetSoundPan(rlreg::sounds.at(args[0].as_int()), (float)args[1].as_number());
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("WAVECOPY", Fn{"WAVECOPY", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("WAVECOPY: expected 1 args");
@@ -768,10 +971,12 @@ void register_raylib_bindings(FunctionRegistry& R) {
     }}, true);    R.add_with_policy("WAVECROP", Fn{"WAVECROP", 3, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 3) throw std::runtime_error("WAVECROP: expected 3 args");
         ::WaveCrop(&rlreg::waves[args[0].as_int()], args[1].as_int(), args[2].as_int());
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("WAVEFORMAT", Fn{"WAVEFORMAT", 4, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 4) throw std::runtime_error("WAVEFORMAT: expected 4 args");
         ::WaveFormat(&rlreg::waves[args[0].as_int()], args[1].as_int(), args[2].as_int(), args[3].as_int());
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("LOADWAVESAMPLES", Fn{"LOADWAVESAMPLES", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("LOADWAVESAMPLES: expected 1 args");
@@ -784,6 +989,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         if (args.size() != 1) throw std::runtime_error("UNLOADWAVESAMPLES: expected 1 args");
         // Note: This is simplified - would need proper sample data handling
         ::UnloadWaveSamples(nullptr);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("LOADMUSICSTREAM", Fn{"LOADMUSICSTREAM", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("LOADMUSICSTREAM: expected 1 args");
@@ -811,10 +1017,12 @@ void register_raylib_bindings(FunctionRegistry& R) {
           ::UnloadMusicStream(it->second);
           rlreg::musics.erase(it);
         }
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("PLAYMUSICSTREAM", Fn{"PLAYMUSICSTREAM", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("PLAYMUSICSTREAM: expected 1 args");
         ::PlayMusicStream(rlreg::musics.at(args[0].as_int()));
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("ISMUSICSTREAMPLAYING", Fn{"ISMUSICSTREAMPLAYING", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("ISMUSICSTREAMPLAYING: expected 1 args");
@@ -823,34 +1031,42 @@ void register_raylib_bindings(FunctionRegistry& R) {
     }}, true);    R.add_with_policy("UPDATEMUSICSTREAM", Fn{"UPDATEMUSICSTREAM", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("UPDATEMUSICSTREAM: expected 1 args");
         ::UpdateMusicStream(rlreg::musics.at(args[0].as_int()));
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("STOPMUSICSTREAM", Fn{"STOPMUSICSTREAM", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("STOPMUSICSTREAM: expected 1 args");
         ::StopMusicStream(rlreg::musics.at(args[0].as_int()));
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("PAUSEMUSICSTREAM", Fn{"PAUSEMUSICSTREAM", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("PAUSEMUSICSTREAM: expected 1 args");
         ::PauseMusicStream(rlreg::musics.at(args[0].as_int()));
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("RESUMEMUSICSTREAM", Fn{"RESUMEMUSICSTREAM", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("RESUMEMUSICSTREAM: expected 1 args");
         ::ResumeMusicStream(rlreg::musics.at(args[0].as_int()));
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("SEEKMUSICSTREAM", Fn{"SEEKMUSICSTREAM", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("SEEKMUSICSTREAM: expected 2 args");
         ::SeekMusicStream(rlreg::musics.at(args[0].as_int()), (float)args[1].as_number());
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("SETMUSICVOLUME", Fn{"SETMUSICVOLUME", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("SETMUSICVOLUME: expected 2 args");
         ::SetMusicVolume(rlreg::musics.at(args[0].as_int()), (float)args[1].as_number());
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("SETMUSICPITCH", Fn{"SETMUSICPITCH", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("SETMUSICPITCH: expected 2 args");
         ::SetMusicPitch(rlreg::musics.at(args[0].as_int()), (float)args[1].as_number());
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("SETMUSICPAN", Fn{"SETMUSICPAN", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("SETMUSICPAN: expected 2 args");
         ::SetMusicPan(rlreg::musics.at(args[0].as_int()), (float)args[1].as_number());
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("GETMUSICTIMELENGTH", Fn{"GETMUSICTIMELENGTH", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("GETMUSICTIMELENGTH: expected 1 args");
@@ -879,11 +1095,13 @@ void register_raylib_bindings(FunctionRegistry& R) {
           ::UnloadAudioStream(it->second);
           rlreg::audiostreams.erase(it);
         }
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("UPDATEAUDIOSTREAM", Fn{"UPDATEAUDIOSTREAM", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("UPDATEAUDIOSTREAM: expected 2 args");
         // Note: This is simplified - would need proper audio data handling
         ::UpdateAudioStream(rlreg::audiostreams.at(args[0].as_int()), nullptr, 0);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("ISAUDIOSTREAMPROCESSED", Fn{"ISAUDIOSTREAMPROCESSED", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("ISAUDIOSTREAMPROCESSED: expected 1 args");
@@ -892,14 +1110,17 @@ void register_raylib_bindings(FunctionRegistry& R) {
     }}, true);    R.add_with_policy("PLAYAUDIOSTREAM", Fn{"PLAYAUDIOSTREAM", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("PLAYAUDIOSTREAM: expected 1 args");
         ::PlayAudioStream(rlreg::audiostreams.at(args[0].as_int()));
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("PAUSEAUDIOSTREAM", Fn{"PAUSEAUDIOSTREAM", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("PAUSEAUDIOSTREAM: expected 1 args");
         ::PauseAudioStream(rlreg::audiostreams.at(args[0].as_int()));
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("RESUMEAUDIOSTREAM", Fn{"RESUMEAUDIOSTREAM", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("RESUMEAUDIOSTREAM: expected 1 args");
         ::ResumeAudioStream(rlreg::audiostreams.at(args[0].as_int()));
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("ISAUDIOSTREAMPLAYING", Fn{"ISAUDIOSTREAMPLAYING", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("ISAUDIOSTREAMPLAYING: expected 1 args");
@@ -908,46 +1129,56 @@ void register_raylib_bindings(FunctionRegistry& R) {
     }}, true);    R.add_with_policy("STOPAUDIOSTREAM", Fn{"STOPAUDIOSTREAM", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("STOPAUDIOSTREAM: expected 1 args");
         ::StopAudioStream(rlreg::audiostreams.at(args[0].as_int()));
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("SETAUDIOSTREAMVOLUME", Fn{"SETAUDIOSTREAMVOLUME", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("SETAUDIOSTREAMVOLUME: expected 2 args");
         ::SetAudioStreamVolume(rlreg::audiostreams.at(args[0].as_int()), (float)args[1].as_number());
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("SETAUDIOSTREAMPITCH", Fn{"SETAUDIOSTREAMPITCH", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("SETAUDIOSTREAMPITCH: expected 2 args");
         ::SetAudioStreamPitch(rlreg::audiostreams.at(args[0].as_int()), (float)args[1].as_number());
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("SETAUDIOSTREAMPAN", Fn{"SETAUDIOSTREAMPAN", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("SETAUDIOSTREAMPAN: expected 2 args");
         ::SetAudioStreamPan(rlreg::audiostreams.at(args[0].as_int()), (float)args[1].as_number());
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("SETAUDIOSTREAMBUFFERSIZEDEFAULT", Fn{"SETAUDIOSTREAMBUFFERSIZEDEFAULT", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("SETAUDIOSTREAMBUFFERSIZEDEFAULT: expected 1 args");
+        SetAudioStreamBufferSizeDefault(args[0].as_int());
         return Value::nil();
     }}, true);    R.add_with_policy("SETAUDIOSTREAMCALLBACK", Fn{"SETAUDIOSTREAMCALLBACK", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("SETAUDIOSTREAMCALLBACK: expected 2 args");
         // Note: This is simplified - would need proper callback handling
         ::SetAudioStreamCallback(rlreg::audiostreams.at(args[0].as_int()), nullptr);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("ATTACHAUDIOSTREAMPROCESSOR", Fn{"ATTACHAUDIOSTREAMPROCESSOR", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("ATTACHAUDIOSTREAMPROCESSOR: expected 2 args");
         // Note: This is simplified - would need proper processor handling
         ::AttachAudioStreamProcessor(rlreg::audiostreams.at(args[0].as_int()), nullptr);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DETACHAUDIOSTREAMPROCESSOR", Fn{"DETACHAUDIOSTREAMPROCESSOR", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("DETACHAUDIOSTREAMPROCESSOR: expected 2 args");
         // Note: This is simplified - would need proper processor handling
         ::DetachAudioStreamProcessor(rlreg::audiostreams.at(args[0].as_int()), nullptr);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("ATTACHAUDIOMIXEDPROCESSOR", Fn{"ATTACHAUDIOMIXEDPROCESSOR", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("ATTACHAUDIOMIXEDPROCESSOR: expected 1 args");
         // Note: This is simplified - would need proper processor handling
         ::AttachAudioMixedProcessor(nullptr);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DETACHAUDIOMIXEDPROCESSOR", Fn{"DETACHAUDIOMIXEDPROCESSOR", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("DETACHAUDIOMIXEDPROCESSOR: expected 1 args");
         // Note: This is simplified - would need proper processor handling
         ::DetachAudioMixedProcessor(nullptr);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("UNLOADWAVE", Fn{"UNLOADWAVE", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("UNLOADWAVE: expected 1 args");
@@ -957,6 +1188,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
           ::UnloadWave(it->second);
           rlreg::waves.erase(it);
         }
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("UNLOADSOUNDALIAS", Fn{"UNLOADSOUNDALIAS", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("UNLOADSOUNDALIAS: expected 1 args");
@@ -966,6 +1198,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
           ::UnloadSoundAlias(it->second);
           rlreg::sounds.erase(it);
         }
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("EXPORTWAVE", Fn{"EXPORTWAVE", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("EXPORTWAVE: expected 2 args");
@@ -1005,6 +1238,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         float scale = (float)args[4].as_number();
         ::Color tint{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255};
         ::DrawModel(rlreg::models.at(args[0].as_int()), position, scale, tint);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWMODELEX", Fn{"DRAWMODELEX", 11, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 11) throw std::runtime_error("DRAWMODELEX: expected 11 args");
@@ -1013,6 +1247,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         ::Vector3 scale{(float)args[7].as_number(), (float)args[7].as_number(), (float)args[7].as_number()};
         ::Color tint{(unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), (unsigned char)args[10].as_int(), 255};
         ::DrawModelEx(rlreg::models.at(args[0].as_int()), position, rotationAxis, 0.0f, scale, tint);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWMODELWIRES", Fn{"DRAWMODELWIRES", 8, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 8) throw std::runtime_error("DRAWMODELWIRES: expected 8 args");
@@ -1020,6 +1255,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         float scale = (float)args[4].as_number();
         ::Color tint{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255};
         ::DrawModelWires(rlreg::models.at(args[0].as_int()), position, scale, tint);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWMODELWIRESEX", Fn{"DRAWMODELWIRESEX", 11, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 11) throw std::runtime_error("DRAWMODELWIRESEX: expected 11 args");
@@ -1028,6 +1264,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         ::Vector3 scale{(float)args[7].as_number(), (float)args[7].as_number(), (float)args[7].as_number()};
         ::Color tint{(unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), (unsigned char)args[10].as_int(), 255};
         ::DrawModelWiresEx(rlreg::models.at(args[0].as_int()), position, rotationAxis, 0.0f, scale, tint);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWBOUNDINGBOX", Fn{"DRAWBOUNDINGBOX", 4, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 4) throw std::runtime_error("DRAWBOUNDINGBOX: expected 4 args");
@@ -1045,6 +1282,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
           ::Color c{(unsigned char)args[1].as_int(), (unsigned char)args[2].as_int(), (unsigned char)args[3].as_int(), 255};
           ::DrawBoundingBox(box, c);
         }
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWBILLBOARD", Fn{"DRAWBILLBOARD", 9, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 9) throw std::runtime_error("DRAWBILLBOARD: expected 9 args");
@@ -1053,6 +1291,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         ::Vector3 position{(float)args[2].as_number(), (float)args[3].as_number(), (float)args[4].as_number()};
         ::Color tint{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
         ::DrawBillboard(camera, rlreg::textures.at(args[1].as_int()), position, (float)args[5].as_number(), tint);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWBILLBOARDREC", Fn{"DRAWBILLBOARDREC", 14, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 14) throw std::runtime_error("DRAWBILLBOARDREC: expected 14 args");
@@ -1063,6 +1302,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         ::Vector2 size{(float)args[9].as_number(), (float)args[10].as_number()};
         ::Color tint{(unsigned char)args[11].as_int(), (unsigned char)args[12].as_int(), (unsigned char)args[13].as_int(), 255};
         ::DrawBillboardRec(camera, rlreg::textures.at(args[1].as_int()), source, position, size, tint);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWBILLBOARDPRO", Fn{"DRAWBILLBOARDPRO", 18, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 18) throw std::runtime_error("DRAWBILLBOARDPRO: expected 18 args");
@@ -1075,15 +1315,18 @@ void register_raylib_bindings(FunctionRegistry& R) {
         ::Vector2 origin{(float)args[14].as_number(), (float)args[15].as_number()};
         ::Color tint{(unsigned char)args[16].as_int(), (unsigned char)args[17].as_int(), (unsigned char)args[18].as_int(), 255};
         ::DrawBillboardPro(camera, rlreg::textures.at(args[1].as_int()), source, position, up, size, origin, 0.0f, tint);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("UPLOADMESH", Fn{"UPLOADMESH", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("UPLOADMESH: expected 2 args");
         ::UploadMesh(&rlreg::meshes[args[0].as_int()], args[1].as_bool());
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("UPDATEMESHBUFFER", Fn{"UPDATEMESHBUFFER", 5, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 5) throw std::runtime_error("UPDATEMESHBUFFER: expected 5 args");
         // Note: This is simplified - would need proper buffer data handling
         ::UpdateMeshBuffer(rlreg::meshes.at(args[0].as_int()), args[1].as_int(), nullptr, args[3].as_int(), args[4].as_int());
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("UNLOADMESH", Fn{"UNLOADMESH", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("UNLOADMESH: expected 1 args");
@@ -1093,6 +1336,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
           ::UnloadMesh(it->second);
           rlreg::meshes.erase(it);
         }
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWMESH", Fn{"DRAWMESH", 3, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 3) throw std::runtime_error("DRAWMESH: expected 3 args");
@@ -1100,6 +1344,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         ::Material material = ::Material{};
         ::Matrix transform = MatrixIdentity();
         ::DrawMesh(rlreg::meshes.at(args[0].as_int()), material, transform);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWMESHINSTANCED", Fn{"DRAWMESHINSTANCED", 3, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 3) throw std::runtime_error("DRAWMESHINSTANCED: expected 3 args");
@@ -1107,6 +1352,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         ::Material material = ::Material{};
         ::Matrix transform = MatrixIdentity();
         ::DrawMeshInstanced(rlreg::meshes.at(args[0].as_int()), material, &transform, 1);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("GETMESHBOUNDINGBOX", Fn{"GETMESHBOUNDINGBOX", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("GETMESHBOUNDINGBOX: expected 1 args");
@@ -1117,6 +1363,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
     }}, true);    R.add_with_policy("GENMESHTANGENTS", Fn{"GENMESHTANGENTS", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("GENMESHTANGENTS: expected 1 args");
         ::GenMeshTangents(&rlreg::meshes[args[0].as_int()]);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("EXPORTMESH", Fn{"EXPORTMESH", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("EXPORTMESH: expected 2 args");
@@ -1228,14 +1475,17 @@ void register_raylib_bindings(FunctionRegistry& R) {
           ::UnloadMaterial(it->second);
           rlreg::materials.erase(it);
         }
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("SETMATERIALTEXTURE", Fn{"SETMATERIALTEXTURE", 3, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 3) throw std::runtime_error("SETMATERIALTEXTURE: expected 3 args");
         ::SetMaterialTexture(&rlreg::materials[args[0].as_int()], args[1].as_int(), rlreg::textures.at(args[2].as_int()));
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("SETMODELMESHMATERIAL", Fn{"SETMODELMESHMATERIAL", 3, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 3) throw std::runtime_error("SETMODELMESHMATERIAL: expected 3 args");
         ::SetModelMeshMaterial(&rlreg::models[args[0].as_int()], args[1].as_int(), args[2].as_int());
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("LOADMODELANIMATIONS", Fn{"LOADMODELANIMATIONS", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("LOADMODELANIMATIONS: expected 1 args");
@@ -1250,17 +1500,20 @@ void register_raylib_bindings(FunctionRegistry& R) {
         // Note: This requires a ModelAnimation object, simplified for BASIC
         ::ModelAnimation anim = ::ModelAnimation{};
         ::UpdateModelAnimation(rlreg::models.at(args[0].as_int()), anim, args[2].as_int());
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("UNLOADMODELANIMATION", Fn{"UNLOADMODELANIMATION", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("UNLOADMODELANIMATION: expected 1 args");
         // Note: This requires a ModelAnimation object, simplified for BASIC
         ::ModelAnimation anim = ::ModelAnimation{};
         ::UnloadModelAnimation(anim);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("UNLOADMODELANIMATIONS", Fn{"UNLOADMODELANIMATIONS", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("UNLOADMODELANIMATIONS: expected 1 args");
         // Note: This requires a ModelAnimation array, simplified for BASIC
         ::UnloadModelAnimations(nullptr, 0);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("ISMODELANIMATIONVALID", Fn{"ISMODELANIMATIONVALID", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("ISMODELANIMATIONVALID: expected 2 args");
@@ -1394,6 +1647,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
           ::UnloadModel(it->second);
           rlreg::models.erase(it);
         }
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWLINE3D", Fn{"DRAWLINE3D", 9, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 9) throw std::runtime_error("DRAWLINE3D: expected 9 args");
@@ -1401,12 +1655,14 @@ void register_raylib_bindings(FunctionRegistry& R) {
         ::Vector3 end{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
         ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
         ::DrawLine3D(start, end, c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWPOINT3D", Fn{"DRAWPOINT3D", 6, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 6) throw std::runtime_error("DRAWPOINT3D: expected 6 args");
         ::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
         ::Color c{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), 255};
         ::DrawPoint3D(position, c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWCIRCLE3D", Fn{"DRAWCIRCLE3D", 11, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 11) throw std::runtime_error("DRAWCIRCLE3D: expected 11 args");
@@ -1414,6 +1670,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         ::Vector3 rotationAxis{(float)args[4].as_number(), (float)args[5].as_number(), (float)args[6].as_number()};
         ::Color c{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), 255};
         ::DrawCircle3D(center, (float)args[3].as_number(), rotationAxis, 0.0f, c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWTRIANGLE3D", Fn{"DRAWTRIANGLE3D", 12, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 12) throw std::runtime_error("DRAWTRIANGLE3D: expected 12 args");
@@ -1422,6 +1679,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         ::Vector3 v3{(float)args[6].as_number(), (float)args[7].as_number(), (float)args[8].as_number()};
         ::Color c{(unsigned char)args[9].as_int(), (unsigned char)args[10].as_int(), (unsigned char)args[11].as_int(), 255};
         ::DrawTriangle3D(v1, v2, v3, c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWTRIANGLESTRIP3D", Fn{"DRAWTRIANGLESTRIP3D", 4, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 4) throw std::runtime_error("DRAWTRIANGLESTRIP3D: expected 4 args");
@@ -1429,12 +1687,14 @@ void register_raylib_bindings(FunctionRegistry& R) {
         ::Vector3 points[4] = {{0,0,0}, {1,0,0}, {0,1,0}, {1,1,0}};
         ::Color c{(unsigned char)args[1].as_int(), (unsigned char)args[2].as_int(), (unsigned char)args[3].as_int(), 255};
         ::DrawTriangleStrip3D(points, 4, c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWCUBE", Fn{"DRAWCUBE", 9, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 9) throw std::runtime_error("DRAWCUBE: expected 9 args");
         ::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
         ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
         ::DrawCube(position, (float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWCUBEV", Fn{"DRAWCUBEV", 9, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 9) throw std::runtime_error("DRAWCUBEV: expected 9 args");
@@ -1442,12 +1702,14 @@ void register_raylib_bindings(FunctionRegistry& R) {
         ::Vector3 size{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
         ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
         ::DrawCubeV(position, size, c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWCUBEWIRES", Fn{"DRAWCUBEWIRES", 9, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 9) throw std::runtime_error("DRAWCUBEWIRES: expected 9 args");
         ::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
         ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
         ::DrawCubeWires(position, (float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWCUBEWIRESV", Fn{"DRAWCUBEWIRESV", 9, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 9) throw std::runtime_error("DRAWCUBEWIRESV: expected 9 args");
@@ -1455,30 +1717,35 @@ void register_raylib_bindings(FunctionRegistry& R) {
         ::Vector3 size{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
         ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
         ::DrawCubeWiresV(position, size, c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWSPHERE", Fn{"DRAWSPHERE", 7, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 7) throw std::runtime_error("DRAWSPHERE: expected 7 args");
         ::Vector3 center{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
         ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255};
         ::DrawSphere(center, (float)args[3].as_number(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWSPHEREEX", Fn{"DRAWSPHEREEX", 9, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 9) throw std::runtime_error("DRAWSPHEREEX: expected 9 args");
         ::Vector3 center{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
         ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
         ::DrawSphereEx(center, (float)args[3].as_number(), args[4].as_int(), args[5].as_int(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWSPHEREWIRES", Fn{"DRAWSPHEREWIRES", 9, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 9) throw std::runtime_error("DRAWSPHEREWIRES: expected 9 args");
         ::Vector3 center{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
         ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
         ::DrawSphereWires(center, (float)args[3].as_number(), args[4].as_int(), args[5].as_int(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWCYLINDER", Fn{"DRAWCYLINDER", 10, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 10) throw std::runtime_error("DRAWCYLINDER: expected 10 args");
         ::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
         ::Color c{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), 255};
         ::DrawCylinder(position, (float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number(), args[6].as_int(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWCYLINDEREX", Fn{"DRAWCYLINDEREX", 12, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 12) throw std::runtime_error("DRAWCYLINDEREX: expected 12 args");
@@ -1486,12 +1753,14 @@ void register_raylib_bindings(FunctionRegistry& R) {
         ::Vector3 end{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
         ::Color c{(unsigned char)args[10].as_int(), (unsigned char)args[11].as_int(), (unsigned char)args[12].as_int(), 255};
         ::DrawCylinderEx(start, end, (float)args[6].as_number(), (float)args[7].as_number(), args[8].as_int(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWCYLINDERWIRES", Fn{"DRAWCYLINDERWIRES", 10, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 10) throw std::runtime_error("DRAWCYLINDERWIRES: expected 10 args");
         ::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
         ::Color c{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), 255};
         ::DrawCylinderWires(position, (float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number(), args[6].as_int(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWCYLINDERWIRESEX", Fn{"DRAWCYLINDERWIRESEX", 12, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 12) throw std::runtime_error("DRAWCYLINDERWIRESEX: expected 12 args");
@@ -1499,6 +1768,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         ::Vector3 end{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
         ::Color c{(unsigned char)args[10].as_int(), (unsigned char)args[11].as_int(), (unsigned char)args[12].as_int(), 255};
         ::DrawCylinderWiresEx(start, end, (float)args[6].as_number(), (float)args[7].as_number(), args[8].as_int(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWCAPSULE", Fn{"DRAWCAPSULE", 11, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 11) throw std::runtime_error("DRAWCAPSULE: expected 11 args");
@@ -1506,6 +1776,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         ::Vector3 end{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
         ::Color c{(unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), (unsigned char)args[10].as_int(), 255};
         ::DrawCapsule(start, end, (float)args[6].as_number(), args[7].as_int(), args[8].as_int(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWCAPSULEWIRES", Fn{"DRAWCAPSULEWIRES", 11, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 11) throw std::runtime_error("DRAWCAPSULEWIRES: expected 11 args");
@@ -1513,6 +1784,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         ::Vector3 end{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
         ::Color c{(unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), (unsigned char)args[10].as_int(), 255};
         ::DrawCapsuleWires(start, end, (float)args[6].as_number(), args[7].as_int(), args[8].as_int(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWPLANE", Fn{"DRAWPLANE", 8, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 8) throw std::runtime_error("DRAWPLANE: expected 8 args");
@@ -1520,6 +1792,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         ::Vector2 size{(float)args[3].as_number(), (float)args[4].as_number()};
         ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255};
         ::DrawPlane(center, size, c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWRAY", Fn{"DRAWRAY", 4, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 4) throw std::runtime_error("DRAWRAY: expected 4 args");
@@ -1537,10 +1810,12 @@ void register_raylib_bindings(FunctionRegistry& R) {
           ::Color c{(unsigned char)args[1].as_int(), (unsigned char)args[2].as_int(), (unsigned char)args[3].as_int(), 255};
           ::DrawRay(ray, c);
         }
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWGRID", Fn{"DRAWGRID", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("DRAWGRID: expected 2 args");
         ::DrawGrid(args[0].as_int(), (float)args[1].as_number());
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("CHECKCOLLISIONRECS", Fn{"CHECKCOLLISIONRECS", 8, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 8) throw std::runtime_error("CHECKCOLLISIONRECS: expected 8 args");
@@ -1647,28 +1922,34 @@ void register_raylib_bindings(FunctionRegistry& R) {
         if (args.size() != 4) throw std::runtime_error("SETSHADERVALUE: expected 4 args");
         // Note: This is simplified - would need proper value handling
         ::SetShaderValue(rlreg::shaders.at(args[0].as_int()), args[1].as_int(), nullptr, args[3].as_int());
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("SETSHADERVALUEV", Fn{"SETSHADERVALUEV", 5, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 5) throw std::runtime_error("SETSHADERVALUEV: expected 5 args");
         // Note: This is simplified - would need proper value handling
         ::SetShaderValueV(rlreg::shaders.at(args[0].as_int()), args[1].as_int(), nullptr, args[3].as_int(), args[4].as_int());
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("SETSHADERVALUEMATRIX", Fn{"SETSHADERVALUEMATRIX", 3, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 3) throw std::runtime_error("SETSHADERVALUEMATRIX: expected 3 args");
         // Note: This is simplified - would need proper matrix handling
         ::Matrix matrix = MatrixIdentity();
         ::SetShaderValueMatrix(rlreg::shaders.at(args[0].as_int()), args[1].as_int(), matrix);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("SETSHADERVALUETEXTURE", Fn{"SETSHADERVALUETEXTURE", 3, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 3) throw std::runtime_error("SETSHADERVALUETEXTURE: expected 3 args");
         ::SetShaderValueTexture(rlreg::shaders.at(args[0].as_int()), args[1].as_int(), rlreg::textures.at(args[2].as_int()));
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("BEGINSHADERMODE", Fn{"BEGINSHADERMODE", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("BEGINSHADERMODE: expected 1 args");
         ::BeginShaderMode(rlreg::shaders.at(args[0].as_int()));
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("ENDSHADERMODE", Fn{"ENDSHADERMODE", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("ENDSHADERMODE: expected 0 args");
+        EndShaderMode();
         return Value::nil();
     }}, true);    R.add_with_policy("UNLOADSHADER", Fn{"UNLOADSHADER", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("UNLOADSHADER: expected 1 args");
@@ -1678,12 +1959,14 @@ void register_raylib_bindings(FunctionRegistry& R) {
           ::UnloadShader(it->second);
           rlreg::shaders.erase(it);
         }
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("GETRANDOMVALUE", Fn{"GETRANDOMVALUE", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("GETRANDOMVALUE: expected 2 args");
         return Value::from_int(GetRandomValue(args[0].as_int(), args[1].as_int()));
     }}, true);    R.add_with_policy("SETRANDOMSEED", Fn{"SETRANDOMSEED", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("SETRANDOMSEED: expected 1 args");
+        SetRandomSeed(args[0].as_int());
         return Value::nil();
     }}, true);    R.add_with_policy("GETMONITORCOUNT", Fn{"GETMONITORCOUNT", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("GETMONITORCOUNT: expected 0 args");
@@ -1715,21 +1998,27 @@ void register_raylib_bindings(FunctionRegistry& R) {
         
     }}, true);    R.add_with_policy("SETWINDOWMIN", Fn{"SETWINDOWMIN", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("SETWINDOWMIN: expected 2 args");
+        SetWindowMinSize(args[0].as_int(), args[1].as_int());
         return Value::nil();
     }}, true);    R.add_with_policy("SETWINDOWMAX", Fn{"SETWINDOWMAX", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("SETWINDOWMAX: expected 2 args");
+        SetWindowMaxSize(args[0].as_int(), args[1].as_int());
         return Value::nil();
     }}, true);    R.add_with_policy("SETCONFIGFLAGS", Fn{"SETCONFIGFLAGS", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("SETCONFIGFLAGS: expected 1 args");
+        SetConfigFlags(args[0].as_int());
         return Value::nil();
     }}, true);    R.add_with_policy("OPENURL", Fn{"OPENURL", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("OPENURL: expected 1 args");
+        OpenURL(args[0].as_string().c_str());
         return Value::nil();
     }}, true);    R.add_with_policy("TRACELOG", Fn{"TRACELOG", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("TRACELOG: expected 2 args");
+        TraceLog(args[0].as_int(), args[1].as_string().c_str());
         return Value::nil();
     }}, true);    R.add_with_policy("SETTRACELOGLEVEL", Fn{"SETTRACELOGLEVEL", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("SETTRACELOGLEVEL: expected 1 args");
+        SetTraceLogLevel(args[0].as_int());
         return Value::nil();
     }}, true);    R.add_with_policy("MEMALLOC", Fn{"MEMALLOC", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("MEMALLOC: expected 1 args");
@@ -1744,6 +2033,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
     }}, true);    R.add_with_policy("MEMFREE", Fn{"MEMFREE", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("MEMFREE: expected 1 args");
         ::MemFree((void*)(intptr_t)args[0].as_int());
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("LOADFILEDATA", Fn{"LOADFILEDATA", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("LOADFILEDATA: expected 1 args");
@@ -1757,6 +2047,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         if (args.size() != 1) throw std::runtime_error("UNLOADFILEDATA: expected 1 args");
         // Note: This is simplified - would need proper data handling
         ::UnloadFileData(nullptr);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("SAVEFILEDATA", Fn{"SAVEFILEDATA", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("SAVEFILEDATA: expected 2 args");
@@ -1779,6 +2070,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         if (args.size() != 1) throw std::runtime_error("UNLOADFILETEXT: expected 1 args");
         // Note: This is simplified - would need proper text handling
         ::UnloadFileText(nullptr);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DIRECTORYEXISTS", Fn{"DIRECTORYEXISTS", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("DIRECTORYEXISTS: expected 1 args");
@@ -1833,6 +2125,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         // Note: This is simplified - would need proper FilePathList handling
         ::FilePathList files = ::FilePathList{};
         ::UnloadDirectoryFiles(files);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("ISFILEDROPPED", Fn{"ISFILEDROPPED", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("ISFILEDROPPED: expected 0 args");
@@ -1848,6 +2141,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         // Note: This is simplified - would need proper FilePathList handling
         ::FilePathList files = ::FilePathList{};
         ::UnloadDroppedFiles(files);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("GETFILEMODTIME", Fn{"GETFILEMODTIME", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("GETFILEMODTIME: expected 1 args");
@@ -2070,6 +2364,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         if (args.size() != 1) throw std::runtime_error("UNLOADFONTDATA: expected 1 args");
         // Note: This is simplified - would need proper GlyphInfo array handling
         ::UnloadFontData(nullptr, 0);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("UNLOADFONT", Fn{"UNLOADFONT", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("UNLOADFONT: expected 1 args");
@@ -2079,6 +2374,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
           ::UnloadFont(it->second);
           rlreg::fonts.erase(it);
         }
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("EXPORTFONTASCODE", Fn{"EXPORTFONTASCODE", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("EXPORTFONTASCODE: expected 2 args");
@@ -2086,6 +2382,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         
     }}, true);    R.add_with_policy("SETTEXTLINESPACING", Fn{"SETTEXTLINESPACING", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("SETTEXTLINESPACING: expected 1 args");
+        SetTextLineSpacing(args[0].as_int());
         return Value::nil();
     }}, true);    R.add_with_policy("MEASURETEXT", Fn{"MEASURETEXT", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("MEASURETEXT: expected 2 args");
@@ -2121,6 +2418,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         if (args.size() != 1) throw std::runtime_error("UNLOADUTF8: expected 1 args");
         // Note: This is simplified - would need proper text handling
         ::UnloadUTF8(nullptr);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("LOADCODEPOINTS", Fn{"LOADCODEPOINTS", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("LOADCODEPOINTS: expected 1 args");
@@ -2134,6 +2432,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         if (args.size() != 1) throw std::runtime_error("UNLOADCODEPOINTS: expected 1 args");
         // Note: This is simplified - would need proper codepoints array handling
         ::UnloadCodepoints(nullptr);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("GETCODEPOINTCOUNT", Fn{"GETCODEPOINTCOUNT", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("GETCODEPOINTCOUNT: expected 1 args");
@@ -2200,12 +2499,31 @@ void register_raylib_bindings(FunctionRegistry& R) {
         ::Vector2 position{(float)args[2].as_number(), (float)args[3].as_number()};
         ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255};
         ::DrawTextCodepoint(rlreg::fonts.at(args[0].as_int()), args[1].as_int(), position, (float)args[4].as_number(), c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWLINES", Fn{"DRAWLINES", 7, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 7) throw std::runtime_error("DRAWLINES: expected 7 args");
         ::Color c{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), 255};
         ::DrawLine(args[0].as_int(), args[1].as_int(), args[2].as_int(), args[3].as_int(), c);
+        0;
         return Value::nil();
+    }}, true);    R.add_with_policy("MIN", Fn{"MIN", 2, [] (const std::vector<Value>& args) -> Value {
+        if (args.size() != 2) throw std::runtime_error("MIN: expected 2 args");
+        return Value::from_number(std::min(args[0].as_number(), args[1].as_number()));
+        
+    }}, true);    R.add_with_policy("MAX", Fn{"MAX", 2, [] (const std::vector<Value>& args) -> Value {
+        if (args.size() != 2) throw std::runtime_error("MAX: expected 2 args");
+        return Value::from_number(std::max(args[0].as_number(), args[1].as_number()));
+        
+    }}, true);    R.add_with_policy("CLAMP", Fn{"CLAMP", 3, [] (const std::vector<Value>& args) -> Value {
+        if (args.size() != 3) throw std::runtime_error("CLAMP: expected 3 args");
+        double value = args[0].as_number();
+        double min_val = args[1].as_number();
+        double max_val = args[2].as_number();
+        if (value < min_val) value = min_val;
+        if (value > max_val) value = max_val;
+        return Value::from_number(value);
+        
     }}, true);    R.add_with_policy("COLLISIONRECTANGLES", Fn{"COLLISIONRECTANGLES", 8, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 8) throw std::runtime_error("COLLISIONRECTANGLES: expected 8 args");
         // Check if two rectangles overlap
@@ -2274,6 +2592,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
           rlreg::musics.erase(it);
         }
         return Value::nil();
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("PLAYMUSIC", Fn{"PLAYMUSIC", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("PLAYMUSIC: expected 1 args");
@@ -2283,6 +2602,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
           ::PlayMusicStream(it->second);
         }
         return Value::nil();
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("STOPMUSIC", Fn{"STOPMUSIC", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("STOPMUSIC: expected 1 args");
@@ -2292,6 +2612,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
           ::StopMusicStream(it->second);
         }
         return Value::nil();
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("PAUSEMUSIC", Fn{"PAUSEMUSIC", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("PAUSEMUSIC: expected 1 args");
@@ -2301,6 +2622,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
           ::PauseMusicStream(it->second);
         }
         return Value::nil();
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("RESUMEMUSIC", Fn{"RESUMEMUSIC", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("RESUMEMUSIC: expected 1 args");
@@ -2310,6 +2632,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
           ::ResumeMusicStream(it->second);
         }
         return Value::nil();
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("UPDATEMUSIC", Fn{"UPDATEMUSIC", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("UPDATEMUSIC: expected 1 args");
@@ -2319,6 +2642,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
           ::UpdateMusicStream(it->second);
         }
         return Value::nil();
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("ISMUSICPLAYING", Fn{"ISMUSICPLAYING", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("ISMUSICPLAYING: expected 1 args");
@@ -2375,6 +2699,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
           ::ImageResize(&it->second, new_width, new_height);
         }
         return Value::nil();
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("CROPIMAGE", Fn{"CROPIMAGE", 5, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 5) throw std::runtime_error("CROPIMAGE: expected 5 args");
@@ -2389,6 +2714,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
           ::ImageCrop(&it->second, crop);
         }
         return Value::nil();
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("FLIPIMAGE", Fn{"FLIPIMAGE", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("FLIPIMAGE: expected 1 args");
@@ -2398,6 +2724,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
           ::ImageFlipVertical(&it->second);
         }
         return Value::nil();
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("ROTATEIMAGE", Fn{"ROTATEIMAGE", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("ROTATEIMAGE: expected 2 args");
@@ -2408,6 +2735,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
           ::ImageRotate(&it->second, degrees);
         }
         return Value::nil();
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("REPLACE", Fn{"REPLACE", 3, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 3) throw std::runtime_error("REPLACE: expected 3 args");
@@ -2449,6 +2777,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         if (args.size() != 1) throw std::runtime_error("SETGESTURESENABLED: expected 1 args");
         ::SetGesturesEnabled(args[0].as_int());
         return Value::nil();
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("ISGESTUREDETECTED", Fn{"ISGESTUREDETECTED", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("ISGESTUREDETECTED: expected 1 args");
@@ -2485,12 +2814,14 @@ void register_raylib_bindings(FunctionRegistry& R) {
         // SORT function for arrays - sorts the array in ascending order
         // This is a placeholder - actual implementation would need array access
         return Value::nil();
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("REVERSE", Fn{"REVERSE", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("REVERSE: expected 1 args");
         // REVERSE function for arrays - reverses the order of elements
         // This is a placeholder - actual implementation would need array access
         return Value::nil();
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("FIND", Fn{"FIND", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("FIND: expected 2 args");
@@ -2546,24 +2877,28 @@ void register_raylib_bindings(FunctionRegistry& R) {
         // Copies one array to another
         // This is a placeholder - actual implementation would need array access
         return Value::nil();
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("ARRAYFILL", Fn{"ARRAYFILL", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("ARRAYFILL: expected 2 args");
         // Fills an array with a specified value
         // This is a placeholder - actual implementation would need array access
         return Value::nil();
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("ARRAYSHUFFLE", Fn{"ARRAYSHUFFLE", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("ARRAYSHUFFLE: expected 1 args");
         // Randomly shuffles the elements of an array
         // This is a placeholder - actual implementation would need array access
         return Value::nil();
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("ARRAYUNIQUE", Fn{"ARRAYUNIQUE", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("ARRAYUNIQUE: expected 1 args");
         // Removes duplicate elements from an array
         // This is a placeholder - actual implementation would need array access
         return Value::nil();
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("ARRAYJOIN", Fn{"ARRAYJOIN", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("ARRAYJOIN: expected 2 args");
@@ -2621,6 +2956,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         if (args.size() != 1) throw std::runtime_error("WEBSOCKETCLOSE: expected 1 args");
         // WebSocket close connection - placeholder for future implementation
         return Value::nil();
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("TCPCONNECT", Fn{"TCPCONNECT", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("TCPCONNECT: expected 2 args");
@@ -2642,6 +2978,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         if (args.size() != 1) throw std::runtime_error("TCPCLOSE: expected 1 args");
         // TCP close connection - placeholder for future implementation
         return Value::nil();
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("UDPCREATE", Fn{"UDPCREATE", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("UDPCREATE: expected 1 args");
@@ -2662,6 +2999,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         if (args.size() != 1) throw std::runtime_error("UDPCLOSE: expected 1 args");
         // UDP close socket - placeholder for future implementation
         return Value::nil();
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWCONE", Fn{"DRAWCONE", 8, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 8) throw std::runtime_error("DRAWCONE: expected 8 args");
@@ -2670,6 +3008,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         ::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
         ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255};
         ::DrawCylinder(position, (float)args[3].as_number(), 0.0f, (float)args[4].as_number(), 8, c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWCONEWIRES", Fn{"DRAWCONEWIRES", 8, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 8) throw std::runtime_error("DRAWCONEWIRES: expected 8 args");
@@ -2678,6 +3017,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         ::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
         ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255};
         ::DrawCylinderWires(position, (float)args[3].as_number(), 0.0f, (float)args[4].as_number(), 8, c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWTORUS", Fn{"DRAWTORUS", 8, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 8) throw std::runtime_error("DRAWTORUS: expected 8 args");
@@ -2686,6 +3026,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         ::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
         ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255};
         ::DrawCylinder(position, (float)args[3].as_number(), (float)args[3].as_number(), (float)args[4].as_number(), 8, c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWTORUSWIRES", Fn{"DRAWTORUSWIRES", 8, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 8) throw std::runtime_error("DRAWTORUSWIRES: expected 8 args");
@@ -2694,6 +3035,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         ::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
         ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255};
         ::DrawCylinderWires(position, (float)args[3].as_number(), (float)args[3].as_number(), (float)args[4].as_number(), 8, c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("DRAWPOLYWIRES", Fn{"DRAWPOLYWIRES", 8, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 8) throw std::runtime_error("DRAWPOLYWIRES: expected 8 args");
@@ -2702,15 +3044,18 @@ void register_raylib_bindings(FunctionRegistry& R) {
         ::Vector2 center{(float)args[0].as_number(), (float)args[1].as_number()};
         ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
         ::DrawPoly(center, args[3].as_int(), (float)args[4].as_number(), 0.0f, c);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("INITGAME", Fn{"INITGAME", 3, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 3) throw std::runtime_error("INITGAME: expected 3 args");
         InitWindow(args[0].as_int(), args[1].as_int(), args[2].as_string().c_str());
         SetTargetFPS(60);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("CLOSEGAME", Fn{"CLOSEGAME", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("CLOSEGAME: expected 0 args");
         CloseWindow();
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("GAMESHOULDCLOSE", Fn{"GAMESHOULDCLOSE", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("GAMESHOULDCLOSE: expected 0 args");
@@ -2720,10 +3065,12 @@ void register_raylib_bindings(FunctionRegistry& R) {
         if (args.size() != 0) throw std::runtime_error("BEGINGAMEFRAME: expected 0 args");
         BeginDrawing();
         ClearBackground(Color{0, 0, 0, 255});
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("ENDGAMEFRAME", Fn{"ENDGAMEFRAME", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("ENDGAMEFRAME: expected 0 args");
         EndDrawing();
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("GETGAMEDELTATIME", Fn{"GETGAMEDELTATIME", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("GETGAMEDELTATIME: expected 0 args");
@@ -2738,16 +3085,19 @@ void register_raylib_bindings(FunctionRegistry& R) {
         // Simple 3D camera setup - stores camera state globally
         // This is a simplified version for easy use
         return Value::nil();
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("BEGINDRAW3D", Fn{"BEGINDRAW3D", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("BEGINDRAW3D: expected 0 args");
         // Begin 3D mode - simplified version
         return Value::nil();
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("ENDDRAW3D", Fn{"ENDDRAW3D", 0, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 0) throw std::runtime_error("ENDDRAW3D: expected 0 args");
         // End 3D mode - simplified version
         return Value::nil();
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("LOADSPRITE", Fn{"LOADSPRITE", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("LOADSPRITE: expected 1 args");
@@ -2762,6 +3112,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         Vector2 origin = {(float)args[3].as_int()/2, (float)args[4].as_int()/2};
         Color tint = {(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
         DrawTexturePro(texture, source, dest, origin, (float)args[5].as_int(), tint);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("CHECKCOLLISIONRECTS", Fn{"CHECKCOLLISIONRECTS", 8, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 8) throw std::runtime_error("CHECKCOLLISIONRECTS: expected 8 args");
@@ -2805,6 +3156,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         if (args.size() != 1) throw std::runtime_error("PLAYGAMESOUND: expected 1 args");
         Sound sound = *(Sound*)args[0].as_int();
         PlaySound(sound);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("LOADGAMEMUSIC", Fn{"LOADGAMEMUSIC", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("LOADGAMEMUSIC: expected 1 args");
@@ -2815,6 +3167,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         if (args.size() != 1) throw std::runtime_error("PLAYGAMEMUSIC: expected 1 args");
         Music music = *(Music*)args[0].as_int();
         PlayMusicStream(music);
+        0;
         return Value::nil();
     }}, true);    R.add_with_policy("RANDOMINT", Fn{"RANDOMINT", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("RANDOMINT: expected 2 args");

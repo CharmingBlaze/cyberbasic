@@ -1,11 +1,17 @@
-INITWINDOW(800, 600, "Smooth Animation Demo")
+PRINT "Starting Smooth Animation Demo..."
+PRINT "Use WASD to move the player around"
+PRINT "Watch the smooth animations and effects!"
+
+INITWINDOW(800, 600, "CyberBasic Smooth Animation Demo")
 SETTARGETFPS(60)
 
 REM Variables for smooth animation
 LET player_x = 400.0
 LET player_y = 300.0
-LET player_speed = 200.0
+LET player_speed = 300.0
 LET running = TRUE
+LET score = 0
+LET particles = 0
 
 REM Get start time for animation
 LET start_time = GETTIME()
@@ -15,16 +21,19 @@ WHILE running AND NOT WINDOWSHOULDCLOSE()
     LET delta_time = GETDELTATIME()
     
     REM Handle input with smooth movement
-    IF ISKEYDOWN(87) THEN LET player_y = player_y - player_speed * delta_time ENDIF
-    IF ISKEYDOWN(83) THEN LET player_y = player_y + player_speed * delta_time ENDIF
-    IF ISKEYDOWN(65) THEN LET player_x = player_x - player_speed * delta_time ENDIF
-    IF ISKEYDOWN(68) THEN LET player_x = player_x + player_speed * delta_time ENDIF
+    IF ISKEYDOWN(87) THEN LET player_y = player_y - player_speed * delta_time
+    IF ISKEYDOWN(83) THEN LET player_y = player_y + player_speed * delta_time
+    IF ISKEYDOWN(65) THEN LET player_x = player_x - player_speed * delta_time
+    IF ISKEYDOWN(68) THEN LET player_x = player_x + player_speed * delta_time
+    
+    REM Increase score over time
+    LET score = score + delta_time * 10
     
     REM Keep player on screen
-    IF player_x < 25 THEN LET player_x = 25 ENDIF
-    IF player_x > 775 THEN LET player_x = 775 ENDIF
-    IF player_y < 25 THEN LET player_y = 25 ENDIF
-    IF player_y > 575 THEN LET player_y = 575 ENDIF
+    IF player_x < 25 THEN LET player_x = 25
+    IF player_x > 775 THEN LET player_x = 775
+    IF player_y < 25 THEN LET player_y = 25
+    IF player_y > 575 THEN LET player_y = 575
     
     REM Calculate animation values
     LET current_time = GETTIME()
@@ -54,12 +63,13 @@ WHILE running AND NOT WINDOWSHOULDCLOSE()
     DRAWCIRCLE(player_x - animation_offset, player_y - 40, 8, 100, 255, 100)
     
     REM Draw UI elements
-    DRAWTEXT("Smooth Animation Demo", 10, 10, 30, 255, 255, 255, 255)
-    DRAWTEXT("Use WASD to move", 10, 50, 20, 200, 200, 200, 255)
-    DRAWTEXT("Player Position: " + STR(INT(player_x)) + ", " + STR(INT(player_y)), 10, 80, 18, 255, 255, 255, 255)
-    DRAWTEXT("Delta Time: " + STR(delta_time), 10, 110, 18, 255, 255, 255, 255)
-    DRAWTEXT("FPS: " + STR(GETFPS()), 10, 140, 18, 255, 255, 255, 255)
-    DRAWTEXT("Time: " + STR(INT(current_time)), 10, 170, 18, 255, 255, 255, 255)
+    DRAWTEXT("Smooth Animation Demo", 10, 10, 30, 255, 255, 255)
+    DRAWTEXT("Use WASD to move", 10, 50, 20, 200, 200, 200)
+    DRAWTEXT("Player Position: " + STR(INT(player_x)) + ", " + STR(INT(player_y)), 10, 80, 18, 255, 255, 255)
+    DRAWTEXT("Delta Time: " + STR(delta_time), 10, 110, 18, 255, 255, 255)
+    DRAWTEXT("FPS: " + STR(GETFPS()), 10, 140, 18, 255, 255, 255)
+    DRAWTEXT("Time: " + STR(INT(current_time)), 10, 170, 18, 255, 255, 255)
+    DRAWTEXT("Score: " + STR(INT(score)), 10, 200, 18, 255, 255, 0)
     
     REM Draw animated border
     LET border_color = color_pulse
@@ -78,7 +88,7 @@ WHILE running AND NOT WINDOWSHOULDCLOSE()
     ENDDRAW()
     
     REM Exit on ESC
-    IF ISKEYPRESSED(256) THEN LET running = FALSE ENDIF
+    IF ISKEYPRESSED(256) THEN LET running = FALSE
 WEND
 
 CLOSEWINDOW()

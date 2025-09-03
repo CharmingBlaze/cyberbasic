@@ -88,7 +88,7 @@ def ret_to_value(expr, t):
     if t.endswith('*'):
         return f"return Value::from_int((intptr_t)({expr}));" # Return pointers as integers
     return {
-        "void": "return Value::nil();",
+        "void": f"{expr};\n        return Value::nil();",
         "int": f"return Value::from_int({expr});",
         "float": f"return Value::from_number({expr});",
         "double": f"return Value::from_number({expr});",
@@ -105,7 +105,7 @@ def ret_to_value(expr, t):
 def emit_fn(f):
     """Generate C++ function binding."""
     name = f["name"]
-    map_to = f.get("map_to", name)
+    map_to = f.get("map_to", f.get("raylib_name", name))
     args = f.get("args", [])
     ret = f.get("ret", "void")
     arity = len(args)
@@ -135,6 +135,7 @@ def main():
         
         # List of spec files to process
         spec_files = [
+            "01_core_window.yaml",
             "raylib_api.yaml",
             "24_simple_game_apis.yaml"
         ]
