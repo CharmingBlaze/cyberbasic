@@ -1,9 +1,10 @@
 $ErrorActionPreference = "Stop"
 # Prefer Ninja build if present; fallback to classic build
-if (Test-Path "build-ninja/cyberbasic.exe") { $exe = "build-ninja\cyberbasic.exe" }
+if (Test-Path "build_v2/cyberbasic.exe") { $exe = "build_v2\cyberbasic.exe" }
+elseif (Test-Path "build-ninja/cyberbasic.exe") { $exe = "build-ninja\cyberbasic.exe" }
 elseif (Test-Path "build/cyberbasic.exe") { $exe = "build\cyberbasic.exe" }
 else {
-  Write-Host "[ERROR] Could not find cyberbasic.exe in build-ninja or build. Please build first."; exit 1
+  Write-Host "[ERROR] Could not find cyberbasic.exe in build_v2, build-ninja or build. Please build first."; exit 1
 }
 $base = "tests"
 $cases = @{
@@ -26,7 +27,7 @@ $cases = @{
 }
 $fails = 0
 foreach ($t in $cases.Keys) {
-  $p = Start-Process -FilePath $exe -ArgumentList "$base\$t" -NoNewWindow -PassThru -RedirectStandardOutput "stdout.tmp" -RedirectStandardError "stderr.tmp" -Wait
+  $p = Start-Process -FilePath $exe -ArgumentList "--debug $base\$t" -NoNewWindow -PassThru -RedirectStandardOutput "stdout.tmp" -RedirectStandardError "stderr.tmp" -Wait
   $out = (Get-Content "stdout.tmp") -join "`n"
   $err = (Get-Content "stderr.tmp") -join "`n"
   if ($p.ExitCode -ne 0) { Write-Host "[FAIL] $t exit code $($p.ExitCode)"; $fails++; continue }

@@ -13,9 +13,15 @@
 #include "bas/models3d.hpp"
 #include "bas/game_systems.hpp"
 #include "bas/gui.hpp"
+#include "bas/raymath.hpp"
 #include <fstream>
 #include <iostream>
-#include <iterator>
+#include <stdexcept>
+
+#if defined(_WIN32) && defined(_DEBUG)
+#include <windows.h>
+#include <cstdio>
+#endif
 #include <string>
 #include <cstring>
 #include <algorithm>
@@ -27,22 +33,40 @@ void print_usage(const char* program_name) {
     std::cout << "Usage: " << program_name << " [options] <file.bas>" << std::endl;
     std::cout << std::endl;
     std::cout << "Options:" << std::endl;
-    std::cout << "  --debug, -d     Enable debug mode with detailed error information" << std::endl;
-    std::cout << "  --verbose, -v   Show warnings and additional information" << std::endl;
-    std::cout << "  --dialect <name>  Select dialect: classic | agklite" << std::endl;
-    std::cout << "                   Default is permissive (agklite features ON)." << std::endl;
-    std::cout << "                   Use --dialect classic to enforce strict classic." << std::endl;
-    std::cout << "  --agk             [deprecated] Alias for --dialect agklite" << std::endl;
-    std::cout << "  --help, -h      Show this help message" << std::endl;
+    std::cerr << "  --debug, -d     Enable debug mode with detailed error information" << std::endl;
+    std::cerr << "  --verbose, -v   Show warnings and additional information" << std::endl;
+    std::cerr << "  --dialect <name>  Select dialect: classic | agklite" << std::endl;
+    std::cerr << "                   Default is permissive (agklite features ON)." << std::endl;
+    std::cerr << "                   Use --dialect classic to enforce strict classic." << std::endl;
+    std::cerr << "  --agk             [deprecated] Alias for --dialect agklite" << std::endl;
+    std::cerr << "  --help, -h      Show this help message" << std::endl;
     std::cout << std::endl;
     std::cout << "Examples:" << std::endl;
-    std::cout << "  " << program_name << " game.bas" << std::endl;
-    std::cout << "  " << program_name << " --debug test.bas" << std::endl;
-    std::cout << "  " << program_name << " --verbose demo.bas" << std::endl;
+    std::cerr << "  " << program_name << " game.bas" << std::endl;
+    std::cerr << "  " << program_name << " --debug test.bas" << std::endl;
+    std::cerr << "  " << program_name << " --verbose demo.bas" << std::endl;
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char* argv[]) {
     bool debug_mode = false;
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--debug") == 0 || strcmp(argv[i], "-d") == 0) {
+            debug_mode = true;
+            break;
+        }
+    }
+
+    if (debug_mode) {
+        std::cerr << "[DEBUG] Application starting..." << std::endl;
+    }
+#if defined(_WIN32) && defined(_DEBUG)
+    if (AttachConsole(ATTACH_PARENT_PROCESS) || AllocConsole()) {
+        FILE* f_dummy;
+        freopen_s(&f_dummy, "CONOUT$", "w", stdout);
+        freopen_s(&f_dummy, "CONOUT$", "w", stderr);
+        freopen_s(&f_dummy, "CONIN$", "r", stdin);
+    }
+#endif
     bool verbose_mode = false;
     // Permissive by default: single-line IF and AGK-like loops enabled
     bool agk_mode = true;
@@ -53,7 +77,8 @@ int main(int argc, char** argv) {
     // Parse command line arguments
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--debug") == 0 || strcmp(argv[i], "-d") == 0) {
-            debug_mode = true;
+            // Already handled above, so just skip
+            continue;
         } else if (strcmp(argv[i], "--verbose") == 0 || strcmp(argv[i], "-v") == 0) {
             verbose_mode = true;
         } else if (strncmp(argv[i], "--dialect=", 10) == 0) {
@@ -74,6 +99,8 @@ int main(int argc, char** argv) {
         }
     }
     
+    if (debug_mode) std::cerr << "[DEBUG] Filename to execute: " << filename << std::endl;
+
     if (filename.empty()) {
         std::cerr << "Error: No input file specified" << std::endl;
         print_usage(argv[0]);
@@ -82,27 +109,29 @@ int main(int argc, char** argv) {
     
     if (verbose_mode) {
         std::cout << "BASIC + Raylib Interpreter v1.0" << std::endl;
-        if (debug_mode) std::cout << "Debug mode: ENABLED" << std::endl;
+                if (debug_mode) std::cerr << "Debug mode: ENABLED" << std::endl;
         std::cout << "Loading: " << filename << std::endl;
         std::cout << std::endl;
     }
     
     // Open and read the source file
-    std::ifstream in(filename, std::ios::binary);
-    if (!in) {
+    if (debug_mode) std::cerr << "[DEBUG] Attempting to open file..." << std::endl;
+    std::ifstream file(filename, std::ios::binary);
+    if (!file) {
+        if (debug_mode) std::cerr << "[DEBUG] Failed to open file." << std::endl;
         std::cerr << "Error: Cannot open file '" << filename << "'" << std::endl;
         std::cerr << "  Check if the file exists and you have read permissions" << std::endl;
         return 66;
     }
     
-    std::string src((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+    std::string src((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     if (src.empty()) {
         std::cerr << "Error: File '" << filename << "' is empty" << std::endl;
         return 65;
     }
     
-    if (debug_mode) {
-        std::cout << "Source file loaded: " << src.length() << " characters" << std::endl;
+        if (debug_mode) {
+        std::cerr << "Source file loaded: " << src.length() << " characters" << std::endl;
     }
     
     // Check pragma in source to select dialect (case-insensitive)
@@ -138,16 +167,16 @@ int main(int argc, char** argv) {
     }
 
     // Lexical analysis
-    if (debug_mode) std::cout << "Phase 1: Lexical Analysis..." << std::endl;
+        if (debug_mode) std::cerr << "Phase 1: Lexical Analysis..." << std::endl;
     bas::Lexer lx(std::move(src));
     auto toks = lx.lex();
     
     if (debug_mode) {
-        std::cout << "  Tokens generated: " << toks.size() << std::endl;
+        std::cerr << "  Tokens generated: " << toks.size() << std::endl;
         if (verbose_mode) {
-            std::cout << "  First few tokens:" << std::endl;
+            std::cerr << "  First few tokens:" << std::endl;
             for (size_t i = 0; i < std::min(toks.size(), size_t(10)); i++) {
-                std::cout << "    " << i << ": " << toks[i].lex << " (line " << toks[i].line << ")" << std::endl;
+                std::cerr << "    " << i << ": " << toks[i].lex << " (line " << toks[i].line << ")" << std::endl;
             }
         }
     }
@@ -187,8 +216,8 @@ int main(int argc, char** argv) {
                 }
             }
         }
-        if (debug_mode && detected) {
-            std::cout << "Auto-detected dialect: AGK/DBPro (single-line IF)" << std::endl;
+                if (debug_mode && detected) {
+            std::cerr << "Auto-detected dialect: AGK/DBPro (single-line IF)" << std::endl;
         }
     }
     if (autodetected_agk && verbose_mode && !suppressDialectWarn) {
@@ -196,7 +225,7 @@ int main(int argc, char** argv) {
     }
     
     // Parsing
-    if (debug_mode) std::cout << "Phase 2: Parsing..." << std::endl;
+        if (debug_mode) std::cerr << "Phase 2: Parsing..." << std::endl;
     bas::Diag diag;
     diag.set_debug_mode(debug_mode);
     
@@ -221,9 +250,9 @@ int main(int argc, char** argv) {
     }
     
     if (debug_mode) {
-        std::cout << "  Parse tree created successfully" << std::endl;
-        std::cout << "  Statements: " << prog.stmts.size() << std::endl;
-        std::cout << "  Dialect: " << (agk_mode? "Permissive" : "Classic (strict)") << std::endl;
+        std::cerr << "  Parse tree created successfully" << std::endl;
+        std::cerr << "  Statements: " << prog.stmts.size() << std::endl;
+        std::cerr << "  Dialect: " << (agk_mode? "Permissive" : "Classic (strict)") << std::endl;
     }
     
     // Show warnings if any
@@ -233,7 +262,7 @@ int main(int argc, char** argv) {
     }
     
     // Expand IMPORT statements before runtime
-    if (debug_mode) std::cout << "Phase 3: Resolving imports..." << std::endl;
+        if (debug_mode) std::cerr << "Phase 3: Resolving imports..." << std::endl;
     auto expand_imports = [&](auto&& self, bas::Program& program, const std::filesystem::path& baseDir, std::unordered_set<std::string>& loaded)->bool{
         std::vector<std::unique_ptr<bas::Stmt>> result;
         result.reserve(program.stmts.size());
@@ -246,7 +275,7 @@ int main(int argc, char** argv) {
                 if (ec) canon = full.lexically_normal();
                 std::string canonStr = canon.string();
                 if (verbose_mode) {
-                    std::cout << "  IMPORT: '" << imp->path << "' -> " << canonStr << std::endl;
+                    std::cerr << "  IMPORT: '" << imp->path << "' -> " << canonStr << std::endl;
                 }
                 if (loaded.find(canonStr) != loaded.end()) {
                     // Already loaded; skip
@@ -295,12 +324,12 @@ int main(int argc, char** argv) {
             return 65;
         }
         if (debug_mode) {
-            std::cout << "  After imports, statements: " << prog.stmts.size() << std::endl;
+            std::cerr << "  After imports, statements: " << prog.stmts.size() << std::endl;
         }
     }
 
     // Runtime setup
-    if (debug_mode) std::cout << "Phase 3: Runtime Setup..." << std::endl;
+        if (debug_mode) std::cerr << "Phase 3: Runtime Setup..." << std::endl;
     bas::FunctionRegistry R;
     
     // Core BASIC functions
@@ -308,6 +337,7 @@ int main(int argc, char** argv) {
     
     // Raylib graphics and multimedia
     bas::register_raylib_bindings(R);
+    bas::register_raymath_functions(R);
     
     // Game programming systems
     bas::register_game_systems_bindings(R);
@@ -328,16 +358,16 @@ int main(int argc, char** argv) {
     bas::register_gui_functions(R);
     
     if (debug_mode) {
-        std::cout << "  Built-in functions registered: " << R.size() << std::endl;
+        std::cerr << "  Built-in functions registered: " << R.size() << std::endl;
     }
     
     // Execution
-    if (debug_mode) {
-        std::cout << "Phase 4: Execution..." << std::endl;
+        if (debug_mode) {
+        std::cerr << "Phase 4: Execution..." << std::endl;
     }
     
     try {
-        int rc = bas::interpret(prog, R);
+        int rc = bas::interpret(prog, R, debug_mode);
         if (rc != 0) {
             std::cerr << "Runtime error: Program returned exit code " << rc << std::endl;
             return 70;

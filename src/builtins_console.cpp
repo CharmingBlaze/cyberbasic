@@ -1,9 +1,35 @@
 #include "bas/builtins.hpp"
 #include <iostream>
+#include <sstream>
+#include <locale>
 
 using namespace bas;
 
+// Helper function to convert any Value to string
+static std::string to_string_value(const Value& v){
+  if(auto s = std::get_if<std::string>(&v.v)) return *s;
+  if(auto b = std::get_if<bool>(&v.v)) return *b?"TRUE":"FALSE";
+  if(auto d = std::get_if<double>(&v.v)) { std::ostringstream os; os.imbue(std::locale::classic()); os<<*d; return os.str(); }
+  if(auto i = std::get_if<long long>(&v.v)) { std::ostringstream os; os.imbue(std::locale::classic()); os<<*i; return os.str(); }
+  return "NIL";
+}
+
+static void print_value(const Value& v) {
+    std::cout << to_string_value(v);
+}
+
 void register_builtins_console(FunctionRegistry& R) {
+    // PRINT ...
+    R.add("PRINT", NativeFn{"PRINT", -1, [](const std::vector<Value>& a){
+        for (size_t i = 0; i < a.size(); ++i) {
+            print_value(a[i]);
+            if (i < a.size() - 1) {
+                std::cout << " ";
+            }
+        }
+        std::cout << std::endl;
+        return Value::nil();
+    }});
   // SETCURSORVISIBLE(flag)
   R.add("SETCURSORVISIBLE", NativeFn{"SETCURSORVISIBLE", 1, [](const std::vector<Value>& a){
     bool show = a[0].as_bool();

@@ -14,25 +14,41 @@ if not exist "CMakeLists.txt" (
 set BUILD_COMMAND=
 
 if exist "C:\msys64\mingw64\bin" (
-    echo Found MinGW-w64, setting up PATH.
+    @echo off
+    setlocal
+
+    REM Setup MinGW environment
     set "PATH=C:\msys64\mingw64\bin;C:\msys64\usr\bin;%PATH%"
-    set BUILD_COMMAND=bash -c "cd '%cd%' && ./scripts/build-mingw.sh"
+
+    REM Clean previous build directory
+
+    REM Configure
+    echo --- Configuring CMake ---
+    cmake -S . -B build_cascade -G "MinGW Makefiles" -DBASIC_STATIC_LINK=ON
+    if %errorlevel% neq 0 (
+        echo CMake configuration failed.
+        exit /b %errorlevel%
+    )
+
+    REM Build
+    echo.
+    echo --- Building Project ---
+    cmake --build build_cascade --verbose
+    if %errorlevel% neq 0 (
+        echo Build failed.
+        exit /b %errorlevel%
+    )
+
+    echo.
+    echo --- Build Successful ---
+    endlocal
 ) else (
     echo Error: MinGW-w64 not found at C:\msys64\mingw64. Please install MSYS2 and the MinGW-w64 toolchain.
     if not defined SKIP_PAUSE pause
     exit /b 1
 )
 
-echo --- Running build command: %BUILD_COMMAND% ---
-%BUILD_COMMAND% > build_log.txt 2>&1
 set BUILD_RET=%ERRORLEVEL%
-
-echo --- STDOUT ---
- type build_log.txt
-
-echo --- STDERR ---
-
-echo --- Return Code: %BUILD_RET% ---
 
 if %BUILD_RET% neq 0 (
     echo Build failed.

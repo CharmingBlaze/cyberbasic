@@ -3,12 +3,14 @@
 #include <string>
 #include <stdexcept>
 #include <vector>
+#include <map>
 
 namespace bas {
 // Dynamically-typed value used by the interpreter.
 struct Value {
   using Array = std::vector<Value>;
-  using V = std::variant<std::monostate, double, long long, bool, std::string, Array>;
+  using Map = std::map<std::string, Value>;
+  using V = std::variant<std::monostate, double, long long, bool, std::string, Array, Map>;
   V v;
   static Value nil(){ return Value{std::monostate{}}; }
   static Value from_number(double d){ return Value{d}; }
@@ -16,6 +18,7 @@ struct Value {
   static Value from_bool(bool b){ return Value{b}; }
   static Value from_string(std::string s){ return Value{std::move(s)}; }
   static Value from_array(Array a){ return Value{std::move(a)}; }
+  static Value from_map(Map m){ return Value{std::move(m)}; }
 
   bool is_nil() const { return std::holds_alternative<std::monostate>(v); }
   double as_number() const {
@@ -47,6 +50,15 @@ struct Value {
   Array& as_array() {
     if (auto a=std::get_if<Array>(&v)) return *a;
     throw std::runtime_error("Expected array");
+  }
+  bool is_map() const { return std::holds_alternative<Map>(v); }
+  const Map& as_map() const {
+    if (auto m=std::get_if<Map>(&v)) return *m;
+    throw std::runtime_error("Expected map");
+  }
+  Map& as_map() {
+    if (auto m=std::get_if<Map>(&v)) return *m;
+    throw std::runtime_error("Expected map");
   }
 };
 } // namespace bas

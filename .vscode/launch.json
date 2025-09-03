@@ -1,0 +1,28 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug CyberBasic",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build_v2/cyberbasic.exe",
+            "args": [
+                "examples/hello_text.bas"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": true,
+            "MIMode": "gdb",
+            "miDebuggerPath": "C:/msys64/mingw64/bin/gdb.exe",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "build"
+        }
+    ]
+}

@@ -31,9 +31,6 @@ void bas::register_builtins(FunctionRegistry& R){
   bas::input::init();
 
   // Core I/O
-  R.add("PRINT", NativeFn{"PRINT", 1, [](const std::vector<Value>& a){
-    std::cout << to_string_value(a[0]) << std::endl; return Value::nil();
-  }});
 
   R.add("INPUT", NativeFn{"INPUT", -1, [](const std::vector<Value>& a){
     if(!a.empty()) std::cout << to_string_value(a[0]);
@@ -86,8 +83,28 @@ void bas::register_builtins(FunctionRegistry& R){
     long long n = a[0].as_int(); if(n<=0) return Value::from_int(0);
     std::uniform_int_distribution<long long> dist(0,n-1); return Value::from_int(dist(eng));
   }});
+  R.add("RND", NativeFn{"RND", -1, [](const std::vector<Value>& a){
+    static std::mt19937_64 eng{std::random_device{}()};
+    if(a.empty()){
+      std::uniform_real_distribution<double> dist(0.0,1.0); return Value::from_number(dist(eng));
+    }
+    long long n = a[0].as_int(); if(n<=0) return Value::from_int(0);
+    std::uniform_int_distribution<long long> dist(0,n-1); return Value::from_int(dist(eng));
+  }});
+
+  R.add("RNDINT", NativeFn{"RNDINT", 2, [](const std::vector<Value>& a){
+      static std::mt19937_64 eng{std::random_device{}()};
+      long long lo = a[0].as_int();
+      long long hi = a[1].as_int();
+      if (lo > hi) std::swap(lo, hi);
+      std::uniform_int_distribution<long long> dist(lo, hi);
+      return Value::from_int(dist(eng));
+  }});
 
   R.add("SEED", NativeFn{"SEED", 1, [](const std::vector<Value>& a){
+    static std::mt19937_64 eng; eng.seed(static_cast<uint64_t>(a[0].as_int())); return Value::nil();
+  }});
+  R.add("RANDOMIZE", NativeFn{"RANDOMIZE", 1, [](const std::vector<Value>& a){
     static std::mt19937_64 eng; eng.seed(static_cast<uint64_t>(a[0].as_int())); return Value::nil();
   }});
 
@@ -145,11 +162,97 @@ void bas::register_builtins(FunctionRegistry& R){
   }});
 
   R.add("REMOVE", NativeFn{"REMOVE", 2, [](const std::vector<Value>& a){
-    if(!a[0].is_array()) throw std::runtime_error("REMOVE: first argument must be an array");
-    bas::Value::Array copy = a[0].as_array();
+    if(!a[0].is_array()) throw std::runtime_error("REMOVE: first arg must be an array");
+    auto arr = a[0].as_array();
     long long idx = a[1].as_int();
-    if(idx >= 0 && (size_t)idx < copy.size()) copy.erase(copy.begin() + (size_t)idx);
-    return Value::from_array(std::move(copy));
+    if(idx < 0 || idx >= static_cast<long long>(arr.size())) throw std::runtime_error("REMOVE: index out of bounds");
+    arr.erase(arr.begin() + idx);
+    return Value::from_array(arr);
+  }});
+
+  R.add("SORT", NativeFn{"SORT", 1, [](const std::vector<Value>& a){
+    if (!a[0].is_array()) throw std::runtime_error("SORT: argument must be an array");
+    auto arr = a[0].as_array();
+    if (arr.empty()) return Value::from_array(arr);
+
+    std::sort(arr.begin(), arr.end(), [](const Value& v1, const Value& v2) {
+        bool v1_is_num = std::holds_alternative<double>(v1.v) || std::holds_alternative<long long>(v1.v);
+        bool v2_is_num = std::holds_alternative<double>(v2.v) || std::holds_alternative<long long>(v2.v);
+        bool v1_is_str = std::holds_alternative<std::string>(v1.v);
+        bool v2_is_str = std::holds_alternative<std::string>(v2.v);
+
+        if (v1_is_num && v2_is_num) {
+            return v1.as_number() < v2.as_number();
+        } else if (v1_is_str && v2_is_str) {
+            return v1.as_string() < v2.as_string();
+        } else {
+            throw std::runtime_error("SORT: all array elements must be of the same comparable type (all numbers or all strings)");
+        }
+    });
+
+    return Value::from_array(arr);
+  }});
+
+  // Map functions
+  R.add("MAP_CREATE", NativeFn{"MAP_CREATE", 0, [](const std::vector<Value>&){
+    return Value::from_map({});
+  }});
+
+  R.add("MAP_SET", NativeFn{"MAP_SET", 3, [](const std::vector<Value>& a){
+    if (!a[0].is_map()) throw std::runtime_error("MAP_SET: first argument must be a map");
+    auto map = a[0].as_map(); // copy
+    map[a[1].as_string()] = a[2];
+    return Value::from_map(map);
+  }});
+
+  R.add("MAP_GET", NativeFn{"MAP_GET", -1, [](const std::vector<Value>& a){
+    if (a.size() < 2) throw std::runtime_error("MAP_GET: requires at least 2 arguments");
+    if (!a[0].is_map()) throw std::runtime_error("MAP_GET: first argument must be a map");
+    const auto& map = a[0].as_map();
+    const auto& key = a[1].as_string();
+    auto it = map.find(key);
+    if (it != map.end()) {
+        return it->second;
+    }
+    if (a.size() >= 3) {
+        return a[2]; // default value
+    }
+    throw std::runtime_error("MAP_GET: key not found and no default value provided");
+  }});
+
+  R.add("MAP_HAS", NativeFn{"MAP_HAS", 2, [](const std::vector<Value>& a){
+    if (!a[0].is_map()) throw std::runtime_error("MAP_HAS: first argument must be a map");
+    const auto& map = a[0].as_map();
+    return Value::from_bool(map.count(a[1].as_string()) > 0);
+  }});
+
+  R.add("MAP_REMOVE", NativeFn{"MAP_REMOVE", 2, [](const std::vector<Value>& a){
+    if (!a[0].is_map()) throw std::runtime_error("MAP_REMOVE: first argument must be a map");
+    auto map = a[0].as_map(); // copy
+    map.erase(a[1].as_string());
+    return Value::from_map(map);
+  }});
+
+  R.add("MAP_KEYS", NativeFn{"MAP_KEYS", 1, [](const std::vector<Value>& a){
+    if (!a[0].is_map()) throw std::runtime_error("MAP_KEYS: argument must be a map");
+    const auto& map = a[0].as_map();
+    std::vector<Value> keys;
+    keys.reserve(map.size());
+    for(const auto& pair : map) {
+        keys.push_back(Value::from_string(pair.first));
+    }
+    return Value::from_array(keys);
+  }});
+
+  R.add("MAP_VALUES", NativeFn{"MAP_VALUES", 1, [](const std::vector<Value>& a){
+    if (!a[0].is_map()) throw std::runtime_error("MAP_VALUES: argument must be a map");
+    const auto& map = a[0].as_map();
+    std::vector<Value> values;
+    values.reserve(map.size());
+    for(const auto& pair : map) {
+        values.push_back(pair.second);
+    }
+    return Value::from_array(values);
   }});
 
   // File I/O
@@ -253,7 +356,137 @@ void bas::register_builtins(FunctionRegistry& R){
     return Value::from_int(static_cast<long long>(pos + 1));
   }});
 
+  R.add("REPLACE", NativeFn{"REPLACE", 3, [](const std::vector<Value>& a){
+    std::string str = a[0].as_string();
+    const std::string& from = a[1].as_string();
+    const std::string& to = a[2].as_string();
+    if (from.empty()) return Value::from_string(str);
+    size_t start_pos = 0;
+    while((start_pos = str.find(from, start_pos)) != std::string::npos) {
+        str.replace(start_pos, from.length(), to);
+        start_pos += to.length();
+    }
+    return Value::from_string(str);
+  }});
+
+  R.add("CHR", NativeFn{"CHR", 1, [](const std::vector<Value>& a){
+    long long code = a[0].as_int();
+    return Value::from_string(std::string(1, static_cast<char>(code)));
+  }});
+
+  R.add("ASC", NativeFn{"ASC", 1, [](const std::vector<Value>& a){
+    const std::string& s = a[0].as_string();
+    if (s.empty()) return Value::from_int(0);
+    return Value::from_int(static_cast<unsigned char>(s[0]));
+  }});
+
+  R.add("SPLIT", NativeFn{"SPLIT", 2, [](const std::vector<Value>& a){
+    const std::string& str = a[0].as_string();
+    const std::string& delim = a[1].as_string();
+    std::vector<Value> result;
+    if (delim.empty()) {
+        for (char c : str) {
+            result.push_back(Value::from_string(std::string(1, c)));
+        }
+    } else {
+        size_t start = 0;
+        size_t end = str.find(delim);
+        while (end != std::string::npos) {
+            result.push_back(Value::from_string(str.substr(start, end - start)));
+            start = end + delim.length();
+            end = str.find(delim, start);
+        }
+        result.push_back(Value::from_string(str.substr(start)));
+    }
+    return Value::from_array(result);
+  }});
+
+  R.add("JOIN", NativeFn{"JOIN", 2, [](const std::vector<Value>& a){
+      if (!a[0].is_array()) throw std::runtime_error("JOIN: first argument must be an array");
+      const auto& arr = a[0].as_array();
+      const std::string& delim = a[1].as_string();
+      std::stringstream ss;
+      for (size_t i = 0; i < arr.size(); ++i) {
+          ss << to_string_value(arr[i]);
+          if (i < arr.size() - 1) {
+              ss << delim;
+          }
+      }
+      return Value::from_string(ss.str());
+  }});
+
+  R.add("FORMAT", NativeFn{"FORMAT", -1, [](const std::vector<Value>& a){
+    if (a.empty()) throw std::runtime_error("FORMAT: requires a format string");
+    const std::string& fmt = a[0].as_string();
+    std::stringstream result;
+    size_t arg_idx = 1;
+
+    for (size_t i = 0; i < fmt.length(); ++i) {
+        if (fmt[i] == '%') {
+            if (i + 1 < fmt.length()) {
+                i++; // move to specifier
+                if (fmt[i] == '%') {
+                    result << '%';
+                } else {
+                    if (arg_idx >= a.size()) {
+                        throw std::runtime_error("FORMAT: not enough arguments for format string");
+                    }
+                    const auto& val = a[arg_idx++];
+                    char buffer[512];
+                    switch (fmt[i]) {
+                        case 's':
+                            snprintf(buffer, sizeof(buffer), "%s", to_string_value(val).c_str());
+                            result << buffer;
+                            break;
+                        case 'd':
+                        case 'i':
+                            snprintf(buffer, sizeof(buffer), "%lld", val.as_int());
+                            result << buffer;
+                            break;
+                        case 'f':
+                            snprintf(buffer, sizeof(buffer), "%f", val.as_number());
+                            result << buffer;
+                            break;
+                        default: // just print the char if specifier is unknown
+                            result << '%' << fmt[i];
+                            break;
+                    }
+                }
+            } else {
+                result << '%' ; // trailing %
+            }
+        } else {
+            result << fmt[i];
+        }
+    }
+    return Value::from_string(result.str());
+  }});
+
   // Math & system
+  R.add("SGN", NativeFn{"SGN", 1, [](const std::vector<Value>& a){
+    double num = a[0].as_number();
+    return Value::from_number((num > 0) - (num < 0));
+  }});
+
+  R.add_with_policy("MIN", NativeFn{"MIN", 2, [](const std::vector<Value>& a){
+    double n1 = a[0].as_number();
+    double n2 = a[1].as_number();
+    return Value::from_number(std::min(n1, n2));
+  }}, true);
+
+  R.add_with_policy("MAX", NativeFn{"MAX", 2, [](const std::vector<Value>& a){
+    double n1 = a[0].as_number();
+    double n2 = a[1].as_number();
+    return Value::from_number(std::max(n1, n2));
+  }}, true);
+
+  R.add_with_policy("CLAMP", NativeFn{"CLAMP", 3, [](const std::vector<Value>& a){
+    double val = a[0].as_number();
+    double min_val = a[1].as_number();
+    double max_val = a[2].as_number();
+    return Value::from_number(std::max(min_val, std::min(val, max_val)));
+  }}, true);
+
   R.add("ABS", NativeFn{"ABS", 1, [](const std::vector<Value>& a){
     double num = a[0].as_number();
     return Value::from_number(std::abs(num));
@@ -273,6 +506,21 @@ void bas::register_builtins(FunctionRegistry& R){
   R.add("ATAN", NativeFn{"ATAN", 1, [](const std::vector<Value>& a){
     double num = a[0].as_number();
     return Value::from_number(std::atan(num));
+  }});
+  R.add("ASIN", NativeFn{"ASIN", 1, [](const std::vector<Value>& a){
+    double num = a[0].as_number();
+    if (num < -1.0 || num > 1.0) throw std::runtime_error("ASIN: argument out of range [-1, 1]");
+    return Value::from_number(std::asin(num));
+  }});
+  R.add("ACOS", NativeFn{"ACOS", 1, [](const std::vector<Value>& a){
+    double num = a[0].as_number();
+    if (num < -1.0 || num > 1.0) throw std::runtime_error("ACOS: argument out of range [-1, 1]");
+    return Value::from_number(std::acos(num));
+  }});
+  R.add("ATAN2", NativeFn{"ATAN2", 2, [](const std::vector<Value>& a){
+    double y = a[0].as_number();
+    double x = a[1].as_number();
+    return Value::from_number(std::atan2(y, x));
   }});
   R.add("SQRT", NativeFn{"SQRT", 1, [](const std::vector<Value>& a){
     double num = a[0].as_number();
@@ -305,6 +553,13 @@ void bas::register_builtins(FunctionRegistry& R){
     double num = a[0].as_number();
     return Value::from_int(static_cast<long long>(std::round(num)));
   }});
+
+  R.add_with_policy("LERP", NativeFn{"LERP", 3, [](const std::vector<Value>& a){
+      double v0 = a[0].as_number();
+      double v1 = a[1].as_number();
+      double t = a[2].as_number();
+      return Value::from_number(v0 + t * (v1 - v0));
+  }}, true);
 
   R.add("SLEEP", NativeFn{"SLEEP", 1, [](const std::vector<Value>& a){
     double seconds = a[0].as_number();

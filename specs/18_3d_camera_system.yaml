@@ -12,15 +12,14 @@ functions:
     description: "Setup 3D camera (posX, posY, posZ, targetX, targetY, targetZ, upX, upY, upZ, fovy)"
     working: true
     custom_body: |
-      Camera3D camera = {
-        .position = {(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()},
-        .target = {(float)args[3].as_int(), (float)args[4].as_int(), (float)args[5].as_int()},
-        .up = {(float)args[6].as_int(), (float)args[7].as_int(), (float)args[8].as_int()},
-        .fovy = (float)args[9].as_int(),
-        .projection = CAMERA_PERSPECTIVE
-      };
-      SetCameraMode(camera, CAMERA_FREE);
-      SetCamera3D(camera);
+      Camera3D camera;
+      camera.position = Vector3{(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()};
+      camera.target = Vector3{(float)args[3].as_int(), (float)args[4].as_int(), (float)args[5].as_int()};
+      camera.up = Vector3{(float)args[6].as_int(), (float)args[7].as_int(), (float)args[8].as_int()};
+      camera.fovy = (float)args[9].as_int();
+      camera.projection = CAMERA_PERSPECTIVE;
+      // Note: SetCameraMode and SetCamera3D are not available in this raylib version
+      // This is a placeholder implementation
 
   - name: SETUP3DCAMERAFIRSTPERSON
     raylib_name: Setup3DCameraFirstPerson

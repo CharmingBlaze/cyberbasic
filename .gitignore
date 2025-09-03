@@ -32,7 +32,6 @@ rules.ninja
 *.lib
 
 # IDE files
-.vscode/
 .idea/
 *.swp
 *.swo

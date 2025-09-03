@@ -300,5 +300,11 @@ extern std::unique_ptr<GraphicsSystem> g_graphics_system;
 
 // Native function declarations
 void register_graphics_functions(FunctionRegistry& registry);
+void register_3d_camera_system_bindings(FunctionRegistry& registry);
+void register_animation_system_bindings(FunctionRegistry& registry);
+void register_advanced_3d_features_bindings(FunctionRegistry& registry);
+void register_particle_system_bindings(FunctionRegistry& registry);
+void register_post_processing_effects_bindings(FunctionRegistry& registry);
+void register_game_development_apis_bindings(FunctionRegistry& registry);
 
 } // namespace bas

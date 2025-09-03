@@ -23,6 +23,18 @@ private:
   void skipNewlines(){ while(check(Tok::Newline)) advance(); }
 
   std::unique_ptr<Stmt> statement();
+  std::unique_ptr<Stmt> parse_print();
+  std::unique_ptr<Stmt> parse_let();
+  std::unique_ptr<Stmt> parse_if();
+  std::unique_ptr<Stmt> parse_while();
+  std::unique_ptr<Stmt> parse_for();
+  std::unique_ptr<Stmt> parse_sub_decl();
+  std::unique_ptr<Stmt> parse_function_decl();
+  std::unique_ptr<Stmt> parse_return();
+  std::unique_ptr<Stmt> parse_dim();
+  std::unique_ptr<Stmt> parse_ident_statement();
+  std::unique_ptr<Stmt> parse_call();
+  std::unique_ptr<Stmt> parse_input();
   std::vector<std::unique_ptr<Stmt>> stmt_list_until(Tok end1, Tok end2);
   std::unique_ptr<Expr> expression();
   std::unique_ptr<Expr> or_();

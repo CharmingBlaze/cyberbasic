@@ -434,15 +434,7 @@ void register_game_systems_bindings(FunctionRegistry& R) {
         return Value::from_number(angle);
     }});
     
-    R.add("LERP", NativeFn{"LERP", 3, [](const std::vector<Value>& args) -> Value {
-        if (args.size() != 3) throw std::runtime_error("LERP: expected 3 args");
-        float a = static_cast<float>(args[0].as_number());
-        float b = static_cast<float>(args[1].as_number());
-        float t = static_cast<float>(args[2].as_number());
-        
-        float result = a + t * (b - a);
-        return Value::from_number(result);
-    }});
+    // LERP function removed - already available in core builtins
     
 
 }

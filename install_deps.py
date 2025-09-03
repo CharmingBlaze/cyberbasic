@@ -5,7 +5,13 @@ import sys
 def main():
     print('--- Starting dependency installation ---')
     msys_bash = 'C:\\msys64\\usr\\bin\\bash.exe'
-    install_command = 'pacman -S --noconfirm mingw-w64-x86_64-toolchain'
+    packages = [
+        'mingw-w64-x86_64-toolchain',
+        'mingw-w64-x86_64-cmake',
+        'mingw-w64-x86_64-ninja',
+        'mingw-w64-x86_64-openal'
+    ]
+    install_command = f'pacman -S --noconfirm --needed {' '.join(packages)}'
     full_command = f'\"{msys_bash}\" -l -c \"{install_command}\"' 
 
     print(f'--- Running installation command: {full_command} ---')

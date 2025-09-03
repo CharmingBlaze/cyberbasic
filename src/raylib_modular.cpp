@@ -22,6 +22,14 @@ void register_raylib_bindings(FunctionRegistry& R) {
     register_remaining_raylib_bindings(R);
     register_platform_specific_bindings(R);
     register_custom_cyberbasic_bindings(R);
+    
+    // Register new advanced systems
+    register_3d_camera_system_bindings(R);
+    register_animation_system_bindings(R);
+    register_advanced_3d_features_bindings(R);
+    register_particle_system_bindings(R);
+    register_post_processing_effects_bindings(R);
+    register_game_development_apis_bindings(R);
 }
 
 } // namespace bas

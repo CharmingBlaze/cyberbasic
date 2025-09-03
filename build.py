@@ -1,36 +1,62 @@
 import subprocess
 import os
+import sys
 
-def main():
-    msys_bash = 'C:\\msys64\\usr\\bin\\bash.exe'
-
-    project_root = os.getcwd()
-    # Convert Windows path C:\... to MSYS2 path /c/...
-    msys_path = project_root.replace('C:', '/c').replace('\\', '/')
-
-    # The -l flag can cause bash to start in the user's home directory, so we
-    # must explicitly cd to the project root before running the script.
-    build_command = f'"{msys_bash}" -l -c "cd \'{msys_path}\' && ./scripts/build-mingw.sh"'
-
-    print(f'--- Running build command: {build_command} ---')
+def run_command(command, env):
+    """Runs a command and prints its output in real-time."""
+    print(f"\n--- Running: {' '.join(command)} ---")
     try:
-        # Using a list of arguments is more robust than shell=True on Windows.
-        # We also remove output capturing to see real-time output.
-        command_list = [msys_bash, '-l', '-c', f"cd '{msys_path}' && ./scripts/build-mingw.sh"]
-        process = subprocess.run(
-            command_list,
-            cwd=os.getcwd()
+        process = subprocess.Popen(
+            command,
+            env=env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1,
+            universal_newlines=True
         )
 
-        print(f'--- Return Code: {process.returncode} ---')
+        for line in process.stdout:
+            print(line, end='')
 
-        if process.returncode != 0:
-            print('Build failed.')
-        else:
-            print('Build successful.')
-
+        process.wait()
+        return_code = process.returncode
     except Exception as e:
-        print(f'An exception occurred: {e}')
+        print(f"An exception occurred: {e}")
+        return_code = -1
+
+    print(f"\n--- Return Code: {return_code} ---")
+    return return_code
+
+def main():
+    # Set up the environment for MinGW
+    env = os.environ.copy()
+    mingw_path = "C:\\msys64\\mingw64\\bin;C:\\msys64\\usr\\bin"
+    env["PATH"] = mingw_path + os.pathsep + env["PATH"]
+
+    # Define CMake commands
+    cmake_configure_cmd = [
+        "cmake",
+        "-S", ".",
+        "-B", "build_v2",
+        "-G", "Ninja",
+        "-DBASIC_STATIC_LINK=ON"
+    ]
+    cmake_build_cmd = ["cmake", "--build", "build_v2", "--verbose"]
+
+    # Run configure step
+    if run_command(cmake_configure_cmd, env) != 0:
+        print("\nCMake configuration failed!")
+        sys.exit(1)
+
+    print("\nCMake configuration successful.")
+
+    # Run build step
+    if run_command(cmake_build_cmd, env) != 0:
+        print("\nBuild failed!")
+        sys.exit(1)
+
+    print("\nBuild completed successfully!")
 
 if __name__ == '__main__':
     main()

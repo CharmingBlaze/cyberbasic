@@ -14,5 +14,8 @@ private:
   bool atEnd() const { return i>=s.size(); }
   char peek() const { return atEnd()? '\0' : s[i]; }
   char advance();
+  Token lex_identifier();
+  Token lex_number();
+  Token lex_string();
 };
 } // namespace bas

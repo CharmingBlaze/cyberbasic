@@ -67,16 +67,26 @@ FOOTER = """}
 def arg_to_cpp(i, t):
     """Convert argument type to C++ expression."""
     a = f"args[{i}]"
+    if t.endswith('*'):
+        return f"({t})({a}.as_int())"  # Assuming pointers are passed as integer addresses
     return {
         "int": f"{a}.as_int()",
         "float": f"static_cast<float>({a}.as_number())",
         "double": f"{a}.as_number()",
         "bool": f"{a}.as_bool()",
         "string": f"{a}.as_string().c_str()",
+        "Vector2": f"Value::to_vector2({a})",
+        "Vector3": f"Value::to_vector3({a})",
+        "Color": f"Value::to_color({a})",
+        "Rectangle": f"Value::to_rectangle({a})",
+        "Camera2D": f"Value::to_camera2d({a})",
+        "Camera3D": f"Value::to_camera3d({a})",
     }[t]
 
 def ret_to_value(expr, t):
     """Convert return expression to Value."""
+    if t.endswith('*'):
+        return f"return Value::from_int((intptr_t)({expr}));" # Return pointers as integers
     return {
         "void": "return Value::nil();",
         "int": f"return Value::from_int({expr});",
@@ -84,6 +94,12 @@ def ret_to_value(expr, t):
         "double": f"return Value::from_number({expr});",
         "bool": f"return Value::from_bool({expr});",
         "string": f"return Value::from_string({expr});",
+        "Vector2": f"return Value::from_vector2({expr});",
+        "Vector3": f"return Value::from_vector3({expr});",
+        "Color": f"return Value::from_color({expr});",
+        "Rectangle": f"return Value::from_rectangle({expr});",
+        "Camera2D": f"return Value::from_camera2d({expr});",
+        "Camera3D": f"return Value::from_camera3d({expr});",
     }[t]
 
 def emit_fn(f):
@@ -105,39 +121,54 @@ def emit_fn(f):
         params = ", ".join(arg_to_cpp(i, t) for i, t in enumerate(args))
         call = "        " + ret_to_value(f"{map_to}({params})", ret)
     
-    return f'''    R.add("{name}", Fn{{"{name}", {arity}, [] (const std::vector<Value>& args) -> Value {{
+    return f'''    R.add_with_policy("{name}", Fn{{"{name}", {arity}, [] (const std::vector<Value>& args) -> Value {{
 {arity_check}{call}
-    }}}});'''
+    }}}}, true);'''
 
 def main():
     """Main generation function."""
     try:
-        # Look for the YAML file in the source directory
+        # Look for the YAML files in the source directory
         script_dir = pathlib.Path(__file__).parent
         source_dir = script_dir.parent
-        spec_path = source_dir / "specs" / "raylib_api.yaml"
-        if not spec_path.exists():
-            print(f"Error: {spec_path} not found", file=sys.stderr)
-            return 1
-            
-        spec = yaml.safe_load(spec_path.read_text())
-        out = [HEADER]
+        specs_dir = source_dir / "specs"
         
-        for f in spec["functions"]:
-            out.append(emit_fn(f))
-            out.append("")
+        # List of spec files to process
+        spec_files = [
+            "raylib_api.yaml",
+            "24_simple_game_apis.yaml"
+        ]
+        
+        out = [HEADER]
+        total_functions = 0
+        
+        for spec_file in spec_files:
+            spec_path = specs_dir / spec_file
+            if spec_path.exists():
+                print(f"Processing {spec_file}...")
+                spec = yaml.safe_load(spec_path.read_text())
+                
+                if "functions" in spec:
+                    for f in spec["functions"]:
+                        out.append(emit_fn(f))
+                        out.append("")
+                        total_functions += 1
+            else:
+                print(f"Warning: {spec_path} not found", file=sys.stderr)
         
         out.append(FOOTER)
+        print(f"Generated {total_functions} functions")
         
-        # Write to build directory if it exists, otherwise source directory
+        # The script's working directory is the build directory.
+        # The output path must match the OUTPUT specified in CMakeLists.txt
         build_dir = pathlib.Path.cwd()
-        if (build_dir / "src").exists():
-            output_path = build_dir / "src" / "rt_raylib.gen.cpp"
-        else:
-            output_path = source_dir / "src" / "rt_raylib.gen.cpp"
+        output_path = build_dir / "src" / "rt_raylib.gen.cpp"
+        
+        # Ensure the target directory exists
+        output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text("".join(out), encoding="utf-8")
         
-        print(f"Generated {output_path} with {len(spec['functions'])} functions")
+        print(f"Generated {output_path} with {total_functions} functions")
         return 0
         
     except Exception as e:

@@ -67,6 +67,6 @@ void register_gui_functions(FunctionRegistry&);
 Value call(FunctionRegistry&, const std::string& name, const std::vector<Value>&);
 
 // Interpret a parsed program. Returns 0 on success, non-zero on runtime error.
-int interpret(const Program&, FunctionRegistry&);
+int interpret(const Program&, FunctionRegistry&, bool debug_mode);
 
 } // namespace bas
