@@ -8,11 +8,19 @@
 
 namespace bas {
 
-// Helper function for distance calculation
+// Helper function for distance calculation (2D)
 static float calculate_distance(const Point2D& a, const Point2D& b) {
     float dx = a.x - b.x;
     float dy = a.y - b.y;
     return std::sqrt(dx * dx + dy * dy);
+}
+
+// Helper function for distance calculation (3D)
+static float calculate_distance_3d(const Point3D& a, const Point3D& b) {
+    float dx = a.x - b.x;
+    float dy = a.y - b.y;
+    float dz = a.z - b.z;
+    return std::sqrt(dx * dx + dy * dy + dz * dz);
 }
 
 // Path implementation
@@ -31,6 +39,25 @@ Point2D Path::get_next_waypoint(int current_index) const {
 }
 
 bool Path::is_complete(int current_index) const {
+    return current_index >= static_cast<int>(waypoints.size()) - 1;
+}
+
+// Path3D implementation
+void Path3D::add_waypoint(const Point3D& point) {
+    waypoints.push_back(point);
+    if (waypoints.size() > 1) {
+        total_distance += calculate_distance_3d(waypoints[waypoints.size()-2], waypoints.back());
+    }
+}
+
+Point3D Path3D::get_next_waypoint(int current_index) const {
+    if (current_index < 0 || current_index >= static_cast<int>(waypoints.size())) {
+        return Point3D(0, 0, 0);
+    }
+    return waypoints[current_index];
+}
+
+bool Path3D::is_complete(int current_index) const {
     return current_index >= static_cast<int>(waypoints.size()) - 1;
 }
 
@@ -193,6 +220,200 @@ void Pathfinder::clear_obstacles() {
     }
 }
 
+// Pathfinder3D implementation
+Pathfinder3D::Pathfinder3D(int width, int height, int depth, float cell_size) 
+    : grid_width(width), grid_height(height), grid_depth(depth), cell_size(cell_size) {
+    grid.resize(depth);
+    for (int z = 0; z < depth; ++z) {
+        grid[z].resize(height);
+        for (int y = 0; y < height; ++y) {
+            grid[z][y].resize(width);
+            for (int x = 0; x < width; ++x) {
+                Point3D pos(x * cell_size, y * cell_size, z * cell_size);
+                grid[z][y][x] = std::make_shared<Node3D>(pos);
+            }
+        }
+    }
+}
+
+void Pathfinder3D::set_obstacle(int x, int y, int z, bool is_obstacle) {
+    if (x >= 0 && x < grid_width && y >= 0 && y < grid_height && z >= 0 && z < grid_depth) {
+        grid[z][y][x]->walkable = !is_obstacle;
+    }
+}
+
+void Pathfinder3D::set_obstacle_box(float x, float y, float z, float width, float height, float depth, bool is_obstacle) {
+    int start_x = static_cast<int>(x / cell_size);
+    int start_y = static_cast<int>(y / cell_size);
+    int start_z = static_cast<int>(z / cell_size);
+    int end_x = static_cast<int>((x + width) / cell_size);
+    int end_y = static_cast<int>((y + height) / cell_size);
+    int end_z = static_cast<int>((z + depth) / cell_size);
+    
+    for (int gz = start_z; gz <= end_z && gz < grid_depth; ++gz) {
+        for (int gy = start_y; gy <= end_y && gy < grid_height; ++gy) {
+            for (int gx = start_x; gx <= end_x && gx < grid_width; ++gx) {
+                set_obstacle(gx, gy, gz, is_obstacle);
+            }
+        }
+    }
+}
+
+Path3D Pathfinder3D::find_path(const Point3D& start, const Point3D& end) const {
+    Path3D path;
+    
+    // Convert world coordinates to grid coordinates
+    int start_x = static_cast<int>(start.x / cell_size);
+    int start_y = static_cast<int>(start.y / cell_size);
+    int start_z = static_cast<int>(start.z / cell_size);
+    int end_x = static_cast<int>(end.x / cell_size);
+    int end_y = static_cast<int>(end.y / cell_size);
+    int end_z = static_cast<int>(end.z / cell_size);
+    
+    if (start_x < 0 || start_x >= grid_width || start_y < 0 || start_y >= grid_height || 
+        start_z < 0 || start_z >= grid_depth || end_x < 0 || end_x >= grid_width || 
+        end_y < 0 || end_y >= grid_height || end_z < 0 || end_z >= grid_depth) {
+        return path;
+    }
+    
+    auto start_node = grid[start_z][start_y][start_x];
+    auto end_node = grid[end_z][end_y][end_x];
+    
+    if (!start_node->walkable || !end_node->walkable) {
+        return path;
+    }
+    
+    // A* algorithm implementation (simplified for 3D)
+    std::priority_queue<std::shared_ptr<Node3D>, std::vector<std::shared_ptr<Node3D>>, 
+                       std::function<bool(const std::shared_ptr<Node3D>&, const std::shared_ptr<Node3D>&)>> 
+        open_set([](const std::shared_ptr<Node3D>& a, const std::shared_ptr<Node3D>& b) {
+            return a->f_cost > b->f_cost;
+        });
+    
+    std::unordered_set<std::shared_ptr<Node3D>> closed_set;
+    
+    start_node->g_cost = 0;
+    start_node->h_cost = calculate_distance_3d(start_node->position, end_node->position);
+    start_node->f_cost = start_node->g_cost + start_node->h_cost;
+    
+    open_set.push(start_node);
+    
+    while (!open_set.empty()) {
+        auto current = open_set.top();
+        open_set.pop();
+        
+        if (current == end_node) {
+            // Reconstruct path
+            std::vector<Point3D> waypoints;
+            auto node = current;
+            while (node) {
+                waypoints.push_back(node->position);
+                node = node->parent;
+            }
+            std::reverse(waypoints.begin(), waypoints.end());
+            
+            for (const auto& waypoint : waypoints) {
+                path.add_waypoint(waypoint);
+            }
+            path.valid = true;
+            break;
+        }
+        
+        closed_set.insert(current);
+        
+        auto neighbors = get_neighbors(current);
+        for (auto neighbor : neighbors) {
+            if (closed_set.find(neighbor) != closed_set.end() || !neighbor->walkable) {
+                continue;
+            }
+            
+            float tentative_g_cost = current->g_cost + calculate_distance_3d(current->position, neighbor->position);
+            
+            bool in_open_set = false;
+            std::vector<std::shared_ptr<Node3D>> temp_open_set;
+            while (!open_set.empty()) {
+                auto node = open_set.top();
+                open_set.pop();
+                if (node == neighbor) {
+                    in_open_set = true;
+                    if (tentative_g_cost < neighbor->g_cost) {
+                        neighbor->parent = current;
+                        neighbor->g_cost = tentative_g_cost;
+                        neighbor->f_cost = neighbor->g_cost + neighbor->h_cost;
+                    }
+                }
+                temp_open_set.push_back(node);
+            }
+            
+            for (auto node : temp_open_set) {
+                open_set.push(node);
+            }
+            
+            if (!in_open_set) {
+                neighbor->parent = current;
+                neighbor->g_cost = tentative_g_cost;
+                neighbor->h_cost = calculate_distance_3d(neighbor->position, end_node->position);
+                neighbor->f_cost = neighbor->g_cost + neighbor->h_cost;
+                open_set.push(neighbor);
+            }
+        }
+    }
+    
+    return path;
+}
+
+void Pathfinder3D::clear_obstacles() {
+    for (int z = 0; z < grid_depth; ++z) {
+        for (int y = 0; y < grid_height; ++y) {
+            for (int x = 0; x < grid_width; ++x) {
+                grid[z][y][x]->walkable = true;
+            }
+        }
+    }
+}
+
+float Pathfinder3D::calculate_distance(const Point3D& a, const Point3D& b) const {
+    return calculate_distance_3d(a, b);
+}
+
+std::vector<std::shared_ptr<Node3D>> Pathfinder3D::get_neighbors(std::shared_ptr<Node3D> node) const {
+    std::vector<std::shared_ptr<Node3D>> neighbors;
+    
+    int x = static_cast<int>(node->position.x / cell_size);
+    int y = static_cast<int>(node->position.y / cell_size);
+    int z = static_cast<int>(node->position.z / cell_size);
+    
+    // Check 26 neighbors (3D grid)
+    for (int dz = -1; dz <= 1; ++dz) {
+        for (int dy = -1; dy <= 1; ++dy) {
+            for (int dx = -1; dx <= 1; ++dx) {
+                if (dx == 0 && dy == 0 && dz == 0) continue;
+                
+                int nx = x + dx;
+                int ny = y + dy;
+                int nz = z + dz;
+                
+                if (nx >= 0 && nx < grid_width && ny >= 0 && ny < grid_height && nz >= 0 && nz < grid_depth) {
+                    neighbors.push_back(grid[nz][ny][nx]);
+                }
+            }
+        }
+    }
+    
+    return neighbors;
+}
+
+std::vector<Point3D> Pathfinder3D::reconstruct_path(std::shared_ptr<Node3D> end_node) const {
+    std::vector<Point3D> path;
+    auto node = end_node;
+    while (node) {
+        path.push_back(node->position);
+        node = node->parent;
+    }
+    std::reverse(path.begin(), path.end());
+    return path;
+}
+
 // NavigationMesh implementation
 void NavigationMesh::add_vertex(const Point2D& vertex) {
     vertices.push_back(vertex);
@@ -231,6 +452,47 @@ Point2D NavigationMesh::get_random_point() const {
 bool NavigationMesh::is_point_walkable(const Point2D& point) const {
     (void)point; // Suppress unused parameter warning
     // Simplified implementation - would need proper point-in-triangle testing
+    return true;
+}
+
+// NavigationMesh3D implementation
+void NavigationMesh3D::add_vertex(const Point3D& vertex) {
+    vertices.push_back(vertex);
+}
+
+void NavigationMesh3D::add_triangle(int v1, int v2, int v3, bool walkable) {
+    if (v1 >= 0 && v1 < static_cast<int>(vertices.size()) &&
+        v2 >= 0 && v2 < static_cast<int>(vertices.size()) &&
+        v3 >= 0 && v3 < static_cast<int>(vertices.size())) {
+        triangles.push_back({v1, v2, v3});
+        triangle_walkable.push_back(walkable);
+    }
+}
+
+Path3D NavigationMesh3D::find_path(const Point3D& start, const Point3D& end) const {
+    Path3D path;
+    // Simplified implementation - would need proper 3D navigation mesh pathfinding
+    path.add_waypoint(start);
+    path.add_waypoint(end);
+    path.valid = true;
+    return path;
+}
+
+Point3D NavigationMesh3D::get_random_point() const {
+    if (vertices.empty()) {
+        return Point3D(0, 0, 0);
+    }
+    
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(0, static_cast<int>(vertices.size()) - 1);
+    
+    return vertices[dis(gen)];
+}
+
+bool NavigationMesh3D::is_point_walkable(const Point3D& point) const {
+    (void)point; // Suppress unused parameter warning
+    // Simplified implementation - would need proper point-in-triangle testing for 3D
     return true;
 }
 
@@ -329,6 +591,100 @@ Point2D NavigationSystem::get_random_walkable_point() const {
 bool NavigationSystem::is_point_walkable(float x, float y) const {
     if (navmesh) {
         return navmesh->is_point_walkable(Point2D(x, y));
+    }
+    return true;
+}
+
+// 3D NavigationSystem methods
+void NavigationSystem::initialize_grid_3d(int width, int height, int depth, float cell_size) {
+    pathfinder3d = std::make_unique<Pathfinder3D>(width, height, depth, cell_size);
+}
+
+void NavigationSystem::add_obstacle_3d(float x, float y, float z, float width, float height, float depth) {
+    if (pathfinder3d) {
+        pathfinder3d->set_obstacle_box(x, y, z, width, height, depth, true);
+    }
+}
+
+void NavigationSystem::remove_obstacle_3d(float x, float y, float z, float width, float height, float depth) {
+    if (pathfinder3d) {
+        pathfinder3d->set_obstacle_box(x, y, z, width, height, depth, false);
+    }
+}
+
+Path3D NavigationSystem::find_path_3d(float start_x, float start_y, float start_z, float end_x, float end_y, float end_z) {
+    if (pathfinder3d) {
+        return pathfinder3d->find_path(Point3D(start_x, start_y, start_z), Point3D(end_x, end_y, end_z));
+    }
+    return Path3D();
+}
+
+void NavigationSystem::create_navmesh_3d() {
+    navmesh3d = std::make_unique<NavigationMesh3D>();
+}
+
+void NavigationSystem::add_navmesh_vertex_3d(float x, float y, float z) {
+    if (navmesh3d) {
+        navmesh3d->add_vertex(Point3D(x, y, z));
+    }
+}
+
+void NavigationSystem::add_navmesh_triangle_3d(int v1, int v2, int v3, bool walkable) {
+    if (navmesh3d) {
+        navmesh3d->add_triangle(v1, v2, v3, walkable);
+    }
+}
+
+Path3D NavigationSystem::find_navmesh_path_3d(float start_x, float start_y, float start_z, float end_x, float end_y, float end_z) {
+    if (navmesh3d) {
+        return navmesh3d->find_path(Point3D(start_x, start_y, start_z), Point3D(end_x, end_y, end_z));
+    }
+    return Path3D();
+}
+
+int NavigationSystem::create_path_3d(float start_x, float start_y, float start_z, float end_x, float end_y, float end_z) {
+    Path3D path = find_path_3d(start_x, start_y, start_z, end_x, end_y, end_z);
+    if (path.valid) {
+        active_paths3d.push_back(path);
+        return static_cast<int>(active_paths3d.size()) - 1;
+    }
+    return -1;
+}
+
+Point3D NavigationSystem::get_next_waypoint_3d(int path_id, int current_index) {
+    if (path_id >= 0 && path_id < static_cast<int>(active_paths3d.size())) {
+        return active_paths3d[path_id].get_next_waypoint(current_index);
+    }
+    return Point3D(0, 0, 0);
+}
+
+bool NavigationSystem::is_path_complete_3d(int path_id, int current_index) {
+    if (path_id >= 0 && path_id < static_cast<int>(active_paths3d.size())) {
+        return active_paths3d[path_id].is_complete(current_index);
+    }
+    return true;
+}
+
+void NavigationSystem::remove_path_3d(int path_id) {
+    if (path_id >= 0 && path_id < static_cast<int>(active_paths3d.size())) {
+        active_paths3d.erase(active_paths3d.begin() + path_id);
+    }
+}
+
+float NavigationSystem::calculate_distance_3d(float x1, float y1, float z1, float x2, float y2, float z2) const {
+    return calculate_distance_3d(Point3D(x1, y1, z1), Point3D(x2, y2, z2));
+}
+
+Point3D NavigationSystem::get_random_walkable_point_3d() const {
+    if (navmesh3d) {
+        return navmesh3d->get_random_point();
+    }
+    return Point3D(0, 0, 0);
+}
+
+bool NavigationSystem::is_point_walkable_3d(float x, float y, float z) const {
+    if (navmesh3d) {
+        return navmesh3d->is_point_walkable(Point3D(x, y, z));
     }
     return true;
 }

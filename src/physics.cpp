@@ -30,8 +30,22 @@ void PhysicsWorld::set_iterations(int iter) {
 }
 
 int PhysicsWorld::create_body(BodyType type, float x, float y) {
-    auto body = std::make_unique<RigidBody>(next_body_id++);
+    auto body = std::make_unique<RigidBody>(next_body_id++, false);
     body->position = Vector2D(x, y);
+    body->type = type;
+    
+    if (type == BodyType::STATIC) {
+        body->mass = 0.0f; // Infinite mass for static bodies
+    }
+    
+    int id = body->id;
+    bodies.push_back(std::move(body));
+    return id;
+}
+
+int PhysicsWorld::create_body_3d(BodyType type, float x, float y, float z) {
+    auto body = std::make_unique<RigidBody>(next_body_id++, true);
+    body->position3d = Vector3D(x, y, z);
     body->type = type;
     
     if (type == BodyType::STATIC) {
@@ -100,6 +114,35 @@ void PhysicsWorld::set_body_density(int body_id, float density) {
     }
 }
 
+// 3D body property methods
+void PhysicsWorld::set_body_position_3d(int body_id, float x, float y, float z) {
+    RigidBody* body = get_body(body_id);
+    if (body && body->is_3d) {
+        body->position3d = Vector3D(x, y, z);
+    }
+}
+
+void PhysicsWorld::set_body_velocity_3d(int body_id, float x, float y, float z) {
+    RigidBody* body = get_body(body_id);
+    if (body && body->is_3d) {
+        body->velocity3d = Vector3D(x, y, z);
+    }
+}
+
+void PhysicsWorld::set_body_rotation_3d(int body_id, float x, float y, float z) {
+    RigidBody* body = get_body(body_id);
+    if (body && body->is_3d) {
+        body->rotation3d = Vector3D(x, y, z);
+    }
+}
+
+void PhysicsWorld::set_body_angular_velocity_3d(int body_id, float x, float y, float z) {
+    RigidBody* body = get_body(body_id);
+    if (body && body->is_3d) {
+        body->angular_velocity3d = Vector3D(x, y, z);
+    }
+}
+
 void PhysicsWorld::set_circle_shape(int body_id, float radius) {
     RigidBody* body = get_body(body_id);
     if (body) {
@@ -121,6 +164,40 @@ void PhysicsWorld::set_polygon_shape(int body_id, const std::vector<Vector2D>& v
     if (body) {
         body->shape = ShapeType::POLYGON;
         body->vertices = vertices;
+    }
+}
+
+// 3D shape methods
+void PhysicsWorld::set_sphere_shape(int body_id, float radius) {
+    RigidBody* body = get_body(body_id);
+    if (body && body->is_3d) {
+        body->shape = ShapeType::SPHERE;
+        body->radius = radius;
+    }
+}
+
+void PhysicsWorld::set_box_shape(int body_id, float width, float height, float depth) {
+    RigidBody* body = get_body(body_id);
+    if (body && body->is_3d) {
+        body->shape = ShapeType::BOX;
+        body->size3d = Vector3D(width, height, depth);
+    }
+}
+
+void PhysicsWorld::set_capsule_shape(int body_id, float radius, float height) {
+    RigidBody* body = get_body(body_id);
+    if (body && body->is_3d) {
+        body->shape = ShapeType::CAPSULE;
+        body->radius = radius;
+        body->height = height;
+    }
+}
+
+void PhysicsWorld::set_mesh_shape(int body_id, const std::vector<Vector3D>& vertices) {
+    RigidBody* body = get_body(body_id);
+    if (body && body->is_3d) {
+        body->shape = ShapeType::MESH;
+        body->vertices3d = vertices;
     }
 }
 
@@ -161,6 +238,49 @@ void PhysicsWorld::apply_force_at_point(int body_id, float force_x, float force_
     }
 }
 
+// 3D force methods
+void PhysicsWorld::apply_force_3d(int body_id, float x, float y, float z) {
+    RigidBody* body = get_body(body_id);
+    if (body && body->type == BodyType::DYNAMIC && body->is_3d) {
+        body->acceleration3d = body->acceleration3d + Vector3D(x, y, z) * (1.0f / body->mass);
+    }
+}
+
+void PhysicsWorld::apply_impulse_3d(int body_id, float x, float y, float z) {
+    RigidBody* body = get_body(body_id);
+    if (body && body->type == BodyType::DYNAMIC && body->is_3d) {
+        body->velocity3d = body->velocity3d + Vector3D(x, y, z) * (1.0f / body->mass);
+    }
+}
+
+void PhysicsWorld::apply_torque_3d(int body_id, float x, float y, float z) {
+    RigidBody* body = get_body(body_id);
+    if (body && body->type == BodyType::DYNAMIC && body->is_3d) {
+        body->angular_velocity3d = body->angular_velocity3d + Vector3D(x, y, z) * (1.0f / body->mass);
+    }
+}
+
+void PhysicsWorld::apply_force_at_point_3d(int body_id, float force_x, float force_y, float force_z, 
+                                           float point_x, float point_y, float point_z) {
+    RigidBody* body = get_body(body_id);
+    if (body && body->type == BodyType::DYNAMIC && body->is_3d) {
+        Vector3D force(force_x, force_y, force_z);
+        Vector3D point(point_x, point_y, point_z);
+        Vector3D r = point - body->position3d;
+        
+        // Apply linear force
+        body->acceleration3d = body->acceleration3d + force * (1.0f / body->mass);
+        
+        // Apply angular force (torque) - cross product
+        Vector3D torque = Vector3D(
+            r.y * force.z - r.z * force.y,
+            r.z * force.x - r.x * force.z,
+            r.x * force.y - r.y * force.x
+        );
+        body->angular_velocity3d = body->angular_velocity3d + torque * (1.0f / body->mass);
+    }
+}
+
 int PhysicsWorld::create_pin_joint(int body_a, int body_b, float anchor_x, float anchor_y) {
     auto joint = std::make_unique<PhysicsJoint>(next_joint_id++, JointType::PIN, body_a, body_b);
     joint->anchor_a = Vector2D(anchor_x, anchor_y);
@@ -191,6 +311,48 @@ int PhysicsWorld::create_spring_joint(int body_a, int body_b, float stiffness, f
 int PhysicsWorld::create_distance_joint(int body_a, int body_b, float distance) {
     auto joint = std::make_unique<PhysicsJoint>(next_joint_id++, JointType::DISTANCE, body_a, body_b);
     joint->rest_length = distance;
+    
+    int id = joint->id;
+    joints.push_back(std::move(joint));
+    return id;
+}
+
+// 3D joint methods
+int PhysicsWorld::create_ball_socket_joint(int body_a, int body_b, float anchor_x, float anchor_y, float anchor_z) {
+    auto joint = std::make_unique<PhysicsJoint>(next_joint_id++, JointType::BALL_SOCKET, body_a, body_b, true);
+    joint->anchor_a3d = Vector3D(anchor_x, anchor_y, anchor_z);
+    joint->anchor_b3d = Vector3D(anchor_x, anchor_y, anchor_z);
+    
+    int id = joint->id;
+    joints.push_back(std::move(joint));
+    return id;
+}
+
+int PhysicsWorld::create_hinge_joint(int body_a, int body_b, float anchor_x, float anchor_y, float anchor_z, 
+                                    float axis_x, float axis_y, float axis_z) {
+    auto joint = std::make_unique<PhysicsJoint>(next_joint_id++, JointType::HINGE, body_a, body_b, true);
+    joint->anchor_a3d = Vector3D(anchor_x, anchor_y, anchor_z);
+    joint->anchor_b3d = Vector3D(anchor_x, anchor_y, anchor_z);
+    // Store axis in anchor_b3d for now (could add separate axis field later)
+    joint->anchor_b3d = Vector3D(axis_x, axis_y, axis_z);
+    
+    int id = joint->id;
+    joints.push_back(std::move(joint));
+    return id;
+}
+
+int PhysicsWorld::create_slider_joint(int body_a, int body_b, float axis_x, float axis_y, float axis_z) {
+    auto joint = std::make_unique<PhysicsJoint>(next_joint_id++, JointType::SLIDER, body_a, body_b, true);
+    // Store axis in anchor_a3d for now
+    joint->anchor_a3d = Vector3D(axis_x, axis_y, axis_z);
+    
+    int id = joint->id;
+    joints.push_back(std::move(joint));
+    return id;
+}
+
+int PhysicsWorld::create_fixed_joint(int body_a, int body_b) {
+    auto joint = std::make_unique<PhysicsJoint>(next_joint_id++, JointType::FIXED, body_a, body_b, true);
     
     int id = joint->id;
     joints.push_back(std::move(joint));
@@ -337,6 +499,92 @@ bool PhysicsWorld::check_circle_rectangle(const RigidBody& circle, const RigidBo
         result.contact_point = closest_point;
         result.restitution = std::min(circle.restitution, rect.restitution);
         result.friction = std::sqrt(circle.friction * rect.friction);
+        return true;
+    }
+    
+    return false;
+}
+
+// 3D collision detection methods
+bool PhysicsWorld::check_sphere_sphere(const RigidBody& a, const RigidBody& b, CollisionResult& result) {
+    Vector3D distance = b.position3d - a.position3d;
+    float distance_length = distance.length();
+    float min_distance = a.radius + b.radius;
+    
+    if (distance_length < min_distance) {
+        result.collided = true;
+        result.body_a_id = a.id;
+        result.body_b_id = b.id;
+        result.penetration = min_distance - distance_length;
+        result.normal = Vector2D(distance.x, distance.y).normalized();
+        result.contact_point = Vector2D(a.position3d.x, a.position3d.y) + result.normal * a.radius; // Use 2D contact point for now
+        result.restitution = std::min(a.restitution, b.restitution);
+        result.friction = std::sqrt(a.friction * b.friction);
+        return true;
+    }
+    
+    return false;
+}
+
+bool PhysicsWorld::check_box_box(const RigidBody& a, const RigidBody& b, CollisionResult& result) {
+    // 3D AABB collision detection
+    float a_min_x = a.position3d.x - a.size3d.x / 2;
+    float a_max_x = a.position3d.x + a.size3d.x / 2;
+    float a_min_y = a.position3d.y - a.size3d.y / 2;
+    float a_max_y = a.position3d.y + a.size3d.y / 2;
+    float a_min_z = a.position3d.z - a.size3d.z / 2;
+    float a_max_z = a.position3d.z + a.size3d.z / 2;
+    
+    float b_min_x = b.position3d.x - b.size3d.x / 2;
+    float b_max_x = b.position3d.x + b.size3d.x / 2;
+    float b_min_y = b.position3d.y - b.size3d.y / 2;
+    float b_max_y = b.position3d.y + b.size3d.y / 2;
+    float b_min_z = b.position3d.z - b.size3d.z / 2;
+    float b_max_z = b.position3d.z + b.size3d.z / 2;
+    
+    if (a_max_x >= b_min_x && a_min_x <= b_max_x &&
+        a_max_y >= b_min_y && a_min_y <= b_max_y &&
+        a_max_z >= b_min_z && a_min_z <= b_max_z) {
+        
+        result.collided = true;
+        result.body_a_id = a.id;
+        result.body_b_id = b.id;
+        result.penetration = std::min({a_max_x - b_min_x, b_max_x - a_min_x,
+                                      a_max_y - b_min_y, b_max_y - a_min_y,
+                                      a_max_z - b_min_z, b_max_z - a_min_z});
+        result.normal = Vector2D(0, 1); // Default normal for now
+        result.contact_point = Vector2D((a.position3d.x + b.position3d.x) / 2, 
+                                       (a.position3d.y + b.position3d.y) / 2);
+        result.restitution = std::min(a.restitution, b.restitution);
+        result.friction = std::sqrt(a.friction * b.friction);
+        return true;
+    }
+    
+    return false;
+}
+
+bool PhysicsWorld::check_sphere_box(const RigidBody& sphere, const RigidBody& box, CollisionResult& result) {
+    // Find closest point on box to sphere center
+    float closest_x = std::max(box.position3d.x - box.size3d.x / 2, 
+                              std::min(sphere.position3d.x, box.position3d.x + box.size3d.x / 2));
+    float closest_y = std::max(box.position3d.y - box.size3d.y / 2, 
+                              std::min(sphere.position3d.y, box.position3d.y + box.size3d.y / 2));
+    float closest_z = std::max(box.position3d.z - box.size3d.z / 2, 
+                              std::min(sphere.position3d.z, box.position3d.z + box.size3d.z / 2));
+    
+    Vector3D closest_point(closest_x, closest_y, closest_z);
+    Vector3D distance = sphere.position3d - closest_point;
+    float distance_length = distance.length();
+    
+    if (distance_length < sphere.radius) {
+        result.collided = true;
+        result.body_a_id = sphere.id;
+        result.body_b_id = box.id;
+        result.penetration = sphere.radius - distance_length;
+        result.normal = Vector2D(distance.x, distance.y).normalized();
+        result.contact_point = Vector2D(closest_x, closest_y); // Use 2D contact point for now
+        result.restitution = std::min(sphere.restitution, box.restitution);
+        result.friction = std::sqrt(sphere.friction * box.friction);
         return true;
     }
     
@@ -552,6 +800,22 @@ Vector2D PhysicsWorld::get_body_velocity(int body_id) {
 float PhysicsWorld::get_body_rotation(int body_id) {
     RigidBody* body = get_body(body_id);
     return body ? body->rotation : 0.0f;
+}
+
+// 3D getter methods
+Vector3D PhysicsWorld::get_body_position_3d(int body_id) {
+    RigidBody* body = get_body(body_id);
+    return (body && body->is_3d) ? body->position3d : Vector3D(0, 0, 0);
+}
+
+Vector3D PhysicsWorld::get_body_velocity_3d(int body_id) {
+    RigidBody* body = get_body(body_id);
+    return (body && body->is_3d) ? body->velocity3d : Vector3D(0, 0, 0);
+}
+
+Vector3D PhysicsWorld::get_body_rotation_3d(int body_id) {
+    RigidBody* body = get_body(body_id);
+    return (body && body->is_3d) ? body->rotation3d : Vector3D(0, 0, 0);
 }
 
 int PhysicsWorld::get_body_count() {

@@ -8,6 +8,9 @@
 #include "bas/graphics.hpp"
 #include "bas/networking.hpp"
 #include "bas/audio.hpp"
+#include "bas/camera3d.hpp"
+#include "bas/lighting3d.hpp"
+#include "bas/models3d.hpp"
 #include <fstream>
 #include <iostream>
 #include <iterator>
@@ -236,6 +239,9 @@ int main(int argc, char** argv) {
     bas::register_graphics_functions(R);
     bas::register_networking_functions(R);
     bas::register_audio_functions(R);
+    bas::register_camera3d_functions(R);
+    bas::register_lighting3d_functions(R);
+    bas::register_models3d_functions(R);
     
     if (debug_mode) {
         std::cout << "  Built-in functions registered: " << R.size() << std::endl;

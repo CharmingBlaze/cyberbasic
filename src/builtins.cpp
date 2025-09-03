@@ -27,7 +27,11 @@ static std::string to_string_value(const Value& v){
   return std::string{};
 }
 
-void bas::register_builtins(FunctionRegistry& R){
+// NOTE: Legacy monolithic registrar disabled to prevent duplicate registrations.
+// The active registrar is implemented in src/builtins_core.cpp as bas::register_builtins.
+// Keeping this code under a different name preserves reference implementations without
+// conflicting symbols or double-registration at runtime.
+void bas::register_builtins_legacy_disabled(FunctionRegistry& R){
   // Initialize input subsystem (safe to call multiple times)
   bas::input::init();
   R.add("PRINT", NativeFn{"PRINT", 1, [](const std::vector<Value>& a){
