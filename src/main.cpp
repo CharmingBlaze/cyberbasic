@@ -1,6 +1,8 @@
 #include "bas/lexer.hpp"
 #include "bas/parser.hpp"
 #include "bas/runtime.hpp"
+#include "bas/namespace_registry.hpp"
+#include "bas/type_system.hpp"
 #include "bas/builtins.hpp"
 #include "bas/navigation.hpp"
 #include "bas/physics.hpp"
@@ -14,6 +16,30 @@
 #include "bas/game_systems.hpp"
 #include "bas/gui.hpp"
 #include "bas/raymath.hpp"
+#include "bas/sprite_system.hpp"
+#include "bas/timer_system.hpp"
+#include "bas/input_events.hpp"
+#include "bas/animation_system.hpp"
+#include "bas/scene_entity_system.hpp"
+#include "bas/ecs_system.hpp"
+#include "bas/camera_system.hpp"
+#include "bas/collision_system.hpp"
+#include "bas/game_loop.hpp"
+#include "bas/game_helpers.hpp"
+#include "bas/builtins_json.hpp"
+#include "bas/builtins_file.hpp"
+#include "bas/tween_system.hpp"
+#include "bas/camera_shake.hpp"
+#include "bas/localization.hpp"
+#include "bas/state_machine.hpp"
+#include "bas/modern_state_system.hpp"
+#include "bas/game_commands.hpp"
+#include "bas/modern_features.hpp"
+#include "bas/advanced_features.hpp"
+#include "bas/post_processing.hpp"
+#include "bas/streaming.hpp"
+#include "bas/enhanced_events.hpp"
+#include "bas/screen_transitions.hpp"
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
@@ -31,19 +57,22 @@
 void print_usage(const char* program_name) {
     std::cout << "BASIC + Raylib Interpreter v1.0" << std::endl;
     std::cout << "Usage: " << program_name << " [options] <file.bas>" << std::endl;
+    std::cout << "       " << program_name << " --repl" << std::endl;
     std::cout << std::endl;
     std::cout << "Options:" << std::endl;
+    std::cerr << "  --repl          Start interactive REPL (Read-Eval-Print Loop)" << std::endl;
     std::cerr << "  --debug, -d     Enable debug mode with detailed error information" << std::endl;
     std::cerr << "  --verbose, -v   Show warnings and additional information" << std::endl;
     std::cerr << "  --dialect <name>  Select dialect: classic | agklite" << std::endl;
     std::cerr << "                   Default is permissive (agklite features ON)." << std::endl;
     std::cerr << "                   Use --dialect classic to enforce strict classic." << std::endl;
-    std::cerr << "  --agk             [deprecated] Alias for --dialect agklite" << std::endl;
+    std::cerr << "  --agk             [deprecated - will be removed] Alias for --dialect agklite" << std::endl;
     std::cerr << "  --help, -h      Show this help message" << std::endl;
     std::cout << std::endl;
     std::cout << "Examples:" << std::endl;
     std::cerr << "  " << program_name << " game.bas" << std::endl;
     std::cerr << "  " << program_name << " --debug test.bas" << std::endl;
+    std::cerr << "  " << program_name << " --repl" << std::endl;
     std::cerr << "  " << program_name << " --verbose demo.bas" << std::endl;
 }
 
@@ -68,6 +97,7 @@ int main(int argc, char* argv[]) {
     }
 #endif
     bool verbose_mode = false;
+    bool repl_mode = false;
     // Permissive by default: single-line IF and AGK-like loops enabled
     bool agk_mode = true;
     std::string dialect;
@@ -79,13 +109,16 @@ int main(int argc, char* argv[]) {
         if (strcmp(argv[i], "--debug") == 0 || strcmp(argv[i], "-d") == 0) {
             // Already handled above, so just skip
             continue;
+        } else if (strcmp(argv[i], "--repl") == 0) {
+            repl_mode = true;
         } else if (strcmp(argv[i], "--verbose") == 0 || strcmp(argv[i], "-v") == 0) {
             verbose_mode = true;
         } else if (strncmp(argv[i], "--dialect=", 10) == 0) {
             dialect = std::string(argv[i] + 10);
         } else if (strcmp(argv[i], "--dialect") == 0 && i + 1 < argc) {
             dialect = std::string(argv[++i]);
-        } else if (strcmp(argv[i], "--agk") == 0) { // deprecated alias
+        } else if (strcmp(argv[i], "--agk") == 0) { // deprecated alias - removed
+            std::cerr << "Warning: --agk flag is deprecated. Use --dialect agklite instead." << std::endl;
             dialect = "agklite";
         } else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
             print_usage(argv[0]);
@@ -97,6 +130,138 @@ int main(int argc, char* argv[]) {
             print_usage(argv[0]);
             return 64;
         }
+    }
+    
+    // REPL Mode
+    if (repl_mode) {
+        std::cout << "CyberBasic REPL v1.0" << std::endl;
+        std::cout << "Type 'exit' or 'quit' to exit, 'help' for help" << std::endl;
+        std::cout << std::endl;
+        
+        // Setup runtime
+        bas::FunctionRegistry R;
+        bas::register_builtins(R);
+        bas::register_object_constructors(R);
+        bas::register_raylib_bindings(R);
+        bas::register_raymath_functions(R);
+        bas::register_game_systems_bindings(R);
+        bas::register_navigation_functions(R);
+        bas::register_physics_functions(R);
+        bas::register_ai_functions(R);
+        bas::register_graphics_functions(R);
+        bas::register_networking_functions(R);
+        bas::register_audio_functions(R);
+        bas::register_camera3d_functions(R);
+        bas::register_lighting3d_functions(R);
+        bas::register_models3d_functions(R);
+        bas::register_level_editor_functions(R);
+        bas::register_asset_pipeline_functions(R);
+        bas::register_sprite_animation_functions(R);
+        bas::register_gui_functions(R);
+        
+        // Setup namespace registry
+        bas::NamespaceRegistry namespace_registry;
+        bas::register_raylib_namespaces(namespace_registry);
+        bas::register_game_namespaces(namespace_registry);
+        bas::set_namespace_registry(&namespace_registry);
+        
+        std::string line;
+        std::string multi_line;
+        bool in_multiline = false;
+        
+        while (true) {
+            if (!in_multiline) {
+                std::cout << "> ";
+            } else {
+                std::cout << "... ";
+            }
+            
+            if (!std::getline(std::cin, line)) {
+                break; // EOF
+            }
+            
+            if (line.empty() && !in_multiline) {
+                continue;
+            }
+            
+            // Handle special commands
+            std::string line_upper = line;
+            std::transform(line_upper.begin(), line_upper.end(), line_upper.begin(), 
+                         [](unsigned char c) { return std::toupper(c); });
+            
+            if (line_upper == "EXIT" || line_upper == "QUIT") {
+                std::cout << "Goodbye!" << std::endl;
+                break;
+            }
+            
+            if (line_upper == "HELP") {
+                std::cout << "REPL Commands:" << std::endl;
+                std::cout << "  exit, quit  - Exit REPL" << std::endl;
+                std::cout << "  help        - Show this help" << std::endl;
+                std::cout << "  clear       - Clear screen" << std::endl;
+                std::cout << std::endl;
+                std::cout << "You can type BASIC code directly:" << std::endl;
+                std::cout << "  > VAR x = 10" << std::endl;
+                std::cout << "  > PRINT x" << std::endl;
+                std::cout << "  > VAR vec = Vector3(1, 2, 3)" << std::endl;
+                std::cout << "  > vec.length()" << std::endl;
+                continue;
+            }
+            
+            if (line_upper == "CLEAR") {
+                #ifdef _WIN32
+                system("cls");
+                #else
+                system("clear");
+                #endif
+                continue;
+            }
+            
+            // Accumulate multi-line input
+            if (!multi_line.empty()) {
+                multi_line += "\n" + line;
+            } else {
+                multi_line = line;
+            }
+            
+            // Check if line ends with continuation (backslash or incomplete statement)
+            if (!line.empty() && (line.back() == '\\' || line.back() == '_')) {
+                in_multiline = true;
+                multi_line.pop_back(); // Remove continuation character
+                continue;
+            }
+            
+            // Try to parse and execute
+            try {
+                bas::Lexer lex(multi_line);
+                auto toks = lex.lex();
+                bas::Diag diag;
+                diag.set_debug_mode(debug_mode);
+                bas::Parser ps(std::move(toks), diag, agk_mode);
+                bas::Program prog = ps.parse();
+                
+                if (diag.has_errors()) {
+                    diag.print_errors();
+                    multi_line.clear();
+                    in_multiline = false;
+                    continue;
+                }
+                
+                // Execute
+                int rc = bas::interpret(prog, R, debug_mode);
+                if (rc != 0 && debug_mode) {
+                    std::cerr << "Execution returned code: " << rc << std::endl;
+                }
+                
+            } catch (const std::exception& e) {
+                std::cerr << "Error: " << e.what() << std::endl;
+            }
+            
+            multi_line.clear();
+            in_multiline = false;
+        }
+        
+        return 0;
     }
     
     if (debug_mode) std::cerr << "[DEBUG] Filename to execute: " << filename << std::endl;
@@ -175,7 +340,8 @@ int main(int argc, char* argv[]) {
         std::cerr << "  Tokens generated: " << toks.size() << std::endl;
         if (verbose_mode) {
             std::cerr << "  First few tokens:" << std::endl;
-            for (size_t i = 0; i < std::min(toks.size(), size_t(10)); i++) {
+            size_t max_tokens = toks.size() < 10 ? toks.size() : 10;
+            for (size_t i = 0; i < max_tokens; i++) {
                 std::cerr << "    " << i << ": " << toks[i].lex << " (line " << toks[i].line << ")" << std::endl;
             }
         }
@@ -332,8 +498,20 @@ int main(int argc, char* argv[]) {
         if (debug_mode) std::cerr << "Phase 3: Runtime Setup..." << std::endl;
     bas::FunctionRegistry R;
     
+    // Create and register namespace registry for dot notation
+    bas::NamespaceRegistry namespace_registry;
+    bas::register_raylib_namespaces(namespace_registry);
+    bas::set_namespace_registry(&namespace_registry);
+    
+    // Create and register type registry for user-defined types
+    bas::TypeRegistry type_registry;
+    bas::set_type_registry(&type_registry);
+    
     // Core BASIC functions
     bas::register_builtins(R);
+    
+    // Object constructors (Vector3, Camera3D, Color, etc.)
+    bas::register_object_constructors(R);
     
     // Raylib graphics and multimedia
     bas::register_raylib_bindings(R);
@@ -356,6 +534,44 @@ int main(int argc, char* argv[]) {
     bas::register_asset_pipeline_functions(R);
     bas::register_sprite_animation_functions(R);
     bas::register_gui_functions(R);
+    
+    // New modular game systems
+    bas::register_sprite_system(R);
+    bas::register_timer_system(R);
+    bas::register_input_events(R);
+    bas::register_animation_system(R);
+    bas::register_scene_entity_system(R);
+    bas::register_ecs_system(R);  // Enhanced ECS system
+    bas::register_camera_system(R);
+    bas::register_collision_system(R);
+    bas::register_game_loop(R);
+    bas::register_game_helpers(R);
+    
+    // Modern game development helpers
+    bas::register_asset_manager(R);
+    bas::register_save_load(R);
+    bas::register_profiling(R);
+    bas::register_debug_viz(R);
+    
+    // JSON and File I/O support
+    bas::register_json_functions(R);
+    bas::register_file_functions(R);
+    
+    // New AGK2-style features
+    bas::register_tween_system(R);
+    bas::register_camera_shake(R);
+    bas::register_localization(R);
+    bas::register_state_machine(R);
+    bas::register_modern_state_system(R);  // Modern BASIC-style state system
+    bas::register_game_commands(R);  // High-level game commands
+    bas::register_modern_features(R);  // Modern features (Sets, high-level networking/file I/O)
+    bas::register_advanced_features(R);  // Advanced features (macros, particles, dialogue, etc.)
+    bas::register_post_processing(R);
+    bas::register_streaming(R);
+    bas::register_enhanced_events(R);
+    bas::register_screen_transitions(R);
+    
+    bas::set_event_registry(&R);
     
     if (debug_mode) {
         std::cerr << "  Built-in functions registered: " << R.size() << std::endl;

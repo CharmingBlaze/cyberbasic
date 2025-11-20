@@ -137,7 +137,15 @@ def main():
         spec_files = [
             "01_core_window.yaml",
             "raylib_api.yaml",
-            "24_simple_game_apis.yaml"
+            "24_simple_game_apis.yaml",
+            "25_core_missing_functions.yaml",
+            "26_input_missing_functions.yaml",
+            "27_shapes_missing_functions.yaml",
+            "28_textures_images_functions.yaml",
+            "29_text_fonts_functions.yaml",
+            "30_models_3d_functions.yaml",
+            "31_audio_functions.yaml",
+            "32_raymath_functions.yaml"
         ]
         
         out = [HEADER]
@@ -163,7 +171,7 @@ def main():
         # The script's working directory is the build directory.
         # The output path must match the OUTPUT specified in CMakeLists.txt
         build_dir = pathlib.Path.cwd()
-        output_path = build_dir / "src" / "rt_raylib.gen.cpp"
+        output_path = build_dir / "src" / "bindings" / "rt_raylib.gen.cpp"
         
         # Ensure the target directory exists
         output_path.parent.mkdir(parents=True, exist_ok=True)

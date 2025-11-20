@@ -38,11 +38,11 @@ def main():
     cmake_configure_cmd = [
         "cmake",
         "-S", ".",
-        "-B", "build_v2",
+        "-B", "build",
         "-G", "Ninja",
-        "-DBASIC_STATIC_LINK=ON"
+        "-DCMAKE_BUILD_TYPE=Release"
     ]
-    cmake_build_cmd = ["cmake", "--build", "build_v2", "--verbose"]
+    cmake_build_cmd = ["cmake", "--build", "build", "--config", "Release"]
 
     # Run configure step
     if run_command(cmake_configure_cmd, env) != 0:

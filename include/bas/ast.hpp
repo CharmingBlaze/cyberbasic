@@ -29,8 +29,16 @@ struct Binary : Expr {
     : left(std::move(l)), right(std::move(r)), op(o) {}
 };
 
+// Named parameter in function calls
+struct NamedArg {
+  std::string name;
+  std::unique_ptr<Expr> value;
+};
+
 struct Call : Expr {
-  std::string callee; std::vector<std::unique_ptr<Expr>> args;
+  std::string callee; 
+  std::vector<std::unique_ptr<Expr>> args;
+  std::vector<NamedArg> namedArgs; // Named parameters
   Call(std::string c, std::vector<std::unique_ptr<Expr>> a)
     : callee(std::move(c)), args(std::move(a)) {}
 };
@@ -42,6 +50,21 @@ struct Index : Expr {
     : target(std::move(t)), index(std::move(i)) {}
 };
 
+struct MemberAccess : Expr {
+  std::unique_ptr<Expr> object;
+  std::string member;
+  MemberAccess(std::unique_ptr<Expr> obj, std::string mem)
+    : object(std::move(obj)), member(std::move(mem)) {}
+};
+
+struct MethodCall : Expr {
+  std::unique_ptr<Expr> object;
+  std::string method;
+  std::vector<std::unique_ptr<Expr>> args;
+  MethodCall(std::unique_ptr<Expr> obj, std::string m, std::vector<std::unique_ptr<Expr>> a)
+    : object(std::move(obj)), method(std::move(m)), args(std::move(a)) {}
+};
+
 struct ArrayLiteral : Expr {
   std::vector<std::unique_ptr<Expr>> elements;
 };
@@ -49,7 +72,12 @@ struct ArrayLiteral : Expr {
 struct Stmt { virtual ~Stmt() = default; };
 // OPTION EXPLICIT directive (enable strict undeclared-variable checks)
 struct OptionExplicit : Stmt { bool enabled{true}; };
-struct Let : Stmt { std::string name; std::unique_ptr<Expr> value; };
+struct Let : Stmt { 
+  std::string name; 
+  std::unique_ptr<Expr> value;
+  std::string typeName; // Optional type annotation
+  bool hasType{false};
+};
 struct ConstDecl : Stmt { std::string name; std::unique_ptr<Expr> value; };
 struct Assign : Stmt { std::string name; std::unique_ptr<Expr> value; };
 struct LocalDecl : Stmt { std::vector<std::string> names; };
@@ -59,6 +87,9 @@ struct ExprStmt : Stmt { std::unique_ptr<Expr> expr; };
 struct CallStmt : Stmt { std::string name; std::vector<std::unique_ptr<Expr>> args; };
 struct Break : Stmt {}; // Simple break statement
 struct Continue : Stmt {}; // Continue current loop
+struct Exit : Stmt {
+    std::string target; // "FOR", "WHILE", "SUB", "FUNCTION"
+};
 // IMPORT "file.bas"
 struct ImportStmt : Stmt { std::string path; };
 struct IfChain : Stmt {
@@ -96,13 +127,26 @@ struct SubDecl : Stmt {
   std::vector<std::unique_ptr<Stmt>> body;
 };
 
+// Forward declaration for FunctionParam
+struct FunctionParam {
+  std::string name;
+  std::string typeName; // Optional type annotation
+  bool hasType{false};
+  std::unique_ptr<Expr> defaultValue; // Optional default value
+  bool hasDefault{false};
+};
+
+// Enhanced function declaration with return types and optional parameters
 struct FunctionDecl : Stmt {
   std::string name;
-  std::vector<std::string> params;
+  std::vector<FunctionParam> params; // Enhanced with types and defaults
+  std::string returnType; // Optional return type
+  bool hasReturnType{false};
   std::vector<std::unique_ptr<Stmt>> body;
 };
 
 struct AssignIndex : Stmt { std::string name; std::vector<std::unique_ptr<Expr>> indices; std::unique_ptr<Expr> value; };
+struct AssignMember : Stmt { std::unique_ptr<Expr> object; std::string member; std::unique_ptr<Expr> value; };
 
 struct Return : Stmt { std::unique_ptr<Expr> value; };
 
@@ -129,6 +173,284 @@ struct CaseBranch {
 struct SelectCaseStmt : Stmt {
   std::unique_ptr<Expr> selector;
   std::vector<CaseBranch> branches; // evaluated in order; first match wins
+};
+
+// User-Defined Type (UDT)
+struct TypeField {
+  std::string name;
+  std::string typeName; // Optional type annotation
+  bool hasType{false};
+};
+
+struct TypeDecl : Stmt {
+  std::string name;
+  std::string parentType; // For inheritance (EXTENDS)
+  bool hasParent{false};
+  std::vector<TypeField> fields;
+  std::vector<std::unique_ptr<Stmt>> methods; // Functions/subroutines within type
+};
+
+// Type annotation for variables and function parameters
+struct TypeAnnotation {
+  std::string typeName;
+  bool hasType{false};
+};
+
+// Lambda/Anonymous function
+struct LambdaExpr : Expr {
+  std::vector<FunctionParam> params;
+  std::string returnType;
+  bool hasReturnType{false};
+  std::vector<std::unique_ptr<Stmt>> body;
+};
+
+
+// For-Each loop
+struct ForEach : Stmt {
+  std::string var;
+  std::unique_ptr<Expr> collection;
+  std::vector<std::unique_ptr<Stmt>> body;
+};
+
+// String interpolation expression
+struct InterpolatedString : Expr {
+  std::vector<std::unique_ptr<Expr>> parts; // String literals and expressions
+};
+
+// Dictionary/Map literal
+struct MapLiteral : Expr {
+  std::vector<std::pair<std::unique_ptr<Expr>, std::unique_ptr<Expr>>> entries; // key-value pairs
+};
+
+// Module declaration
+struct ModuleDecl : Stmt {
+  std::string name;
+  bool isPublic{true};
+  std::vector<std::unique_ptr<Stmt>> body;
+};
+
+// Operator overloading
+struct OperatorDecl : Stmt {
+  Tok op;
+  std::string typeName;
+  std::vector<FunctionParam> params;
+  std::vector<std::unique_ptr<Stmt>> body;
+};
+
+// Coroutine/Yield
+struct YieldStmt : Stmt {
+  std::unique_ptr<Expr> value; // Optional value to yield
+};
+
+// Event handlers
+struct EventHandler : Stmt {
+  std::string eventType; // "KEY", "MOUSE", etc.
+  std::string eventName; // "PRESSED", "CLICKED", etc.
+  std::vector<std::unique_ptr<Stmt>> body;
+};
+
+// Debug statements
+struct AssertStmt : Stmt {
+  std::unique_ptr<Expr> condition;
+  std::unique_ptr<Expr> message; // Optional error message
+};
+
+struct BreakpointStmt : Stmt {};
+
+struct DebugPrintStmt : Stmt {
+  std::unique_ptr<Expr> value;
+};
+
+// Reflection
+struct TypeOfExpr : Expr {
+  std::unique_ptr<Expr> value;
+};
+
+struct GetPropertiesExpr : Expr {
+  std::unique_ptr<Expr> value;
+};
+
+struct GetMethodsExpr : Expr {
+  std::unique_ptr<Expr> value;
+};
+
+// Super call (for inheritance)
+struct SuperCall : Expr {
+  std::string method;
+  std::vector<std::unique_ptr<Expr>> args;
+};
+
+// Range literal: 1..10 or "a".."z"
+struct RangeLiteral : Expr {
+  std::unique_ptr<Expr> start;
+  std::unique_ptr<Expr> end;
+};
+
+// Array comprehension: [expr FOR var IN collection IF cond]
+struct ArrayComprehension : Expr {
+  std::unique_ptr<Expr> expr;
+  std::string var;
+  std::unique_ptr<Expr> collection;
+  std::unique_ptr<Expr> condition; // Optional IF condition
+};
+
+// Null-safe member access: obj?.property
+struct NullSafeAccess : Expr {
+  std::unique_ptr<Expr> object;
+  std::string member;
+  bool isIndex{false}; // ?. vs ?[
+  std::unique_ptr<Expr> index; // For ?[index]
+};
+
+// Null coalescing: value ?? defaultValue
+struct NullCoalesceExpr : Expr {
+  std::unique_ptr<Expr> left;
+  std::unique_ptr<Expr> right;
+};
+
+// Tuple literal: (x, y, z)
+struct TupleLiteral : Expr {
+  std::vector<std::unique_ptr<Expr>> elements;
+};
+
+// Destructuring assignment: (x, y) = getPos()
+struct DestructureAssign : Stmt {
+  std::vector<std::string> names;
+  std::unique_ptr<Expr> value;
+};
+
+// Using block: USING resource = ... END USING
+struct UsingBlock : Stmt {
+  std::string varName;
+  std::unique_ptr<Expr> resource;
+  std::vector<std::unique_ptr<Stmt>> body;
+};
+
+// Match expression: MATCH value CASE ... END MATCH
+struct MatchExpr : Expr {
+  std::unique_ptr<Expr> value;
+  struct Case {
+    std::unique_ptr<Expr> pattern;
+    std::unique_ptr<Expr> result;
+  };
+  std::vector<Case> cases;
+  std::unique_ptr<Expr> defaultCase; // CASE ELSE
+};
+
+// Enum declaration
+struct EnumDecl : Stmt {
+  std::string name;
+  std::vector<std::string> values;
+};
+
+// Union type declaration
+struct UnionDecl : Stmt {
+  std::string name;
+  std::vector<std::string> types;
+};
+
+// Spread operator: ...arr
+struct SpreadExpr : Expr {
+  std::unique_ptr<Expr> value;
+};
+
+// State system AST nodes
+struct StateHook : Stmt {
+    enum HookType { Enter, Exit, Update };
+    HookType type;
+    std::vector<std::unique_ptr<Stmt>> body;
+};
+
+struct TransitionDecl : Stmt {
+    std::string fromState;
+    std::string toState;
+    std::unique_ptr<Expr> condition; // WHEN condition
+    int priority{0}; // Optional priority
+};
+
+struct StateDecl : Stmt {
+    std::string name;
+    std::string animation; // Optional animation name
+    double animationBlend{0.0}; // Optional blend time
+    double waitTime{0.0}; // Optional minimum wait time
+    std::vector<std::unique_ptr<Stmt>> body; // State body (hooks, transitions, etc.)
+    std::vector<StateHook> hooks; // ON ENTER/EXIT/UPDATE hooks
+    std::vector<TransitionDecl> transitions; // TRANSITION statements
+};
+
+struct ParallelStates : Stmt {
+    std::vector<std::unique_ptr<StateDecl>> states;
+};
+
+struct StateGroup : Stmt {
+    std::string name;
+    std::vector<std::unique_ptr<StateDecl>> states;
+};
+
+struct StateSystemDecl : Stmt {
+    std::string name;
+    std::vector<std::unique_ptr<StateDecl>> states;
+    std::vector<StateGroup> groups;
+    std::vector<ParallelStates> parallelBlocks;
+};
+
+struct AttachSystemStmt : Stmt {
+    std::string systemName;
+    std::unique_ptr<Expr> target; // Entity or identifier
+};
+
+struct AddStateStmt : Stmt {
+    std::string stateName;
+    std::string systemName;
+    std::unique_ptr<StateDecl> state;
+};
+
+struct RemoveStateStmt : Stmt {
+    std::string stateName;
+    std::string systemName;
+};
+
+struct OverrideStateStmt : Stmt {
+    std::string stateName;
+    std::vector<std::unique_ptr<Stmt>> body;
+};
+
+struct SetTransitionRuleStmt : Stmt {
+    std::string fromState;
+    std::string toState;
+    int priority{0};
+};
+
+struct EnableDisableStateStmt : Stmt {
+    std::string stateName;
+    bool enable{true};
+};
+
+struct DebugStatesStmt : Stmt {
+    std::string systemName; // Empty for all systems
+};
+
+struct ExportSystemStmt : Stmt {
+    std::string systemName;
+    std::string filePath;
+};
+
+struct ImportSystemStmt : Stmt {
+    std::string systemName;
+    std::string filePath;
+};
+
+struct EventDecl : Stmt {
+    std::string name;
+};
+
+struct AnimationStmt : Stmt {
+    std::string animationName;
+    double blendTime{0.0};
+};
+
+struct WaitStmt : Stmt {
+    double duration;
 };
 
 struct Program { std::vector<std::unique_ptr<Stmt>> stmts; };

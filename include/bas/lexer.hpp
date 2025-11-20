@@ -17,5 +17,6 @@ private:
   Token lex_identifier();
   Token lex_number();
   Token lex_string();
+  Token lex_fstring();
 };
 } // namespace bas

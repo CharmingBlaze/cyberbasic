@@ -1,0 +1,418 @@
+# Missing Core/Window Functions from API.MD
+# Module: rcore - Additional window, input, and utility functions
+
+functions:
+  # === WINDOW FUNCTIONS ===
+  - name: SETWINDOWSIZE
+    raylib_name: SetWindowSize
+    args: [int, int]
+    ret: void
+    category: window
+    description: "Set window dimensions"
+  
+  - name: SETWINDOWICONS
+    raylib_name: SetWindowIcons
+    args: [string, int]
+    ret: void
+    category: window
+    description: "Set icon for window (multiple images, simplified)"
+    custom_body: |
+      // TODO: SetWindowIcons expects Image array, simplified for BASIC
+  
+  - name: GETWINDOWPOSITION
+    raylib_name: GetWindowPosition
+    args: []
+    ret: string
+    category: window
+    description: "Get window position XY on monitor"
+    custom_body: |
+      ::Vector2 pos = ::GetWindowPosition();
+      return Value::from_string(std::to_string(pos.x) + "," + std::to_string(pos.y));
+  
+  - name: GETWINDOWSCALEDPI
+    raylib_name: GetWindowScaleDPI
+    args: []
+    ret: string
+    category: window
+    description: "Get window scale DPI factor"
+    custom_body: |
+      ::Vector2 scale = ::GetWindowScaleDPI();
+      return Value::from_string(std::to_string(scale.x) + "," + std::to_string(scale.y));
+  
+  - name: GETCLIPBOARDIMAGE
+    raylib_name: GetClipboardImage
+    args: []
+    ret: int
+    category: window
+    description: "Get clipboard image"
+    custom_body: |
+      ::Image img = ::GetClipboardImage();
+      int id = rlreg::next_image_id++;
+      rlreg::images[id] = img;
+      return Value::from_int(id);
+  
+  # === FRAME CONTROL ===
+  - name: SWAPSCREENBUFFER
+    raylib_name: SwapScreenBuffer
+    args: []
+    ret: void
+    category: window
+    description: "Swap back buffer with front buffer (screen drawing)"
+  
+  - name: POLLINPUTEVENTS
+    raylib_name: PollInputEvents
+    args: []
+    ret: void
+    category: window
+    description: "Register all input events"
+  
+  - name: WAITTIME
+    raylib_name: WaitTime
+    args: [double]
+    ret: void
+    category: window
+    description: "Wait for some time (halt program execution)"
+  
+  # === RANDOM FUNCTIONS ===
+  - name: LOADRANDOMSEQUENCE
+    raylib_name: LoadRandomSequence
+    args: [int, int, int]
+    ret: string
+    category: utility
+    description: "Load random values sequence"
+    custom_body: |
+      int* seq = ::LoadRandomSequence(args[0].as_int(), args[1].as_int(), args[2].as_int());
+      // Simplified: return count as string
+      return Value::from_string("sequence_loaded");
+  
+  - name: UNLOADRANDOMSEQUENCE
+    raylib_name: UnloadRandomSequence
+    args: [string]
+    ret: void
+    category: utility
+    description: "Unload random values sequence"
+    custom_body: |
+      // TODO: Proper sequence handling
+  
+  # === SCREEN-SPACE FUNCTIONS ===
+  - name: GETSCREENTOWORLDRAYEX
+    raylib_name: GetScreenToWorldRayEx
+    args: [float, float, int, int, int]
+    ret: string
+    category: camera
+    description: "Get ray trace from screen position in viewport"
+    custom_body: |
+      ::Vector2 pos{(float)args[0].as_number(), (float)args[1].as_number()};
+      // TODO: Camera handling
+      return Value::from_string("");
+  
+  - name: GETWORLDTOSCREENEX
+    raylib_name: GetWorldToScreenEx
+    args: [float, float, float, int, int, int]
+    ret: string
+    category: camera
+    description: "Get screen position for 3d world space position in viewport"
+    custom_body: |
+      ::Vector3 pos{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+      // TODO: Camera handling
+      return Value::from_string("");
+  
+  - name: GETWORLDTOSCREEN2D
+    raylib_name: GetWorldToScreen2D
+    args: [float, float, int]
+    ret: string
+    category: camera
+    description: "Get screen position for 2d camera world space position"
+    custom_body: |
+      ::Vector2 pos{(float)args[0].as_number(), (float)args[1].as_number()};
+      // TODO: Camera2D handling
+      return Value::from_string("");
+  
+  - name: GETSCREENTOWORLD2D
+    raylib_name: GetScreenToWorld2D
+    args: [float, float, int]
+    ret: string
+    category: camera
+    description: "Get world position for 2d camera screen space position"
+    custom_body: |
+      ::Vector2 pos{(float)args[0].as_number(), (float)args[1].as_number()};
+      // TODO: Camera2D handling
+      return Value::from_string("");
+  
+  - name: GETCAMERAMATRIX
+    raylib_name: GetCameraMatrix
+    args: [int]
+    ret: string
+    category: camera
+    description: "Get camera transform matrix (view matrix)"
+    custom_body: |
+      // TODO: Camera handling
+      return Value::from_string("");
+  
+  - name: GETCAMERAMATRIX2D
+    raylib_name: GetCameraMatrix2D
+    args: [int]
+    ret: string
+    category: camera
+    description: "Get camera 2d transform matrix"
+    custom_body: |
+      // TODO: Camera2D handling
+      return Value::from_string("");
+  
+  # === VR FUNCTIONS ===
+  - name: LOADVRSTEREOCONFIG
+    raylib_name: LoadVrStereoConfig
+    args: [int]
+    ret: int
+    category: vr
+    description: "Load VR stereo config for VR simulator device parameters"
+    custom_body: |
+      // TODO: VR device handling
+      return Value::from_int(0);
+  
+  - name: UNLOADVRSTEREOCONFIG
+    raylib_name: UnloadVrStereoConfig
+    args: [int]
+    ret: void
+    category: vr
+    description: "Unload VR stereo config"
+    custom_body: |
+      // TODO: VR config handling
+  
+  - name: BEGINVRSTEREOMODE
+    raylib_name: BeginVrStereoMode
+    args: [int]
+    ret: void
+    category: vr
+    description: "Begin stereo rendering (requires VR simulator)"
+    custom_body: |
+      // TODO: VR stereo mode handling
+  
+  - name: ENDVRSTEREOMODE
+    raylib_name: EndVrStereoMode
+    args: []
+    ret: void
+    category: vr
+    description: "End stereo rendering (requires VR simulator)"
+  
+  # === SHADER FUNCTIONS ===
+  - name: ISSHADERVALID
+    raylib_name: IsShaderValid
+    args: [int]
+    ret: bool
+    category: shader
+    description: "Check if shader is valid (loaded on GPU)"
+    custom_body: |
+      return Value::from_bool(::IsShaderValid(rlreg::shaders.at(args[0].as_int())));
+  
+  - name: GETSHADERLOCATIONATTRIB
+    raylib_name: GetShaderLocationAttrib
+    args: [int, string]
+    ret: int
+    category: shader
+    description: "Get shader attribute location"
+    custom_body: |
+      return Value::from_int(::GetShaderLocationAttrib(rlreg::shaders.at(args[0].as_int()), args[1].as_string().c_str()));
+  
+  - name: SETSHADERVALUEV
+    raylib_name: SetShaderValueV
+    args: [int, int, string, int, int]
+    ret: void
+    category: shader
+    description: "Set shader uniform value vector"
+    custom_body: |
+      // TODO: Proper value vector handling
+  
+  - name: SETSHADERVALUEMATRIX
+    raylib_name: SetShaderValueMatrix
+    args: [int, int, string]
+    ret: void
+    category: shader
+    description: "Set shader uniform value (matrix 4x4)"
+    custom_body: |
+      // TODO: Matrix handling
+  
+  - name: SETSHADERVALUETEXTURE
+    raylib_name: SetShaderValueTexture
+    args: [int, int, int]
+    ret: void
+    category: shader
+    description: "Set shader uniform value for texture (sampler2d)"
+    custom_body: |
+      ::SetShaderValueTexture(rlreg::shaders.at(args[0].as_int()), args[1].as_int(), rlreg::textures.at(args[2].as_int()));
+  
+  # === FILE SYSTEM FUNCTIONS ===
+  - name: MAKEDIRECTORY
+    raylib_name: MakeDirectory
+    args: [string]
+    ret: int
+    category: file
+    description: "Create directories (including full path requested), returns 0 on success"
+  
+  - name: ISFILENAMEVALID
+    raylib_name: IsFileNameValid
+    args: [string]
+    ret: bool
+    category: file
+    description: "Check if fileName is valid for the platform/OS"
+  
+  - name: DECODEDATABASE64
+    raylib_name: DecodeDataBase64
+    args: [string]
+    ret: string
+    category: file
+    description: "Decode Base64 string data"
+    custom_body: |
+      int outputSize;
+      unsigned char* data = ::DecodeDataBase64((const unsigned char*)args[0].as_string().c_str(), &outputSize);
+      std::string result((char*)data, outputSize);
+      ::MemFree(data);
+      return Value::from_string(result);
+  
+  - name: COMPUTECRC32
+    raylib_name: ComputeCRC32
+    args: [string]
+    ret: int
+    category: file
+    description: "Compute CRC32 hash code"
+    custom_body: |
+      return Value::from_int(::ComputeCRC32((unsigned char*)args[0].as_string().c_str(), args[0].as_string().length()));
+  
+  - name: COMPUTEMD5
+    raylib_name: ComputeMD5
+    args: [string]
+    ret: string
+    category: file
+    description: "Compute MD5 hash code"
+    custom_body: |
+      unsigned int* hash = ::ComputeMD5((unsigned char*)args[0].as_string().c_str(), args[0].as_string().length());
+      std::string result = std::to_string(hash[0]) + "," + std::to_string(hash[1]) + "," + std::to_string(hash[2]) + "," + std::to_string(hash[3]);
+      return Value::from_string(result);
+  
+  - name: COMPUTESHA1
+    raylib_name: ComputeSHA1
+    args: [string]
+    ret: string
+    category: file
+    description: "Compute SHA1 hash code"
+    custom_body: |
+      unsigned int* hash = ::ComputeSHA1((unsigned char*)args[0].as_string().c_str(), args[0].as_string().length());
+      std::string result = std::to_string(hash[0]) + "," + std::to_string(hash[1]) + "," + std::to_string(hash[2]) + "," + std::to_string(hash[3]) + "," + std::to_string(hash[4]);
+      return Value::from_string(result);
+  
+  # === AUTOMATION FUNCTIONS ===
+  - name: LOADAUTOMATIONEVENTLIST
+    raylib_name: LoadAutomationEventList
+    args: [string]
+    ret: int
+    category: automation
+    description: "Load automation events list from file"
+    custom_body: |
+      // TODO: Automation event list handling
+      return Value::from_int(0);
+  
+  - name: UNLOADAUTOMATIONEVENTLIST
+    raylib_name: UnloadAutomationEventList
+    args: [int]
+    ret: void
+    category: automation
+    description: "Unload automation events list from file"
+    custom_body: |
+      // TODO: Automation event list handling
+  
+  - name: EXPORTAUTOMATIONEVENTLIST
+    raylib_name: ExportAutomationEventList
+    args: [int, string]
+    ret: bool
+    category: automation
+    description: "Export automation events list as text file"
+    custom_body: |
+      // TODO: Automation event list handling
+      return Value::from_bool(false);
+  
+  - name: SETAUTOMATIONEVENTLIST
+    raylib_name: SetAutomationEventList
+    args: [int]
+    ret: void
+    category: automation
+    description: "Set automation event list to record to"
+    custom_body: |
+      // TODO: Automation event list handling
+  
+  - name: SETAUTOMATIONEVENTBASEFRAME
+    raylib_name: SetAutomationEventBaseFrame
+    args: [int]
+    ret: void
+    category: automation
+    description: "Set automation event internal base frame to start recording"
+  
+  - name: STARTAUTOMATIONEVENTRECORDING
+    raylib_name: StartAutomationEventRecording
+    args: []
+    ret: void
+    category: automation
+    description: "Start recording automation events (AutomationEventList must be set)"
+  
+  - name: STOPAUTOMATIONEVENTRECORDING
+    raylib_name: StopAutomationEventRecording
+    args: []
+    ret: void
+    category: automation
+    description: "Stop recording automation events"
+  
+  - name: PLAYAUTOMATIONEVENT
+    raylib_name: PlayAutomationEvent
+    args: [int]
+    ret: void
+    category: automation
+    description: "Play a recorded automation event"
+    custom_body: |
+      // TODO: Automation event handling
+  
+  # === CALLBACK FUNCTIONS ===
+  # Note: Callbacks are advanced features, simplified implementations
+  - name: SETTRACELOGCALLBACK
+    raylib_name: SetTraceLogCallback
+    args: []
+    ret: void
+    category: utility
+    description: "Set custom trace log (advanced, simplified)"
+    custom_body: |
+      // TODO: Callback handling
+  
+  - name: SETLOADFILEDATACALLBACK
+    raylib_name: SetLoadFileDataCallback
+    args: []
+    ret: void
+    category: utility
+    description: "Set custom file binary data loader (advanced, simplified)"
+    custom_body: |
+      // TODO: Callback handling
+  
+  - name: SETSAVEFILEDATACALLBACK
+    raylib_name: SetSaveFileDataCallback
+    args: []
+    ret: void
+    category: utility
+    description: "Set custom file binary data saver (advanced, simplified)"
+    custom_body: |
+      // TODO: Callback handling
+  
+  - name: SETLOADFILETEXTCALLBACK
+    raylib_name: SetLoadFileTextCallback
+    args: []
+    ret: void
+    category: utility
+    description: "Set custom file text data loader (advanced, simplified)"
+    custom_body: |
+      // TODO: Callback handling
+  
+  - name: SETSAVEFILETEXTCALLBACK
+    raylib_name: SetSaveFileTextCallback
+    args: []
+    ret: void
+    category: utility
+    description: "Set custom file text data saver (advanced, simplified)"
+    custom_body: |
+      // TODO: Callback handling
+

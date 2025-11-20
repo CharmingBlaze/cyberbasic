@@ -90,7 +90,7 @@ This plan guides contributors to implement a modular, easy‑to‑distribute com
 
 
 ## Coding Standards & Best Practices
-- [ ] Follow `docs/CODING_STYLE.md` and modern C++17 practices
+- [ ] Follow `docs/CODING_STYLE.md` and modern C++20 practices
 - [ ] No duplicate registrations; one registrar per feature module
 - [ ] Public headers under `include/bas/` only expose stable APIs/ABIs
 - [ ] Use `std::filesystem` for cross‑platform paths

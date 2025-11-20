@@ -1,0 +1,151 @@
+# Missing Audio Functions from API.MD
+# Module: raudio - Additional audio functions
+
+functions:
+  # === AUDIO DEVICE ===
+  - name: GETMASTERVOLUME
+    raylib_name: GetMasterVolume
+    args: []
+    ret: float
+    category: audio
+    description: "Get master volume (listener)"
+
+  # === WAVE/SOUND FUNCTIONS ===
+  - name: LOADSOUNDALIAS
+    raylib_name: LoadSoundAlias
+    args: [int]
+    ret: int
+    category: audio
+    description: "Create new sound that shares sample data (pass source sound ID)"
+    custom_body: |
+      ::Sound sound = ::LoadSoundAlias(rlreg::sounds.at(args[0].as_int()));
+      int id = rlreg::next_sound_id++;
+      rlreg::sounds[id] = sound;
+      return Value::from_int(id);
+
+  - name: ISSOUNDVALID
+    raylib_name: IsSoundValid
+    args: [int]
+    ret: bool
+    category: audio
+    description: "Check if sound is valid (pass sound ID)"
+    custom_body: |
+      return Value::from_bool(::IsSoundValid(rlreg::sounds.at(args[0].as_int())));
+
+  - name: ISWAVEVALID
+    raylib_name: IsWaveValid
+    args: [int]
+    ret: bool
+    category: audio
+    description: "Check if wave data is valid (pass wave ID)"
+    custom_body: |
+      return Value::from_bool(::IsWaveValid(rlreg::waves.at(args[0].as_int())));
+
+  - name: UNLOADSOUNDALIAS
+    raylib_name: UnloadSoundAlias
+    args: [int]
+    ret: void
+    category: audio
+    description: "Unload sound alias (pass sound alias ID)"
+    custom_body: |
+      ::UnloadSoundAlias(rlreg::sounds.at(args[0].as_int()));
+      rlreg::sounds.erase(args[0].as_int());
+
+  - name: WAVECOPY
+    raylib_name: WaveCopy
+    args: [int]
+    ret: int
+    category: audio
+    description: "Copy wave to new wave (pass wave ID)"
+    custom_body: |
+      ::Wave wave = ::WaveCopy(rlreg::waves.at(args[0].as_int()));
+      int id = rlreg::next_wave_id++;
+      rlreg::waves[id] = wave;
+      return Value::from_int(id);
+
+  - name: WAVECROP
+    raylib_name: WaveCrop
+    args: [int, int, int]
+    ret: void
+    category: audio
+    description: "Crop wave to defined frames range (pass wave ID, initFrame, finalFrame)"
+    custom_body: |
+      ::WaveCrop(&rlreg::waves.at(args[0].as_int()), args[1].as_int(), args[2].as_int());
+
+  - name: WAVEFORMAT
+    raylib_name: WaveFormat
+    args: [int, int, int, int]
+    ret: void
+    category: audio
+    description: "Convert wave data to desired format (pass wave ID, sampleRate, sampleSize, channels)"
+    custom_body: |
+      ::WaveFormat(&rlreg::waves.at(args[0].as_int()), args[1].as_int(), args[2].as_int(), args[3].as_int());
+
+  # === MUSIC FUNCTIONS ===
+  - name: LOADMUSICSTREAMFROMMEMORY
+    raylib_name: LoadMusicStreamFromMemory
+    args: [string, string, int]
+    ret: int
+    category: audio
+    description: "Load music stream from data (fileType, data, dataSize)"
+    custom_body: |
+      ::Music music = ::LoadMusicStreamFromMemory(args[0].as_string().c_str(), (const unsigned char*)args[1].as_string().c_str(), args[2].as_int());
+      int id = rlreg::next_music_id++;
+      rlreg::musics[id] = music;
+      return Value::from_int(id);
+
+  - name: ISMUSICVALID
+    raylib_name: IsMusicValid
+    args: [int]
+    ret: bool
+    category: audio
+    description: "Check if music stream is valid (pass music ID)"
+    custom_body: |
+      return Value::from_bool(::IsMusicValid(rlreg::musics.at(args[0].as_int())));
+
+  # === AUDIOSTREAM FUNCTIONS ===
+  - name: ISAUDIOSTREAMVALID
+    raylib_name: IsAudioStreamValid
+    args: [int]
+    ret: bool
+    category: audio
+    description: "Check if audio stream is valid (pass audio stream ID)"
+    custom_body: |
+      return Value::from_bool(::IsAudioStreamValid(rlreg::audiostreams.at(args[0].as_int())));
+
+  - name: ISAUDIOSTREAMPROCESSED
+    raylib_name: IsAudioStreamProcessed
+    args: [int]
+    ret: bool
+    category: audio
+    description: "Check if any audio stream buffers requires refill (pass audio stream ID)"
+    custom_body: |
+      return Value::from_bool(::IsAudioStreamProcessed(rlreg::audiostreams.at(args[0].as_int())));
+
+  - name: SETAUDIOSTREAMVOLUME
+    raylib_name: SetAudioStreamVolume
+    args: [int, float]
+    ret: void
+    category: audio
+    description: "Set volume for audio stream (pass audio stream ID, volume)"
+
+  - name: SETAUDIOSTREAMPITCH
+    raylib_name: SetAudioStreamPitch
+    args: [int, float]
+    ret: void
+    category: audio
+    description: "Set pitch for audio stream (pass audio stream ID, pitch)"
+
+  - name: SETAUDIOSTREAMPAN
+    raylib_name: SetAudioStreamPan
+    args: [int, float]
+    ret: void
+    category: audio
+    description: "Set pan for audio stream (pass audio stream ID, pan)"
+
+  - name: SETAUDIOSTREAMBUFFERSIZEDEFAULT
+    raylib_name: SetAudioStreamBufferSizeDefault
+    args: [int]
+    ret: void
+    category: audio
+    description: "Default size for new audio streams"

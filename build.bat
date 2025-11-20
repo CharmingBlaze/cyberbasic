@@ -24,7 +24,7 @@ if exist "C:\msys64\mingw64\bin" (
 
     REM Configure
     echo --- Configuring CMake ---
-    cmake -S . -B build_cascade -G "MinGW Makefiles" -DBASIC_STATIC_LINK=ON
+    cmake -S . -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
     if %errorlevel% neq 0 (
         echo CMake configuration failed.
         exit /b %errorlevel%
@@ -33,7 +33,7 @@ if exist "C:\msys64\mingw64\bin" (
     REM Build
     echo.
     echo --- Building Project ---
-    cmake --build build_cascade --verbose
+    cmake --build build --config Release
     if %errorlevel% neq 0 (
         echo Build failed.
         exit /b %errorlevel%
@@ -67,7 +67,7 @@ echo Build completed successfully!
 echo Executable: build\cyberbasic.exe
 echo.
 echo To run examples:
-echo   cyberbasic.exe ..\examples\hello_text.bas
-echo   cyberbasic.exe ..\examples\hello_graphics.bas
+echo   build\cyberbasic.exe examples\hello_text.bas
+echo   build\cyberbasic.exe examples\hello_graphics.bas
 echo.
 if not defined SKIP_PAUSE pause

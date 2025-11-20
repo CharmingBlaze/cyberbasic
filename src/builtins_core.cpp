@@ -10,6 +10,16 @@
 #include <locale>
 #include <cmath>
 #include <cctype>
+#include <cstdlib>
+#include <filesystem>
+#include <map>
+#ifdef _WIN32
+#include <direct.h>
+#include <io.h>
+#else
+#include <sys/stat.h>
+#include <unistd.h>
+#endif
 
 using namespace bas;
 
@@ -568,10 +578,188 @@ void bas::register_builtins(FunctionRegistry& R){
     }
     return Value::nil();
   }});
+  
+  // WAIT and DELAY are aliases for SLEEP (common BASIC commands)
+  R.add("WAIT", NativeFn{"WAIT", 1, [](const std::vector<Value>& a){
+    double seconds = a[0].as_number();
+    if(seconds > 0) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<long long>(seconds * 1000)));
+    }
+    return Value::nil();
+  }});
+  
+  R.add("DELAY", NativeFn{"DELAY", 1, [](const std::vector<Value>& a){
+    double seconds = a[0].as_number();
+    if(seconds > 0) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<long long>(seconds * 1000)));
+    }
+    return Value::nil();
+  }});
 
   R.add("BEEP", NativeFn{"BEEP", 0, [](const std::vector<Value>&){
     std::cout << "\a" << std::flush;
     return Value::nil();
+  }});
+
+  // System functions
+  R.add("SHELL", NativeFn{"SHELL", 1, [](const std::vector<Value>& a){
+    std::string cmd = a[0].as_string();
+    int result = std::system(cmd.c_str());
+    return Value::from_int(static_cast<long long>(result));
+  }});
+
+  // Clipboard functions (platform-specific, simplified)
+  R.add("CLIPBOARD_GET", NativeFn{"CLIPBOARD_GET", 0, [](const std::vector<Value>&){
+    // Platform-specific clipboard access would go here
+    // For now, return empty string
+    return Value::from_string("");
+  }});
+
+  R.add("CLIPBOARD_SET", NativeFn{"CLIPBOARD_SET", 1, [](const std::vector<Value>& a){
+    std::string text = a[0].as_string();
+    // Platform-specific clipboard set would go here
+    (void)text; // Suppress unused warning
+    return Value::nil();
+  }});
+
+  // Environment variables
+  R.add("ENV_GET", NativeFn{"ENV_GET", 1, [](const std::vector<Value>& a){
+    std::string key = a[0].as_string();
+    const char* val = std::getenv(key.c_str());
+    return Value::from_string(val ? val : "");
+  }});
+
+  R.add("ENV_SET", NativeFn{"ENV_SET", 2, [](const std::vector<Value>& a){
+    std::string key = a[0].as_string();
+    std::string val = a[1].as_string();
+#ifdef _WIN32
+    _putenv_s(key.c_str(), val.c_str());
+#else
+    setenv(key.c_str(), val.c_str(), 1);
+#endif
+    return Value::nil();
+  }});
+
+  // File operations
+  R.add("FILE_DELETE", NativeFn{"FILE_DELETE", 1, [](const std::vector<Value>& a){
+    std::string path = a[0].as_string();
+    std::remove(path.c_str());
+    return Value::nil();
+  }});
+
+  R.add("FILE_COPY", NativeFn{"FILE_COPY", 2, [](const std::vector<Value>& a){
+    std::string src = a[0].as_string();
+    std::string dst = a[1].as_string();
+    std::ifstream srcFile(src, std::ios::binary);
+    std::ofstream dstFile(dst, std::ios::binary);
+    if(srcFile && dstFile){
+      dstFile << srcFile.rdbuf();
+    }
+    return Value::nil();
+  }});
+
+  // File handle operations (simple implementation using file paths)
+  // Note: Full #n file handle support would require parser changes
+  R.add("EOF", NativeFn{"EOF", 1, [](const std::vector<Value>& a){
+    std::string path = a[0].as_string();
+    std::ifstream file(path);
+    if(!file.is_open()) return Value::from_bool(true);
+    file.seekg(0, std::ios::end);
+    std::streampos end = file.tellg();
+    file.seekg(0, std::ios::cur);
+    std::streampos cur = file.tellg();
+    return Value::from_bool(cur >= end);
+  }});
+
+  R.add("LOF", NativeFn{"LOF", 1, [](const std::vector<Value>& a){
+    std::string path = a[0].as_string();
+    std::ifstream file(path, std::ios::binary | std::ios::ate);
+    if(!file.is_open()) return Value::from_number(0.0);
+    return Value::from_number(static_cast<double>(file.tellg()));
+  }});
+
+  R.add("SEEK", NativeFn{"SEEK", 2, [](const std::vector<Value>& a){
+    std::string path = a[0].as_string();
+    long long pos = a[1].as_int();
+    // Note: This is a simplified implementation
+    // Full file handle support would maintain open file streams
+    return Value::nil();
+  }});
+
+  // Directory operations
+  R.add("DIR_CREATE", NativeFn{"DIR_CREATE", 1, [](const std::vector<Value>& a){
+    std::string path = a[0].as_string();
+#ifdef _WIN32
+    _mkdir(path.c_str());
+#else
+    mkdir(path.c_str(), 0755);
+#endif
+    return Value::nil();
+  }});
+
+  R.add("DIR_DELETE", NativeFn{"DIR_DELETE", 1, [](const std::vector<Value>& a){
+    std::string path = a[0].as_string();
+#ifdef _WIN32
+    _rmdir(path.c_str());
+#else
+    rmdir(path.c_str());
+#endif
+    return Value::nil();
+  }});
+
+  R.add("DIR_LIST", NativeFn{"DIR_LIST", 1, [](const std::vector<Value>& a){
+    std::string path = a[0].as_string();
+    std::vector<Value> files;
+    // Simplified - would need proper directory iteration
+    return Value::from_array(files);
+  }});
+
+  R.add("CHDIR", NativeFn{"CHDIR", 1, [](const std::vector<Value>& a){
+    std::string path = a[0].as_string();
+    std::filesystem::current_path(path);
+    return Value::nil();
+  }});
+
+  R.add("CURDIR", NativeFn{"CURDIR", 0, [](const std::vector<Value>&){
+    return Value::from_string(std::filesystem::current_path().string());
+  }});
+
+  R.add("PATH_JOIN", NativeFn{"PATH_JOIN", 2, [](const std::vector<Value>& a){
+    std::string a_path = a[0].as_string();
+    std::string b_path = a[1].as_string();
+    return Value::from_string((std::filesystem::path(a_path) / b_path).string());
+  }});
+
+  // Date/Time functions
+  R.add("DATE_NOW", NativeFn{"DATE_NOW", 0, [](const std::vector<Value>&){
+    auto now = std::chrono::system_clock::now();
+    auto time = std::chrono::system_clock::to_time_t(now);
+    char buffer[100];
+    std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", std::localtime(&time));
+    return Value::from_string(buffer);
+  }});
+
+  R.add("UNIX_TIME", NativeFn{"UNIX_TIME", 0, [](const std::vector<Value>&){
+    auto now = std::chrono::system_clock::now();
+    auto time = std::chrono::system_clock::to_time_t(now);
+    return Value::from_int(static_cast<long long>(time));
+  }});
+
+  // Timer functions (simple implementation)
+  static std::map<std::string, std::chrono::steady_clock::time_point> timers;
+  R.add("TIMER_START", NativeFn{"TIMER_START", 1, [](const std::vector<Value>& a){
+    std::string id = a[0].as_string();
+    timers[id] = std::chrono::steady_clock::now();
+    return Value::nil();
+  }});
+
+  R.add("TIMER_ELAPSED", NativeFn{"TIMER_ELAPSED", 1, [](const std::vector<Value>& a){
+    std::string id = a[0].as_string();
+    auto it = timers.find(id);
+    if(it == timers.end()) return Value::from_number(0.0);
+    auto elapsed = std::chrono::steady_clock::now() - it->second;
+    auto seconds = std::chrono::duration<double>(elapsed).count();
+    return Value::from_number(seconds);
   }});
 
   // Delegate to other categories

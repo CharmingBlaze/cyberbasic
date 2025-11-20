@@ -31,11 +31,13 @@ Remember when programming was fun and accessible? When you could create games in
 
 ### Complete BASIC Language
 Full implementation of classic BASIC features with modern enhancements:
-- Variables, arrays, and functions
+- Variables, arrays, and functions (use `LET` or `VAR` for declarations)
 - Control flow (IF/THEN, WHILE/WEND, FOR/NEXT)
 - String manipulation and math functions
 - File I/O operations
 - Optional strict typing and scoping
+- Modern syntax: `//` comments, dot notation, object methods
+- Module system: `IMPORT "file.bas"` or `INCLUDE "file.bas"` to include other CyberBasic files
 
 ### 527 Raylib Functions
 Every single Raylib function is available in BASIC:
@@ -65,12 +67,13 @@ cmake --build .
 
 ### Your First Game
 ```basic
-REM Simple bouncing ball
-INITWINDOW(800, 600, "My First Game")
-SETTARGETFPS(60)
+// Simple bouncing ball
+Window.init(800, 600, "My First Game")
+Window.setTargetFPS(60)
 
-LET ballX = 400
-LET ballY = 300
+// Use LET or VAR - both work the same way
+VAR ballX = 400
+VAR ballY = 300
 LET speedX = 3
 LET speedY = 3
 
@@ -265,7 +268,7 @@ CLOSEWINDOW()
 
 ## Architecture
 
-CyberBasic is built with modern C++17 and follows clean architecture principles:
+CyberBasic is built with modern C++20 and follows clean architecture principles:
 
 ### Core Components
 - **Lexer**: Converts BASIC source code into tokens
@@ -295,8 +298,8 @@ cyberbasic/
 ## Building from Source
 
 ### Prerequisites
-- CMake 3.20 or higher
-- MinGW-w64 GCC 13+ (Windows) or GCC/Clang (Linux/macOS)
+- CMake 3.25 or higher
+- MinGW-w64 GCC 13+ (Windows) or GCC/Clang (Linux/macOS) with C++20 support
 - Python 3.10+ with PyYAML
 
 ### Windows Build
@@ -383,7 +386,7 @@ IF ISMOUSEBUTTONPRESSED(MOUSE_BUTTON_LEFT) THEN PRINT "Click!"
 3. Rebuild the project
 
 ### Code Style
-- C++17 standard with strict warnings
+- C++20 standard with strict warnings
 - Modular design with single responsibility
 - Comprehensive error handling
 - No global static initialization

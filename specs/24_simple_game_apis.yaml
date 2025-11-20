@@ -1,6 +1,6 @@
 # Simple Game Development APIs
 # Easy-to-use, working APIs for game developers
-# Following best practices: simple, reliable, C++17 compatible
+# Following best practices: simple, reliable, C++20 compatible
 
 functions:
   # === GAME SETUP ===

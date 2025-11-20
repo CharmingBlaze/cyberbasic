@@ -4,7 +4,7 @@ This project uses a pragmatic, modern C++ style aimed at clarity and maintainabi
 
 ## Language & Tooling
 
-- C++17 or newer where available; avoid non-portable extensions.
+- C++20 standard required; use modern C++20 features where beneficial (concepts, ranges, coroutines, etc.).
 - Build: MSYS2 MinGW-w64 + Ninja on Windows. Avoid MSVC/Visual Studio generator.
 - Static analysis: clang-tidy; formatting: clang-format.
 
