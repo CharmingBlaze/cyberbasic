@@ -6,10 +6,6 @@
 
 CyberBasic combines the simplicity and elegance of classic BASIC programming with the full power of modern game development. Write games, graphics applications, and interactive programs using familiar BASIC syntax while leveraging the complete Raylib graphics library.
 
-![Pong Game](images/pong.png)
-
-*A fully functional Pong game written in CyberBasic, demonstrating real-time graphics, input handling, and collision detection.*
-
 ##  Quick Start
 
 ### 1. Build CyberBasic
