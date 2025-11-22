@@ -49,7 +49,7 @@ static Value statemachine_addState(const std::vector<Value>& args) {
         return Value::nil();
     }
     
-    int id = idIt->second.as_int();
+    int id = static_cast<int>(idIt->second.as_int());
     auto smIt = g_state_machines.find(id);
     if (smIt == g_state_machines.end()) {
         return Value::nil();
@@ -75,7 +75,7 @@ static Value statemachine_setState(const std::vector<Value>& args) {
         return Value::nil();
     }
     
-    int id = idIt->second.as_int();
+    int id = static_cast<int>(idIt->second.as_int());
     auto smIt = g_state_machines.find(id);
     if (smIt == g_state_machines.end()) {
         return Value::nil();
@@ -100,7 +100,7 @@ static Value statemachine_pushState(const std::vector<Value>& args) {
         return Value::nil();
     }
     
-    int id = idIt->second.as_int();
+    int id = static_cast<int>(idIt->second.as_int());
     auto smIt = g_state_machines.find(id);
     if (smIt == g_state_machines.end()) {
         return Value::nil();
@@ -130,7 +130,7 @@ static Value statemachine_popState(const std::vector<Value>& args) {
         return Value::nil();
     }
     
-    int id = idIt->second.as_int();
+    int id = static_cast<int>(idIt->second.as_int());
     auto smIt = g_state_machines.find(id);
     if (smIt == g_state_machines.end() || smIt->second.stateStack.empty()) {
         return Value::nil();
@@ -155,7 +155,7 @@ static Value statemachine_getState(const std::vector<Value>& args) {
         return Value::from_string("");
     }
     
-    int id = idIt->second.as_int();
+    int id = static_cast<int>(idIt->second.as_int());
     auto smIt = g_state_machines.find(id);
     if (smIt == g_state_machines.end()) {
         return Value::from_string("");
@@ -176,7 +176,7 @@ static Value statemachine_getPreviousState(const std::vector<Value>& args) {
         return Value::from_string("");
     }
     
-    int id = idIt->second.as_int();
+    int id = static_cast<int>(idIt->second.as_int());
     auto smIt = g_state_machines.find(id);
     if (smIt == g_state_machines.end()) {
         return Value::from_string("");
@@ -197,7 +197,7 @@ static Value statemachine_isState(const std::vector<Value>& args) {
         return Value::from_bool(false);
     }
     
-    int id = idIt->second.as_int();
+    int id = static_cast<int>(idIt->second.as_int());
     auto smIt = g_state_machines.find(id);
     if (smIt == g_state_machines.end()) {
         return Value::from_bool(false);

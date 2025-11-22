@@ -848,7 +848,7 @@ Value physics_set_gravity(const std::vector<Value>& args) {
 Value physics_create_body(const std::vector<Value>& args) {
     if (args.size() != 3 || !g_physics_world) return Value::from_int(-1);
     
-    int type = args[0].as_int(); // 0=static, 1=dynamic, 2=kinematic
+    int type = static_cast<int>(args[0].as_int()); // 0=static, 1=dynamic, 2=kinematic
     float x = static_cast<float>(args[1].as_number());
     float y = static_cast<float>(args[2].as_number());
     
@@ -860,7 +860,7 @@ Value physics_create_body(const std::vector<Value>& args) {
 Value physics_remove_body(const std::vector<Value>& args) {
     if (args.size() != 1 || !g_physics_world) return Value::nil();
     
-    int body_id = args[0].as_int();
+    int body_id = static_cast<int>(args[0].as_int());
     g_physics_world->remove_body(body_id);
     return Value::nil();
 }
@@ -868,7 +868,7 @@ Value physics_remove_body(const std::vector<Value>& args) {
 Value physics_set_body_position(const std::vector<Value>& args) {
     if (args.size() != 3 || !g_physics_world) return Value::nil();
     
-    int body_id = args[0].as_int();
+    int body_id = static_cast<int>(args[0].as_int());
     float x = static_cast<float>(args[1].as_number());
     float y = static_cast<float>(args[2].as_number());
     
@@ -879,7 +879,7 @@ Value physics_set_body_position(const std::vector<Value>& args) {
 Value physics_set_body_velocity(const std::vector<Value>& args) {
     if (args.size() != 3 || !g_physics_world) return Value::nil();
     
-    int body_id = args[0].as_int();
+    int body_id = static_cast<int>(args[0].as_int());
     float x = static_cast<float>(args[1].as_number());
     float y = static_cast<float>(args[2].as_number());
     
@@ -890,7 +890,7 @@ Value physics_set_body_velocity(const std::vector<Value>& args) {
 Value physics_set_circle_shape(const std::vector<Value>& args) {
     if (args.size() != 2 || !g_physics_world) return Value::nil();
     
-    int body_id = args[0].as_int();
+    int body_id = static_cast<int>(args[0].as_int());
     float radius = static_cast<float>(args[1].as_number());
     
     g_physics_world->set_circle_shape(body_id, radius);
@@ -900,7 +900,7 @@ Value physics_set_circle_shape(const std::vector<Value>& args) {
 Value physics_set_rectangle_shape(const std::vector<Value>& args) {
     if (args.size() != 3 || !g_physics_world) return Value::nil();
     
-    int body_id = args[0].as_int();
+    int body_id = static_cast<int>(args[0].as_int());
     float width = static_cast<float>(args[1].as_number());
     float height = static_cast<float>(args[2].as_number());
     
@@ -911,7 +911,7 @@ Value physics_set_rectangle_shape(const std::vector<Value>& args) {
 Value physics_apply_force(const std::vector<Value>& args) {
     if (args.size() != 3 || !g_physics_world) return Value::nil();
     
-    int body_id = args[0].as_int();
+    int body_id = static_cast<int>(args[0].as_int());
     float x = static_cast<float>(args[1].as_number());
     float y = static_cast<float>(args[2].as_number());
     
@@ -922,7 +922,7 @@ Value physics_apply_force(const std::vector<Value>& args) {
 Value physics_apply_impulse(const std::vector<Value>& args) {
     if (args.size() != 3 || !g_physics_world) return Value::nil();
     
-    int body_id = args[0].as_int();
+    int body_id = static_cast<int>(args[0].as_int());
     float x = static_cast<float>(args[1].as_number());
     float y = static_cast<float>(args[2].as_number());
     
@@ -933,8 +933,8 @@ Value physics_apply_impulse(const std::vector<Value>& args) {
 Value physics_create_spring_joint(const std::vector<Value>& args) {
     if (args.size() != 4 || !g_physics_world) return Value::from_int(-1);
     
-    int body_a = args[0].as_int();
-    int body_b = args[1].as_int();
+    int body_a = static_cast<int>(args[0].as_int());
+    int body_b = static_cast<int>(args[1].as_int());
     float stiffness = static_cast<float>(args[2].as_number());
     float damping = static_cast<float>(args[3].as_number());
     
@@ -953,7 +953,7 @@ Value physics_step(const std::vector<Value>& args) {
 Value physics_get_body_position(const std::vector<Value>& args) {
     if (args.size() != 1 || !g_physics_world) return Value::from_number(0);
     
-    int body_id = args[0].as_int();
+    int body_id = static_cast<int>(args[0].as_int());
     Vector2D pos = g_physics_world->get_body_position(body_id);
     return Value::from_number(pos.x); // Return x coordinate
 }
@@ -961,8 +961,8 @@ Value physics_get_body_position(const std::vector<Value>& args) {
 Value physics_check_collision(const std::vector<Value>& args) {
     if (args.size() != 2 || !g_physics_world) return Value::from_bool(false);
     
-    int body_a = args[0].as_int();
-    int body_b = args[1].as_int();
+    int body_a = static_cast<int>(args[0].as_int());
+    int body_b = static_cast<int>(args[1].as_int());
     
     bool collided = g_physics_world->check_collision(body_a, body_b);
     return Value::from_bool(collided);

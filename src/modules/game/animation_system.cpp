@@ -1,3 +1,4 @@
+#include "bas/animation_system.hpp"
 #include "bas/runtime.hpp"
 #include "bas/value.hpp"
 #include <raylib.h>
@@ -8,27 +9,7 @@
 
 namespace bas {
 
-// Animation frame data
-struct AnimationFrame {
-    int frameIndex{0};
-    double duration{0.1};  // Duration in seconds
-};
-
-// Animation object storage
-struct AnimationData {
-    std::string name;
-    std::vector<AnimationFrame> frames;
-    int currentFrame{0};
-    double currentTime{0.0};
-    bool isPlaying{false};
-    bool isLooping{true};
-    double speed{1.0};  // Playback speed multiplier
-    int frameWidth{0};
-    int frameHeight{0};
-    int totalFrames{0};
-};
-
-static std::unordered_map<int, AnimationData> g_animations;
+std::unordered_map<int, AnimationData> g_animations;
 static int g_next_animation_id = 1;
 
 // Animation constructor: Animation(name, frameCount, frameWidth, frameHeight, frameDuration)
@@ -38,9 +19,9 @@ static Value animation_constructor(const std::vector<Value>& args) {
     }
     
     std::string name = args[0].is_string() ? args[0].as_string() : "Animation";
-    int frameCount = args[1].as_int();
-    int frameWidth = args[2].as_int();
-    int frameHeight = args[3].as_int();
+    int frameCount = static_cast<int>(args[1].as_int());
+    int frameWidth = static_cast<int>(args[2].as_int());
+    int frameHeight = static_cast<int>(args[3].as_int());
     double frameDuration = args.size() > 4 ? args[4].as_number() : 0.1;
     
     if (frameCount < 1 || frameWidth < 1 || frameHeight < 1) {
@@ -90,7 +71,7 @@ static Value animation_play(const std::vector<Value>& args) {
         return args[0];
     }
     
-    int id = idIt->second.as_int();
+    int id = static_cast<int>(idIt->second.as_int());
     auto animIt = g_animations.find(id);
     if (animIt == g_animations.end()) {
         return args[0];
@@ -115,7 +96,7 @@ static Value animation_stop(const std::vector<Value>& args) {
     const auto& map = args[0].as_map();
     auto idIt = map.find("_id");
     if (idIt != map.end() && idIt->second.is_int()) {
-        int id = idIt->second.as_int();
+        int id = static_cast<int>(idIt->second.as_int());
         auto animIt = g_animations.find(id);
         if (animIt != g_animations.end()) {
             animIt->second.isPlaying = false;
@@ -139,7 +120,7 @@ static Value animation_pause(const std::vector<Value>& args) {
     const auto& map = args[0].as_map();
     auto idIt = map.find("_id");
     if (idIt != map.end() && idIt->second.is_int()) {
-        int id = idIt->second.as_int();
+        int id = static_cast<int>(idIt->second.as_int());
         auto animIt = g_animations.find(id);
         if (animIt != g_animations.end()) {
             animIt->second.isPlaying = false;
@@ -163,7 +144,7 @@ static Value animation_setSpeed(const std::vector<Value>& args) {
     
     auto idIt = map.find("_id");
     if (idIt != map.end() && idIt->second.is_int()) {
-        int id = idIt->second.as_int();
+        int id = static_cast<int>(idIt->second.as_int());
         auto animIt = g_animations.find(id);
         if (animIt != g_animations.end()) {
             animIt->second.speed = speed;
@@ -186,7 +167,7 @@ static Value animation_setLooping(const std::vector<Value>& args) {
     
     auto idIt = map.find("_id");
     if (idIt != map.end() && idIt->second.is_int()) {
-        int id = idIt->second.as_int();
+        int id = static_cast<int>(idIt->second.as_int());
         auto animIt = g_animations.find(id);
         if (animIt != g_animations.end()) {
             animIt->second.isLooping = looping;
@@ -210,7 +191,7 @@ static Value animation_getCurrentFrame(const std::vector<Value>& args) {
         return Value::from_int(0);
     }
     
-    int id = idIt->second.as_int();
+    int id = static_cast<int>(idIt->second.as_int());
     auto animIt = g_animations.find(id);
     if (animIt == g_animations.end()) {
         return Value::from_int(0);
@@ -233,7 +214,7 @@ static Value animation_update(const std::vector<Value>& args) {
         return args[0];
     }
     
-    int id = idIt->second.as_int();
+    int id = static_cast<int>(idIt->second.as_int());
     auto animIt = g_animations.find(id);
     if (animIt == g_animations.end()) {
         return args[0];
@@ -290,7 +271,7 @@ static Value animation_getFrameRect(const std::vector<Value>& args) {
         return Value::nil();
     }
     
-    int id = idIt->second.as_int();
+    int id = static_cast<int>(idIt->second.as_int());
     auto animIt = g_animations.find(id);
     if (animIt == g_animations.end()) {
         return Value::nil();

@@ -59,7 +59,7 @@ void register_asset_pipeline_functions(FunctionRegistry& R) {
     
     R.add("OPTIMIZEMODEL", NativeFn{"OPTIMIZEMODEL", 2, [](const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("OPTIMIZEMODEL: expected 2 args");
-        int model_id = args[0].as_int();
+        int model_id = static_cast<int>(args[0].as_int());
         double quality = args[1].as_number();
         bool success = AssetPipeline::optimize_model(model_id, quality);
         return Value::from_bool(success);
@@ -67,30 +67,30 @@ void register_asset_pipeline_functions(FunctionRegistry& R) {
     
     R.add("COMPRESSAUDIO", NativeFn{"COMPRESSAUDIO", 3, [](const std::vector<Value>& args) -> Value {
         if (args.size() != 3) throw std::runtime_error("COMPRESSAUDIO: expected 3 args");
-        int sound_id = args[0].as_int();
+        int sound_id = static_cast<int>(args[0].as_int());
         std::string format = args[1].as_string();
-        int bitrate = args[2].as_int();
+        int bitrate = static_cast<int>(args[2].as_int());
         bool success = AssetPipeline::compress_audio(sound_id, format, bitrate);
         return Value::from_bool(success);
     }});
     
     R.add("ISASSETLOADED", NativeFn{"ISASSETLOADED", 1, [](const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("ISASSETLOADED: expected 1 arg");
-        int asset_id = args[0].as_int();
+        int asset_id = static_cast<int>(args[0].as_int());
         bool loaded = AssetPipeline::is_asset_loaded(asset_id);
         return Value::from_bool(loaded);
     }});
     
     R.add("GETASSETFILENAME", NativeFn{"GETASSETFILENAME", 1, [](const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("GETASSETFILENAME: expected 1 arg");
-        int asset_id = args[0].as_int();
+        int asset_id = static_cast<int>(args[0].as_int());
         std::string filename = AssetPipeline::get_asset_filename(asset_id);
         return Value::from_string(filename);
     }});
     
     R.add("UNLOADASSET", NativeFn{"UNLOADASSET", 1, [](const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("UNLOADASSET: expected 1 arg");
-        int asset_id = args[0].as_int();
+        int asset_id = static_cast<int>(args[0].as_int());
         AssetPipeline::unload_asset(asset_id);
         return Value::nil();
     }});

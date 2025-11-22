@@ -1,5 +1,6 @@
 #pragma once
 #include <functional>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -59,7 +60,7 @@ public:
     return it==fns.end() ? nullptr : &it->second;
   }
   
-  [[nodiscard]] constexpr size_t size() const noexcept { return fns.size(); }
+  [[nodiscard]] size_t size() const noexcept { return fns.size(); }
 private:
   std::unordered_map<std::string, NativeFn> fns;
 };
@@ -68,11 +69,23 @@ void register_builtins(FunctionRegistry&);
 void register_object_constructors(FunctionRegistry&);
 void register_raylib_bindings(FunctionRegistry&);
 
+// Member access hooks allow subsystems (e.g., ECS) to resolve custom dot-notation.
+using MemberReadHook = std::function<std::optional<Value>(const Value&, const std::string&)>;
+using MemberWriteHook = std::function<bool(const Value&, const std::string&, const Value&)>;
+
+void register_member_read_hook(MemberReadHook hook);
+void register_member_write_hook(MemberWriteHook hook);
+std::optional<Value> try_resolve_member(const Value& object, const std::string& member);
+bool try_assign_member(const Value& object, const std::string& member, const Value& value);
+
 // Enhanced Game Development Systems
 void register_level_editor_functions(FunctionRegistry&);
 void register_asset_pipeline_functions(FunctionRegistry&);
 void register_sprite_animation_functions(FunctionRegistry&);
 void register_gui_functions(FunctionRegistry&);
+void register_enums_and_dicts(FunctionRegistry&);
+void register_dot_notation_enhancements(FunctionRegistry&);
+void register_advanced_features(FunctionRegistry&);
 
 // Call a native function by name with arguments.
 [[nodiscard]] Value call(FunctionRegistry&, const std::string& name, const std::vector<Value>&);

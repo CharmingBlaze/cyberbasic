@@ -3,6 +3,16 @@
 #include <raylib.h>
 #include <cmath>
 #include <algorithm>
+#include <map>
+#include <unordered_map>
+#include <string>
+#include <vector>
+#include <chrono>
+#include <map>
+#include <unordered_map>
+#include <string>
+#include <vector>
+#include <chrono>
 
 namespace bas {
 
@@ -192,7 +202,7 @@ static Value draw_drawText(const std::vector<Value>& args) {
     std::string text = args[0].is_string() ? args[0].as_string() : "";
     float x = static_cast<float>(args[1].as_number());
     float y = static_cast<float>(args[2].as_number());
-    int fontSize = args[3].as_int();
+    int fontSize = static_cast<int>(args[3].as_int());
     
     unsigned char r = args.size() > 4 ? static_cast<unsigned char>(args[4].as_int()) : 255;
     unsigned char g = args.size() > 5 ? static_cast<unsigned char>(args[5].as_int()) : 255;
@@ -264,7 +274,7 @@ static Value draw3d_drawGrid(const std::vector<Value>& args) {
         return Value::nil();
     }
     
-    int slices = args[0].as_int();
+    int slices = static_cast<int>(args[0].as_int());
     float spacing = static_cast<float>(args[1].as_number());
     
     DrawGrid(slices, spacing);
@@ -296,7 +306,7 @@ void register_game_helpers(FunctionRegistry& R) {
 // Asset Manager
 static std::map<std::string, Value> asset_cache;
 
-void bas::register_asset_manager(FunctionRegistry& R) {
+void register_asset_manager(FunctionRegistry& R) {
     R.add("ASSETS_LOAD", NativeFn{"ASSETS_LOAD", 1, [](const std::vector<Value>& args) -> Value {
         std::string path = args[0].as_string();
         // In a real implementation, this would load the asset
@@ -322,7 +332,7 @@ void bas::register_asset_manager(FunctionRegistry& R) {
 }
 
 // Save/Load System
-void bas::register_save_load(FunctionRegistry& R) {
+void register_save_load(FunctionRegistry& R) {
     static std::map<std::string, Value> save_data;
     
     R.add("SAVE_SAVE", NativeFn{"SAVE_SAVE", 2, [](const std::vector<Value>& args) -> Value {
@@ -350,14 +360,14 @@ void bas::register_save_load(FunctionRegistry& R) {
 static std::map<std::string, std::chrono::steady_clock::time_point> profile_starts;
 static std::map<std::string, double> profile_times;
 
-void bas::register_profiling(FunctionRegistry& R) {
-    R.add("PROFILE_START", NativeFn{"PROFILE_START", 1, [](const std::vector<Value>& args) -> Value {
+void register_profiling(FunctionRegistry& R) {
+    R.add_with_policy("PROFILE_START", NativeFn{"PROFILE_START", 1, [](const std::vector<Value>& args) -> Value {
         std::string name = args[0].as_string();
         profile_starts[name] = std::chrono::steady_clock::now();
         return Value::nil();
-    }});
+    }}, true);
     
-    R.add("PROFILE_END", NativeFn{"PROFILE_END", 1, [](const std::vector<Value>& args) -> Value {
+    R.add_with_policy("PROFILE_END", NativeFn{"PROFILE_END", 1, [](const std::vector<Value>& args) -> Value {
         std::string name = args[0].as_string();
         auto it = profile_starts.find(name);
         if (it != profile_starts.end()) {
@@ -367,7 +377,7 @@ void bas::register_profiling(FunctionRegistry& R) {
             profile_starts.erase(it);
         }
         return Value::nil();
-    }});
+    }}, true);
     
     R.add("PROFILE_GETTIME", NativeFn{"PROFILE_GETTIME", 1, [](const std::vector<Value>& args) -> Value {
         std::string name = args[0].as_string();
@@ -380,7 +390,7 @@ void bas::register_profiling(FunctionRegistry& R) {
 }
 
 // Debug Visualization
-void bas::register_debug_viz(FunctionRegistry& R) {
+void register_debug_viz(FunctionRegistry& R) {
     R.add("DEBUG_DRAWCOLLISIONBOXES", NativeFn{"DEBUG_DRAWCOLLISIONBOXES", 1, [](const std::vector<Value>& args) -> Value {
         bool enabled = args[0].as_bool();
         // In a real implementation, this would toggle collision box rendering

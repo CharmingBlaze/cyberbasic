@@ -18,16 +18,16 @@ void register_level_editor_functions(FunctionRegistry& R) {
     
     R.add("ADDLEVELLAYER", NativeFn{"ADDLEVELLAYER", 3, [](const std::vector<Value>& args) -> Value {
         if (args.size() != 3) throw std::runtime_error("ADDLEVELLAYER: expected 3 args");
-        int level_id = args[0].as_int();
+        int level_id = static_cast<int>(args[0].as_int());
         std::string layer_name = args[1].as_string();
-        int depth = args[2].as_int();
+        int depth = static_cast<int>(args[2].as_int());
         LevelEditor::add_level_layer(level_id, layer_name, depth);
         return Value::nil();
     }});
     
     R.add("PLACELEVELOBJECT", NativeFn{"PLACELEVELOBJECT", 6, [](const std::vector<Value>& args) -> Value {
         if (args.size() != 6) throw std::runtime_error("PLACELEVELOBJECT: expected 6 args");
-        int level_id = args[0].as_int();
+        int level_id = static_cast<int>(args[0].as_int());
         std::string obj_name = args[1].as_string();
         std::string obj_type = args[2].as_string();
         double x = args[3].as_number();
@@ -39,7 +39,7 @@ void register_level_editor_functions(FunctionRegistry& R) {
     
     R.add("SAVELEVEL", NativeFn{"SAVELEVEL", 2, [](const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("SAVELEVEL: expected 2 args");
-        int level_id = args[0].as_int();
+        int level_id = static_cast<int>(args[0].as_int());
         std::string filename = args[1].as_string();
         bool success = LevelEditor::save_level(level_id, filename);
         return Value::from_bool(success);
@@ -54,7 +54,7 @@ void register_level_editor_functions(FunctionRegistry& R) {
     
     R.add("GETLEVELWIDTH", NativeFn{"GETLEVELWIDTH", 1, [](const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("GETLEVELWIDTH: expected 1 arg");
-        int level_id = args[0].as_int();
+        int level_id = static_cast<int>(args[0].as_int());
         auto level = LevelEditor::get_level(level_id);
         if (level) {
             return Value::from_number(level->get_width());
@@ -64,7 +64,7 @@ void register_level_editor_functions(FunctionRegistry& R) {
     
     R.add("GETLEVELHEIGHT", NativeFn{"GETLEVELHEIGHT", 1, [](const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("GETLEVELHEIGHT: expected 1 arg");
-        int level_id = args[0].as_int();
+        int level_id = static_cast<int>(args[0].as_int());
         auto level = LevelEditor::get_level(level_id);
         if (level) {
             return Value::from_number(level->get_height());
@@ -74,7 +74,7 @@ void register_level_editor_functions(FunctionRegistry& R) {
     
     R.add("GETLEVELNAME", NativeFn{"GETLEVELNAME", 1, [](const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("GETLEVELNAME: expected 1 arg");
-        int level_id = args[0].as_int();
+        int level_id = static_cast<int>(args[0].as_int());
         auto level = LevelEditor::get_level(level_id);
         if (level) {
             return Value::from_string(level->get_name());
@@ -84,14 +84,14 @@ void register_level_editor_functions(FunctionRegistry& R) {
     
     R.add("DESTROYLEVEL", NativeFn{"DESTROYLEVEL", 1, [](const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("DESTROYLEVEL: expected 1 arg");
-        int level_id = args[0].as_int();
+        int level_id = static_cast<int>(args[0].as_int());
         LevelEditor::destroy_level(level_id);
         return Value::nil();
     }});
     
     R.add("SETLEVELPROPERTY", NativeFn{"SETLEVELPROPERTY", 3, [](const std::vector<Value>& args) -> Value {
         if (args.size() != 3) throw std::runtime_error("SETLEVELPROPERTY: expected 3 args");
-        int level_id = args[0].as_int();
+        int level_id = static_cast<int>(args[0].as_int());
         std::string key = args[1].as_string();
         std::string value = args[2].as_string();
         auto level = LevelEditor::get_level(level_id);
@@ -103,7 +103,7 @@ void register_level_editor_functions(FunctionRegistry& R) {
     
     R.add("GETLEVELPROPERTY", NativeFn{"GETLEVELPROPERTY", 2, [](const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("GETLEVELPROPERTY: expected 2 args");
-        int level_id = args[0].as_int();
+        int level_id = static_cast<int>(args[0].as_int());
         std::string key = args[1].as_string();
         auto level = LevelEditor::get_level(level_id);
         if (level) {

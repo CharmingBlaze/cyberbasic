@@ -49,7 +49,10 @@ struct Diag {
     
     // Legacy compatibility
     void err(const std::string& m) { err(0, 0, m); }
-    void err_at(int line, int col, const std::string& m) { err(line, col, m); }
+    void err_at(int line, int col, const std::string& m,
+                const std::string& sugg = "", const std::string& ctx = "") {
+        err(line, col, m, sugg, ctx);
+    }
     
     bool has_errors() const { 
         return std::any_of(diagnostics.begin(), diagnostics.end(), 

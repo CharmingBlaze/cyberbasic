@@ -68,7 +68,7 @@ static Value sprite_draw(const std::vector<Value>& args) {
         return Value::nil();
     }
     
-    int id = idIt->second.as_int();
+    int id = static_cast<int>(idIt->second.as_int());
     auto spriteIt = g_sprites.find(id);
     if (spriteIt == g_sprites.end()) {
         return Value::nil();
@@ -112,7 +112,7 @@ static Value sprite_setPosition(const std::vector<Value>& args) {
         return args[0]; // Return original object
     }
     
-    int id = idIt->second.as_int();
+    int id = static_cast<int>(idIt->second.as_int());
     float x = static_cast<float>(args[1].as_number());
     float y = static_cast<float>(args[2].as_number());
     
@@ -140,7 +140,7 @@ static Value sprite_setScale(const std::vector<Value>& args) {
     
     auto idIt = map.find("_id");
     if (idIt != map.end() && idIt->second.is_int()) {
-        int id = idIt->second.as_int();
+        int id = static_cast<int>(idIt->second.as_int());
         auto spriteIt = g_sprites.find(id);
         if (spriteIt != g_sprites.end()) {
             spriteIt->second.scale = scale;
@@ -163,7 +163,7 @@ static Value sprite_setRotation(const std::vector<Value>& args) {
     
     auto idIt = map.find("_id");
     if (idIt != map.end() && idIt->second.is_int()) {
-        int id = idIt->second.as_int();
+        int id = static_cast<int>(idIt->second.as_int());
         auto spriteIt = g_sprites.find(id);
         if (spriteIt != g_sprites.end()) {
             spriteIt->second.rotation = rotation;

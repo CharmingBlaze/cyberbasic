@@ -154,8 +154,8 @@ static Value stream_isChunkLoaded(const std::vector<Value>& args) {
         return Value::from_bool(false);
     }
     
-    int chunkX = args[0].as_int();
-    int chunkY = args[1].as_int();
+    int chunkX = static_cast<int>(args[0].as_int());
+    int chunkY = static_cast<int>(args[1].as_int());
     
     std::string key = chunk_key(chunkX, chunkY);
     auto it = g_streaming.chunks.find(key);

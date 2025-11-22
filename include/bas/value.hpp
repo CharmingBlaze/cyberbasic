@@ -22,6 +22,11 @@ struct Value {
 
   [[nodiscard]] constexpr bool is_nil() const noexcept { return std::holds_alternative<std::monostate>(v); }
   [[nodiscard]] constexpr bool is_string() const noexcept { return std::holds_alternative<std::string>(v); }
+  [[nodiscard]] constexpr bool is_bool() const noexcept { return std::holds_alternative<bool>(v); }
+  [[nodiscard]] constexpr bool is_int() const noexcept { return std::holds_alternative<long long>(v); }
+  [[nodiscard]] constexpr bool is_number() const noexcept {
+    return std::holds_alternative<double>(v) || std::holds_alternative<long long>(v);
+  }
   [[nodiscard]] double as_number() const {
     if (auto p=std::get_if<double>(&v)) return *p;
     if (auto q=std::get_if<long long>(&v)) return static_cast<double>(*q);

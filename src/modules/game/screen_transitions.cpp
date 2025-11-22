@@ -123,7 +123,7 @@ static Value transition_update(const std::vector<Value>& args) {
         return Value::from_bool(false);
     }
     
-    int id = args[0].as_int();
+    int id = static_cast<int>(args[0].as_int());
     float deltaTime = static_cast<float>(args[1].as_number());
     
     auto it = g_transitions.find(id);
@@ -149,7 +149,7 @@ static Value transition_draw(const std::vector<Value>& args) {
         return Value::nil();
     }
     
-    int id = args[0].as_int();
+    int id = static_cast<int>(args[0].as_int());
     auto it = g_transitions.find(id);
     if (it == g_transitions.end() || !it->second.isActive) {
         return Value::nil();
@@ -215,7 +215,7 @@ static Value transition_isComplete(const std::vector<Value>& args) {
         return Value::from_bool(false);
     }
     
-    int id = args[0].as_int();
+    int id = static_cast<int>(args[0].as_int());
     auto it = g_transitions.find(id);
     if (it == g_transitions.end()) {
         return Value::from_bool(true);
@@ -230,7 +230,7 @@ static Value transition_stop(const std::vector<Value>& args) {
         return Value::nil();
     }
     
-    int id = args[0].as_int();
+    int id = static_cast<int>(args[0].as_int());
     auto it = g_transitions.find(id);
     if (it != g_transitions.end()) {
         it->second.isActive = false;

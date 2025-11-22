@@ -113,7 +113,7 @@ static Value scene_createEntity(const std::vector<Value>& args) {
         return Value::nil();
     }
     
-    int sceneId = idIt->second.as_int();
+    int sceneId = static_cast<int>(idIt->second.as_int());
     auto sceneIt = g_scenes.find(sceneId);
     if (sceneIt == g_scenes.end()) {
         return Value::nil();
@@ -217,7 +217,7 @@ static Value scene_update(const std::vector<Value>& args) {
         return args[0];
     }
     
-    int sceneId = idIt->second.as_int();
+    int sceneId = static_cast<int>(idIt->second.as_int());
     auto sceneIt = g_scenes.find(sceneId);
     if (sceneIt == g_scenes.end()) {
         return args[0];
@@ -241,7 +241,7 @@ static Value scene_draw(const std::vector<Value>& args) {
         return Value::nil();
     }
     
-    int sceneId = idIt->second.as_int();
+    int sceneId = static_cast<int>(idIt->second.as_int());
     auto sceneIt = g_scenes.find(sceneId);
     if (sceneIt == g_scenes.end()) {
         return Value::nil();
@@ -284,7 +284,7 @@ static Value scene_getEntityCount(const std::vector<Value>& args) {
         return Value::from_int(0);
     }
     
-    int sceneId = idIt->second.as_int();
+    int sceneId = static_cast<int>(idIt->second.as_int());
     auto sceneIt = g_scenes.find(sceneId);
     if (sceneIt == g_scenes.end()) {
         return Value::from_int(0);
@@ -295,11 +295,11 @@ static Value scene_getEntityCount(const std::vector<Value>& args) {
 
 // Register scene/entity system functions
 void register_scene_entity_system(FunctionRegistry& R) {
-    R.add("SCENE", NativeFn{"SCENE", -1, scene_constructor});
-    R.add("SCENE_CREATEENTITY", NativeFn{"SCENE_CREATEENTITY", -1, scene_createEntity});
-    R.add("SCENE_UPDATE", NativeFn{"SCENE_UPDATE", 1, scene_update});
-    R.add("SCENE_DRAW", NativeFn{"SCENE_DRAW", 1, scene_draw});
-    R.add("SCENE_GETENTITYCOUNT", NativeFn{"SCENE_GETENTITYCOUNT", 1, scene_getEntityCount});
+    R.add_with_policy("SCENE", NativeFn{"SCENE", -1, scene_constructor}, true);
+    R.add_with_policy("SCENE_CREATEENTITY", NativeFn{"SCENE_CREATEENTITY", -1, scene_createEntity}, true);
+    R.add_with_policy("SCENE_UPDATE", NativeFn{"SCENE_UPDATE", 1, scene_update}, true);
+    R.add_with_policy("SCENE_DRAW", NativeFn{"SCENE_DRAW", 1, scene_draw}, true);
+    R.add_with_policy("SCENE_GETENTITYCOUNT", NativeFn{"SCENE_GETENTITYCOUNT", 1, scene_getEntityCount}, true);
     R.add("ENTITY_ADDCOMPONENT", NativeFn{"ENTITY_ADDCOMPONENT", -1, entity_addComponent});
     R.add("ENTITY_SETPOSITION", NativeFn{"ENTITY_SETPOSITION", -1, entity_setPosition});
 }

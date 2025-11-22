@@ -141,6 +141,12 @@ std::unique_ptr<Stmt> Parser::statement() {
             }
             break;
         }
+        case Tok::Try: {
+            return parse_try_catch();
+        }
+        case Tok::Throw: {
+            return parse_throw();
+        }
         case Tok::Import:
         case Tok::Include: {
             return parse_import();
@@ -1476,4 +1482,51 @@ std::unique_ptr<Expr> Parser::parse_super_call() {
     expr->method = method.lex;
     expr->args = std::move(args);
     return expr;
+}
+
+// Parse TRY/CATCH/FINALLY block
+std::unique_ptr<Stmt> Parser::parse_try_catch() {
+    advance(); // consume TRY
+    
+    auto tryCatch = std::make_unique<TryCatchStmt>();
+    
+    // Parse try body
+    tryCatch->tryBody = stmt_list_until(Tok::Catch, Tok::Finally);
+    
+    // Check for CATCH
+    if (match(Tok::Catch)) {
+        tryCatch->hasCatch = true;
+        
+        // Optional catch variable
+        if (check(Tok::Ident)) {
+            tryCatch->catchVar = advance().lex;
+        }
+        
+        // Parse catch body
+        tryCatch->catchBody = stmt_list_until(Tok::Finally, Tok::EndTry);
+    }
+    
+    // Check for FINALLY
+    if (match(Tok::Finally)) {
+        tryCatch->hasFinally = true;
+        tryCatch->finallyBody = stmt_list_until(Tok::EndTry, Tok::Eof);
+    }
+    
+    // Consume END TRY
+    if (!match(Tok::EndTry)) {
+        diag.err_at(peek().line, peek().col, "TRY: expected END TRY");
+        return nullptr;
+    }
+    
+    return tryCatch;
+}
+
+// Parse THROW statement
+std::unique_ptr<Stmt> Parser::parse_throw() {
+    advance(); // consume THROW
+    
+    auto throwStmt = std::make_unique<ThrowStmt>();
+    throwStmt->error = expression();
+    
+    return throwStmt;
 }

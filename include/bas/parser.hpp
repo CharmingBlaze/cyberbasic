@@ -62,6 +62,8 @@ private:
   std::unique_ptr<Stmt> parse_using();
   std::unique_ptr<Stmt> parse_enum();
   std::unique_ptr<Stmt> parse_union();
+  std::unique_ptr<Stmt> parse_try_catch();
+  std::unique_ptr<Stmt> parse_throw();
   std::unique_ptr<Expr> or_();
   std::unique_ptr<Expr> xor_();
   std::unique_ptr<Expr> and_();

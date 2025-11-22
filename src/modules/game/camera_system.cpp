@@ -94,7 +94,7 @@ static Value camera2d_setTarget(const std::vector<Value>& args) {
         return args[0];
     }
     
-    int id = idIt->second.as_int();
+    int id = static_cast<int>(idIt->second.as_int());
     auto camIt = g_cameras2d.find(id);
     if (camIt != g_cameras2d.end()) {
         camIt->second.target.x = static_cast<float>(args[1].as_number());
@@ -118,7 +118,7 @@ static Value camera2d_setZoom(const std::vector<Value>& args) {
     
     auto idIt = map.find("_id");
     if (idIt != map.end() && idIt->second.is_int()) {
-        int id = idIt->second.as_int();
+        int id = static_cast<int>(idIt->second.as_int());
         auto camIt = g_cameras2d.find(id);
         if (camIt != g_cameras2d.end()) {
             camIt->second.zoom = zoom;
@@ -142,7 +142,7 @@ static Value camera2d_begin(const std::vector<Value>& args) {
         return Value::nil();
     }
     
-    int id = idIt->second.as_int();
+    int id = static_cast<int>(idIt->second.as_int());
     auto camIt = g_cameras2d.find(id);
     if (camIt == g_cameras2d.end()) {
         return Value::nil();
@@ -179,7 +179,7 @@ static Value camera3d_setPosition(const std::vector<Value>& args) {
         return args[0];
     }
     
-    int id = idIt->second.as_int();
+    int id = static_cast<int>(idIt->second.as_int());
     auto camIt = g_cameras3d.find(id);
     if (camIt != g_cameras3d.end()) {
         camIt->second.position.x = static_cast<float>(args[1].as_number());
@@ -206,7 +206,7 @@ static Value camera3d_setTarget(const std::vector<Value>& args) {
         return args[0];
     }
     
-    int id = idIt->second.as_int();
+    int id = static_cast<int>(idIt->second.as_int());
     auto camIt = g_cameras3d.find(id);
     if (camIt != g_cameras3d.end()) {
         camIt->second.target.x = static_cast<float>(args[1].as_number());
@@ -233,7 +233,7 @@ static Value camera3d_begin(const std::vector<Value>& args) {
         return Value::nil();
     }
     
-    int id = idIt->second.as_int();
+    int id = static_cast<int>(idIt->second.as_int());
     auto camIt = g_cameras3d.find(id);
     if (camIt == g_cameras3d.end()) {
         return Value::nil();
@@ -266,7 +266,7 @@ void register_camera_system(FunctionRegistry& R) {
     R.add("CAMERA2D_SETZOOM", NativeFn{"CAMERA2D_SETZOOM", 2, camera2d_setZoom});
     R.add("CAMERA2D_BEGIN", NativeFn{"CAMERA2D_BEGIN", 1, camera2d_begin});
     R.add("CAMERA2D_END", NativeFn{"CAMERA2D_END", 0, camera2d_end});
-    R.add("CAMERA3D", NativeFn{"CAMERA3D", -1, camera3d_constructor});
+    R.add_with_policy("CAMERA3D", NativeFn{"CAMERA3D", -1, camera3d_constructor}, true);
     R.add("CAMERA3D_SETPOSITION", NativeFn{"CAMERA3D_SETPOSITION", 4, camera3d_setPosition});
     R.add("CAMERA3D_SETTARGET", NativeFn{"CAMERA3D_SETTARGET", 4, camera3d_setTarget});
     R.add("CAMERA3D_BEGIN", NativeFn{"CAMERA3D_BEGIN", 1, camera3d_begin});

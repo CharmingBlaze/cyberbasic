@@ -140,8 +140,8 @@ void register_builtins_graphics(FunctionRegistry& R) {
 
   // SETWINDOWSIZE(w,h)
   R.add("SETWINDOWSIZE", NativeFn{"SETWINDOWSIZE", 2, [](const std::vector<Value>& a){
-    int w = (int)a[0].as_int();
-    int h = (int)a[1].as_int();
+    int w = static_cast<int>((int)a[0].as_int());
+    int h = static_cast<int>((int)a[1].as_int());
     if (!IsWindowReady()) { gfx.width = w; gfx.height = h; }
     else SetWindowSize(w, h);
     return Value::nil();
@@ -205,7 +205,7 @@ void register_builtins_graphics(FunctionRegistry& R) {
 
   // --- Input helpers backed by raylib or bas::input ---
   R.add("KEYDOWN", NativeFn{"KEYDOWN", 1, [](const std::vector<Value>& a){
-    int key = (int)a[0].as_int();
+    int key = static_cast<int>((int)a[0].as_int());
     if (IsWindowReady()) {
       return Value::from_bool(IsKeyDown(key));
     }
@@ -247,26 +247,26 @@ void register_builtins_graphics(FunctionRegistry& R) {
   }});
 
   R.add("KEYHIT", NativeFn{"KEYHIT", 1, [](const std::vector<Value>& a){
-    int key = (int)a[0].as_int();
+    int key = static_cast<int>((int)a[0].as_int());
     return Value::from_bool(bas::input::key_hit(key));
   }});
 
   R.add("KEYUP", NativeFn{"KEYUP", 1, [](const std::vector<Value>& a){
-    int key = (int)a[0].as_int();
+    int key = static_cast<int>((int)a[0].as_int());
     return Value::from_bool(bas::input::key_up(key));
   }});
 
   // Compatibility aliases
   R.add("ISKEYPRESSED", NativeFn{"ISKEYPRESSED", 1, [](const std::vector<Value>& a){
-    int key = (int)a[0].as_int();
+    int key = static_cast<int>((int)a[0].as_int());
     return Value::from_bool(bas::input::key_hit(key));
   }});
   R.add("ISKEYDOWN", NativeFn{"ISKEYDOWN", 1, [](const std::vector<Value>& a){
-    int key = (int)a[0].as_int();
+    int key = static_cast<int>((int)a[0].as_int());
     return Value::from_bool(bas::input::key_down(key));
   }});
   R.add("ISKEYRELEASED", NativeFn{"ISKEYRELEASED", 1, [](const std::vector<Value>& a){
-    int key = (int)a[0].as_int();
+    int key = static_cast<int>((int)a[0].as_int());
     return Value::from_bool(bas::input::key_up(key));
   }});
 
@@ -306,24 +306,24 @@ void register_builtins_graphics(FunctionRegistry& R) {
     return Value::from_int((long long)bas::input::gamepad_count());
   }});
   R.add("GAMEPADNAME", NativeFn{"GAMEPADNAME", 1, [](const std::vector<Value>& a){
-    int i = (int)a[0].as_int();
+    int i = static_cast<int>((int)a[0].as_int());
     const char* n = bas::input::gamepad_name(i);
     return Value::from_string(n ? std::string(n) : std::string());
   }});
   R.add("GAMEPADDOWN", NativeFn{"GAMEPADDOWN", 2, [](const std::vector<Value>& a){
-    int i = (int)a[0].as_int(); int btn = (int)a[1].as_int();
+    int i = static_cast<int>((int)a[0].as_int()); int btn = static_cast<int>((int)a[1].as_int());
     return Value::from_bool(bas::input::gamepad_down(i, btn));
   }});
   R.add("GAMEPADHIT", NativeFn{"GAMEPADHIT", 2, [](const std::vector<Value>& a){
-    int i = (int)a[0].as_int(); int btn = (int)a[1].as_int();
+    int i = static_cast<int>((int)a[0].as_int()); int btn = static_cast<int>((int)a[1].as_int());
     return Value::from_bool(bas::input::gamepad_hit(i, btn));
   }});
   R.add("GAMEPADUP", NativeFn{"GAMEPADUP", 2, [](const std::vector<Value>& a){
-    int i = (int)a[0].as_int(); int btn = (int)a[1].as_int();
+    int i = static_cast<int>((int)a[0].as_int()); int btn = static_cast<int>((int)a[1].as_int());
     return Value::from_bool(bas::input::gamepad_up(i, btn));
   }});
   R.add("GAMEPADAXIS", NativeFn{"GAMEPADAXIS", 2, [](const std::vector<Value>& a){
-    int i = (int)a[0].as_int(); int axis = (int)a[1].as_int();
+    int i = static_cast<int>((int)a[0].as_int()); int axis = static_cast<int>((int)a[1].as_int());
     return Value::from_number((double)bas::input::gamepad_axis(i, axis));
   }});
 }

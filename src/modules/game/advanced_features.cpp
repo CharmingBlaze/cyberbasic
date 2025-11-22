@@ -2,6 +2,7 @@
 #include "bas/value.hpp"
 #include "bas/advanced_features.hpp"
 #include "bas/networking.hpp"
+#include "bas/ecs_system.hpp"
 #include <fstream>
 #include <sstream>
 #include <unordered_map>
@@ -16,8 +17,6 @@
 namespace bas {
 
 // Forward declarations
-extern std::unordered_map<int, struct EntityData> g_entities;
-extern std::unordered_map<int, struct SceneData> g_scenes;
 extern std::unique_ptr<NetworkingSystem> g_networking_system;
 
 // ===== MACRO SYSTEM =====
@@ -568,15 +567,15 @@ static Value enable_sandbox(const std::vector<Value>& args) {
 
 // CHECK SANDBOX [id] -> bool (check if execution should continue)
 static Value check_sandbox(const std::vector<Value>& args) {
-    int sandboxId = args.empty() ? 0 : args[0].as_int();
+    int sandboxId = static_cast<int>(args.empty() ? 0 : args[0].as_int());
     
     // Would check execution time, loop counts, etc.
     // For now, always return true
     return Value::from_bool(true);
 }
 
-// Register all advanced features
-void register_advanced_features(FunctionRegistry& R) {
+// Register all game advanced features (macros, particles, dialogue, etc.)
+void register_game_advanced_features(FunctionRegistry& R) {
     // Macros
     R.add("MACRO_DECLARE", NativeFn{"MACRO_DECLARE", -1, macro_declare});
     R.add("MACRO_EXPAND", NativeFn{"MACRO_EXPAND", -1, macro_expand});
@@ -585,7 +584,7 @@ void register_advanced_features(FunctionRegistry& R) {
     R.add("VEC3", NativeFn{"VEC3", -1, vec3_inline});
     R.add("DOT", NativeFn{"DOT", 2, dot_inline});
     R.add("CROSS", NativeFn{"CROSS", 2, cross_inline});
-    R.add("LERP", NativeFn{"LERP", 3, lerp_inline});
+    R.add_with_policy("LERP", NativeFn{"LERP", 3, lerp_inline}, true);
     
     // Scene management
     R.add("LOAD_SCENE", NativeFn{"LOAD_SCENE", 1, load_scene});

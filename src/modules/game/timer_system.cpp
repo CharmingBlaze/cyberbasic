@@ -62,7 +62,7 @@ static Value timer_start(const std::vector<Value>& args) {
         return Value::nil();
     }
     
-    int id = idIt->second.as_int();
+    int id = static_cast<int>(idIt->second.as_int());
     auto timerIt = g_timers.find(id);
     if (timerIt == g_timers.end()) {
         return Value::nil();
@@ -92,7 +92,7 @@ static Value timer_stop(const std::vector<Value>& args) {
     const auto& map = args[0].as_map();
     auto idIt = map.find("_id");
     if (idIt != map.end() && idIt->second.is_int()) {
-        int id = idIt->second.as_int();
+        int id = static_cast<int>(idIt->second.as_int());
         auto timerIt = g_timers.find(id);
         if (timerIt != g_timers.end()) {
             timerIt->second.isRunning = false;
@@ -118,7 +118,7 @@ static Value timer_pause(const std::vector<Value>& args) {
         return Value::nil();
     }
     
-    int id = idIt->second.as_int();
+    int id = static_cast<int>(idIt->second.as_int());
     auto timerIt = g_timers.find(id);
     if (timerIt == g_timers.end()) {
         return Value::nil();
@@ -147,7 +147,7 @@ static Value timer_elapsed(const std::vector<Value>& args) {
         return Value::from_number(0.0);
     }
     
-    int id = idIt->second.as_int();
+    int id = static_cast<int>(idIt->second.as_int());
     auto timerIt = g_timers.find(id);
     if (timerIt == g_timers.end()) {
         return Value::from_number(0.0);
@@ -193,10 +193,10 @@ static Value clock_getFPS(const std::vector<Value>& args) {
 // Register timer and clock functions
 void register_timer_system(FunctionRegistry& R) {
     R.add("TIMER", NativeFn{"TIMER", 0, timer_constructor});
-    R.add("TIMER_START", NativeFn{"TIMER_START", 1, timer_start});
+    R.add_with_policy("TIMER_START", NativeFn{"TIMER_START", 1, timer_start}, true);
     R.add("TIMER_STOP", NativeFn{"TIMER_STOP", 1, timer_stop});
     R.add("TIMER_PAUSE", NativeFn{"TIMER_PAUSE", 1, timer_pause});
-    R.add("TIMER_ELAPSED", NativeFn{"TIMER_ELAPSED", 1, timer_elapsed});
+    R.add_with_policy("TIMER_ELAPSED", NativeFn{"TIMER_ELAPSED", 1, timer_elapsed}, true);
     R.add("CLOCK_GETTIME", NativeFn{"CLOCK_GETTIME", 0, clock_getTime});
     R.add("CLOCK_GETDELTA", NativeFn{"CLOCK_GETDELTA", 0, clock_getDelta});
     R.add("CLOCK_GETFPS", NativeFn{"CLOCK_GETFPS", 0, clock_getFPS});

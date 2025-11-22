@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <numbers>
 
 namespace bas {
 
@@ -322,8 +323,8 @@ void CameraSystem3D::update_fps_camera(Camera3D& camera, float delta_time) {
     camera.orbit_angle_y = std::max(-89.0f, std::min(89.0f, camera.orbit_angle_y));
     
     // Calculate new target based on rotation
-    float rad_x = camera.orbit_angle_x * M_PI / 180.0f;
-    float rad_y = camera.orbit_angle_y * M_PI / 180.0f;
+    float rad_x = camera.orbit_angle_x * std::numbers::pi_v<float> / 180.0f;
+    float rad_y = camera.orbit_angle_y * std::numbers::pi_v<float> / 180.0f;
     
     Vector3D new_target = camera.position + Vector3D(
         std::cos(rad_y) * std::sin(rad_x),
@@ -361,8 +362,8 @@ void CameraSystem3D::update_tps_camera(Camera3D& camera, float delta_time) {
     camera.orbit_angle_y = std::max(-89.0f, std::min(89.0f, camera.orbit_angle_y));
     
     // Calculate new position based on target and rotation
-    float rad_x = camera.orbit_angle_x * M_PI / 180.0f;
-    float rad_y = camera.orbit_angle_y * M_PI / 180.0f;
+    float rad_x = camera.orbit_angle_x * std::numbers::pi_v<float> / 180.0f;
+    float rad_y = camera.orbit_angle_y * std::numbers::pi_v<float> / 180.0f;
     
     Vector3D offset = Vector3D(
         std::cos(rad_y) * std::sin(rad_x) * camera.follow_distance,
@@ -392,8 +393,8 @@ void CameraSystem3D::update_orbit_camera(Camera3D& camera, float delta_time) {
     camera.orbit_angle_y = std::max(-89.0f, std::min(89.0f, camera.orbit_angle_y));
     
     // Calculate new position
-    float rad_x = camera.orbit_angle_x * M_PI / 180.0f;
-    float rad_y = camera.orbit_angle_y * M_PI / 180.0f;
+    float rad_x = camera.orbit_angle_x * std::numbers::pi_v<float> / 180.0f;
+    float rad_y = camera.orbit_angle_y * std::numbers::pi_v<float> / 180.0f;
     
     Vector3D new_position = camera.target + Vector3D(
         std::cos(rad_y) * std::sin(rad_x) * camera.orbit_distance,
@@ -413,8 +414,8 @@ void CameraSystem3D::update_free_camera(Camera3D& camera, float delta_time) {
     camera.orbit_angle_y = std::max(-89.0f, std::min(89.0f, camera.orbit_angle_y));
     
     // Calculate new target based on rotation
-    float rad_x = camera.orbit_angle_x * M_PI / 180.0f;
-    float rad_y = camera.orbit_angle_y * M_PI / 180.0f;
+    float rad_x = camera.orbit_angle_x * std::numbers::pi_v<float> / 180.0f;
+    float rad_y = camera.orbit_angle_y * std::numbers::pi_v<float> / 180.0f;
     
     Vector3D new_target = camera.position + Vector3D(
         std::cos(rad_y) * std::sin(rad_x),
@@ -579,7 +580,7 @@ Value camera3d_create_camera(const std::vector<Value>& args) {
     if (args.size() < 2) return Value::nil();
     
     std::string name = args[0].as_string();
-    int mode = args[1].as_int();
+    int mode = static_cast<int>(args[1].as_int());
     
     if (!g_camera_system_3d) return Value::nil();
     
@@ -591,7 +592,7 @@ Value camera3d_create_camera(const std::vector<Value>& args) {
 Value camera3d_set_position(const std::vector<Value>& args) {
     if (args.size() < 4) return Value::nil();
     
-    int camera_id = args[0].as_int();
+    int camera_id = static_cast<int>(args[0].as_int());
     float x = args[1].as_number();
     float y = args[2].as_number();
     float z = args[3].as_number();
@@ -605,7 +606,7 @@ Value camera3d_set_position(const std::vector<Value>& args) {
 Value camera3d_set_target(const std::vector<Value>& args) {
     if (args.size() < 4) return Value::nil();
     
-    int camera_id = args[0].as_int();
+    int camera_id = static_cast<int>(args[0].as_int());
     float x = args[1].as_number();
     float y = args[2].as_number();
     float z = args[3].as_number();
@@ -619,7 +620,7 @@ Value camera3d_set_target(const std::vector<Value>& args) {
 Value camera3d_set_fov(const std::vector<Value>& args) {
     if (args.size() < 2) return Value::nil();
     
-    int camera_id = args[0].as_int();
+    int camera_id = static_cast<int>(args[0].as_int());
     float fov = args[1].as_number();
     
     if (g_camera_system_3d) {
@@ -631,7 +632,7 @@ Value camera3d_set_fov(const std::vector<Value>& args) {
 Value camera3d_set_active(const std::vector<Value>& args) {
     if (args.size() < 1) return Value::nil();
     
-    int camera_id = args[0].as_int();
+    int camera_id = static_cast<int>(args[0].as_int());
     
     if (g_camera_system_3d) {
         g_camera_system_3d->set_active_camera(camera_id);
@@ -653,7 +654,7 @@ Value camera3d_update(const std::vector<Value>& args) {
 Value camera3d_get_position(const std::vector<Value>& args) {
     if (args.size() < 1) return Value::nil();
     
-    int camera_id = args[0].as_int();
+    int camera_id = static_cast<int>(args[0].as_int());
     
     if (g_camera_system_3d) {
         Vector3D pos = g_camera_system_3d->get_camera_position(camera_id);
@@ -669,7 +670,7 @@ Value camera3d_get_position(const std::vector<Value>& args) {
 Value camera3d_get_target(const std::vector<Value>& args) {
     if (args.size() < 1) return Value::nil();
     
-    int camera_id = args[0].as_int();
+    int camera_id = static_cast<int>(args[0].as_int());
     
     if (g_camera_system_3d) {
         Vector3D target = g_camera_system_3d->get_camera_target(camera_id);

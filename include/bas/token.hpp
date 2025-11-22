@@ -34,10 +34,11 @@ enum class Tok {
   Spread, NullSafe, NullCoalesce,
   TypeInfer, Tuple, Destructure,
   // State system keywords
-  State, EndState, Transition, On, Enter, Exit, Update,
+  State, EndState, Transition, On, Enter, Update,
   Parallel, EndParallel, Group, EndGroup, Event,
-  Define, System, EndSystem, Attach, To, From,
-  Override, Priority, Enable, Disable, Debug
+  Define, System, EndSystem, Attach, From,
+  Override, Priority, Enable, Disable,
+  Try, Catch, Finally, EndTry, Throw
 };
 
 // Token with lexeme and position.

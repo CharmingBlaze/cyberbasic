@@ -50,6 +50,7 @@ functions:
     custom_body: |
       ::UnloadSoundAlias(rlreg::sounds.at(args[0].as_int()));
       rlreg::sounds.erase(args[0].as_int());
+      return Value::nil();
 
   - name: WAVECOPY
     raylib_name: WaveCopy
@@ -71,6 +72,7 @@ functions:
     description: "Crop wave to defined frames range (pass wave ID, initFrame, finalFrame)"
     custom_body: |
       ::WaveCrop(&rlreg::waves.at(args[0].as_int()), args[1].as_int(), args[2].as_int());
+      return Value::nil();
 
   - name: WAVEFORMAT
     raylib_name: WaveFormat
@@ -80,6 +82,7 @@ functions:
     description: "Convert wave data to desired format (pass wave ID, sampleRate, sampleSize, channels)"
     custom_body: |
       ::WaveFormat(&rlreg::waves.at(args[0].as_int()), args[1].as_int(), args[2].as_int(), args[3].as_int());
+      return Value::nil();
 
   # === MUSIC FUNCTIONS ===
   - name: LOADMUSICSTREAMFROMMEMORY
@@ -128,6 +131,9 @@ functions:
     ret: void
     category: audio
     description: "Set volume for audio stream (pass audio stream ID, volume)"
+    custom_body: |
+      ::SetAudioStreamVolume(rlreg::audiostreams.at(args[0].as_int()), static_cast<float>(args[1].as_number()));
+      return Value::nil();
 
   - name: SETAUDIOSTREAMPITCH
     raylib_name: SetAudioStreamPitch
@@ -135,6 +141,9 @@ functions:
     ret: void
     category: audio
     description: "Set pitch for audio stream (pass audio stream ID, pitch)"
+    custom_body: |
+      ::SetAudioStreamPitch(rlreg::audiostreams.at(args[0].as_int()), static_cast<float>(args[1].as_number()));
+      return Value::nil();
 
   - name: SETAUDIOSTREAMPAN
     raylib_name: SetAudioStreamPan
@@ -142,6 +151,9 @@ functions:
     ret: void
     category: audio
     description: "Set pan for audio stream (pass audio stream ID, pan)"
+    custom_body: |
+      ::SetAudioStreamPan(rlreg::audiostreams.at(args[0].as_int()), static_cast<float>(args[1].as_number()));
+      return Value::nil();
 
   - name: SETAUDIOSTREAMBUFFERSIZEDEFAULT
     raylib_name: SetAudioStreamBufferSizeDefault

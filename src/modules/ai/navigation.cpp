@@ -700,8 +700,8 @@ Value nav_init_grid(const std::vector<Value>& args) {
         g_nav_system = std::make_unique<NavigationSystem>();
     }
     
-    int width = args[0].as_int();
-    int height = args[1].as_int();
+    int width = static_cast<int>(args[0].as_int());
+    int height = static_cast<int>(args[1].as_int());
     float cell_size = static_cast<float>(args[2].as_number());
     
     g_nav_system->initialize_grid(width, height, cell_size);
@@ -759,8 +759,8 @@ Value nav_create_path(const std::vector<Value>& args) {
 Value nav_get_next_waypoint(const std::vector<Value>& args) {
     if (args.size() != 2 || !g_nav_system) return Value::from_number(0);
     
-    int path_id = args[0].as_int();
-    int current_index = args[1].as_int();
+    int path_id = static_cast<int>(args[0].as_int());
+    int current_index = static_cast<int>(args[1].as_int());
     
     Point2D waypoint = g_nav_system->get_next_waypoint(path_id, current_index);
     return Value::from_number(waypoint.x); // Return x coordinate (could be enhanced to return both)
@@ -769,8 +769,8 @@ Value nav_get_next_waypoint(const std::vector<Value>& args) {
 Value nav_is_path_complete(const std::vector<Value>& args) {
     if (args.size() != 2 || !g_nav_system) return Value::from_bool(true);
     
-    int path_id = args[0].as_int();
-    int current_index = args[1].as_int();
+    int path_id = static_cast<int>(args[0].as_int());
+    int current_index = static_cast<int>(args[1].as_int());
     
     return Value::from_bool(g_nav_system->is_path_complete(path_id, current_index));
 }
@@ -778,7 +778,7 @@ Value nav_is_path_complete(const std::vector<Value>& args) {
 Value nav_remove_path(const std::vector<Value>& args) {
     if (args.size() != 1 || !g_nav_system) return Value::nil();
     
-    int path_id = args[0].as_int();
+    int path_id = static_cast<int>(args[0].as_int());
     g_nav_system->remove_path(path_id);
     return Value::nil();
 }

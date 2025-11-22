@@ -39,7 +39,7 @@ void register_builtins_console(FunctionRegistry& R) {
 
   // INK(r,g,b): set ANSI color (best-effort). Values 0-255, mapped to 38;2;r;g;bm
   R.add("INK", NativeFn{"INK", 3, [](const std::vector<Value>& a){
-    int r = (int)a[0].as_int(); int g=(int)a[1].as_int(); int b=(int)a[2].as_int();
+    int r = static_cast<int>((int)a[0].as_int()); int g=static_cast<int>((int)a[1].as_int()); int b=static_cast<int>((int)a[2].as_int());
     if(r<0) { r=0; } if(r>255) { r=255; }
     if(g<0) { g=0; } if(g>255) { g=255; }
     if(b<0) { b=0; } if(b>255) { b=255; }

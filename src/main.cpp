@@ -43,6 +43,8 @@
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
+#include <raylib.h>
+#include <raylib.h>
 
 #if defined(_WIN32) && defined(_DEBUG)
 #include <windows.h>
@@ -510,6 +512,15 @@ int main(int argc, char* argv[]) {
     // Core BASIC functions
     bas::register_builtins(R);
     
+    // Enums, dictionaries, and states
+    bas::register_enums_and_dicts(R);
+    
+    // Enhanced dot notation system
+    bas::register_dot_notation_enhancements(R);
+    
+    // Advanced features (coroutines, testing, profiling, etc.)
+    bas::register_advanced_features(R);
+    
     // Object constructors (Vector3, Camera3D, Color, etc.)
     bas::register_object_constructors(R);
     
@@ -565,7 +576,7 @@ int main(int argc, char* argv[]) {
     bas::register_modern_state_system(R);  // Modern BASIC-style state system
     bas::register_game_commands(R);  // High-level game commands
     bas::register_modern_features(R);  // Modern features (Sets, high-level networking/file I/O)
-    bas::register_advanced_features(R);  // Advanced features (macros, particles, dialogue, etc.)
+    bas::register_game_advanced_features(R);  // Advanced game features (macros, particles, dialogue, etc.)
     bas::register_post_processing(R);
     bas::register_streaming(R);
     bas::register_enhanced_events(R);
@@ -582,24 +593,101 @@ int main(int argc, char* argv[]) {
         std::cerr << "Phase 4: Execution..." << std::endl;
     }
     
+    std::string error_message;
+    bool had_error = false;
+    int exit_code = 0;
+    
     try {
         int rc = bas::interpret(prog, R, debug_mode);
         if (rc != 0) {
-            std::cerr << "Runtime error: Program returned exit code " << rc << std::endl;
-            return 70;
+            error_message = "Runtime error: Program returned exit code " + std::to_string(rc);
+            std::cerr << error_message << std::endl;
+            had_error = true;
+            exit_code = 70;
         }
-        return 0;
-        
     } catch (const std::exception& e) {
+        error_message = std::string("Fatal runtime error: ") + e.what();
         std::cerr << std::endl;
-        std::cerr << "Fatal runtime error: " << e.what() << std::endl;
+        std::cerr << error_message << std::endl;
         if (debug_mode) {
             std::cerr << "Exception type: " << typeid(e).name() << std::endl;
         }
-        return 70;
+        had_error = true;
+        exit_code = 70;
     } catch (...) {
+        error_message = "Unknown fatal runtime error occurred";
         std::cerr << std::endl;
-        std::cerr << "Unknown fatal runtime error occurred" << std::endl;
-        return 70;
+        std::cerr << error_message << std::endl;
+        had_error = true;
+        exit_code = 70;
     }
+    
+    // If a window is open, keep it open until user closes it
+    // This allows the user to see the program output or error messages
+    if (IsWindowReady()) {
+        // If there was an error, display it in the window
+        if (had_error && !error_message.empty()) {
+            // Keep window open and show error message
+            while (!WindowShouldClose()) {
+                BeginDrawing();
+                ClearBackground(BLACK);
+                
+                // Draw error message
+                int y = 20;
+                int line_height = 25;
+                std::string display_msg = "ERROR:";
+                DrawText(display_msg.c_str(), 10, y, 20, RED);
+                y += line_height;
+                
+                // Split error message into lines if too long
+                size_t max_width = 70;
+                size_t pos = 0;
+                while (pos < error_message.length()) {
+                    size_t end = pos + max_width;
+                    if (end < error_message.length()) {
+                        // Try to break at a space
+                        size_t space_pos = error_message.rfind(' ', end);
+                        if (space_pos != std::string::npos && space_pos > pos) {
+                            end = space_pos;
+                        }
+                    }
+                    std::string line = error_message.substr(pos, end - pos);
+                    DrawText(line.c_str(), 10, y, 18, WHITE);
+                    y += line_height;
+                    pos = (end < error_message.length() && error_message[end] == ' ') ? end + 1 : end;
+                }
+                
+                DrawText("Press ESC or close window to exit", 10, y + 10, 16, YELLOW);
+                
+                EndDrawing();
+                
+                // Check for ESC key
+                if (IsKeyPressed(KEY_ESCAPE)) {
+                    break;
+                }
+            }
+        } else {
+            // No error - just keep window open until user closes it
+            while (!WindowShouldClose()) {
+                BeginDrawing();
+                ClearBackground(BLACK);
+                
+                // Show a simple message that program completed
+                DrawText("Program completed successfully.", 10, 10, 20, GREEN);
+                DrawText("Press ESC or close window to exit", 10, 40, 16, WHITE);
+                
+                EndDrawing();
+                
+                // Check for ESC key
+                if (IsKeyPressed(KEY_ESCAPE)) {
+                    break;
+                }
+            }
+        }
+        
+        // Clean up window
+        CloseWindow();
+    }
+    
+    return exit_code;
 }

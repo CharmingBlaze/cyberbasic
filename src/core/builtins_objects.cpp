@@ -788,7 +788,7 @@ void bas::register_object_constructors(FunctionRegistry& R) {
     R.add("TEXTURE2D", NativeFn{"TEXTURE2D", -1, texture2d_constructor});
     R.add("MODEL", NativeFn{"MODEL", -1, model_constructor});
     R.add("SOUND", NativeFn{"SOUND", -1, sound_constructor});
-    R.add("ARRAY", NativeFn{"ARRAY", -1, array_constructor});
+    R.add_with_policy("ARRAY", NativeFn{"ARRAY", -1, array_constructor}, true);
     R.add("ARRAY_GETDIMENSIONS", NativeFn{"ARRAY_GETDIMENSIONS", 1, array_getDimensions});
     R.add("ARRAY_GETSIZE", NativeFn{"ARRAY_GETSIZE", 1, array_getSize});
     

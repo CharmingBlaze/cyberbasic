@@ -535,8 +535,8 @@ Value networking_create_server(const std::vector<Value>& args) {
     if (args.size() != 3 || !g_networking_system) return Value::from_int(-1);
     
     std::string name = args[0].as_string();
-    int port = args[1].as_int();
-    int max_clients = args[2].as_int();
+    int port = static_cast<int>(args[1].as_int());
+    int max_clients = static_cast<int>(args[2].as_int());
     
     int server_id = g_networking_system->create_server(name, port, max_clients);
     return Value::from_int(server_id);
@@ -547,7 +547,7 @@ Value networking_create_client(const std::vector<Value>& args) {
     
     std::string name = args[0].as_string();
     std::string address = args[1].as_string();
-    int port = args[2].as_int();
+    int port = static_cast<int>(args[2].as_int());
     
     int client_id = g_networking_system->create_client(name, address, port);
     return Value::from_int(client_id);
@@ -556,7 +556,7 @@ Value networking_create_client(const std::vector<Value>& args) {
 Value networking_start_server(const std::vector<Value>& args) {
     if (args.size() != 1 || !g_networking_system) return Value::from_bool(false);
     
-    int server_id = args[0].as_int();
+    int server_id = static_cast<int>(args[0].as_int());
     bool success = g_networking_system->start_server(server_id);
     return Value::from_bool(success);
 }
@@ -564,7 +564,7 @@ Value networking_start_server(const std::vector<Value>& args) {
 Value networking_connect_client(const std::vector<Value>& args) {
     if (args.size() != 1 || !g_networking_system) return Value::from_bool(false);
     
-    int client_id = args[0].as_int();
+    int client_id = static_cast<int>(args[0].as_int());
     bool success = g_networking_system->connect_client(client_id);
     return Value::from_bool(success);
 }
@@ -572,7 +572,7 @@ Value networking_connect_client(const std::vector<Value>& args) {
 Value networking_send_chat_message(const std::vector<Value>& args) {
     if (args.size() != 2 || !g_networking_system) return Value::nil();
     
-    int client_id = args[0].as_int();
+    int client_id = static_cast<int>(args[0].as_int());
     std::string message = args[1].as_string();
     
     g_networking_system->send_chat_message(client_id, message);

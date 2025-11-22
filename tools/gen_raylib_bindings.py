@@ -8,6 +8,7 @@ import yaml
 import pathlib
 import textwrap
 import sys
+import re
 
 HEADER = """// Auto-generated from specs/raylib_api.yaml
 #include "raylib.h"
@@ -20,6 +21,7 @@ HEADER = """// Auto-generated from specs/raylib_api.yaml
 #include <vector>
 #include <string>
 #include <unordered_map>
+#include <algorithm>
 
 using bas::Value;
 using Fn = bas::NativeFn;
@@ -102,6 +104,36 @@ def ret_to_value(expr, t):
         "Camera3D": f"return Value::from_camera3d({expr});",
     }[t]
 
+def load_available_symbols():
+    """Parse raylib/raymath headers to collect available function names."""
+    candidates = [
+        pathlib.Path.cwd() / "_deps" / "raylib-src" / "src" / "raylib.h",
+        pathlib.Path.cwd() / "_deps" / "raylib-src" / "src" / "raymath.h",
+    ]
+    symbols = set()
+    for header in candidates:
+        if header.exists():
+            text = header.read_text(encoding="utf-8", errors="ignore")
+            symbols.update(re.findall(r"RLAPI\s+[\w\*\s]+\s+(\w+)\s*\(", text))
+            symbols.update(re.findall(r"RMAPI\s+[\w\*\s]+\s+(\w+)\s*\(", text))
+    if not symbols:
+        print("Warning: Could not locate raylib headers for validation; generating all bindings.")
+    return symbols
+
+ALLOWED_PREFIXES = ("std::",)
+
+def is_supported_function(target, available):
+    if not available:
+        return True
+    if not target:
+        return True
+    normalized = target.lstrip(":")
+    if normalized in available:
+        return True
+    if any(normalized.startswith(prefix) for prefix in ALLOWED_PREFIXES):
+        return True
+    return False
+
 def emit_fn(f):
     """Generate C++ function binding."""
     name = f["name"]
@@ -113,10 +145,13 @@ def emit_fn(f):
     arity_check = f'        if (args.size() != {arity}) throw std::runtime_error("{name}: expected {arity} args");\n'
     
     if "custom_body" in f:
-        body = textwrap.indent(f["custom_body"].rstrip(), "        ")
+        raw_body = f["custom_body"].rstrip()
+        body = textwrap.indent(raw_body, "        ")
         # Fix MatrixIdentity references
         body = body.replace("::MatrixIdentity()", "MatrixIdentity()")
-        call = f"{body}\n        {ret_to_value('0', 'void') if ret=='void' else ''}"
+        if ret == "void" and "return" not in raw_body:
+            body += "\n        return Value::nil();"
+        call = body
     else:
         params = ", ".join(arg_to_cpp(i, t) for i, t in enumerate(args))
         call = "        " + ret_to_value(f"{map_to}({params})", ret)
@@ -150,6 +185,8 @@ def main():
         
         out = [HEADER]
         total_functions = 0
+        skipped_functions = 0
+        available_symbols = load_available_symbols()
         
         for spec_file in spec_files:
             spec_path = specs_dir / spec_file
@@ -159,6 +196,11 @@ def main():
                 
                 if "functions" in spec:
                     for f in spec["functions"]:
+                        target = f.get("map_to", f.get("raylib_name"))
+                        if f.get("raylib_name") and not is_supported_function(target, available_symbols):
+                            skipped_functions += 1
+                            print(f"Skipping unsupported function {f['name']} -> {target}")
+                            continue
                         out.append(emit_fn(f))
                         out.append("")
                         total_functions += 1
@@ -166,7 +208,7 @@ def main():
                 print(f"Warning: {spec_path} not found", file=sys.stderr)
         
         out.append(FOOTER)
-        print(f"Generated {total_functions} functions")
+        print(f"Generated {total_functions} functions (skipped {skipped_functions})")
         
         # The script's working directory is the build directory.
         # The output path must match the OUTPUT specified in CMakeLists.txt

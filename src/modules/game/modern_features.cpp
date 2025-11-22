@@ -84,7 +84,7 @@ static Value set_add(const std::vector<Value>& args) {
         return args[0];
     }
     
-    int setId = idIt->second.as_int();
+    int setId = static_cast<int>(idIt->second.as_int());
     auto setIt = g_sets.find(setId);
     if (setIt == g_sets.end()) {
         return args[0];
@@ -112,7 +112,7 @@ static Value set_remove(const std::vector<Value>& args) {
         return args[0];
     }
     
-    int setId = idIt->second.as_int();
+    int setId = static_cast<int>(idIt->second.as_int());
     auto setIt = g_sets.find(setId);
     if (setIt != g_sets.end()) {
         setIt->second.elements.erase(args[1]);
@@ -136,7 +136,7 @@ static Value set_contains(const std::vector<Value>& args) {
         return Value::from_bool(false);
     }
     
-    int setId = idIt->second.as_int();
+    int setId = static_cast<int>(idIt->second.as_int());
     auto setIt = g_sets.find(setId);
     if (setIt == g_sets.end()) {
         return Value::from_bool(false);
@@ -157,7 +157,7 @@ static Value set_size(const std::vector<Value>& args) {
         return Value::from_int(0);
     }
     
-    int setId = idIt->second.as_int();
+    int setId = static_cast<int>(idIt->second.as_int());
     auto setIt = g_sets.find(setId);
     if (setIt == g_sets.end()) {
         return Value::from_int(0);
@@ -175,7 +175,7 @@ static Value connect_server(const std::vector<Value>& args) {
     }
     
     std::string address = args[0].as_string();
-    int port = args[1].as_int();
+    int port = static_cast<int>(args[1].as_int());
     
     if (!g_networking_system) {
         return Value::nil();
@@ -204,8 +204,8 @@ static Value create_server(const std::vector<Value>& args) {
         return Value::nil();
     }
     
-    int port = args[0].as_int();
-    int maxClients = args.size() > 1 ? args[1].as_int() : 32;
+    int port = static_cast<int>(args[0].as_int());
+    int maxClients = args.size() > 1 ? static_cast<int>(args[1].as_int()) : 32;
     
     if (!g_networking_system) {
         return Value::nil();

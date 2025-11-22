@@ -1,6 +1,10 @@
 #include "bas/runtime.hpp"
 #include "bas/value.hpp"
 #include "bas/game_commands.hpp"
+#include "bas/ecs_system.hpp"
+#include "bas/animation_system.hpp"
+#include "bas/audio.hpp"
+#include "bas/physics.hpp"
 #include <raylib.h>
 #include <unordered_map>
 #include <string>
@@ -8,19 +12,6 @@
 #include <cmath>
 
 namespace bas {
-
-// Forward declarations for entity system
-extern std::unordered_map<int, struct EntityData> g_entities;
-extern std::unordered_map<int, struct SceneData> g_scenes;
-
-// Forward declarations for animation system
-extern std::unordered_map<int, struct AnimationData> g_animations;
-
-// Forward declarations for audio system
-extern std::unique_ptr<struct AudioSystem> g_audio_system;
-
-// Forward declarations for physics system
-extern std::unique_ptr<struct PhysicsWorld> g_physics_world;
 
 // ===== ENTITY COMMANDS =====
 
@@ -72,7 +63,7 @@ static Value destroy_entity(const std::vector<Value>& args) {
         return Value::nil();
     }
     
-    int entityId = idIt->second.as_int();
+    int entityId = static_cast<int>(idIt->second.as_int());
     // Would call scene.destroyEntity() here
     return Value::nil();
 }
@@ -409,7 +400,7 @@ static Value stop_sound(const std::vector<Value>& args) {
         return Value::nil();
     }
     
-    int soundId = args[0].as_int();
+    int soundId = static_cast<int>(args[0].as_int());
     // Stop specific sound (would use Raylib StopSound)
     // StopSound(soundId);
     
@@ -442,11 +433,11 @@ void register_game_commands(FunctionRegistry& R) {
     R.add("BLEND_ANIMATION", NativeFn{"BLEND_ANIMATION", 2, blend_animation});
     
     // Input commands
-    R.add("INPUT", NativeFn{"INPUT", 1, input_check});
+    R.add_with_policy("INPUT", NativeFn{"INPUT", 1, input_check}, true);
     R.add("MOUSECLICK", NativeFn{"MOUSECLICK", 0, mouse_click});
     R.add("MOUSEDOWN", NativeFn{"MOUSEDOWN", 0, mouse_down});
-    R.add("MOUSEX", NativeFn{"MOUSEX", 0, mouse_x});
-    R.add("MOUSEY", NativeFn{"MOUSEY", 0, mouse_y});
+    R.add_with_policy("MOUSEX", NativeFn{"MOUSEX", 0, mouse_x}, true);
+    R.add_with_policy("MOUSEY", NativeFn{"MOUSEY", 0, mouse_y}, true);
     
     // Physics commands
     R.add("APPLY_FORCE", NativeFn{"APPLY_FORCE", -1, apply_force});

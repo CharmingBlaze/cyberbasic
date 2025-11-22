@@ -7,6 +7,7 @@
 #include <memory>
 #include <algorithm>
 #include <sstream>
+#include <iostream>
 
 namespace bas {
 
@@ -73,7 +74,7 @@ static Value transition_decl_handler(const std::vector<Value>& args) {
     std::string fromState = args[0].as_string();
     std::string toState = args[1].as_string();
     std::string condition = args.size() > 2 ? args[2].as_string() : "TRUE";
-    int priority = args.size() > 3 ? args[3].as_int() : 0;
+    int priority = args.size() > 3 ? static_cast<int>(args[3].as_int()) : 0;
     
     // Store transition in current state system context
     // This would be set by parser/interpreter context

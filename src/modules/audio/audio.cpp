@@ -2,6 +2,7 @@
 #include "bas/runtime.hpp"
 #include <algorithm>
 #include <cmath>
+#include <numbers>
 
 namespace bas {
 
@@ -634,11 +635,12 @@ void AudioSystem::apply_cone_attenuation(AudioSource& source, const AudioListene
     float dot = dot_product(dx, dy, dz, 0.0f, 0.0f, -1.0f); // Assuming source faces forward
     
     // Apply cone attenuation
-    if (dot < std::cos(source.cone_outer_angle * M_PI / 180.0f)) {
+    if (dot < std::cos(source.cone_outer_angle * std::numbers::pi_v<float> / 180.0f)) {
         source.volume *= source.cone_outer_gain;
-    } else if (dot < std::cos(source.cone_inner_angle * M_PI / 180.0f)) {
-        float factor = (dot - std::cos(source.cone_outer_angle * M_PI / 180.0f)) /
-                      (std::cos(source.cone_inner_angle * M_PI / 180.0f) - std::cos(source.cone_outer_angle * M_PI / 180.0f));
+    } else if (dot < std::cos(source.cone_inner_angle * std::numbers::pi_v<float> / 180.0f)) {
+        float factor = (dot - std::cos(source.cone_outer_angle * std::numbers::pi_v<float> / 180.0f)) /
+                      (std::cos(source.cone_inner_angle * std::numbers::pi_v<float> / 180.0f) -
+                       std::cos(source.cone_outer_angle * std::numbers::pi_v<float> / 180.0f));
         source.volume *= (1.0f - factor) * source.cone_outer_gain + factor;
     }
 }
@@ -721,7 +723,7 @@ Value audio_create_music_track(const std::vector<Value>& args) {
 Value audio_play_sound(const std::vector<Value>& args) {
     if (args.size() != 1 || !g_audio_system) return Value::from_bool(false);
     
-    int source_id = args[0].as_int();
+    int source_id = static_cast<int>(args[0].as_int());
     bool success = g_audio_system->play_audio_source(source_id);
     return Value::from_bool(success);
 }
@@ -729,7 +731,7 @@ Value audio_play_sound(const std::vector<Value>& args) {
 Value audio_play_music(const std::vector<Value>& args) {
     if (args.size() != 1 || !g_audio_system) return Value::from_bool(false);
     
-    int track_id = args[0].as_int();
+    int track_id = static_cast<int>(args[0].as_int());
     bool success = g_audio_system->play_music_track(track_id);
     return Value::from_bool(success);
 }

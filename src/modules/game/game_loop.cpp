@@ -17,10 +17,10 @@ static Value game_init(const std::vector<Value>& args) {
         return Value::from_bool(false);
     }
     
-    int width = args[0].as_int();
-    int height = args[1].as_int();
+    int width = static_cast<int>(args[0].as_int());
+    int height = static_cast<int>(args[1].as_int());
     std::string title = args[2].is_string() ? args[2].as_string() : "Game";
-    int fps = args.size() > 3 ? args[3].as_int() : 60;
+    int fps = args.size() > 3 ? static_cast<int>(args[3].as_int()) : 60;
     
     if (g_game_running) {
         CloseWindow();
@@ -104,7 +104,7 @@ static Value game_setTargetFPS(const std::vector<Value>& args) {
         return Value::nil();
     }
     
-    int fps = args[0].as_int();
+    int fps = static_cast<int>(args[0].as_int());
     if (fps > 0) {
         SetTargetFPS(fps);
         g_target_fps = fps;

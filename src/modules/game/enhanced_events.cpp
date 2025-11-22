@@ -9,14 +9,14 @@
 namespace bas {
 
 // Event handler data
-struct EventHandler {
+struct EventListener {
     std::string eventName;
     std::string handlerId;
     std::string handlerFunction;  // Function name to call
     bool isActive;
 };
 
-static std::unordered_map<std::string, std::vector<EventHandler>> g_event_handlers;
+static std::unordered_map<std::string, std::vector<EventListener>> g_event_handlers;
 static std::vector<std::pair<std::string, std::string>> g_event_queue;  // eventName, payload
 
 // EVENT.subscribe(eventName, handlerFunction) -> handlerId
@@ -28,7 +28,7 @@ static Value event_subscribe(const std::vector<Value>& args) {
     std::string eventName = args[0].as_string();
     std::string handlerFunction = args[1].as_string();
     
-    EventHandler handler;
+    EventListener handler;
     handler.eventName = eventName;
     handler.handlerFunction = handlerFunction;
     handler.handlerId = eventName + "_" + std::to_string(g_event_handlers[eventName].size());

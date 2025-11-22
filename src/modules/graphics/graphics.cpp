@@ -551,7 +551,7 @@ Value graphics_create_particle_system(const std::vector<Value>& args) {
     if (args.size() != 2 || !g_graphics_system) return Value::from_int(-1);
     
     std::string name = args[0].as_string();
-    int type = args[1].as_int();
+    int type = static_cast<int>(args[1].as_int());
     
     ParticleSystemType system_type = static_cast<ParticleSystemType>(type);
     int system_id = g_graphics_system->create_particle_system(name, system_type);
@@ -561,7 +561,7 @@ Value graphics_create_particle_system(const std::vector<Value>& args) {
 Value graphics_remove_particle_system(const std::vector<Value>& args) {
     if (args.size() != 1 || !g_graphics_system) return Value::nil();
     
-    int system_id = args[0].as_int();
+    int system_id = static_cast<int>(args[0].as_int());
     g_graphics_system->remove_particle_system(system_id);
     return Value::nil();
 }
@@ -569,7 +569,7 @@ Value graphics_remove_particle_system(const std::vector<Value>& args) {
 Value graphics_set_particle_system_position(const std::vector<Value>& args) {
     if (args.size() != 3 || !g_graphics_system) return Value::nil();
     
-    int system_id = args[0].as_int();
+    int system_id = static_cast<int>(args[0].as_int());
     float x = static_cast<float>(args[1].as_number());
     float y = static_cast<float>(args[2].as_number());
     
@@ -580,7 +580,7 @@ Value graphics_set_particle_system_position(const std::vector<Value>& args) {
 Value graphics_set_particle_system_emission_rate(const std::vector<Value>& args) {
     if (args.size() != 2 || !g_graphics_system) return Value::nil();
     
-    int system_id = args[0].as_int();
+    int system_id = static_cast<int>(args[0].as_int());
     float rate = static_cast<float>(args[1].as_number());
     
     g_graphics_system->set_particle_system_emission_rate(system_id, rate);
@@ -590,7 +590,7 @@ Value graphics_set_particle_system_emission_rate(const std::vector<Value>& args)
 Value graphics_set_particle_system_color(const std::vector<Value>& args) {
     if (args.size() != 5 || !g_graphics_system) return Value::nil();
     
-    int system_id = args[0].as_int();
+    int system_id = static_cast<int>(args[0].as_int());
     float r = static_cast<float>(args[1].as_number());
     float g = static_cast<float>(args[2].as_number());
     float b = static_cast<float>(args[3].as_number());
@@ -624,7 +624,7 @@ Value graphics_create_post_effect(const std::vector<Value>& args) {
     if (args.size() != 2 || !g_graphics_system) return Value::from_int(-1);
     
     std::string name = args[0].as_string();
-    int type = args[1].as_int();
+    int type = static_cast<int>(args[1].as_int());
     
     PostProcessType effect_type = static_cast<PostProcessType>(type);
     int effect_id = g_graphics_system->create_post_effect(name, effect_type);

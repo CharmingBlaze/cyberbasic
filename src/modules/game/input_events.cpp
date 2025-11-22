@@ -1,7 +1,6 @@
 #include "bas/runtime.hpp"
 #include "bas/value.hpp"
 #include "bas/ast.hpp"
-#include "bas/interpreter.hpp"
 #include <raylib.h>
 #include <unordered_map>
 #include <vector>
@@ -154,7 +153,7 @@ static Value input_getMouseButton(const std::vector<Value>& args) {
         return Value::from_bool(false);
     }
     
-    int button = args[0].as_int();
+    int button = static_cast<int>(args[0].as_int());
     MouseButton mb = (button == 0) ? MOUSE_BUTTON_LEFT : 
                      (button == 1) ? MOUSE_BUTTON_RIGHT : MOUSE_BUTTON_MIDDLE;
     return Value::from_bool(IsMouseButtonDown(mb));

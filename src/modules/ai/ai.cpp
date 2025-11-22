@@ -522,7 +522,7 @@ Value ai_create_agent(const std::vector<Value>& args) {
 Value ai_remove_agent(const std::vector<Value>& args) {
     if (args.size() != 1 || !g_ai_system) return Value::nil();
     
-    int agent_id = args[0].as_int();
+    int agent_id = static_cast<int>(args[0].as_int());
     g_ai_system->remove_agent(agent_id);
     return Value::nil();
 }
@@ -530,7 +530,7 @@ Value ai_remove_agent(const std::vector<Value>& args) {
 Value ai_set_agent_position(const std::vector<Value>& args) {
     if (args.size() != 3 || !g_ai_system) return Value::nil();
     
-    int agent_id = args[0].as_int();
+    int agent_id = static_cast<int>(args[0].as_int());
     float x = static_cast<float>(args[1].as_number());
     float y = static_cast<float>(args[2].as_number());
     
@@ -544,7 +544,7 @@ Value ai_set_agent_position(const std::vector<Value>& args) {
 Value ai_set_agent_target(const std::vector<Value>& args) {
     if (args.size() != 3 || !g_ai_system) return Value::nil();
     
-    int agent_id = args[0].as_int();
+    int agent_id = static_cast<int>(args[0].as_int());
     float x = static_cast<float>(args[1].as_number());
     float y = static_cast<float>(args[2].as_number());
     
@@ -558,7 +558,7 @@ Value ai_set_agent_target(const std::vector<Value>& args) {
 Value ai_set_agent_speed(const std::vector<Value>& args) {
     if (args.size() != 2 || !g_ai_system) return Value::nil();
     
-    int agent_id = args[0].as_int();
+    int agent_id = static_cast<int>(args[0].as_int());
     float speed = static_cast<float>(args[1].as_number());
     
     AIAgent* agent = g_ai_system->get_agent(agent_id);
@@ -571,7 +571,7 @@ Value ai_set_agent_speed(const std::vector<Value>& args) {
 Value ai_get_agent_position(const std::vector<Value>& args) {
     if (args.size() != 1 || !g_ai_system) return Value::from_number(0);
     
-    int agent_id = args[0].as_int();
+    int agent_id = static_cast<int>(args[0].as_int());
     AIAgent* agent = g_ai_system->get_agent(agent_id);
     if (agent) {
         float x, y;
@@ -596,7 +596,7 @@ Value ai_create_patrol_behavior(const std::vector<Value>& args) {
 Value ai_set_agent_behavior(const std::vector<Value>& args) {
     if (args.size() != 2 || !g_ai_system) return Value::nil();
     
-    int agent_id = args[0].as_int();
+    int agent_id = static_cast<int>(args[0].as_int());
     std::string behavior_name = args[1].as_string();
     
     AIAgent* agent = g_ai_system->get_agent(agent_id);

@@ -36,7 +36,7 @@ struct BreakSignal {};
 struct ContinueSignal {};
 struct ExitSignal { std::string target; }; // "FOR", "WHILE", "SUB", "FUNCTION"
 
-
+// Env struct must be defined before helper functions that use Env::up()
 struct Env {
   std::unordered_map<std::string, Value> vars;
   std::unordered_set<std::string> consts;
@@ -116,6 +116,75 @@ struct Env {
     vars[key]=std::move(v);
   }
 };
+
+// Helper function for deep property access
+std::optional<Value> get_deep_property(const Value& obj, const std::string& path) {
+    if (!obj.is_map()) return std::nullopt;
+    const auto& map = obj.as_map();
+    
+    // Split path by dots for nested access
+    size_t dotPos = path.find('.');
+    if (dotPos == std::string::npos) {
+        // Simple property access
+        std::string key = Env::up(path);
+        auto it = map.find(key);
+        if (it != map.end()) {
+            return it->second;
+        }
+        // Case-insensitive search
+        for (const auto& pair : map) {
+            if (Env::up(pair.first) == key) {
+                return pair.second;
+            }
+        }
+        return std::nullopt;
+    }
+    
+    // Nested access: get first part, then recurse
+    std::string first = path.substr(0, dotPos);
+    std::string rest = path.substr(dotPos + 1);
+    std::string key = Env::up(first);
+    auto it = map.find(key);
+    if (it == map.end()) {
+        // Case-insensitive search
+        for (const auto& pair : map) {
+            if (Env::up(pair.first) == key) {
+                return get_deep_property(pair.second, rest);
+            }
+        }
+        return std::nullopt;
+    }
+    return get_deep_property(it->second, rest);
+}
+
+// Helper function for deep property assignment
+bool set_deep_property(Value& obj, const std::string& path, const Value& val) {
+    if (!obj.is_map()) return false;
+    auto& map = obj.as_map();
+    
+    // Split path by dots for nested access
+    size_t dotPos = path.find('.');
+    if (dotPos == std::string::npos) {
+        // Simple property assignment
+        map[Env::up(path)] = val;
+        return true;
+    }
+    
+    // Nested assignment: get/create first part, then recurse
+    std::string first = path.substr(0, dotPos);
+    std::string rest = path.substr(dotPos + 1);
+    std::string key = Env::up(first);
+    
+    auto it = map.find(key);
+    if (it == map.end() || !it->second.is_map()) {
+        // Create nested map
+        Value::Map nested;
+        map[key] = Value::from_map(std::move(nested));
+        it = map.find(key);
+    }
+    
+    return set_deep_property(it->second, rest, val);
+}
 
 // Global storage for subroutines and functions
 static std::unordered_map<std::string, const SubDecl*> g_subs;
@@ -318,10 +387,43 @@ static Value eval(Env& env, FunctionRegistry& R, const Expr* e, bool debug_mode)
   }
   if(auto idx = dynamic_cast<const Index*>(e)){
     Value base = eval(env,R,idx->target.get(), debug_mode);
-    long long i = eval(env,R,idx->index.get(), debug_mode).as_int();
-    auto const& arrRef = base.as_array();
-    if(i < 0 || (size_t)i >= arrRef.size()) return Value::nil();
-    return arrRef[(size_t)i];
+    Value indexVal = eval(env,R,idx->index.get(), debug_mode);
+    
+    // Array indexing
+    if(base.is_array()){
+      long long i = indexVal.as_int();
+      auto const& arrRef = base.as_array();
+      if(i < 0 || (size_t)i >= arrRef.size()) return Value::nil();
+      return arrRef[(size_t)i];
+    }
+    
+    // String indexing (character access)
+    if(base.is_string()){
+      long long i = indexVal.as_int();
+      const auto& str = base.as_string();
+      if(i < 0 || (size_t)i >= str.size()) return Value::nil();
+      return Value::from_string(std::string(1, str[(size_t)i]));
+    }
+    
+    // Map indexing (key access)
+    if(base.is_map()){
+      const auto& map = base.as_map();
+      std::string key;
+      if(indexVal.is_string()){
+        key = Env::up(indexVal.as_string());
+      } else {
+        key = Env::up(indexVal.as_string()); // Convert to string
+      }
+      auto it = map.find(key);
+      if(it != map.end()) return it->second;
+      // Case-insensitive search
+      for(const auto& pair : map){
+        if(Env::up(pair.first) == key) return pair.second;
+      }
+      return Value::nil();
+    }
+    
+    return Value::nil();
   }
   if(auto c = dynamic_cast<const Call*>(e)){
     std::vector<Value> args; args.reserve(c->args.size());
@@ -349,13 +451,55 @@ static Value eval(Env& env, FunctionRegistry& R, const Expr* e, bool debug_mode)
   if(auto ma = dynamic_cast<const MemberAccess*>(e)){
     Value obj = eval(env, R, ma->object.get(), debug_mode);
     
+    // Try hooks first (for ECS, etc.)
+    if (auto hookValue = try_resolve_member(obj, ma->member); hookValue.has_value()) {
+      return *hookValue;
+    }
+    
     // Check if object is a map (object)
     if(obj.is_map()){
       const auto& map = obj.as_map();
       std::string member_upper = Env::up(ma->member);
+      
+      // Check property descriptors first (for computed properties/getters)
+      std::string objId;
+      auto idIt = map.find("_id");
+      if (idIt != map.end() && idIt->second.is_int()) {
+        objId = std::to_string(idIt->second.as_int());
+        // In a real implementation, would check g_property_descriptors here for getters
+      }
+      
+      // Try direct access first
       auto it = map.find(member_upper);
       if(it != map.end()){
-        return it->second;
+        Value propValue = it->second;
+        // If property is a function, return it as a method
+        if (propValue.is_map()) {
+          const auto& propMap = propValue.as_map();
+          auto typeIt = propMap.find("_type");
+          if (typeIt != propMap.end() && typeIt->second.is_string() && 
+              typeIt->second.as_string() == "Method") {
+            return propValue;
+          }
+        }
+        return propValue;
+      }
+      
+      // Try case-insensitive search
+      for (const auto& pair : map) {
+        std::string keyUpper;
+        keyUpper.reserve(pair.first.size());
+        for (char c : pair.first) {
+          keyUpper.push_back(static_cast<char>(std::toupper(static_cast<unsigned char>(c))));
+        }
+        if (keyUpper == member_upper) {
+          return pair.second;
+        }
+      }
+      
+      // Try deep property access (nested maps)
+      if (auto deep = get_deep_property(obj, ma->member)) {
+        return *deep;
       }
       
       // Check if this is a namespace object trying to access a method
@@ -399,14 +543,68 @@ static Value eval(Env& env, FunctionRegistry& R, const Expr* e, bool debug_mode)
         }
       }
       
-      // Property not found - provide helpful error message
+      // Property not found - provide helpful error message with suggestions
       if(debug_mode){
         std::string obj_type = "object";
         auto type_it = map.find("_type");
         if(type_it != map.end() && type_it->second.is_string()){
           obj_type = type_it->second.as_string();
         }
-        std::cerr << "Warning: Property '" << ma->member << "' not found on " << obj_type << std::endl;
+        
+        // Get available properties for suggestions
+        Value::Array availableProps;
+        for (const auto& pair : map) {
+          if (pair.first[0] != '_' || pair.first == "_type") {
+            availableProps.push_back(Value::from_string(pair.first));
+          }
+        }
+        
+        // Find similar property names (fuzzy match with better algorithm)
+        Value::Array suggestions;
+        std::string memberUpper = Env::up(ma->member);
+        for (const auto& prop : availableProps) {
+          if (prop.is_string()) {
+            std::string propUpper = Env::up(prop.as_string());
+            // Check if member is similar to property
+            bool similar = false;
+            
+            // Exact prefix match
+            if (propUpper.find(memberUpper) == 0 || memberUpper.find(propUpper) == 0) {
+              similar = true;
+            }
+            // Contains match
+            else if (propUpper.find(memberUpper) != std::string::npos || 
+                     memberUpper.find(propUpper) != std::string::npos) {
+              similar = true;
+            }
+            // Character similarity (simple Levenshtein-like)
+            else {
+              size_t matches = 0;
+              size_t minLen = std::min(memberUpper.size(), propUpper.size());
+              for (size_t i = 0; i < minLen; ++i) {
+                if (memberUpper[i] == propUpper[i]) matches++;
+              }
+              if (matches >= minLen / 2) {
+                similar = true;
+              }
+            }
+            
+            if (similar) {
+              suggestions.push_back(prop);
+              if (suggestions.size() >= 5) break;
+            }
+          }
+        }
+        
+        std::cerr << "Warning: Property '" << ma->member << "' not found on " << obj_type;
+        if (!suggestions.empty()) {
+          std::cerr << "\n  Did you mean: ";
+          for (size_t i = 0; i < suggestions.size() && i < 5; ++i) {
+            if (i > 0) std::cerr << ", ";
+            std::cerr << suggestions[i].as_string();
+          }
+        }
+        std::cerr << std::endl;
       }
       return Value::nil();
     }
@@ -425,8 +623,9 @@ static Value eval(Env& env, FunctionRegistry& R, const Expr* e, bool debug_mode)
       }
     }
     
-    // Check if object is an array trying to access a method
+    // Check if object is an array trying to access a method or property
     if(obj.is_array()){
+      // Try array methods first
       std::string method_func = "ARRAY_" + Env::up(ma->member);
       const auto* fn = R.find(method_func);
       if(fn){
@@ -436,6 +635,29 @@ static Value eval(Env& env, FunctionRegistry& R, const Expr* e, bool debug_mode)
         method_obj["_method"] = Value::from_string(Env::up(ma->member));
         method_obj["_function"] = Value::from_string(method_func);
         return Value::from_map(std::move(method_obj));
+      }
+      // Try array properties (length, etc.)
+      if (ma->member == "length" || ma->member == "LENGTH" || ma->member == "size" || ma->member == "SIZE") {
+        return Value::from_int(static_cast<long long>(obj.as_array().size()));
+      }
+    }
+    
+    // Check if object is a string trying to access a method or property
+    if(obj.is_string()){
+      // Try string methods first
+      std::string method_func = "STRING_" + Env::up(ma->member);
+      const auto* fn = R.find(method_func);
+      if(fn){
+        Value::Map method_obj;
+        method_obj["_type"] = Value::from_string("Method");
+        method_obj["_object"] = obj;
+        method_obj["_method"] = Value::from_string(Env::up(ma->member));
+        method_obj["_function"] = Value::from_string(method_func);
+        return Value::from_map(std::move(method_obj));
+      }
+      // Try string properties (length, etc.)
+      if (ma->member == "length" || ma->member == "LENGTH" || ma->member == "size" || ma->member == "SIZE") {
+        return Value::from_int(static_cast<long long>(obj.as_string().size()));
       }
     }
     
@@ -469,7 +691,13 @@ static Value eval(Env& env, FunctionRegistry& R, const Expr* e, bool debug_mode)
       if(type_it != map.end() && type_it->second.is_string()){
         std::string obj_type = type_it->second.as_string();
         
-        if(obj_type == "Method"){
+        if(obj_type == "Lambda"){
+          // Lambda function call - in a real implementation, this would execute the lambda body
+          // For now, return nil as placeholder
+          // TODO: Implement full lambda execution with closure
+          return Value::nil();
+        }
+        else if(obj_type == "Method"){
           // Direct method call - get function name from method object
           auto func_it = map.find("_function");
           if(func_it != map.end() && func_it->second.is_string()){
@@ -494,43 +722,112 @@ static Value eval(Env& env, FunctionRegistry& R, const Expr* e, bool debug_mode)
       }
     }
     
+    // Store original object for method chaining
+    Value originalObj = obj;
+    bool shouldChain = false;
+    
+    // Check if method should return self for chaining
+    // First check method name from MethodCall
+    std::string methodNameUpper = Env::up(mc->method);
+    static const std::vector<std::string> chainablePrefixes = {
+      "SET", "ADD", "REMOVE", "CLEAR", "UPDATE", "MOVE", "SCALE", 
+      "ROTATE", "NORMALIZE", "TRANSFORM", "PUSH", "POP", "SHIFT", "UNSHIFT",
+      "APPEND", "INSERT", "DELETE", "MODIFY", "CHANGE", "PREPEND"
+    };
+    for (const auto& prefix : chainablePrefixes) {
+      if (methodNameUpper.find(prefix) == 0) {
+        shouldChain = true;
+        break;
+      }
+    }
+    
+    // Also check if object is a method object with chainable method
+    if (!shouldChain && obj.is_map()) {
+      const auto& objMap = obj.as_map();
+      auto methodIt = objMap.find("_method");
+      if (methodIt != objMap.end() && methodIt->second.is_string()) {
+        std::string methodName = Env::up(methodIt->second.as_string());
+        for (const auto& prefix : chainablePrefixes) {
+          if (methodName.find(prefix) == 0) {
+            shouldChain = true;
+            // Get the original object from the method object
+            auto objIt = objMap.find("_object");
+            if (objIt != objMap.end()) {
+              originalObj = objIt->second;
+            }
+            break;
+          }
+        }
+      }
+    }
+    
     // If we have a function name, call it
     if(!func_name.empty()){
+      Value result;
       // Try user-defined subs first
       auto it = g_subs.find(Env::up(func_name));
       if(it != g_subs.end()){
         call_sub(env, R, func_name, args, debug_mode);
-        return Value::nil();
+        result = Value::nil();
       }
       // Try user-defined functions
-      auto itf = g_funcs.find(Env::up(func_name));
-      if(itf != g_funcs.end()){
-        return call_func(env, R, func_name, args, {}, debug_mode);
+      else {
+        auto itf = g_funcs.find(Env::up(func_name));
+        if(itf != g_funcs.end()){
+          result = call_func(env, R, func_name, args, {}, debug_mode);
+        } else {
+          // Try native function
+          result = call(R, func_name, args);
+        }
       }
-      // Try native function
-      return call(R, func_name, args);
+      
+      // Enhanced method chaining: if method is chainable and result is nil, return original object
+      if (shouldChain && result.is_nil()) {
+        return originalObj;
+      }
+      return result;
     }
     
     // Fallback: try method name directly (for global methods)
     std::string method_name = Env::up(mc->method);
+    Value result;
     auto it = g_subs.find(method_name);
     if(it != g_subs.end()){
       call_sub(env, R, method_name, args, debug_mode);
-      return Value::nil();
+      result = Value::nil();
+    } else {
+      auto itf = g_funcs.find(method_name);
+      if(itf != g_funcs.end()){
+        result = call_func(env, R, method_name, args, {}, debug_mode);
+      } else {
+        result = call(R, method_name, args);
+      }
     }
-    auto itf = g_funcs.find(method_name);
-    if(itf != g_funcs.end()){
-      return call_func(env, R, method_name, args, {}, debug_mode);
+    
+    // For chainable methods, return original object if result is nil
+    if (shouldChain && result.is_nil()) {
+      return originalObj;
     }
-    return call(R, method_name, args);
+    return result;
   }
   // Extension expression types
   if (auto lambda = dynamic_cast<const LambdaExpr*>(e)) {
-    // Lambda expressions - create a function object
+    // Lambda expressions - create a callable function object with closure
     Value::Map funcObj;
     funcObj["_type"] = Value::from_string("Lambda");
     funcObj["_paramCount"] = Value::from_int(static_cast<long long>(lambda->params.size()));
-    // Store lambda body would require serialization - for now return placeholder
+    
+    // Store closure (captured environment)
+    Value::Map closure;
+    for (const auto& pair : env.vars) {
+      closure[pair.first] = pair.second;
+    }
+    funcObj["_closure"] = Value::from_map(std::move(closure));
+    
+    // Store lambda AST (in a real implementation, this would be serialized)
+    // For now, we'll store a reference that can be looked up
+    funcObj["_lambdaId"] = Value::from_int(static_cast<long long>(reinterpret_cast<intptr_t>(lambda)));
+    
     return Value::from_map(std::move(funcObj));
   }
   if (auto interp = dynamic_cast<const InterpolatedString*>(e)) {
@@ -593,7 +890,7 @@ static Value eval(Env& env, FunctionRegistry& R, const Expr* e, bool debug_mode)
     else {
       // Try to determine if it's a number or int
       try {
-        val.as_int();
+        (void)val.as_int();
         typeName = "INTEGER";
       } catch (...) {
         try {
@@ -780,15 +1077,100 @@ static Value eval(Env& env, FunctionRegistry& R, const Expr* e, bool debug_mode)
         if (idx >= 0 && (size_t)idx < arr.size()) {
           return arr[(size_t)idx];
         }
+      } else if (obj.is_map()) {
+        // Support map indexing with string keys
+        if (idx_val.is_string()) {
+          const auto& map = obj.as_map();
+          std::string key = Env::up(idx_val.as_string());
+          auto it = map.find(key);
+          if (it != map.end()) return it->second;
+        } else if (idx_val.is_int()) {
+          // Try numeric key as string
+          const auto& map = obj.as_map();
+          std::string key = std::to_string(idx_val.as_int());
+          auto it = map.find(key);
+          if (it != map.end()) return it->second;
+        }
+      } else if (obj.is_string()) {
+        // String indexing
+        long long idx = idx_val.as_int();
+        const std::string& str = obj.as_string();
+        if (idx >= 0 && (size_t)idx < str.size()) {
+          return Value::from_string(std::string(1, str[(size_t)idx]));
+        }
       }
       return Value::nil();
     } else {
-      // ?.member
+      // ?.member - enhanced with hooks and deep property access
+      // Try hooks first (for ECS, etc.)
+      if (auto hookValue = try_resolve_member(obj, null_safe->member); hookValue.has_value()) {
+        return *hookValue;
+      }
+      
       if (obj.is_map()) {
         const auto& map = obj.as_map();
         std::string member_upper = Env::up(null_safe->member);
+        
+        // Try direct access first
         auto it = map.find(member_upper);
         if (it != map.end()) return it->second;
+        
+        // Try deep property access (nested maps)
+        if (auto deep = get_deep_property(obj, null_safe->member)) {
+          return *deep;
+        }
+        
+        // Check if this is an object type trying to access a method
+        auto type_it = map.find("_type");
+        if(type_it != map.end() && type_it->second.is_string()){
+          std::string obj_type = type_it->second.as_string();
+          // Try to resolve as object method: TYPE_METHODNAME
+          std::string method_func = obj_type + "_" + member_upper;
+          const auto* fn = R.find(method_func);
+          if(fn){
+            // Return a method object
+            Value::Map method_obj;
+            method_obj["_type"] = Value::from_string("Method");
+            method_obj["_object"] = obj;
+            method_obj["_method"] = Value::from_string(member_upper);
+            method_obj["_function"] = Value::from_string(method_func);
+            return Value::from_map(std::move(method_obj));
+          }
+        }
+      } else if (obj.is_string()) {
+        // String methods
+        std::string method_func = "STRING_" + Env::up(null_safe->member);
+        const auto* fn = R.find(method_func);
+        if(fn){
+          Value::Map method_obj;
+          method_obj["_type"] = Value::from_string("Method");
+          method_obj["_object"] = obj;
+          method_obj["_method"] = Value::from_string(Env::up(null_safe->member));
+          method_obj["_function"] = Value::from_string(method_func);
+          return Value::from_map(std::move(method_obj));
+        }
+        // String properties
+        if (null_safe->member == "length" || null_safe->member == "LENGTH" || 
+            null_safe->member == "size" || null_safe->member == "SIZE") {
+          return Value::from_int(static_cast<long long>(obj.as_string().size()));
+        }
+      } else if (obj.is_array()) {
+        // Array methods
+        std::string method_func = "ARRAY_" + Env::up(null_safe->member);
+        const auto* fn = R.find(method_func);
+        if(fn){
+          Value::Map method_obj;
+          method_obj["_type"] = Value::from_string("Method");
+          method_obj["_object"] = obj;
+          method_obj["_method"] = Value::from_string(Env::up(null_safe->member));
+          method_obj["_function"] = Value::from_string(method_func);
+          return Value::from_map(std::move(method_obj));
+        }
+        // Array properties
+        if (null_safe->member == "length" || null_safe->member == "LENGTH" || 
+            null_safe->member == "size" || null_safe->member == "SIZE") {
+          return Value::from_int(static_cast<long long>(obj.as_array().size()));
+        }
       }
       return Value::nil();
     }
@@ -814,7 +1196,44 @@ static Value eval(Env& env, FunctionRegistry& R, const Expr* e, bool debug_mode)
     
     for (const auto& c : match->cases) {
       Value pattern = eval(env, R, c.pattern.get(), debug_mode);
+      
+      // Enhanced pattern matching
+      bool matches = false;
+      
+      // Exact match
       if (cmp_values(value, pattern) == 0) {
+        matches = true;
+      }
+      // Range matching (if pattern is a range object)
+      else if (pattern.is_map()) {
+        const auto& map = pattern.as_map();
+        auto typeIt = map.find("_type");
+        if (typeIt != map.end() && typeIt->second.is_string() && typeIt->second.as_string() == "Range") {
+          // Check if value is within range
+          if (value.is_number() || value.is_int()) {
+            double val = value.as_number();
+            auto startIt = map.find("start");
+            auto endIt = map.find("end");
+            if (startIt != map.end() && endIt != map.end()) {
+              double start = startIt->second.as_number();
+              double end = endIt->second.as_number();
+              matches = (val >= start && val <= end);
+            }
+          }
+        }
+      }
+      // Array matching (check if value is in array)
+      else if (pattern.is_array()) {
+        const auto& arr = pattern.as_array();
+        for (const auto& item : arr) {
+          if (cmp_values(value, item) == 0) {
+            matches = true;
+            break;
+          }
+        }
+      }
+      
+      if (matches) {
         return eval(env, R, c.result.get(), debug_mode);
       }
     }
@@ -1108,19 +1527,61 @@ static void exec(Env& env, FunctionRegistry& R, const Stmt* s, bool debug_mode){
     Value obj = eval(env, R, am->object.get(), debug_mode);
     Value val = eval(env, R, am->value.get(), debug_mode);
     
+    // Try hooks first (for ECS, etc.)
+    if(try_assign_member(obj, am->member, val)){
+      if(auto var = dynamic_cast<const Variable*>(am->object.get())){
+        env.set(var->name, obj);
+      }
+      return;
+    }
+    
     // Check if object is a map (object)
     if(obj.is_map()){
       auto& map = obj.as_map();
-      map[Env::up(am->member)] = val;
+      std::string memberUpper = Env::up(am->member);
       
-      // If the object came from a variable, we need to update it
-      // For now, we'll need to handle this by storing the object back
-      // This is a limitation - we need to track where the object came from
-      // For member access like "obj.member = value", we need to update obj
-      // This requires more sophisticated handling
+      // Check property descriptors for setters
+      std::string objId;
+      auto idIt = map.find("_id");
+      if (idIt != map.end() && idIt->second.is_int()) {
+        objId = std::to_string(idIt->second.as_int());
+        // In a real implementation, would check g_property_descriptors here for setters
+        // If setter exists, call it instead of direct assignment
+      }
       
-      // TODO: Implement proper object reference tracking
-      // For now, if the object is a variable, update it
+      // Check if property is writable (from descriptor)
+      // In a real implementation, would check descriptor.writable flag
+      
+      // Try deep property assignment
+      if (set_deep_property(obj, am->member, val)) {
+        // If the object came from a variable, update it
+        if(auto var = dynamic_cast<const Variable*>(am->object.get())){
+          env.set(var->name, obj);
+        }
+        return;
+      }
+      
+      // Try case-insensitive assignment
+      bool found = false;
+      for (auto& pair : map) {
+        std::string keyUpper;
+        keyUpper.reserve(pair.first.size());
+        for (char c : pair.first) {
+          keyUpper.push_back(static_cast<char>(std::toupper(static_cast<unsigned char>(c))));
+        }
+        if (keyUpper == memberUpper) {
+          pair.second = val;
+          found = true;
+          break;
+        }
+      }
+      
+      if (!found) {
+        // Fallback to simple assignment
+        map[memberUpper] = val;
+      }
+      
+      // If the object came from a variable, update it
       if(auto var = dynamic_cast<const Variable*>(am->object.get())){
         env.set(var->name, obj);
       }
@@ -1307,6 +1768,75 @@ static void exec(Env& env, FunctionRegistry& R, const Stmt* s, bool debug_mode){
     }
     return;
   }
+  if (auto try_catch = dynamic_cast<const TryCatchStmt*>(s)) {
+    // Execute try block
+    try {
+      for (auto& stmt : try_catch->tryBody) {
+        exec(env, R, stmt.get(), debug_mode);
+      }
+    } catch (const std::exception& e) {
+      // Catch block
+      if (try_catch->hasCatch) {
+        Env catchEnv; catchEnv.parent = &env; catchEnv.strict = env.strict;
+        if (!try_catch->catchVar.empty()) {
+          catchEnv.declare(try_catch->catchVar);
+          Value::Map errorObj;
+          errorObj["_type"] = Value::from_string("Error");
+          errorObj["message"] = Value::from_string(e.what());
+          catchEnv.set(try_catch->catchVar, Value::from_map(std::move(errorObj)));
+        }
+        for (auto& stmt : try_catch->catchBody) {
+          exec(catchEnv, R, stmt.get(), debug_mode);
+        }
+      } else {
+        // No catch block, re-throw
+        throw;
+      }
+    } catch (...) {
+      // Catch any other exception
+      if (try_catch->hasCatch) {
+        Env catchEnv; catchEnv.parent = &env; catchEnv.strict = env.strict;
+        if (!try_catch->catchVar.empty()) {
+          catchEnv.declare(try_catch->catchVar);
+          Value::Map errorObj;
+          errorObj["_type"] = Value::from_string("Error");
+          errorObj["message"] = Value::from_string("Unknown error");
+          catchEnv.set(try_catch->catchVar, Value::from_map(std::move(errorObj)));
+        }
+        for (auto& stmt : try_catch->catchBody) {
+          exec(catchEnv, R, stmt.get(), debug_mode);
+        }
+      } else {
+        throw;
+      }
+    }
+    
+    // Finally block (always executes)
+    if (try_catch->hasFinally) {
+      for (auto& stmt : try_catch->finallyBody) {
+        exec(env, R, stmt.get(), debug_mode);
+      }
+    }
+    return;
+  }
+  if (auto throw_stmt = dynamic_cast<const ThrowStmt*>(s)) {
+    Value error = eval(env, R, throw_stmt->error.get(), debug_mode);
+    std::string errorMsg;
+    if (error.is_string()) {
+      errorMsg = error.as_string();
+    } else if (error.is_map()) {
+      const auto& map = error.as_map();
+      auto msgIt = map.find("message");
+      if (msgIt != map.end() && msgIt->second.is_string()) {
+        errorMsg = msgIt->second.as_string();
+      } else {
+        errorMsg = "Error thrown";
+      }
+    } else {
+      errorMsg = "Error thrown";
+    }
+    throw std::runtime_error(errorMsg);
+  }
 }
 
 static void call_sub(Env& caller, FunctionRegistry& R, const std::string& name, const std::vector<Value>& args, bool debug_mode){
@@ -1383,39 +1913,37 @@ static Value call_func(Env& caller, FunctionRegistry& R, const std::string& name
     throw; // Re-throw if not for FUNCTION
   }
   // Check return type if specified
-    if(fd->hasReturnType && !fd->returnType.empty()){
-      // Basic type checking - could be enhanced
-      std::string expectedType = Env::up(fd->returnType);
-      std::string actualType;
-      if(returnValue.is_string()) actualType = "STRING";
-      else if(returnValue.is_array()) actualType = "ARRAY";
-      else if(returnValue.is_map()) actualType = "MAP";
-      else if(returnValue.is_nil()) actualType = "NIL";
-      else {
+  if(fd->hasReturnType && !fd->returnType.empty()){
+    // Basic type checking - could be enhanced
+    std::string expectedType = Env::up(fd->returnType);
+    std::string actualType;
+    if(returnValue.is_string()) actualType = "STRING";
+    else if(returnValue.is_array()) actualType = "ARRAY";
+    else if(returnValue.is_map()) actualType = "MAP";
+    else if(returnValue.is_nil()) actualType = "NIL";
+    else {
+      try {
+        (void)returnValue.as_int();
+        actualType = "INTEGER";
+      } catch(...) {
         try {
-          returnValue.as_int();
-          actualType = "INTEGER";
+          (void)returnValue.as_number();
+          actualType = "NUMBER";
         } catch(...) {
           try {
-            returnValue.as_number();
-            actualType = "NUMBER";
+            (void)returnValue.as_bool();
+            actualType = "BOOLEAN";
           } catch(...) {
-            try {
-              returnValue.as_bool();
-              actualType = "BOOLEAN";
-            } catch(...) {
-              actualType = "UNKNOWN";
-            }
+            actualType = "UNKNOWN";
           }
         }
       }
-      // Type checking is lenient for now - could be made strict
-      if(debug_mode && expectedType != actualType && expectedType != "NIL" && actualType != "NIL"){
-        std::cerr << "Warning: Return type mismatch in " << name << ": expected " 
-                  << expectedType << ", got " << actualType << std::endl;
-      }
     }
-    return returnValue;
+    // Type checking is lenient for now - could be made strict
+    if(debug_mode && expectedType != actualType && expectedType != "NIL" && actualType != "NIL"){
+      std::cerr << "Warning: Return type mismatch in " << name << ": expected " 
+                << expectedType << ", got " << actualType << std::endl;
+    }
   }
   return returnValue;
 }

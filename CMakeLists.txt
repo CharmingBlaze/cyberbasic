@@ -28,6 +28,13 @@ option(BUILD_RAYMATH_MODULE "Build raymath module" ON)
 # Use FetchContent to get raylib (modern CMake approach)
 include(FetchContent)
 
+# Set policy minimum to allow compatibility with raylib's CMake requirements
+# This is needed for CMake 4.2+ which removed compatibility with older versions
+if(POLICY CMP0001)
+    cmake_policy(SET CMP0001 NEW)
+endif()
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+
 # Configure raylib build options before fetching
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build raylib as static library" FORCE)
 set(RAYLIB_BUILD_EXAMPLES OFF CACHE BOOL "Build raylib examples" FORCE)
@@ -68,6 +75,10 @@ add_executable(cyberbasic
   src/builtins_console.cpp
   src/builtins_graphics.cpp
   src/builtins_audio.cpp
+  # Core modules
+  src/modules/core/enums_and_dicts.cpp
+  src/modules/core/dot_notation_enhancements.cpp
+  src/modules/core/advanced_features.cpp
   # Module files
   src/modules/input/input.cpp
   src/modules/input/input_module.cpp

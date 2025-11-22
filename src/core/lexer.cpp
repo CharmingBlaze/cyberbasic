@@ -47,7 +47,9 @@ static Tok kw(const std::string& w) {
         {"DEFINE", Tok::Define}, {"SYSTEM", Tok::System}, {"ENDSYSTEM", Tok::EndSystem},
         {"ATTACH", Tok::Attach}, {"TO", Tok::To}, {"FROM", Tok::From},
         {"OVERRIDE", Tok::Override}, {"PRIORITY", Tok::Priority},
-        {"ENABLE", Tok::Enable}, {"DISABLE", Tok::Disable}
+        {"ENABLE", Tok::Enable}, {"DISABLE", Tok::Disable},
+        {"TRY", Tok::Try}, {"CATCH", Tok::Catch}, {"FINALLY", Tok::Finally},
+        {"ENDTRY", Tok::EndTry}, {"THROW", Tok::Throw}
     };
     auto it = k.find(w);
     return it == k.end() ? Tok::Ident : it->second;
@@ -121,6 +123,12 @@ Token Lexer::lex_string() {
     return {Tok::String, str, line, start_col};
 }
 
+Token Lexer::lex_fstring() {
+    Token t = lex_string();
+    t.kind = Tok::FString;
+    return t;
+}
+
 std::vector<Token> Lexer::lex() {
     std::vector<Token> out;
     while (!atEnd()) {
@@ -173,7 +181,7 @@ std::vector<Token> Lexer::lex() {
             continue;
         }
         // Check for f-string prefix: f" or F" (before the quote)
-        if ((c == 'f' || c == 'F') && i < s.size() && s[i] == '"') {
+        if ((c == 'f' || c == 'F') && i + 1 < s.size() && s[i + 1] == '"') {
             advance(); // consume 'f' or 'F'
             out.push_back(lex_fstring());
             continue;

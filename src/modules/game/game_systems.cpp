@@ -145,14 +145,14 @@ void register_game_systems_bindings(FunctionRegistry& R) {
     
     R.add("DESTROYGAMEOBJECT", NativeFn{"DESTROYGAMEOBJECT", 1, [](const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("DESTROYGAMEOBJECT: expected 1 arg");
-        int id = args[0].as_int();
+        int id = static_cast<int>(args[0].as_int());
         g_game_objects.erase(id);
         return Value::nil();
     }});
     
     R.add("SETGAMEOBJECTPOSITION", NativeFn{"SETGAMEOBJECTPOSITION", 4, [](const std::vector<Value>& args) -> Value {
         if (args.size() != 4) throw std::runtime_error("SETGAMEOBJECTPOSITION: expected 4 args");
-        int id = args[0].as_int();
+        int id = static_cast<int>(args[0].as_int());
         float x = static_cast<float>(args[1].as_number());
         float y = static_cast<float>(args[2].as_number());
         float z = static_cast<float>(args[3].as_number());
@@ -168,7 +168,7 @@ void register_game_systems_bindings(FunctionRegistry& R) {
     
     R.add("GETGAMEOBJECTPOSITION", NativeFn{"GETGAMEOBJECTPOSITION", 1, [](const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("GETGAMEOBJECTPOSITION: expected 1 arg");
-        int id = args[0].as_int();
+        int id = static_cast<int>(args[0].as_int());
         
         auto it = g_game_objects.find(id);
         if (it != g_game_objects.end()) {
@@ -183,7 +183,7 @@ void register_game_systems_bindings(FunctionRegistry& R) {
     
     R.add("SETGAMEOBJECTROTATION", NativeFn{"SETGAMEOBJECTROTATION", 4, [](const std::vector<Value>& args) -> Value {
         if (args.size() != 4) throw std::runtime_error("SETGAMEOBJECTROTATION: expected 4 args");
-        int id = args[0].as_int();
+        int id = static_cast<int>(args[0].as_int());
         float rx = static_cast<float>(args[1].as_number());
         float ry = static_cast<float>(args[2].as_number());
         float rz = static_cast<float>(args[3].as_number());
@@ -199,7 +199,7 @@ void register_game_systems_bindings(FunctionRegistry& R) {
     
     R.add("SETGAMEOBJECTSCALE", NativeFn{"SETGAMEOBJECTSCALE", 4, [](const std::vector<Value>& args) -> Value {
         if (args.size() != 4) throw std::runtime_error("SETGAMEOBJECTSCALE: expected 4 args");
-        int id = args[0].as_int();
+        int id = static_cast<int>(args[0].as_int());
         float sx = static_cast<float>(args[1].as_number());
         float sy = static_cast<float>(args[2].as_number());
         float sz = static_cast<float>(args[3].as_number());
@@ -215,7 +215,7 @@ void register_game_systems_bindings(FunctionRegistry& R) {
     
     R.add("SETGAMEOBJECTVISIBLE", NativeFn{"SETGAMEOBJECTVISIBLE", 2, [](const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("SETGAMEOBJECTVISIBLE: expected 2 args");
-        int id = args[0].as_int();
+        int id = static_cast<int>(args[0].as_int());
         bool visible = args[1].as_bool();
         
         auto it = g_game_objects.find(id);
@@ -227,7 +227,7 @@ void register_game_systems_bindings(FunctionRegistry& R) {
     
     R.add("SETGAMEOBJECTACTIVE", NativeFn{"SETGAMEOBJECTACTIVE", 2, [](const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("SETGAMEOBJECTACTIVE: expected 2 args");
-        int id = args[0].as_int();
+        int id = static_cast<int>(args[0].as_int());
         bool active = args[1].as_bool();
         
         auto it = g_game_objects.find(id);
@@ -275,7 +275,7 @@ void register_game_systems_bindings(FunctionRegistry& R) {
     R.add("ADDOBJECTTOSCENE", NativeFn{"ADDOBJECTTOSCENE", 2, [](const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("ADDOBJECTTOSCENE: expected 2 args");
         std::string scene_name = args[0].as_string();
-        int object_id = args[1].as_int();
+        int object_id = static_cast<int>(args[1].as_int());
         
         auto it = g_scenes.find(scene_name);
         if (it != g_scenes.end()) {
@@ -287,7 +287,7 @@ void register_game_systems_bindings(FunctionRegistry& R) {
     R.add("REMOVEOBJECTFROMSCENE", NativeFn{"REMOVEOBJECTFROMSCENE", 2, [](const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("REMOVEOBJECTFROMSCENE: expected 2 args");
         std::string scene_name = args[0].as_string();
-        int object_id = args[1].as_int();
+        int object_id = static_cast<int>(args[1].as_int());
         
         auto it = g_scenes.find(scene_name);
         if (it != g_scenes.end()) {
@@ -351,8 +351,8 @@ void register_game_systems_bindings(FunctionRegistry& R) {
     
     R.add("CHECKCOLLISION", NativeFn{"CHECKCOLLISION", 2, [](const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("CHECKCOLLISION: expected 2 args");
-        int obj1_id = args[0].as_int();
-        int obj2_id = args[1].as_int();
+        int obj1_id = static_cast<int>(args[0].as_int());
+        int obj2_id = static_cast<int>(args[1].as_int());
         
         auto it1 = g_game_objects.find(obj1_id);
         auto it2 = g_game_objects.find(obj2_id);

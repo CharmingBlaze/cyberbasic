@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <numbers>
 
 namespace bas {
 
@@ -406,8 +407,8 @@ float LightingSystem3D::calculate_spot_cone(const Light3D& light, const Vector3D
     
     Vector3D light_direction = (light.position - point).normalized();
     float cos_angle = light.direction.dot(light_direction);
-    float cos_inner = std::cos(light.inner_cone_angle * M_PI / 180.0f);
-    float cos_outer = std::cos(light.outer_cone_angle * M_PI / 180.0f);
+    float cos_inner = std::cos(light.inner_cone_angle * std::numbers::pi_v<float> / 180.0f);
+    float cos_outer = std::cos(light.outer_cone_angle * std::numbers::pi_v<float> / 180.0f);
     
     if (cos_angle < cos_outer) return 0.0f;
     if (cos_angle > cos_inner) return 1.0f;
@@ -429,7 +430,7 @@ Value lighting3d_create_light(const std::vector<Value>& args) {
     if (args.size() < 2) return Value::nil();
     
     std::string name = args[0].as_string();
-    int type = args[1].as_int();
+    int type = static_cast<int>(args[1].as_int());
     
     if (!g_lighting_system_3d) return Value::nil();
     
@@ -441,7 +442,7 @@ Value lighting3d_create_light(const std::vector<Value>& args) {
 Value lighting3d_set_position(const std::vector<Value>& args) {
     if (args.size() < 4) return Value::nil();
     
-    int light_id = args[0].as_int();
+    int light_id = static_cast<int>(args[0].as_int());
     float x = args[1].as_number();
     float y = args[2].as_number();
     float z = args[3].as_number();
@@ -455,7 +456,7 @@ Value lighting3d_set_position(const std::vector<Value>& args) {
 Value lighting3d_set_color(const std::vector<Value>& args) {
     if (args.size() < 4) return Value::nil();
     
-    int light_id = args[0].as_int();
+    int light_id = static_cast<int>(args[0].as_int());
     float r = args[1].as_number();
     float g = args[2].as_number();
     float b = args[3].as_number();
@@ -469,7 +470,7 @@ Value lighting3d_set_color(const std::vector<Value>& args) {
 Value lighting3d_set_intensity(const std::vector<Value>& args) {
     if (args.size() < 2) return Value::nil();
     
-    int light_id = args[0].as_int();
+    int light_id = static_cast<int>(args[0].as_int());
     float intensity = args[1].as_number();
     
     if (g_lighting_system_3d) {
@@ -481,7 +482,7 @@ Value lighting3d_set_intensity(const std::vector<Value>& args) {
 Value lighting3d_set_enabled(const std::vector<Value>& args) {
     if (args.size() < 2) return Value::nil();
     
-    int light_id = args[0].as_int();
+    int light_id = static_cast<int>(args[0].as_int());
     bool enabled = args[1].as_bool();
     
     if (g_lighting_system_3d) {

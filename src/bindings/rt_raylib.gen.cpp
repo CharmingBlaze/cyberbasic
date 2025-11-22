@@ -854,7 +854,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         return Value::nil();
     }}, true);    R.add_with_policy("UNLOADTEXTURE", Fn{"UNLOADTEXTURE", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("UNLOADTEXTURE: expected 1 args");
-        int id = args[0].as_int();
+        int id = static_cast<int>(args[0].as_int());
         auto it = rlreg::textures.find(id);
         if (it != rlreg::textures.end()) {
           ::UnloadTexture(it->second);
@@ -864,7 +864,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         return Value::nil();
     }}, true);    R.add_with_policy("UNLOADRENDERTEXTURE", Fn{"UNLOADRENDERTEXTURE", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("UNLOADRENDERTEXTURE: expected 1 args");
-        int id = args[0].as_int();
+        int id = static_cast<int>(args[0].as_int());
         auto it = rlreg::rendertextures.find(id);
         if (it != rlreg::rendertextures.end()) {
           ::UnloadRenderTexture(it->second);
@@ -1011,7 +1011,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         
     }}, true);    R.add_with_policy("UNLOADMUSICSTREAM", Fn{"UNLOADMUSICSTREAM", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("UNLOADMUSICSTREAM: expected 1 args");
-        int id = args[0].as_int();
+        int id = static_cast<int>(args[0].as_int());
         auto it = rlreg::musics.find(id);
         if (it != rlreg::musics.end()) {
           ::UnloadMusicStream(it->second);
@@ -1089,7 +1089,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         
     }}, true);    R.add_with_policy("UNLOADAUDIOSTREAM", Fn{"UNLOADAUDIOSTREAM", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("UNLOADAUDIOSTREAM: expected 1 args");
-        int id = args[0].as_int();
+        int id = static_cast<int>(args[0].as_int());
         auto it = rlreg::audiostreams.find(id);
         if (it != rlreg::audiostreams.end()) {
           ::UnloadAudioStream(it->second);
@@ -1182,7 +1182,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         return Value::nil();
     }}, true);    R.add_with_policy("UNLOADWAVE", Fn{"UNLOADWAVE", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("UNLOADWAVE: expected 1 args");
-        int id = args[0].as_int();
+        int id = static_cast<int>(args[0].as_int());
         auto it = rlreg::waves.find(id);
         if (it != rlreg::waves.end()) {
           ::UnloadWave(it->second);
@@ -1192,7 +1192,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         return Value::nil();
     }}, true);    R.add_with_policy("UNLOADSOUNDALIAS", Fn{"UNLOADSOUNDALIAS", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("UNLOADSOUNDALIAS: expected 1 args");
-        int id = args[0].as_int();
+        int id = static_cast<int>(args[0].as_int());
         auto it = rlreg::sounds.find(id);
         if (it != rlreg::sounds.end()) {
           ::UnloadSoundAlias(it->second);
@@ -1330,7 +1330,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         return Value::nil();
     }}, true);    R.add_with_policy("UNLOADMESH", Fn{"UNLOADMESH", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("UNLOADMESH: expected 1 args");
-        int id = args[0].as_int();
+        int id = static_cast<int>(args[0].as_int());
         auto it = rlreg::meshes.find(id);
         if (it != rlreg::meshes.end()) {
           ::UnloadMesh(it->second);
@@ -1469,7 +1469,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         
     }}, true);    R.add_with_policy("UNLOADMATERIAL", Fn{"UNLOADMATERIAL", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("UNLOADMATERIAL: expected 1 args");
-        int id = args[0].as_int();
+        int id = static_cast<int>(args[0].as_int());
         auto it = rlreg::materials.find(id);
         if (it != rlreg::materials.end()) {
           ::UnloadMaterial(it->second);
@@ -1641,7 +1641,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         
     }}, true);    R.add_with_policy("UNLOADMODEL", Fn{"UNLOADMODEL", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("UNLOADMODEL: expected 1 args");
-        int id = args[0].as_int();
+        int id = static_cast<int>(args[0].as_int());
         auto it = rlreg::models.find(id);
         if (it != rlreg::models.end()) {
           ::UnloadModel(it->second);
@@ -1953,7 +1953,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         return Value::nil();
     }}, true);    R.add_with_policy("UNLOADSHADER", Fn{"UNLOADSHADER", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("UNLOADSHADER: expected 1 args");
-        int id = args[0].as_int();
+        int id = static_cast<int>(args[0].as_int());
         auto it = rlreg::shaders.find(id);
         if (it != rlreg::shaders.end()) {
           ::UnloadShader(it->second);
@@ -2368,7 +2368,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         return Value::nil();
     }}, true);    R.add_with_policy("UNLOADFONT", Fn{"UNLOADFONT", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("UNLOADFONT: expected 1 args");
-        int id = args[0].as_int();
+        int id = static_cast<int>(args[0].as_int());
         auto it = rlreg::fonts.find(id);
         if (it != rlreg::fonts.end()) {
           ::UnloadFont(it->second);
@@ -2527,14 +2527,14 @@ void register_raylib_bindings(FunctionRegistry& R) {
     }}, true);    R.add_with_policy("COLLISIONRECTANGLES", Fn{"COLLISIONRECTANGLES", 8, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 8) throw std::runtime_error("COLLISIONRECTANGLES: expected 8 args");
         // Check if two rectangles overlap
-        int x1 = args[0].as_int();
-        int y1 = args[1].as_int();
-        int w1 = args[2].as_int();
-        int h1 = args[3].as_int();
-        int x2 = args[4].as_int();
-        int y2 = args[5].as_int();
-        int w2 = args[6].as_int();
-        int h2 = args[7].as_int();
+        int x1 = static_cast<int>(args[0].as_int());
+        int y1 = static_cast<int>(args[1].as_int());
+        int w1 = static_cast<int>(args[2].as_int());
+        int h1 = static_cast<int>(args[3].as_int());
+        int x2 = static_cast<int>(args[4].as_int());
+        int y2 = static_cast<int>(args[5].as_int());
+        int w2 = static_cast<int>(args[6].as_int());
+        int h2 = static_cast<int>(args[7].as_int());
 
         bool collision = !(x1 + w1 < x2 || x2 + w2 < x1 || y1 + h1 < y2 || y2 + h2 < y1);
         return Value::from_bool(collision);
@@ -2542,12 +2542,12 @@ void register_raylib_bindings(FunctionRegistry& R) {
     }}, true);    R.add_with_policy("POINTINRECTANGLE", Fn{"POINTINRECTANGLE", 6, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 6) throw std::runtime_error("POINTINRECTANGLE: expected 6 args");
         // Check if a point is inside a rectangle
-        int px = args[0].as_int();
-        int py = args[1].as_int();
-        int rx = args[2].as_int();
-        int ry = args[3].as_int();
-        int rw = args[4].as_int();
-        int rh = args[5].as_int();
+        int px = static_cast<int>(args[0].as_int());
+        int py = static_cast<int>(args[1].as_int());
+        int rx = static_cast<int>(args[2].as_int());
+        int ry = static_cast<int>(args[3].as_int());
+        int rw = static_cast<int>(args[4].as_int());
+        int rh = static_cast<int>(args[5].as_int());
 
         bool inside = (px >= rx && px <= rx + rw && py >= ry && py <= ry + rh);
         return Value::from_bool(inside);
@@ -2555,10 +2555,10 @@ void register_raylib_bindings(FunctionRegistry& R) {
     }}, true);    R.add_with_policy("DISTANCE", Fn{"DISTANCE", 4, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 4) throw std::runtime_error("DISTANCE: expected 4 args");
         // Calculate distance between two points (squared to avoid sqrt)
-        int x1 = args[0].as_int();
-        int y1 = args[1].as_int();
-        int x2 = args[2].as_int();
-        int y2 = args[3].as_int();
+        int x1 = static_cast<int>(args[0].as_int());
+        int y1 = static_cast<int>(args[1].as_int());
+        int x2 = static_cast<int>(args[2].as_int());
+        int y2 = static_cast<int>(args[3].as_int());
 
         double dx = (double)(x2 - x1);
         double dy = (double)(y2 - y1);
@@ -2585,7 +2585,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         
     }}, true);    R.add_with_policy("UNLOADMUSIC", Fn{"UNLOADMUSIC", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("UNLOADMUSIC: expected 1 args");
-        int id = args[0].as_int();
+        int id = static_cast<int>(args[0].as_int());
         auto it = rlreg::musics.find(id);
         if (it != rlreg::musics.end()) {
           ::UnloadMusicStream(it->second);
@@ -2596,7 +2596,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         return Value::nil();
     }}, true);    R.add_with_policy("PLAYMUSIC", Fn{"PLAYMUSIC", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("PLAYMUSIC: expected 1 args");
-        int id = args[0].as_int();
+        int id = static_cast<int>(args[0].as_int());
         auto it = rlreg::musics.find(id);
         if (it != rlreg::musics.end()) {
           ::PlayMusicStream(it->second);
@@ -2606,7 +2606,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         return Value::nil();
     }}, true);    R.add_with_policy("STOPMUSIC", Fn{"STOPMUSIC", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("STOPMUSIC: expected 1 args");
-        int id = args[0].as_int();
+        int id = static_cast<int>(args[0].as_int());
         auto it = rlreg::musics.find(id);
         if (it != rlreg::musics.end()) {
           ::StopMusicStream(it->second);
@@ -2616,7 +2616,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         return Value::nil();
     }}, true);    R.add_with_policy("PAUSEMUSIC", Fn{"PAUSEMUSIC", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("PAUSEMUSIC: expected 1 args");
-        int id = args[0].as_int();
+        int id = static_cast<int>(args[0].as_int());
         auto it = rlreg::musics.find(id);
         if (it != rlreg::musics.end()) {
           ::PauseMusicStream(it->second);
@@ -2626,7 +2626,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         return Value::nil();
     }}, true);    R.add_with_policy("RESUMEMUSIC", Fn{"RESUMEMUSIC", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("RESUMEMUSIC: expected 1 args");
-        int id = args[0].as_int();
+        int id = static_cast<int>(args[0].as_int());
         auto it = rlreg::musics.find(id);
         if (it != rlreg::musics.end()) {
           ::ResumeMusicStream(it->second);
@@ -2636,7 +2636,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         return Value::nil();
     }}, true);    R.add_with_policy("UPDATEMUSIC", Fn{"UPDATEMUSIC", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("UPDATEMUSIC: expected 1 args");
-        int id = args[0].as_int();
+        int id = static_cast<int>(args[0].as_int());
         auto it = rlreg::musics.find(id);
         if (it != rlreg::musics.end()) {
           ::UpdateMusicStream(it->second);
@@ -2646,7 +2646,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         return Value::nil();
     }}, true);    R.add_with_policy("ISMUSICPLAYING", Fn{"ISMUSICPLAYING", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("ISMUSICPLAYING: expected 1 args");
-        int id = args[0].as_int();
+        int id = static_cast<int>(args[0].as_int());
         auto it = rlreg::musics.find(id);
         if (it != rlreg::musics.end()) {
           return Value::from_bool(::IsMusicStreamPlaying(it->second));
@@ -2655,7 +2655,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         
     }}, true);    R.add_with_policy("GETTEXTUREWIDTH", Fn{"GETTEXTUREWIDTH", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("GETTEXTUREWIDTH: expected 1 args");
-        int id = args[0].as_int();
+        int id = static_cast<int>(args[0].as_int());
         auto it = rlreg::textures.find(id);
         if (it != rlreg::textures.end()) {
           return Value::from_int(it->second.width);
@@ -2664,7 +2664,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         
     }}, true);    R.add_with_policy("GETTEXTUREHEIGHT", Fn{"GETTEXTUREHEIGHT", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("GETTEXTUREHEIGHT: expected 1 args");
-        int id = args[0].as_int();
+        int id = static_cast<int>(args[0].as_int());
         auto it = rlreg::textures.find(id);
         if (it != rlreg::textures.end()) {
           return Value::from_int(it->second.height);
@@ -2679,7 +2679,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         
     }}, true);    R.add_with_policy("TEXTUREFROMIMAGE", Fn{"TEXTUREFROMIMAGE", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("TEXTUREFROMIMAGE: expected 1 args");
-        int id = args[0].as_int();
+        int id = static_cast<int>(args[0].as_int());
         auto it = rlreg::images.find(id);
         if (it != rlreg::images.end()) {
           ::Texture2D texture = ::LoadTextureFromImage(it->second);
@@ -2691,9 +2691,9 @@ void register_raylib_bindings(FunctionRegistry& R) {
         
     }}, true);    R.add_with_policy("RESIZEIMAGE", Fn{"RESIZEIMAGE", 3, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 3) throw std::runtime_error("RESIZEIMAGE: expected 3 args");
-        int id = args[0].as_int();
-        int new_width = args[1].as_int();
-        int new_height = args[2].as_int();
+        int id = static_cast<int>(args[0].as_int());
+        int new_width = static_cast<int>(args[1].as_int());
+        int new_height = static_cast<int>(args[2].as_int());
         auto it = rlreg::images.find(id);
         if (it != rlreg::images.end()) {
           ::ImageResize(&it->second, new_width, new_height);
@@ -2703,11 +2703,11 @@ void register_raylib_bindings(FunctionRegistry& R) {
         return Value::nil();
     }}, true);    R.add_with_policy("CROPIMAGE", Fn{"CROPIMAGE", 5, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 5) throw std::runtime_error("CROPIMAGE: expected 5 args");
-        int id = args[0].as_int();
-        int x = args[1].as_int();
-        int y = args[2].as_int();
-        int width = args[3].as_int();
-        int height = args[4].as_int();
+        int id = static_cast<int>(args[0].as_int());
+        int x = static_cast<int>(args[1].as_int());
+        int y = static_cast<int>(args[2].as_int());
+        int width = static_cast<int>(args[3].as_int());
+        int height = static_cast<int>(args[4].as_int());
         auto it = rlreg::images.find(id);
         if (it != rlreg::images.end()) {
           ::Rectangle crop{(float)x, (float)y, (float)width, (float)height};
@@ -2718,7 +2718,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
         return Value::nil();
     }}, true);    R.add_with_policy("FLIPIMAGE", Fn{"FLIPIMAGE", 1, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 1) throw std::runtime_error("FLIPIMAGE: expected 1 args");
-        int id = args[0].as_int();
+        int id = static_cast<int>(args[0].as_int());
         auto it = rlreg::images.find(id);
         if (it != rlreg::images.end()) {
           ::ImageFlipVertical(&it->second);
@@ -2728,8 +2728,8 @@ void register_raylib_bindings(FunctionRegistry& R) {
         return Value::nil();
     }}, true);    R.add_with_policy("ROTATEIMAGE", Fn{"ROTATEIMAGE", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("ROTATEIMAGE: expected 2 args");
-        int id = args[0].as_int();
-        int degrees = args[1].as_int();
+        int id = static_cast<int>(args[0].as_int());
+        int degrees = static_cast<int>(args[1].as_int());
         auto it = rlreg::images.find(id);
         if (it != rlreg::images.end()) {
           ::ImageRotate(&it->second, degrees);
@@ -2760,7 +2760,7 @@ void register_raylib_bindings(FunctionRegistry& R) {
     }}, true);    R.add_with_policy("STRREPEAT", Fn{"STRREPEAT", 2, [] (const std::vector<Value>& args) -> Value {
         if (args.size() != 2) throw std::runtime_error("STRREPEAT: expected 2 args");
         std::string text = args[0].as_string();
-        int count = args[1].as_int();
+        int count = static_cast<int>(args[1].as_int());
         std::string result;
         for (int i = 0; i < count; i++) {
           result += text;

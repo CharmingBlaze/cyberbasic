@@ -291,7 +291,7 @@ static Value tween_stop(const std::vector<Value>& args) {
         return Value::nil();
     }
     
-    int id = args[0].as_int();
+    int id = static_cast<int>(args[0].as_int());
     auto it = g_tweens.find(id);
     if (it != g_tweens.end()) {
         it->second.isActive = false;
@@ -307,7 +307,7 @@ static Value tween_pause(const std::vector<Value>& args) {
         return Value::nil();
     }
     
-    int id = args[0].as_int();
+    int id = static_cast<int>(args[0].as_int());
     auto it = g_tweens.find(id);
     if (it != g_tweens.end()) {
         it->second.isPaused = true;
@@ -322,7 +322,7 @@ static Value tween_resume(const std::vector<Value>& args) {
         return Value::nil();
     }
     
-    int id = args[0].as_int();
+    int id = static_cast<int>(args[0].as_int());
     auto it = g_tweens.find(id);
     if (it != g_tweens.end()) {
         it->second.isPaused = false;
@@ -337,7 +337,7 @@ static Value tween_getValue(const std::vector<Value>& args) {
         return Value::from_number(0.0);
     }
     
-    int id = args[0].as_int();
+    int id = static_cast<int>(args[0].as_int());
     auto it = g_tweens.find(id);
     if (it != g_tweens.end()) {
         return Value::from_number(it->second.currentValue);
@@ -352,7 +352,7 @@ static Value tween_isComplete(const std::vector<Value>& args) {
         return Value::from_bool(false);
     }
     
-    int id = args[0].as_int();
+    int id = static_cast<int>(args[0].as_int());
     auto it = g_tweens.find(id);
     if (it != g_tweens.end()) {
         return Value::from_bool(it->second.isComplete);

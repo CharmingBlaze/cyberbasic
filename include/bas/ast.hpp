@@ -83,7 +83,11 @@ struct Assign : Stmt { std::string name; std::unique_ptr<Expr> value; };
 struct LocalDecl : Stmt { std::vector<std::string> names; };
 struct GlobalDecl : Stmt { std::vector<std::string> names; };
 struct Print : Stmt { std::unique_ptr<Expr> value; };
-struct ExprStmt : Stmt { std::unique_ptr<Expr> expr; };
+struct ExprStmt : Stmt {
+  std::unique_ptr<Expr> expr;
+  ExprStmt() = default;
+  explicit ExprStmt(std::unique_ptr<Expr> e) : expr(std::move(e)) {}
+};
 struct CallStmt : Stmt { std::string name; std::vector<std::unique_ptr<Expr>> args; };
 struct Break : Stmt {}; // Simple break statement
 struct Continue : Stmt {}; // Continue current loop
@@ -335,6 +339,21 @@ struct MatchExpr : Expr {
   };
   std::vector<Case> cases;
   std::unique_ptr<Expr> defaultCase; // CASE ELSE
+};
+
+// Try/Catch/Finally block: TRY ... CATCH error ... FINALLY ... END TRY
+struct TryCatchStmt : Stmt {
+  std::vector<std::unique_ptr<Stmt>> tryBody;
+  std::string catchVar; // Variable name for caught exception
+  std::vector<std::unique_ptr<Stmt>> catchBody;
+  std::vector<std::unique_ptr<Stmt>> finallyBody;
+  bool hasCatch{false};
+  bool hasFinally{false};
+};
+
+// Throw statement: THROW error
+struct ThrowStmt : Stmt {
+  std::unique_ptr<Expr> error; // Error value to throw
 };
 
 // Enum declaration
