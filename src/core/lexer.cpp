@@ -49,7 +49,8 @@ static Tok kw(const std::string& w) {
         {"OVERRIDE", Tok::Override}, {"PRIORITY", Tok::Priority},
         {"ENABLE", Tok::Enable}, {"DISABLE", Tok::Disable},
         {"TRY", Tok::Try}, {"CATCH", Tok::Catch}, {"FINALLY", Tok::Finally},
-        {"ENDTRY", Tok::EndTry}, {"THROW", Tok::Throw}
+        {"ENDTRY", Tok::EndTry}, {"THROW", Tok::Throw},
+        {"NIL", Tok::Nil}, {"NONE", Tok::None}, {"NULL", Tok::Null}, {"VOID", Tok::Void}
     };
     auto it = k.find(w);
     return it == k.end() ? Tok::Ident : it->second;

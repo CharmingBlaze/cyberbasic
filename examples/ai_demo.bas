@@ -21,14 +21,14 @@ LET enemy3 = CREATEAIAGENT("Enemy3")
 SETAIAGENTPOSITION(enemy3, 400, 500)
 SETAIAGENTSPEED(enemy3, 70)
 
-REM Create behavior trees
-LET patrol_behavior = CREATEPATROLBEHAVIOR(100, 100, 700, 100)
-LET chase_behavior = CREATEPATROLBEHAVIOR(400, 300, 400, 300)  REM Simplified chase
+REM Create behavior trees (creates trees named "patrol")
+LET patrol1 = CREATEPATROLBEHAVIOR(100, 100, 700, 100)
+LET patrol2 = CREATEPATROLBEHAVIOR(50, 200, 750, 200)
 
 REM Assign behaviors to agents
 SETAIAGENTBEHAVIOR(enemy1, "patrol")
 SETAIAGENTBEHAVIOR(enemy2, "patrol")
-SETAIAGENTBEHAVIOR(enemy3, "chase")
+REM Enemy3 will chase player (no behavior tree, manual targeting)
 
 REM Game variables
 LET game_time = 0
@@ -42,23 +42,23 @@ WHILE NOT WINDOWSHOULDCLOSE()
     
     REM Handle player input
     IF ISKEYDOWN(87) THEN
-        LET current_x = GETAIAGENTPOSITION(player)
-        LET current_y = GETAIAGENTPOSITION(player)  REM Simplified - would need separate x/y functions
+        LET current_x = GETAIAGENTX(player)
+        LET current_y = GETAIAGENTY(player)
         SETAIAGENTPOSITION(player, current_x, current_y - 2)
     ENDIF
     IF ISKEYDOWN(83) THEN
-        LET current_x = GETAIAGENTPOSITION(player)
-        LET current_y = GETAIAGENTPOSITION(player)
+        LET current_x = GETAIAGENTX(player)
+        LET current_y = GETAIAGENTY(player)
         SETAIAGENTPOSITION(player, current_x, current_y + 2)
     ENDIF
     IF ISKEYDOWN(65) THEN
-        LET current_x = GETAIAGENTPOSITION(player)
-        LET current_y = GETAIAGENTPOSITION(player)
+        LET current_x = GETAIAGENTX(player)
+        LET current_y = GETAIAGENTY(player)
         SETAIAGENTPOSITION(player, current_x - 2, current_y)
     ENDIF
     IF ISKEYDOWN(68) THEN
-        LET current_x = GETAIAGENTPOSITION(player)
-        LET current_y = GETAIAGENTPOSITION(player)
+        LET current_x = GETAIAGENTX(player)
+        LET current_y = GETAIAGENTY(player)
         SETAIAGENTPOSITION(player, current_x + 2, current_y)
     ENDIF
     
@@ -72,20 +72,41 @@ WHILE NOT WINDOWSHOULDCLOSE()
     REM Update AI system
     UPDATEAISYSTEM(1.0/60.0)
     
-    REM Simple collision detection (distance-based)
-    LET player_x = GETAIAGENTPOSITION(player)
-    LET player_y = GETAIAGENTPOSITION(player)
+    REM Make enemy3 chase the player
+    LET player_x = GETAIAGENTX(player)
+    LET player_y = GETAIAGENTY(player)
+    SETAIAGENTTARGET(enemy3, player_x, player_y)
     
-    LET enemy1_x = GETAIAGENTPOSITION(enemy1)
-    LET enemy1_y = GETAIAGENTPOSITION(enemy1)
+    REM Simple patrol for enemy1 and enemy2 (move back and forth)
+    LET enemy1_x = GETAIAGENTX(enemy1)
+    LET enemy1_y = GETAIAGENTY(enemy1)
+    LET enemy2_x = GETAIAGENTX(enemy2)
+    LET enemy2_y = GETAIAGENTY(enemy2)
+    
+    REM Enemy1 patrols horizontally
+    IF enemy1_x <= 100 THEN
+        SETAIAGENTTARGET(enemy1, 700, 100)
+    ELSEIF enemy1_x >= 700 THEN
+        SETAIAGENTTARGET(enemy1, 100, 100)
+    ENDIF
+    
+    REM Enemy2 patrols horizontally at different Y
+    IF enemy2_x <= 50 THEN
+        SETAIAGENTTARGET(enemy2, 750, 200)
+    ELSEIF enemy2_x >= 750 THEN
+        SETAIAGENTTARGET(enemy2, 50, 200)
+    ENDIF
+    
+    REM Get positions for collision detection (already retrieved above)
+    LET enemy1_y = GETAIAGENTY(enemy1)
     LET dist1 = NAVDISTANCE(player_x, player_y, enemy1_x, enemy1_y)
     
-    LET enemy2_x = GETAIAGENTPOSITION(enemy2)
-    LET enemy2_y = GETAIAGENTPOSITION(enemy2)
+    LET enemy2_x = GETAIAGENTX(enemy2)
+    LET enemy2_y = GETAIAGENTY(enemy2)
     LET dist2 = NAVDISTANCE(player_x, player_y, enemy2_x, enemy2_y)
     
-    LET enemy3_x = GETAIAGENTPOSITION(enemy3)
-    LET enemy3_y = GETAIAGENTPOSITION(enemy3)
+    LET enemy3_x = GETAIAGENTX(enemy3)
+    LET enemy3_y = GETAIAGENTY(enemy3)
     LET dist3 = NAVDISTANCE(player_x, player_y, enemy3_x, enemy3_y)
     
     REM Check collisions
@@ -140,9 +161,9 @@ WHILE NOT WINDOWSHOULDCLOSE()
     DRAWTEXT("AI Agents: " + STR(GETAIAGENTCOUNT()), 10, 165, 16, 255, 255, 255)
     
     REM Draw behavior info
-    DRAWTEXT("Enemy1: Patrol behavior", 10, 190, 14, 200, 200, 200)
-    DRAWTEXT("Enemy2: Patrol behavior", 10, 210, 14, 200, 200, 200)
-    DRAWTEXT("Enemy3: Chase behavior", 10, 230, 14, 200, 200, 200)
+    DRAWTEXT("Enemy1: Patrol (horizontal)", 10, 190, 14, 200, 200, 200)
+    DRAWTEXT("Enemy2: Patrol (horizontal)", 10, 210, 14, 200, 200, 200)
+    DRAWTEXT("Enemy3: Chasing player", 10, 230, 14, 200, 200, 200)
     
     REM Draw health bar
     LET health_percent = player_health / max_health

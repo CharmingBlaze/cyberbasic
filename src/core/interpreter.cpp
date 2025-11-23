@@ -196,6 +196,8 @@ static void exec(Env& env, FunctionRegistry& R, const Stmt* s, bool debug_mode);
 
 
 static double to_num(const Value& v) {
+    // Convert nil to 0 for arithmetic operations (traditional BASIC behavior)
+    if (v.is_nil()) return 0.0;
     return v.as_number();
 }
 static void call_sub(Env& caller, FunctionRegistry& R, const std::string& name, const std::vector<Value>& args, bool debug_mode);
@@ -326,6 +328,9 @@ static Value eval(Env& env, FunctionRegistry& R, const Expr* e, bool debug_mode)
       case Tok::String: return Value::from_string(lit->tok.lex);
       case Tok::True: return Value::from_bool(true);
       case Tok::False: return Value::from_bool(false);
+      case Tok::Nil:
+      case Tok::None:
+      case Tok::Null: return Value::nil();
       default: return Value::nil();
     }
   }

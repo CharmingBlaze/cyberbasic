@@ -21,10 +21,20 @@ private:
   bool match2(Tok a, Tok b){ if(peek().kind==a){ advance(); return match(b);} return false; }
   bool check(Tok k) const { return peek().kind==k; }
   void skipNewlines(){ while(check(Tok::Newline)) advance(); }
+  void consume_statement_separators(){ while(peek().kind == Tok::Newline || peek().kind == Tok::Colon) advance(); }
+  
+  // Language Engineering: Statement parser without newline skipping
+  // Used by stmt_list_until to avoid double-skipping
+  std::unique_ptr<Stmt> parse_statement_no_skip();
+  
+  // Language Engineering: Centralized statement dispatch
+  // Shared by statement() and parse_statement_no_skip()
+  std::unique_ptr<Stmt> dispatch_statement(const Token& t);
 
   std::unique_ptr<Stmt> statement();
   std::unique_ptr<Stmt> parse_print();
   std::unique_ptr<Stmt> parse_let();
+  std::unique_ptr<Stmt> parse_const();
   std::unique_ptr<Stmt> parse_if();
   std::unique_ptr<Stmt> parse_while();
   std::unique_ptr<Stmt> parse_for();

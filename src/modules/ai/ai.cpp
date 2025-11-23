@@ -581,6 +581,32 @@ Value ai_get_agent_position(const std::vector<Value>& args) {
     return Value::from_number(0);
 }
 
+Value ai_get_agent_x(const std::vector<Value>& args) {
+    if (args.size() != 1 || !g_ai_system) return Value::from_number(0);
+    
+    int agent_id = static_cast<int>(args[0].as_int());
+    AIAgent* agent = g_ai_system->get_agent(agent_id);
+    if (agent) {
+        float x, y;
+        agent->get_position(x, y);
+        return Value::from_number(x);
+    }
+    return Value::from_number(0);
+}
+
+Value ai_get_agent_y(const std::vector<Value>& args) {
+    if (args.size() != 1 || !g_ai_system) return Value::from_number(0);
+    
+    int agent_id = static_cast<int>(args[0].as_int());
+    AIAgent* agent = g_ai_system->get_agent(agent_id);
+    if (agent) {
+        float x, y;
+        agent->get_position(x, y);
+        return Value::from_number(y);
+    }
+    return Value::from_number(0);
+}
+
 Value ai_create_patrol_behavior(const std::vector<Value>& args) {
     if (args.size() != 4 || !g_ai_system) return Value::from_bool(false);
     
@@ -632,6 +658,8 @@ void register_ai_functions(FunctionRegistry& registry) {
     registry.add("SETAIAGENTTARGET", NativeFn{"SETAIAGENTTARGET", 3, ai_set_agent_target});
     registry.add("SETAIAGENTSPEED", NativeFn{"SETAIAGENTSPEED", 2, ai_set_agent_speed});
     registry.add("GETAIAGENTPOSITION", NativeFn{"GETAIAGENTPOSITION", 1, ai_get_agent_position});
+    registry.add("GETAIAGENTX", NativeFn{"GETAIAGENTX", 1, ai_get_agent_x});
+    registry.add("GETAIAGENTY", NativeFn{"GETAIAGENTY", 1, ai_get_agent_y});
     registry.add("CREATEPATROLBEHAVIOR", NativeFn{"CREATEPATROLBEHAVIOR", 4, ai_create_patrol_behavior});
     registry.add("SETAIAGENTBEHAVIOR", NativeFn{"SETAIAGENTBEHAVIOR", 2, ai_set_agent_behavior});
     registry.add("UPDATEAISYSTEM", NativeFn{"UPDATEAISYSTEM", 1, ai_update_system});

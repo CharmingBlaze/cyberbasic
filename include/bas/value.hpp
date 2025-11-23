@@ -30,11 +30,13 @@ struct Value {
   [[nodiscard]] double as_number() const {
     if (auto p=std::get_if<double>(&v)) return *p;
     if (auto q=std::get_if<long long>(&v)) return static_cast<double>(*q);
+    if (is_nil()) return 0.0;  // Convert nil to 0 (traditional BASIC behavior)
     throw std::runtime_error("Expected number");
   }
   [[nodiscard]] long long as_int() const {
     if (auto q=std::get_if<long long>(&v)) return *q;
     if (auto p=std::get_if<double>(&v)) return static_cast<long long>(*p);
+    if (is_nil()) return 0;  // Convert nil to 0 (traditional BASIC behavior)
     throw std::runtime_error("Expected int");
   }
   [[nodiscard]] bool as_bool() const {

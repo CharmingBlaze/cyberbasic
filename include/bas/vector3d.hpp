@@ -23,7 +23,7 @@ struct Vector3D {
     }
     
     float length() const {
-        return sqrt(x*x + y*y + z*z);
+        return static_cast<float>(std::sqrt(x*x + y*y + z*z));
     }
     
     Vector3D normalized() const {

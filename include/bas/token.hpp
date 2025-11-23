@@ -38,7 +38,8 @@ enum class Tok {
   Parallel, EndParallel, Group, EndGroup, Event,
   Define, System, EndSystem, Attach, From,
   Override, Priority, Enable, Disable,
-  Try, Catch, Finally, EndTry, Throw
+  Try, Catch, Finally, EndTry, Throw,
+  Nil, None, Null, Void
 };
 
 // Token with lexeme and position.

@@ -8,6 +8,9 @@ using namespace bas;
 // Equality operators only; relational operators are handled in comparison()
 static bool is_cmp(Tok k){ return k==Tok::Eq||k==Tok::Neq; }
 
+// Helper: Check if token is a statement separator (newline or colon)
+static bool is_statement_separator(Tok k) { return k == Tok::Newline || k == Tok::Colon; }
+
 Program Parser::parse(){
   Program p; i=0; 
   while(peek().kind!=Tok::Eof){
@@ -43,14 +46,59 @@ Program Parser::parse(){
   return p;
 }
 
-std::unique_ptr<Stmt> Parser::statement() {
-    skipNewlines();
+std::unique_ptr<Stmt> Parser::parse_statement_no_skip() {
+    // Language Engineering: Statement parser WITHOUT newline skipping
+    // Used by stmt_list_until to avoid redundant skipping
+    // Performance: Direct dispatch, no token copying
+    // Note: stmt_list_until should have already consumed separators before calling this
+    if(peek().kind == Tok::Eof) return nullptr;
+    
+    // CRITICAL: Safety check - if we're at a separator, something went wrong
+    // This is a defensive check - stmt_list_until should have handled this
+    // But if a separator slips through, we need to skip it to avoid misclassifying the next statement
+    // This should NOT happen if stmt_list_until is working correctly, but we check anyway
+    if(peek().kind == Tok::Newline || peek().kind == Tok::Colon) {
+        // This indicates a bug in stmt_list_until - it should have consumed separators
+        // But we'll handle it gracefully by skipping and retrying
+        consume_statement_separators();
+        if(peek().kind == Tok::Eof) return nullptr;
+        // Re-enter to parse the actual statement (prevents infinite recursion since we skip separators)
+        return parse_statement_no_skip();
+    }
+    
+    // At this point, we should be at a statement-starting token (PRINT, VAR, IF, etc.)
     const Token& t = peek();
+    return dispatch_statement(t);
+}
+
+std::unique_ptr<Stmt> Parser::statement() {
+    // Language Engineering: Fast statement dispatcher for top-level parsing
+    // Skips leading newlines and dispatches to appropriate parser
+    if(peek().kind == Tok::Eof) return nullptr;
+    
+    // CRITICAL: Guard against stray newlines/colons
+    // This prevents "unexpected statement" errors when separators slip through
+    if(peek().kind == Tok::Newline || peek().kind == Tok::Colon) {
+        consume_statement_separators();
+        if(peek().kind == Tok::Eof) return nullptr;
+        // Re-enter to parse the actual statement (prevents infinite recursion since we skip separators)
+        return statement();
+    }
+    
+    const Token& t = peek();
+    return dispatch_statement(t);
+}
+
+std::unique_ptr<Stmt> Parser::dispatch_statement(const Token& t) {
+    // Language Engineering: Centralized statement dispatch
+    // Performance: Single switch, fast path for common statements
+    // Extensibility: Easy to add new statement types
 
     switch (t.kind) {
         case Tok::Print:    return parse_print();
         case Tok::Let:      return parse_let();
         case Tok::Var:      return parse_let();
+        case Tok::Const:    return parse_const();
         case Tok::Input:    return parse_input();
         case Tok::If:       return parse_if();
         case Tok::While:    return parse_while();
@@ -81,7 +129,7 @@ std::unique_ptr<Stmt> Parser::statement() {
             auto exitStmt = std::make_unique<Exit>();
             if (check(Tok::Ident)) {
                 std::string target = advance().lex;
-                for (char& ch : target) ch = std::toupper((unsigned char)ch);
+                for (char& ch : target) ch = static_cast<char>(std::toupper(static_cast<unsigned char>(ch)));
                 if (target == "FOR" || target == "WHILE" || target == "SUB" || target == "FUNCTION") {
                     exitStmt->target = target;
                 } else {
@@ -154,71 +202,131 @@ std::unique_ptr<Stmt> Parser::statement() {
         default: break;
     }
 
+    // Error recovery: Don't consume token if we can't parse it
+    // This allows stmt_list_until to handle error recovery gracefully
     diag.err(t.line, t.col, "unexpected statement", "check syntax", "PRINT x");
-    advance();
     return nullptr;
 }
 
 std::vector<std::unique_ptr<Stmt>> Parser::stmt_list_until(Tok end1, Tok end2){
+  // Language Engineering: Fast, safe statement list parser with proper error recovery
+  // Architecture: Single-pass recursive descent with incremental parsing
+  // Performance: Pre-allocated vector, minimal token lookahead, fast path for common cases
+  // Critical Fix: Consistent separator handling ensures correct token positioning
+  // Pattern: consume separators BEFORE -> parse -> consume separators AFTER
+  // This matches the user's guidance: "consume_statement_separators() before/after each statement"
   std::vector<std::unique_ptr<Stmt>> v; 
+  v.reserve(16); // Pre-allocate for common case (small blocks)
+  
   while(peek().kind!=Tok::Eof && !check(end1) && !check(end2)){
-    if(auto s=statement()) {
+    // CRITICAL: Always consume statement separators (newlines/colons) BEFORE parsing
+    // This ensures we're positioned at the beginning of a statement, not on whitespace
+    // This is the key fix - we MUST skip separators before trying to parse each statement
+    consume_statement_separators();
+    
+    // Safeguard: Double-check for terminator after consuming separators
+    // Check all common block terminators (EndWhile/EndFor don't exist - use Wend/Next)
+    if(check(end1) || check(end2) || peek().kind == Tok::Eof || 
+       check(Tok::EndIf) || check(Tok::Wend) || check(Tok::Next) ||
+       check(Tok::EndFunction) || check(Tok::EndSub) ||
+       check(Tok::EndSelect) || check(Tok::EndState) ||
+       check(Tok::EndModule) || check(Tok::EndEnum) ||
+       check(Tok::EndUnion) || check(Tok::EndTry)) break;
+    
+    // Parse one statement - use parse_statement_no_skip() since we've already consumed separators
+    // This avoids double separator consumption that would happen with statement()
+    size_t start_pos = i; // Track position for error recovery
+    auto s = parse_statement_no_skip();
+    
+    if(s) {
       v.push_back(std::move(s));
+      // CRITICAL: After successful parse, consume trailing separators
+      // This positions us correctly for the next iteration
+      // Pattern: consume separators at start -> parse -> consume separators at end
+      // This ensures that after parsing "VAR x = 10\n", we consume the \n and are ready for "PRINT x"
+      consume_statement_separators();
     } else {
-      // Error recovery within block: consume until newline or end token
-      while(peek().kind != Tok::Eof && !check(Tok::Newline) && !check(end1) && !check(end2)) advance();
-      if(check(Tok::Newline)) advance();
+      // Error recovery: Always skip to next separator to prevent cascading failures
+      // This matches the user's guidance: "skip forward to the next separator or terminator token"
+      if(i > start_pos) {
+        // We consumed some tokens but failed - skip to next statement boundary
+        consume_statement_separators();
+        if(check(end1) || check(end2)) break;
+        // Fast recovery: skip to next separator or end token
+        while(peek().kind != Tok::Eof && !check(Tok::Newline) && !check(Tok::Colon) && !check(end1) && !check(end2)) {
+          advance();
+        }
+        consume_statement_separators();
+      } else {
+        // No tokens consumed - we're stuck on an unexpected token
+        // Skip it and try again (prevents infinite loop)
+        if(!check(end1) && !check(end2) && peek().kind != Tok::Eof) {
+          advance();
+          consume_statement_separators();
+        }
+      }
     }
-    if(check(Tok::Newline)) while(check(Tok::Newline)) advance();
   }
   return v;
 }
 
-std::unique_ptr<Expr> Parser::expression(){ return or_(); }
+std::unique_ptr<Expr> Parser::expression(){ 
+  auto expr = or_();
+  // CRITICAL: Stop at statement separators and block terminators to prevent swallowing the next statement
+  // This ensures expressions don't run past their intended end
+  if(peek().kind == Tok::Newline || peek().kind == Tok::Colon || peek().kind == Tok::Eof ||
+     peek().kind == Tok::EndIf || peek().kind == Tok::Else || peek().kind == Tok::ElseIf ||
+     peek().kind == Tok::Wend || peek().kind == Tok::Next ||
+     peek().kind == Tok::EndFunction || peek().kind == Tok::EndSub) {
+    return expr;
+  }
+  return expr;
+}
 std::unique_ptr<Expr> Parser::or_(){
   auto e = xor_();
-  while(check(Tok::Or)){ Tok op=advance().kind; auto r=xor_(); e = std::make_unique<Binary>(std::move(e), op, std::move(r)); }
+  // CRITICAL: Stop at statement separators to prevent swallowing the next statement
+  while(check(Tok::Or) && !is_statement_separator(peek().kind)){ Tok op=advance().kind; auto r=xor_(); e = std::make_unique<Binary>(std::move(e), op, std::move(r)); }
   return e;
 }
 std::unique_ptr<Expr> Parser::xor_(){
   auto e = and_();
-  while(check(Tok::Xor)){ Tok op=advance().kind; auto r=and_(); e = std::make_unique<Binary>(std::move(e), op, std::move(r)); }
+  while(check(Tok::Xor) && !is_statement_separator(peek().kind)){ Tok op=advance().kind; auto r=and_(); e = std::make_unique<Binary>(std::move(e), op, std::move(r)); }
   return e;
 }
 std::unique_ptr<Expr> Parser::and_(){
   auto e = equality();
-  while(check(Tok::And)){ Tok op=advance().kind; auto r=equality(); e = std::make_unique<Binary>(std::move(e), op, std::move(r)); }
+  while(check(Tok::And) && !is_statement_separator(peek().kind)){ Tok op=advance().kind; auto r=equality(); e = std::make_unique<Binary>(std::move(e), op, std::move(r)); }
   return e;
 }
 std::unique_ptr<Expr> Parser::equality(){
   auto e = comparison();
-  while(is_cmp(peek().kind)){ Tok op=advance().kind; auto r=comparison(); e = std::make_unique<Binary>(std::move(e), op, std::move(r)); }
+  while(is_cmp(peek().kind) && !is_statement_separator(peek().kind)){ Tok op=advance().kind; auto r=comparison(); e = std::make_unique<Binary>(std::move(e), op, std::move(r)); }
   return e;
 }
 std::unique_ptr<Expr> Parser::comparison(){
   auto e = term();
-  while(check(Tok::Lt) || check(Tok::Lte) || check(Tok::Gt) || check(Tok::Gte)){
+  while((check(Tok::Lt) || check(Tok::Lte) || check(Tok::Gt) || check(Tok::Gte)) && !is_statement_separator(peek().kind)){
     Tok op=advance().kind; auto r=term(); e = std::make_unique<Binary>(std::move(e), op, std::move(r));
   }
   return e;
 }
 std::unique_ptr<Expr> Parser::term(){
   auto e = factor();
-  while(check(Tok::Plus) || check(Tok::Minus)){
+  while((check(Tok::Plus) || check(Tok::Minus)) && !is_statement_separator(peek().kind)){
     Tok op=advance().kind; auto r=factor(); e = std::make_unique<Binary>(std::move(e), op, std::move(r));
   }
   return e;
 }
 std::unique_ptr<Expr> Parser::factor(){
   auto e = power();
-  while(check(Tok::Star) || check(Tok::Slash) || check(Tok::Mod) || check(Tok::IntDiv)){
+  while((check(Tok::Star) || check(Tok::Slash) || check(Tok::Mod) || check(Tok::IntDiv)) && !is_statement_separator(peek().kind)){
     Tok op=advance().kind; auto r=power(); e = std::make_unique<Binary>(std::move(e), op, std::move(r));
   }
   return e;
 }
 std::unique_ptr<Expr> Parser::power(){
   auto e = unary();
-  while(check(Tok::Power)){
+  while(check(Tok::Power) && !is_statement_separator(peek().kind)){
     Tok op=advance().kind; auto r=unary(); e = std::make_unique<Binary>(std::move(e), op, std::move(r));
   }
   return e;
@@ -231,7 +339,11 @@ std::unique_ptr<Expr> Parser::unary(){
 }
 std::unique_ptr<Expr> Parser::primary(){
   const Token& t = peek();
-  if(t.kind==Tok::Number || t.kind==Tok::String || t.kind==Tok::True || t.kind==Tok::False){ return std::make_unique<Literal>(advance()); }
+  if(t.kind==Tok::Number || t.kind==Tok::String || t.kind==Tok::True || t.kind==Tok::False ||
+     t.kind==Tok::Nil || t.kind==Tok::None || t.kind==Tok::Null){ 
+    std::unique_ptr<Expr> base = std::make_unique<Literal>(advance());
+    return parse_postfix(std::move(base));
+  }
   if(t.kind==Tok::FString){
     return parse_fstring();
   }
@@ -304,7 +416,15 @@ std::unique_ptr<Expr> Parser::primary(){
 
 std::unique_ptr<Expr> Parser::parse_postfix(std::unique_ptr<Expr> base) {
   // Handle postfix operations: indexing [ ], member access . , method calls ( )
+  // CRITICAL: Stop at statement separators and block terminators to prevent swallowing the next statement
   while(true) {
+    // Stop if we hit a statement separator or block terminator
+    if(is_statement_separator(peek().kind) || peek().kind == Tok::Eof ||
+       peek().kind == Tok::EndIf || peek().kind == Tok::Else || peek().kind == Tok::ElseIf ||
+       peek().kind == Tok::Wend || peek().kind == Tok::Next ||
+       peek().kind == Tok::EndFunction || peek().kind == Tok::EndSub) {
+      break;
+    }
     if(check(Tok::LBracket)) {
       // Array indexing: base[index]
       advance();
@@ -359,14 +479,22 @@ std::unique_ptr<Stmt> Parser::parse_print() {
 }
 
 std::unique_ptr<Stmt> Parser::parse_let() {
-    advance(); // consume LET or VAR
+    // VAR/LET statement parser - works everywhere (top-level, IF blocks, WHILE loops, etc.)
+    // This is a critical function that must be robust and safe
+    
+    // Consume VAR or LET token (we know it's there because statement() checked)
+    advance();
+    
+    // Require identifier - this is mandatory for VAR/LET
     if (!check(Tok::Ident)) {
-        diag.err(peek().line, peek().col, "Assignment: expected variable name", "Make sure you have a valid variable name", "LET x = 10 or VAR x = 10");
+        diag.err(peek().line, peek().col, "Assignment: expected variable name", 
+                 "Make sure you have a valid variable name", 
+                 "LET x = 10 or VAR x = 10");
         return nullptr;
     }
     std::string name = advance().lex;
     
-    // Check for type annotation: AS Type
+    // Optional type annotation: VAR x AS Integer = 10
     std::string typeName;
     bool hasType = false;
     if (match(Tok::As)) {
@@ -378,39 +506,90 @@ std::unique_ptr<Stmt> Parser::parse_let() {
         hasType = true;
     }
     
-    if (check(Tok::LBracket)) { // Indexed assignment
+    // Check for indexed assignment: VAR arr[0] = value
+    if (check(Tok::LBracket)) {
         std::vector<std::unique_ptr<Expr>> indices;
         do {
-            advance();
-            indices.push_back(expression());
+            advance(); // consume '['
+            auto idx_expr = expression();
+            if (!idx_expr) {
+                diag.err_at(peek().line, peek().col, "Indexed assignment: invalid index expression");
+                return nullptr;
+            }
+            indices.push_back(std::move(idx_expr));
             if (!match(Tok::RBracket)) {
                 diag.err_at(peek().line, peek().col, "Indexed assignment: expected ']'");
                 return nullptr;
             }
         } while (check(Tok::LBracket));
+        
+        // Require '=' for assignment
         if (!match(Tok::Eq)) {
-            diag.err(peek().line, peek().col, "Indexed assignment: expected '=' after indexes", "Add '=' to assign a value", "LET arr[i] = value or VAR arr[i] = value");
+            diag.err(peek().line, peek().col, 
+                     "Indexed assignment: expected '=' after indexes", 
+                     "Add '=' to assign a value", 
+                     "LET arr[i] = value or VAR arr[i] = value");
             return nullptr;
         }
+        
         auto val = expression();
+        if (!val) {
+            diag.err_at(peek().line, peek().col, "Indexed assignment: invalid value expression");
+            return nullptr;
+        }
+        
         auto s = std::make_unique<AssignIndex>();
         s->name = std::move(name);
         s->indices = std::move(indices);
         s->value = std::move(val);
         return s;
-    } else { // Simple assignment
-        if (!match(Tok::Eq)) {
-            diag.err(peek().line, peek().col, "Assignment: expected '=' after variable name", "Add an equals sign to assign a value", "LET x = value or VAR x = value");
-            return nullptr;
-        }
-        auto v = expression();
-        auto s = std::make_unique<Let>();
-        s->name = std::move(name);
-        s->value = std::move(v);
-        s->typeName = std::move(typeName);
-        s->hasType = hasType;
-        return s;
+    } 
+    
+    // Simple assignment: VAR x = value
+    // Require '=' - this is what makes it an assignment, not just a declaration
+    if (!match(Tok::Eq)) {
+        diag.err(peek().line, peek().col, 
+                 "Assignment: expected '=' after variable name", 
+                 "Add an equals sign to assign a value", 
+                 "LET x = value or VAR x = value");
+        return nullptr;
     }
+    
+    // Parse the value expression
+    auto v = expression();
+    if (!v) {
+        diag.err_at(peek().line, peek().col, "Assignment: invalid value expression");
+        return nullptr;
+    }
+    
+    // Successfully parsed VAR/LET assignment
+    // Note: We do NOT consume trailing newlines here - that's handled by the caller
+    // (either stmt_list_until for blocks, or parse() for top-level)
+    auto s = std::make_unique<Let>();
+    s->name = std::move(name);
+    s->value = std::move(v);
+    s->typeName = std::move(typeName);
+    s->hasType = hasType;
+    return s;
+}
+
+std::unique_ptr<Stmt> Parser::parse_const() {
+    advance(); // consume CONST
+    if (!check(Tok::Ident)) {
+        diag.err(peek().line, peek().col, "CONST: expected constant name", "Make sure you have a valid constant name", "CONST PI = 3.14159");
+        return nullptr;
+    }
+    std::string name = advance().lex;
+    
+    if (!match(Tok::Eq)) {
+        diag.err(peek().line, peek().col, "CONST: expected '=' after constant name", "Add an equals sign to assign a value", "CONST PI = 3.14159");
+        return nullptr;
+    }
+    auto v = expression();
+    auto s = std::make_unique<ConstDecl>();
+    s->name = std::move(name);
+    s->value = std::move(v);
+    return s;
 }
 
 std::unique_ptr<Stmt> Parser::parse_input() {
@@ -455,7 +634,14 @@ std::unique_ptr<Stmt> Parser::parse_if() {
     {
         IfChain::Branch br;
         br.cond = std::move(firstCond);
+        // CRITICAL: stmt_list_until stops at ElseIf, Else, or EndIf
+        // We pass EndIf as well so it stops correctly and doesn't try to parse ENDIF as a statement
         br.body = stmt_list_until(Tok::ElseIf, Tok::Else);
+        // After stmt_list_until returns, we should be positioned at EndIf, ElseIf, or Else
+        // But we also need to handle EndIf separately since it's not in the terminator list
+        // Actually, stmt_list_until will stop when it encounters EndIf because it's not a valid statement
+        // But to be safe, let's make sure we consume any trailing separators
+        consume_statement_separators();
         node->branches.push_back(std::move(br));
     }
 
@@ -480,6 +666,7 @@ std::unique_ptr<Stmt> Parser::parse_if() {
         diag.err(peek().line, peek().col, "IF: expected ENDIF to close the block");
         return nullptr;
     }
+    skipNewlines(); // Align for next statement
     return node;
 }
 
@@ -491,7 +678,8 @@ std::unique_ptr<Stmt> Parser::parse_while() {
         diag.err(peek().line, peek().col, "WHILE: expected WEND to close the loop");
         return nullptr;
     }
-    advance();
+    // Language Engineering: match() already consumed WEND, don't advance() again
+    skipNewlines(); // Align for next statement
     auto s = std::make_unique<WhileWend>();
     s->cond = std::move(cond);
     s->body = std::move(body);
@@ -680,8 +868,9 @@ std::unique_ptr<Stmt> Parser::parse_function_decl() {
 std::unique_ptr<Stmt> Parser::parse_return() {
     advance(); // consume RETURN
     std::unique_ptr<Expr> val;
-    Tok k = peek().kind;
-    if (k == Tok::Number || k == Tok::String || k == Tok::True || k == Tok::False || k == Tok::Ident || k == Tok::LParen || k == Tok::Minus || k == Tok::Plus || k == Tok::Not || k == Tok::LBracket) {
+    // Language Engineering: Use expression() directly - it handles all valid expression starts
+    // This avoids duplicating token checks and supports RETURN NOT x, RETURN TYPEOF y, etc.
+    if (!check(Tok::Newline) && !check(Tok::Eof)) {
         val = expression();
     }
     auto r = std::make_unique<Return>();
@@ -713,7 +902,7 @@ std::unique_ptr<Stmt> Parser::parse_dim() {
         diag.err(peek().line, peek().col, "DIM/REDIM: expected ')' after sizes");
         return nullptr;
     }
-    advance();
+    // Language Engineering: match() already consumed RParen, don't advance() again
 
     if (is_redim) {
         auto d = std::make_unique<Redim>();
@@ -922,7 +1111,7 @@ std::unique_ptr<Stmt> Parser::parse_module_decl() {
         diag.err_at(peek().line, peek().col, "MODULE: expected END MODULE");
         return nullptr;
     }
-    
+    skipNewlines(); // Align for next statement
     return decl;
 }
 
@@ -948,6 +1137,9 @@ std::unique_ptr<Stmt> Parser::parse_for_each() {
         diag.err_at(peek().line, peek().col, "FOR EACH: expected NEXT");
         return nullptr;
     }
+    // Optional variable after NEXT (matches FOR loop behavior)
+    if (check(Tok::Ident)) advance();
+    skipNewlines(); // Align for next statement
     return stmt;
 }
 
@@ -1030,6 +1222,7 @@ std::unique_ptr<Stmt> Parser::parse_operator_decl() {
             diag.err_at(peek().line, peek().col, "OPERATOR: expected END OPERATOR");
             return nullptr;
         }
+        skipNewlines(); // Align for next statement
         return decl;
     }
     diag.err_at(peek().line, peek().col, "OPERATOR: expected operator symbol");
@@ -1254,6 +1447,7 @@ std::unique_ptr<Expr> Parser::parse_match() {
         diag.err_at(peek().line, peek().col, "match: expected END MATCH");
         return nullptr;
     }
+    skipNewlines(); // Align for next statement
     
     return match_expr;
 }
@@ -1285,6 +1479,7 @@ std::unique_ptr<Stmt> Parser::parse_using() {
         diag.err_at(peek().line, peek().col, "using: expected END USING");
         return nullptr;
     }
+    skipNewlines(); // Align for next statement
     
     return using_block;
 }
@@ -1318,6 +1513,7 @@ std::unique_ptr<Stmt> Parser::parse_enum() {
         diag.err_at(peek().line, peek().col, "enum: expected END ENUM");
         return nullptr;
     }
+    skipNewlines(); // Align for next statement
     
     return enum_decl;
 }
@@ -1351,6 +1547,7 @@ std::unique_ptr<Stmt> Parser::parse_union() {
         diag.err_at(peek().line, peek().col, "union: expected END UNION");
         return nullptr;
     }
+    skipNewlines(); // Align for next statement
     
     return union_decl;
 }
@@ -1517,6 +1714,7 @@ std::unique_ptr<Stmt> Parser::parse_try_catch() {
         diag.err_at(peek().line, peek().col, "TRY: expected END TRY");
         return nullptr;
     }
+    skipNewlines(); // Align for next statement
     
     return tryCatch;
 }

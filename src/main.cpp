@@ -125,6 +125,9 @@ int main(int argc, char* argv[]) {
         } else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
             print_usage(argv[0]);
             return 0;
+        } else if (strcmp(argv[i], "-") == 0) {
+            // Support stdin input with "-"
+            filename = "-";
         } else if (argv[i][0] != '-') {
             filename = argv[i];
         } else {
@@ -276,22 +279,31 @@ int main(int argc, char* argv[]) {
     
     if (verbose_mode) {
         std::cout << "BASIC + Raylib Interpreter v1.0" << std::endl;
-                if (debug_mode) std::cerr << "Debug mode: ENABLED" << std::endl;
-        std::cout << "Loading: " << filename << std::endl;
+        if (debug_mode) std::cerr << "Debug mode: ENABLED" << std::endl;
+        std::cout << "Loading: " << (filename == "-" ? "stdin" : filename) << std::endl;
         std::cout << std::endl;
     }
     
-    // Open and read the source file
-    if (debug_mode) std::cerr << "[DEBUG] Attempting to open file..." << std::endl;
-    std::ifstream file(filename, std::ios::binary);
-    if (!file) {
-        if (debug_mode) std::cerr << "[DEBUG] Failed to open file." << std::endl;
-        std::cerr << "Error: Cannot open file '" << filename << "'" << std::endl;
-        std::cerr << "  Check if the file exists and you have read permissions" << std::endl;
-        return 66;
+    // Read from stdin if filename is "-", otherwise read from file
+    std::string src;
+    if (filename == "-") {
+        if (debug_mode) std::cerr << "[DEBUG] Reading from stdin..." << std::endl;
+        std::string line;
+        while (std::getline(std::cin, line)) {
+            src += line + "\n";
+        }
+    } else {
+        // Open and read the source file
+        if (debug_mode) std::cerr << "[DEBUG] Attempting to open file..." << std::endl;
+        std::ifstream file(filename, std::ios::binary);
+        if (!file) {
+            if (debug_mode) std::cerr << "[DEBUG] Failed to open file." << std::endl;
+            std::cerr << "Error: Cannot open file '" << filename << "'" << std::endl;
+            std::cerr << "  Check if the file exists and you have read permissions" << std::endl;
+            return 66;
+        }
+        src = std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     }
-    
-    std::string src((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     if (src.empty()) {
         std::cerr << "Error: File '" << filename << "' is empty" << std::endl;
         return 65;

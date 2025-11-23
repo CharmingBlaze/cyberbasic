@@ -297,6 +297,9 @@ END ENUM
 The repository includes **69+ example programs** in the `examples/` directory:
 
 ### Game Examples
+
+![Pong Game](images/pong.png)
+
 - `pong_game.bas` - Complete Pong game with AI
 - `space_defender.bas` - Space shooter with AI enemies
 - `2d_game_template.bas` - 2D game template
