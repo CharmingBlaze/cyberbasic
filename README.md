@@ -14,11 +14,13 @@ CyberBasic combines the simplicity and elegance of classic BASIC programming wit
 
 1. **Go to [GitHub Releases](https://github.com/CharmingBlaze/cyberbasic/releases)**
 2. **Download the executable for your platform:**
-   - **Windows:** `cyberbasic-windows-x64.exe` (rename to `cyberbasic.exe`)
-   - **Linux:** `cyberbasic-linux-x64` 
-   - **macOS:** `cyberbasic-macos-x64`
+   - **Windows:** `cyberbasic.exe`
+   - **Linux:** `cyberbasic` 
+   - **macOS:** `cyberbasic`
 3. **Make executable (Linux/macOS):** `chmod +x cyberbasic`
-4. **Run your programs:** `./cyberbasic your_game.bas`
+4. **Run your programs:**
+   - **Windows:** `cyberbasic.exe your_game.bas`
+   - **Linux/macOS:** `./cyberbasic your_game.bas`
 
 **Benefits:**
 - ✅ No build tools required (CMake, compiler, etc.)
