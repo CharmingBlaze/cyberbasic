@@ -456,15 +456,33 @@ cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release ..
 cmake --build .
 ```
 
-### Linux/macOS Build
+### Linux Build
 ```bash
 git clone https://github.com/CharmingBlaze/cyberbasic.git
 cd cyberbasic
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
-make -j$(nproc)  # Linux
-# or make -j$(sysctl -n hw.ncpu)  # macOS
+make -j$(nproc)
 ```
+
+### macOS Build
+**Note:** macOS uses the same `CMakeLists.txt` as Linux. CMake automatically detects macOS and links the required frameworks (Cocoa, IOKit, OpenGL). No special configuration needed.
+
+**Prerequisites:**
+- Xcode Command Line Tools: `xcode-select --install`
+- CMake: `brew install cmake` (or download from cmake.org)
+- Python 3.10+ with PyYAML: `pip3 install pyyaml`
+
+**Build:**
+```bash
+git clone https://github.com/CharmingBlaze/cyberbasic.git
+cd cyberbasic
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make -j$(sysctl -n hw.ncpu)
+```
+
+The executable will be at: `build/cyberbasic`
 
 ### Static Linking (Windows)
 For distribution without DLL dependencies:
