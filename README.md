@@ -6,23 +6,6 @@
 
 CyberBasic combines the simplicity and elegance of classic BASIC programming with the full power of modern game development. Write games, graphics applications, and interactive programs using familiar BASIC syntax while leveraging the complete Raylib graphics library.
 
-## 🎮 What You Can Build
-
-<div align="center">
-
-### Classic Arcade Games
-![Pong Game](images/pong.png)
-*AI Pong - Classic paddle game with intelligent opponent*
-
-![Space Invaders](images/SpaceInvaders.png)
-*Space Invaders - Retro arcade shooter with waves of enemies*
-
-### 3D Graphics & Models
-![3D Model Viewer](images/3dmodelviewer.png)
-*3D Model Viewer - Interactive 3D model viewer with mouse controls*
-
-</div>
-
 ##  Quick Start
 
 **Finding the Executable:**
