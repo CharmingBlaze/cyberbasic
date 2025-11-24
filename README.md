@@ -25,29 +25,6 @@ CyberBasic combines the simplicity and elegance of classic BASIC programming wit
 
 ##  Quick Start
 
-### 1. Build CyberBasic
-
-**Important:** Raylib is automatically downloaded and built during CMake configuration. You do NOT need to install raylib separately. CMake will fetch it from GitHub during the build process. Make sure you have an internet connection when running CMake for the first time.
-
-**Windows:**
-```bash
-git clone https://github.com/CharmingBlaze/cyberbasic.git
-cd cyberbasic
-mkdir build-mingw && cd build-mingw
-cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release ..
-cmake --build .
-```
-
-**Linux/macOS:**
-```bash
-git clone https://github.com/CharmingBlaze/cyberbasic.git
-cd cyberbasic
-mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..
-make -j$(nproc)  # Linux
-# or make -j$(sysctl -n hw.ncpu)  # macOS
-```
-
 **Finding the Executable:**
 - **Windows (development build):** `build/cyberbasic.exe` or `build-mingw/cyberbasic.exe`
 - **Windows (distribution build):** `build-dist/cyberbasic.exe` (statically linked, no DLLs required)
@@ -793,3 +770,28 @@ For questions, bug reports, or feature requests:
 [Getting Started](docs/GETTING_STARTED.md) • [Documentation](docs/) • [Examples](examples/) • [Contributing](docs/CONTRIBUTING.md)
 
 </div>
+
+---
+
+## Building CyberBasic
+
+**Important:** Raylib is automatically downloaded and built during CMake configuration. You do NOT need to install raylib separately. CMake will fetch it from GitHub during the build process. Make sure you have an internet connection when running CMake for the first time.
+
+**Windows:**
+```bash
+git clone https://github.com/CharmingBlaze/cyberbasic.git
+cd cyberbasic
+mkdir build-mingw && cd build-mingw
+cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release ..
+cmake --build .
+```
+
+**Linux/macOS:**
+```bash
+git clone https://github.com/CharmingBlaze/cyberbasic.git
+cd cyberbasic
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make -j$(nproc)  # Linux
+# or make -j$(sysctl -n hw.ncpu)  # macOS
+```
