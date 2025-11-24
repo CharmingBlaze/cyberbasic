@@ -27,6 +27,8 @@ CyberBasic combines the simplicity and elegance of classic BASIC programming wit
 
 ### 1. Build CyberBasic
 
+**Important:** Raylib is automatically downloaded and built during CMake configuration. You do NOT need to install raylib separately. CMake will fetch it from GitHub during the build process. Make sure you have an internet connection when running CMake for the first time.
+
 **Windows:**
 ```bash
 git clone https://github.com/CharmingBlaze/cyberbasic.git
@@ -46,7 +48,12 @@ make -j$(nproc)  # Linux
 # or make -j$(sysctl -n hw.ncpu)  # macOS
 ```
 
-**The executable will be at:** `build-mingw/cyberbasic.exe` (Windows) or `build/cyberbasic` (Linux/macOS)
+**Finding the Executable:**
+- **Windows (development build):** `build/cyberbasic.exe` or `build-mingw/cyberbasic.exe`
+- **Windows (distribution build):** `build-dist/cyberbasic.exe` (statically linked, no DLLs required)
+- **Linux/macOS:** `build/cyberbasic`
+
+The executable is located in your build directory. After building, navigate to that directory or use the full path to run CyberBasic.
 
 ### 2. Run Your First Game
 
@@ -92,6 +99,68 @@ CLOSEWINDOW()
 ```
 
 Run it: `cyberbasic.exe my_game.bas`
+
+---
+
+##  Using the Interpreter
+
+### Basic Usage
+
+The CyberBasic interpreter runs `.bas` files. Here's how to use it:
+
+**Windows:**
+```bash
+# From the build directory
+.\cyberbasic.exe path\to\your\program.bas
+
+# From project root
+.\build\cyberbasic.exe examples\hello_text.bas
+.\build-dist\cyberbasic.exe examples\hello_graphics.bas
+```
+
+**Linux/macOS:**
+```bash
+# From the build directory
+./cyberbasic path/to/your/program.bas
+
+# From project root
+./build/cyberbasic examples/hello_text.bas
+```
+
+### Running Examples
+
+The repository includes 69+ example programs in the `examples/` directory:
+
+```bash
+# Windows
+.\build\cyberbasic.exe examples\hello_text.bas
+.\build\cyberbasic.exe examples\simple_pong.bas
+.\build\cyberbasic.exe examples\space_invaders.bas
+
+# Linux/macOS
+./build/cyberbasic examples/hello_text.bas
+./build/cyberbasic examples/simple_pong.bas
+./build/cyberbasic examples/space_invaders.bas
+```
+
+### Paths and Directories
+
+- Use forward slashes `/` or double backslashes `\\` in file paths on Windows
+- Relative paths are relative to the current working directory, not the executable location
+- You can run programs from any directory by using absolute or relative paths
+
+### Distribution Build (Recommended for Sharing)
+
+For distributing your games or sharing the interpreter, use the statically linked build:
+
+**Windows:**
+```bash
+# Build distribution version
+.\build-dist.bat
+
+# The executable will be at: build-dist\cyberbasic.exe
+# This version requires no DLL files and can run on any Windows system
+```
 
 ---
 
@@ -387,6 +456,19 @@ cyberbasic/
 - **CMake** 3.25 or higher
 - **C++20 compiler**: MinGW-w64 GCC 13+ (Windows) or GCC/Clang (Linux/macOS)
 - **Python** 3.10+ with PyYAML
+- **Internet connection** (required for first-time build to download raylib)
+
+### About Raylib
+
+**Raylib is automatically included:** CyberBasic uses CMake's `FetchContent` to automatically download and build raylib during the CMake configuration step. You do NOT need to manually install raylib.
+
+**Legal inclusion:** Raylib is licensed under the zlib license, which is a very permissive open source license that allows:
+- Commercial use
+- Modification
+- Distribution
+- Private use
+
+This means CyberBasic can legally include and distribute raylib with the project. The raylib source code is automatically downloaded during the build process and statically linked into the CyberBasic executable.
 
 ### Windows Build
 ```bash
@@ -412,6 +494,60 @@ For distribution without DLL dependencies:
 ```bash
 cmake .. -DBASIC_STATIC_LINK=ON -DCMAKE_BUILD_TYPE=Release
 ```
+
+Or use the provided script:
+```bash
+.\build-dist.bat
+```
+
+### Troubleshooting Build Issues
+
+**"Missing raylib module" or "Could not find raylib" errors:**
+
+1. **Check internet connection:** Raylib is downloaded automatically during CMake configuration. Make sure you have internet access when running `cmake` for the first time.
+
+2. **Clear CMake cache:** If the download failed, try clearing the build directory and reconfiguring:
+   ```bash
+   # Windows
+   rmdir /s /q build
+   mkdir build && cd build
+   cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release ..
+   
+   # Linux/macOS
+   rm -rf build
+   mkdir build && cd build
+   cmake -DCMAKE_BUILD_TYPE=Release ..
+   ```
+
+3. **Check CMake version:** Ensure you have CMake 3.25 or higher:
+   ```bash
+   cmake --version
+   ```
+
+4. **Verify Python and PyYAML:** The build process requires Python with PyYAML:
+   ```bash
+   python --version
+   pip install pyyaml
+   ```
+
+5. **Check compiler:** Make sure your C++ compiler supports C++20:
+   ```bash
+   # Windows (MinGW)
+   g++ --version
+   
+   # Linux/macOS
+   g++ --version
+   # or
+   clang++ --version
+   ```
+
+**Build succeeds but executable not found:**
+
+- The executable is in your build directory. Check:
+  - Windows: `build\cyberbasic.exe` or `build-mingw\cyberbasic.exe`
+  - Linux/macOS: `build/cyberbasic`
+- Make sure the build completed successfully (check for errors)
+- Try building again: `cmake --build .` or `make`
 
 ---
 
