@@ -34,14 +34,17 @@ make -j$(nproc)  # Linux
 ### 2. Run Your First Game
 
 ```bash
-# Windows
-cd build-mingw
-./cyberbasic.exe ../pong_game.bas
+# Windows - Using distribution build (recommended)
+.\build-dist\cyberbasic.exe examples\simple_pong.bas
+
+# Windows - Using development build
+.\build\cyberbasic.exe examples\simple_pong.bas
 
 # Linux/macOS
-cd build
-./cyberbasic ../pong_game.bas
+./build/cyberbasic examples/simple_pong.bas
 ```
+
+**Note:** For distribution, use `build-dist/cyberbasic.exe` which is statically linked and requires no DLL files. Build it with `.\build-dist.bat` (Windows).
 
 ### 3. Create Your Own Game
 
@@ -79,6 +82,7 @@ Run it: `cyberbasic.exe my_game.bas`
 
 ### Essential Guides
 - **[Getting Started Guide](docs/GETTING_STARTED.md)** - Installation, finding the executable, first steps
+- **[How to Use CyberBasic](docs/HOW_TO_USE.md)** - Complete guide to using cyberbasic.exe, running examples, and troubleshooting
 - **[Game Development Guide](docs/GAME_DEVELOPMENT_GUIDE.md)** - Complete guide to making games
 - **[2D Graphics API Guide](docs/2D_GRAPHICS_GUIDE.md)** - Learn 2D rendering, sprites, textures
 - **[3D Graphics API Guide](docs/3D_GRAPHICS_GUIDE.md)** - Learn 3D rendering, models, cameras, lighting
@@ -299,8 +303,12 @@ The repository includes **69+ example programs** in the `examples/` directory:
 ### Game Examples
 
 ![Pong Game](images/pong.png)
+![Space Invaders](images/SpaceInvaders.png)
+![3D Model Viewer](images/3dmodelviewer.png)
 
 - `pong_game.bas` - Complete Pong game with AI
+- `space_invaders.bas` - Classic Space Invaders game
+- `model_viewer.bas` - 3D model viewer with mouse orbit controls
 - `space_defender.bas` - Space shooter with AI enemies
 - `2d_game_template.bas` - 2D game template
 - `3d_game_template.bas` - 3D game template

@@ -30,7 +30,8 @@ Players run your game by executing: `cyberbasic.exe game.bas`
 
 1. **CyberBasic Executable**
    - `cyberbasic.exe` (Windows) or `cyberbasic` (Linux/macOS)
-   - Located in your `build/` or `build-mingw/` directory
+   - **Recommended:** Use `build-dist/cyberbasic.exe` (statically linked, no DLLs)
+   - **Alternative:** `build/cyberbasic.exe` or `build-mingw/cyberbasic.exe` (may require DLLs)
 
 2. **Game Files**
    - All `.bas` files your game uses
@@ -176,12 +177,23 @@ Name: "{commondesktop}\MyGame"; Filename: "{app}\cyberbasic.exe"; Parameters: "g
 
 Build with static linking to avoid DLL dependencies:
 
+**Windows:**
 ```bash
-cmake .. -DBASIC_STATIC_LINK=ON -DCMAKE_BUILD_TYPE=Release
-cmake --build .
+# Use the distribution build script
+.\build-dist.bat
+
+# Or manually:
+cmake -S . -B build-dist -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DBASIC_STATIC_LINK=ON
+cmake --build build-dist
 ```
 
-This bundles all dependencies into `cyberbasic.exe`.
+**Linux/macOS:**
+```bash
+cmake -S . -B build-dist -DCMAKE_BUILD_TYPE=Release -DBASIC_STATIC_LINK=ON
+cmake --build build-dist
+```
+
+This creates `build-dist/cyberbasic.exe` (or `build-dist/cyberbasic` on Linux/macOS) with all dependencies bundled. **No DLL files required!**
 
 #### Distribution Structure
 

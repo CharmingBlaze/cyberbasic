@@ -83,6 +83,7 @@ struct Assign : Stmt { std::string name; std::unique_ptr<Expr> value; };
 struct LocalDecl : Stmt { std::vector<std::string> names; };
 struct GlobalDecl : Stmt { std::vector<std::string> names; };
 struct Print : Stmt { std::unique_ptr<Expr> value; };
+struct PrintC : Stmt { std::unique_ptr<Expr> value; }; // Print without newline
 struct ExprStmt : Stmt {
   std::unique_ptr<Expr> expr;
   ExprStmt() = default;
@@ -94,6 +95,10 @@ struct Continue : Stmt {}; // Continue current loop
 struct Exit : Stmt {
     std::string target; // "FOR", "WHILE", "SUB", "FUNCTION"
 };
+struct Goto : Stmt { std::string label; }; // GOTO label
+struct Gosub : Stmt { std::string label; }; // GOSUB label
+struct Label : Stmt { std::string name; }; // label: (statement marker)
+struct End : Stmt {}; // END statement
 // IMPORT "file.bas"
 struct ImportStmt : Stmt { std::string path; };
 struct IfChain : Stmt {
@@ -245,6 +250,10 @@ struct OperatorDecl : Stmt {
 struct YieldStmt : Stmt {
   std::unique_ptr<Expr> value; // Optional value to yield
 };
+// Await statement: AWAIT expression
+struct AwaitStmt : Stmt {
+  std::unique_ptr<Expr> expression;
+};
 
 // Event handlers
 struct EventHandler : Stmt {
@@ -357,9 +366,13 @@ struct ThrowStmt : Stmt {
 };
 
 // Enum declaration
+struct EnumValue {
+  std::string name;
+  std::unique_ptr<Expr> value; // Optional custom value (nullptr = auto-assign)
+};
 struct EnumDecl : Stmt {
   std::string name;
-  std::vector<std::string> values;
+  std::vector<EnumValue> values;
 };
 
 // Union type declaration

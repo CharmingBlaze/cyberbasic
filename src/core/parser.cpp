@@ -96,6 +96,7 @@ std::unique_ptr<Stmt> Parser::dispatch_statement(const Token& t) {
 
     switch (t.kind) {
         case Tok::Print:    return parse_print();
+        case Tok::PrintC:   return parse_printc();
         case Tok::Let:      return parse_let();
         case Tok::Var:      return parse_let();
         case Tok::Const:    return parse_const();
@@ -105,6 +106,9 @@ std::unique_ptr<Stmt> Parser::dispatch_statement(const Token& t) {
         case Tok::Sub:      return parse_sub_decl();
         case Tok::Function: return parse_function_decl();
         case Tok::Return:   return parse_return();
+        case Tok::Gosub:    return parse_gosub();
+        case Tok::Goto:     return parse_goto();
+        case Tok::End:      return parse_end();
         case Tok::Dim:      return parse_dim();
         case Tok::Redim:    return parse_dim();
         case Tok::Ident:    return parse_ident_statement();
@@ -169,6 +173,9 @@ std::unique_ptr<Stmt> Parser::dispatch_statement(const Token& t) {
         }
         case Tok::Yield: {
             return parse_yield();
+        }
+        case Tok::Await: {
+            return parse_await();
         }
         case Tok::Operator: {
             return parse_operator_decl();
@@ -405,11 +412,47 @@ std::unique_ptr<Expr> Parser::primary(){
     return parse_postfix(std::move(base));
   }
   if(t.kind==Tok::LParen){ 
-    advance(); 
-    auto e = expression(); 
-    if(!check(Tok::RParen)) diag.err_at(peek().line, peek().col, "expected ')'"); 
-    else advance(); 
-    return parse_postfix(std::move(e));
+    advance();
+    // Check if this is a tuple literal: (expr, expr, ...)
+    // vs a parenthesized expression: (expr)
+    if(check(Tok::RParen)) {
+      // Empty parentheses - error
+      advance();
+      diag.err_at(peek().line, peek().col, "expected expression");
+      return std::make_unique<Literal>(Token{Tok::Number,"0",t.line,t.col});
+    }
+    
+    auto first = expression();
+    if(!first) {
+      diag.err_at(peek().line, peek().col, "expected expression");
+      return std::make_unique<Literal>(Token{Tok::Number,"0",t.line,t.col});
+    }
+    
+    // If there's a comma, it's a tuple
+    if(check(Tok::Comma)) {
+      std::vector<std::unique_ptr<Expr>> elements;
+      elements.push_back(std::move(first));
+      advance(); // consume comma
+      do {
+        elements.push_back(expression());
+      } while(match(Tok::Comma));
+      if(!check(Tok::RParen)) {
+        diag.err_at(peek().line, peek().col, "tuple: expected ')'");
+        return std::make_unique<Literal>(Token{Tok::Number,"0",t.line,t.col});
+      }
+      advance(); // consume ')'
+      auto tuple = std::make_unique<TupleLiteral>();
+      tuple->elements = std::move(elements);
+      return tuple;
+    }
+    
+    // Single expression in parentheses (not a tuple)
+    if(!check(Tok::RParen)) {
+      diag.err_at(peek().line, peek().col, "expected ')'"); 
+      return std::make_unique<Literal>(Token{Tok::Number,"0",t.line,t.col});
+    }
+    advance(); // consume ')'
+    return parse_postfix(std::move(first));
   }
   diag.err_at(t.line, t.col, "expected expression"); return std::make_unique<Literal>(Token{Tok::Number,"0",t.line,t.col});
 }
@@ -478,12 +521,52 @@ std::unique_ptr<Stmt> Parser::parse_print() {
     return s;
 }
 
+std::unique_ptr<Stmt> Parser::parse_printc() {
+    advance(); // consume PRINTC
+    auto e = expression();
+    auto s = std::make_unique<PrintC>();
+    s->value = std::move(e);
+    return s;
+}
+
 std::unique_ptr<Stmt> Parser::parse_let() {
     // VAR/LET statement parser - works everywhere (top-level, IF blocks, WHILE loops, etc.)
     // This is a critical function that must be robust and safe
     
     // Consume VAR or LET token (we know it's there because statement() checked)
     advance();
+    
+    // Check for destructuring assignment: VAR (x, y) = tuple
+    if (check(Tok::LParen)) {
+        advance(); // consume '('
+        std::vector<std::string> names;
+        if (!check(Tok::RParen)) {
+            do {
+                if (!check(Tok::Ident)) {
+                    diag.err_at(peek().line, peek().col, "destructuring: expected variable name");
+                    return nullptr;
+                }
+                names.push_back(advance().lex);
+            } while (match(Tok::Comma));
+        }
+        if (!match(Tok::RParen)) {
+            diag.err_at(peek().line, peek().col, "destructuring: expected ')'");
+            return nullptr;
+        }
+        if (!match(Tok::Eq)) {
+            diag.err_at(peek().line, peek().col, "destructuring: expected '='");
+            return nullptr;
+        }
+        auto value = expression();
+        if (!value) {
+            diag.err_at(peek().line, peek().col, "destructuring: invalid value expression");
+            return nullptr;
+        }
+        auto destr = std::make_unique<DestructureAssign>();
+        destr->names = std::move(names);
+        destr->value = std::move(value);
+        return destr;
+    }
     
     // Require identifier - this is mandatory for VAR/LET
     if (!check(Tok::Ident)) {
@@ -878,6 +961,35 @@ std::unique_ptr<Stmt> Parser::parse_return() {
     return r;
 }
 
+std::unique_ptr<Stmt> Parser::parse_gosub() {
+    advance(); // consume GOSUB
+    if (!check(Tok::Ident)) {
+        diag.err(peek().line, peek().col, "GOSUB: expected label name");
+        return nullptr;
+    }
+    std::string label = advance().lex;
+    auto s = std::make_unique<Gosub>();
+    s->label = std::move(label);
+    return s;
+}
+
+std::unique_ptr<Stmt> Parser::parse_goto() {
+    advance(); // consume GOTO
+    if (!check(Tok::Ident)) {
+        diag.err(peek().line, peek().col, "GOTO: expected label name");
+        return nullptr;
+    }
+    std::string label = advance().lex;
+    auto s = std::make_unique<Goto>();
+    s->label = std::move(label);
+    return s;
+}
+
+std::unique_ptr<Stmt> Parser::parse_end() {
+    advance(); // consume END
+    return std::make_unique<End>();
+}
+
 std::unique_ptr<Stmt> Parser::parse_dim() {
     bool is_redim = match(Tok::Redim);
     if (!is_redim) advance(); // consume DIM
@@ -920,6 +1032,15 @@ std::unique_ptr<Stmt> Parser::parse_dim() {
 
 std::unique_ptr<Stmt> Parser::parse_ident_statement() {
     Token id = advance(); // consume identifier
+    
+    // Check for label: identifier followed by colon
+    if (check(Tok::Colon)) {
+        advance(); // consume colon
+        auto label = std::make_unique<Label>();
+        label->name = id.lex;
+        return label;
+    }
+    
     std::unique_ptr<Expr> base_expr = std::make_unique<Variable>(id.lex);
 
     // Check for member access: name.member
@@ -1169,6 +1290,19 @@ std::unique_ptr<Stmt> Parser::parse_debug_print() {
     auto stmt = std::make_unique<DebugPrintStmt>();
     stmt->value = std::move(value);
     return stmt;
+}
+
+// Parse AWAIT statement: AWAIT expression
+std::unique_ptr<Stmt> Parser::parse_await() {
+    advance(); // consume AWAIT
+    auto expr = expression();
+    if (!expr) {
+        diag.err_at(peek().line, peek().col, "AWAIT: expected expression");
+        return nullptr;
+    }
+    auto awaitStmt = std::make_unique<AwaitStmt>();
+    awaitStmt->expression = std::move(expr);
+    return awaitStmt;
 }
 
 // Parse YIELD statement: YIELD [value]
@@ -1499,19 +1633,72 @@ std::unique_ptr<Stmt> Parser::parse_enum() {
     auto enum_decl = std::make_unique<EnumDecl>();
     enum_decl->name = name;
     
-    if (!check(Tok::EndEnum)) {
-        do {
-            if (!check(Tok::Ident)) {
-                diag.err_at(peek().line, peek().col, "enum: expected value name");
-                return nullptr;
-            }
-            enum_decl->values.push_back(advance().lex);
-        } while (match(Tok::Comma));
-    }
+    // Consume any separators after enum name
+    consume_statement_separators();
     
-    if (!match(Tok::EndEnum)) {
-        diag.err_at(peek().line, peek().col, "enum: expected END ENUM");
-        return nullptr;
+    // Parse enum values - support both comma-separated and newline-separated
+    // Grammar: EnumMember { (Comma | Newline) EnumMember }*
+    // Continue until we see END ENUM (either as ENDENUM token or END + ENUM tokens)
+    while (peek().kind != Tok::Eof) {
+        // Consume statement separators (newlines/colons) before each value
+        // This allows multi-line enum declarations
+        consume_statement_separators();
+        
+        // Check for END ENUM (two tokens: END + ENUM) or ENDENUM (one token)
+        if (check(Tok::End) && i + 1 < ts.size() && ts[i + 1].kind == Tok::Enum) {
+            // "END ENUM" - consume both tokens
+            advance(); // consume END
+            advance(); // consume ENUM
+            break;
+        } else if (check(Tok::EndEnum)) {
+            // "ENDENUM" - single token
+            advance(); // consume ENDENUM
+            break;
+        }
+        
+        // Check if we've reached end of file
+        if (peek().kind == Tok::Eof) {
+            diag.err_at(peek().line, peek().col, "enum: expected END ENUM before end of file");
+            return nullptr;
+        }
+        
+        if (!check(Tok::Ident)) {
+            diag.err_at(peek().line, peek().col, "enum: expected value name or END ENUM");
+            return nullptr;
+        }
+        
+        std::string valueName = advance().lex;
+        EnumValue enumVal;
+        enumVal.name = valueName;
+        
+        // Check for custom value: ANOTHER_THING = -1
+        if (match(Tok::Eq)) {
+            enumVal.value = expression();
+        } else {
+            enumVal.value = nullptr; // Auto-assign
+        }
+        enum_decl->values.push_back(std::move(enumVal));
+        
+        // Consume separators after the value (and optional expression)
+        consume_statement_separators();
+        
+        // Check for comma separator (single-line style: "Red, Green")
+        if (match(Tok::Comma)) {
+            // Consume any separators after comma (allows "Red, \n Green")
+            consume_statement_separators();
+            // Continue to next value
+            continue;
+        }
+        
+        // No comma found - check what's next
+        // If it's an identifier, it's the next value on a new line (multi-line style)
+        // If it's END ENUM, we're done (checked at start of loop)
+        // Otherwise, continue to next iteration to check for END ENUM
+        if (check(Tok::Ident)) {
+            // Next identifier on new line - continue parsing (multi-line style)
+            continue;
+        }
+        // If not an identifier and not END ENUM, loop will check again at the top
     }
     skipNewlines(); // Align for next statement
     

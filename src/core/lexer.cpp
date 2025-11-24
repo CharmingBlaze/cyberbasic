@@ -7,13 +7,13 @@ using namespace bas;
 // Keyword map for converting identifiers to tokens
 static Tok kw(const std::string& w) {
     static const std::unordered_map<std::string, Tok> k{
-        {"LET", Tok::Let}, {"PRINT", Tok::Print}, {"IF", Tok::If}, {"THEN", Tok::Then}, {"ENDIF", Tok::EndIf},
+        {"LET", Tok::Let}, {"PRINT", Tok::Print}, {"PRINTC", Tok::PrintC}, {"IF", Tok::If}, {"THEN", Tok::Then}, {"ENDIF", Tok::EndIf},
         {"ELSE", Tok::Else}, {"ELSEIF", Tok::ElseIf},
         {"WHILE", Tok::While}, {"WEND", Tok::Wend}, {"NOT", Tok::Not}, {"AND", Tok::And}, {"OR", Tok::Or},
         {"TRUE", Tok::True}, {"FALSE", Tok::False},
         {"CALL", Tok::Call},
         {"FOR", Tok::For}, {"TO", Tok::To}, {"STEP", Tok::Step}, {"NEXT", Tok::Next},
-        {"SUB", Tok::Sub}, {"ENDSUB", Tok::EndSub}, {"RETURN", Tok::Return},
+        {"SUB", Tok::Sub}, {"ENDSUB", Tok::EndSub}, {"RETURN", Tok::Return}, {"GOSUB", Tok::Gosub}, {"GOTO", Tok::Goto},
         {"FUNCTION", Tok::Function}, {"ENDFUNCTION", Tok::EndFunction},
         {"DIM", Tok::Dim}, {"REDIM", Tok::Redim}, {"PRESERVE", Tok::Preserve},
         {"OPEN", Tok::Open}, {"CLOSE", Tok::Close}, {"READ", Tok::Read}, {"WRITE", Tok::Write},
@@ -50,7 +50,8 @@ static Tok kw(const std::string& w) {
         {"ENABLE", Tok::Enable}, {"DISABLE", Tok::Disable},
         {"TRY", Tok::Try}, {"CATCH", Tok::Catch}, {"FINALLY", Tok::Finally},
         {"ENDTRY", Tok::EndTry}, {"THROW", Tok::Throw},
-        {"NIL", Tok::Nil}, {"NONE", Tok::None}, {"NULL", Tok::Null}, {"VOID", Tok::Void}
+        {"NIL", Tok::Nil}, {"NONE", Tok::None}, {"NULL", Tok::Null}, {"VOID", Tok::Void},
+        {"END", Tok::End}, {"AWAIT", Tok::Await}, {"COROUTINE", Tok::Coroutine}
     };
     auto it = k.find(w);
     return it == k.end() ? Tok::Ident : it->second;

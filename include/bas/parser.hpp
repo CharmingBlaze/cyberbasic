@@ -33,6 +33,7 @@ private:
 
   std::unique_ptr<Stmt> statement();
   std::unique_ptr<Stmt> parse_print();
+  std::unique_ptr<Stmt> parse_printc();
   std::unique_ptr<Stmt> parse_let();
   std::unique_ptr<Stmt> parse_const();
   std::unique_ptr<Stmt> parse_if();
@@ -41,6 +42,9 @@ private:
   std::unique_ptr<Stmt> parse_sub_decl();
   std::unique_ptr<Stmt> parse_function_decl();
   std::unique_ptr<Stmt> parse_return();
+  std::unique_ptr<Stmt> parse_gosub();
+  std::unique_ptr<Stmt> parse_goto();
+  std::unique_ptr<Stmt> parse_end();
   std::unique_ptr<Stmt> parse_dim();
   std::unique_ptr<Stmt> parse_ident_statement();
   std::unique_ptr<Stmt> parse_call();
@@ -53,6 +57,7 @@ private:
   std::unique_ptr<Stmt> parse_breakpoint();
   std::unique_ptr<Stmt> parse_debug_print();
   std::unique_ptr<Stmt> parse_yield();
+  std::unique_ptr<Stmt> parse_await();
   std::unique_ptr<Stmt> parse_operator_decl();
   std::unique_ptr<Stmt> parse_import();
   FunctionParam parse_function_param();

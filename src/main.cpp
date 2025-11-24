@@ -16,6 +16,7 @@
 #include "bas/game_systems.hpp"
 #include "bas/gui.hpp"
 #include "bas/raymath.hpp"
+#include "bas/raygui.hpp"
 #include "bas/sprite_system.hpp"
 #include "bas/timer_system.hpp"
 #include "bas/input_events.hpp"
@@ -539,6 +540,7 @@ int main(int argc, char* argv[]) {
     // Raylib graphics and multimedia
     bas::register_raylib_bindings(R);
     bas::register_raymath_functions(R);
+    bas::register_raygui_functions(R);
     
     // Game programming systems
     bas::register_game_systems_bindings(R);

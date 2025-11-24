@@ -1,5 +1,0 @@
-IF TRUE THEN
-VAR x = 10
-PRINT x
-ENDIF
-

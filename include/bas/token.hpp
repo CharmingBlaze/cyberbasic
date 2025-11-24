@@ -6,9 +6,9 @@ namespace bas {
 // Token kinds for the BASIC lexer/parser.
 enum class Tok {
     Eof, Newline, Error, Ident, Number, String,
-  Let, Print, If, Then, EndIf, While, Wend, Not, And, Or, True, False, Call,
+    Let, Print, PrintC, If, Then, EndIf, While, Wend, Not, And, Or, True, False, Call,
   Sub, EndSub, Function, EndFunction, Return,
-  For, To, Step, Next, Dim, Gosub, Redim, Preserve,
+  For, To, Step, Next, Dim, Gosub, Goto, Redim, Preserve,
   Else, ElseIf,
   Open, Close, Read, Write, Input,
   LParen, RParen, Comma, Assign, Plus, Minus, Star, Slash, Mod,
@@ -39,7 +39,7 @@ enum class Tok {
   Define, System, EndSystem, Attach, From,
   Override, Priority, Enable, Disable,
   Try, Catch, Finally, EndTry, Throw,
-  Nil, None, Null, Void
+  Nil, None, Null, Void, End, Await, Coroutine
 };
 
 // Token with lexeme and position.

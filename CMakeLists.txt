@@ -140,10 +140,13 @@ add_executable(cyberbasic
   src/modules/gui/gui_module.cpp
   src/modules/raylib/raymath_bindings.cpp
   src/modules/raylib/raymath_module.cpp
+  src/modules/raylib/raygui_impl.cpp
+  src/modules/raylib/raygui_bindings.cpp
 )
 
 # Include directories
 target_include_directories(cyberbasic PRIVATE include)
+target_include_directories(cyberbasic PRIVATE raygui/src)
 
 # Compiler-specific options
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")

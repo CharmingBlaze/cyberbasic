@@ -5,6 +5,7 @@
 ## Getting Started
 
 - **[Getting Started Guide](GETTING_STARTED.md)** - Installation, finding the executable, your first program
+- **[How to Use CyberBasic](HOW_TO_USE.md)** - Complete guide to using cyberbasic.exe, running examples, and troubleshooting
 - **[Quick Reference](QUICK_REFERENCE.md)** - Quick syntax reference for daily use
 
 ## Language Reference
@@ -86,6 +87,7 @@
 
 **Learn the language:**
 - Start with [Getting Started Guide](GETTING_STARTED.md)
+- Learn how to use the interpreter: [How to Use CyberBasic](HOW_TO_USE.md)
 - Then read [BASIC Programming Guide](BASIC_PROGRAMMING_GUIDE.md)
 - Reference [Quick Reference](QUICK_REFERENCE.md) as needed
 

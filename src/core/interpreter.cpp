@@ -189,6 +189,8 @@ bool set_deep_property(Value& obj, const std::string& path, const Value& val) {
 // Global storage for subroutines and functions
 static std::unordered_map<std::string, const SubDecl*> g_subs;
 static std::unordered_map<std::string, const FunctionDecl*> g_funcs;
+static std::unordered_map<std::string, size_t> g_labels; // Label name -> statement index
+static std::vector<size_t> g_gosub_stack; // Stack of return addresses for GOSUB
 
 // Forward declarations
 static Value eval(Env& env, FunctionRegistry& R, const Expr* e, bool debug_mode);
@@ -1291,11 +1293,22 @@ static void exec(Env& env, FunctionRegistry& R, const Stmt* s, bool debug_mode){
       call(R, "PRINT", {v});
       return;
     }
+  if(auto pc = dynamic_cast<const PrintC*>(s)){
+      Value v = eval(env,R,pc->value.get(), debug_mode);
+      call(R, "PRINTC", {v});
+      return;
+    }
   if(auto l = dynamic_cast<const Let*>(s)){
     env.declare(l->name);
     env.set(l->name, eval(env,R,l->value.get(), debug_mode)); return;
   }
   if(auto cd = dynamic_cast<const ConstDecl*>(s)){
+    // Safety: Check if constant already exists in current scope
+    // Allow shadowing from parent scopes, but prevent redefinition in same scope
+    std::string key = Env::up(cd->name);
+    if(env.is_const_here(key)){
+      throw std::runtime_error("Constant '" + key + "' is already defined in this scope");
+    }
     Value v = eval(env,R,cd->value.get(), debug_mode);
     env.define_const(cd->name, std::move(v));
     return;
@@ -1736,9 +1749,21 @@ static void exec(Env& env, FunctionRegistry& R, const Stmt* s, bool debug_mode){
   }
   if (auto enum_decl = dynamic_cast<const EnumDecl*>(s)) {
     // Register enum values as constants
-    for (size_t i = 0; i < enum_decl->values.size(); ++i) {
-      std::string enum_value = enum_decl->name + "_" + enum_decl->values[i];
-      env.define_const(enum_value, Value::from_int(static_cast<long long>(i)));
+    long long nextValue = 0;
+    for (const auto& enumVal : enum_decl->values) {
+      std::string enum_value = enum_decl->name + "_" + enumVal.name;
+      Value value;
+      if (enumVal.value) {
+        // Custom value assigned
+        value = eval(env, R, enumVal.value.get(), debug_mode);
+        nextValue = value.as_int() + 1; // Next value continues from custom value
+      } else {
+        // Auto-assign
+        value = Value::from_int(nextValue++);
+      }
+      env.define_const(enum_value, std::move(value));
+      // Also register just the value name (without enum prefix) for convenience
+      env.define_const(enumVal.name, value);
     }
     return;
   }
@@ -1764,6 +1789,20 @@ static void exec(Env& env, FunctionRegistry& R, const Stmt* s, bool debug_mode){
         env.set(name, it != map.end() ? it->second : Value::nil());
       }
     }
+    return;
+  }
+  if (auto await_stmt = dynamic_cast<const AwaitStmt*>(s)) {
+    // Evaluate the awaited expression
+    // In a full async implementation, this would suspend until the async operation completes
+    Value result = eval(env, R, await_stmt->expression.get(), debug_mode);
+    // For now, just evaluate synchronously
+    // TODO: Implement proper async/await with coroutines
+    return;
+  }
+  if (auto yield_stmt = dynamic_cast<const YieldStmt*>(s)) {
+    // YIELD pauses execution until next frame/iteration
+    // For now, just continue (full coroutine support would suspend here)
+    // TODO: Implement proper coroutine suspension
     return;
   }
   if (auto dp = dynamic_cast<const DebugPrintStmt*>(s)) {
@@ -1856,8 +1895,10 @@ static void call_sub(Env& caller, FunctionRegistry& R, const std::string& name, 
     local.set(sd->params[i], args[i]);
   }
   try{
-    for(auto& s : sd->body) exec(local, R, s.get(), debug_mode);
-  } catch(const ReturnSignal&){ /* swallow */ }
+    for(auto& s : sd->body) {
+      exec(local, R, s.get(), debug_mode);
+    }
+  } catch(const ReturnSignal&){ /* swallow - RETURN from sub */ }
   catch(const ExitSignal& es) {
     if(es.target == "SUB") return; // Exit the sub
     throw; // Re-throw if not for SUB
@@ -1964,8 +2005,20 @@ int bas::interpret(const Program& prog, FunctionRegistry& R, bool debug_mode){
     Env env;
     g_subs.clear();
     g_funcs.clear();
-    // Collect subs
-    for(auto& s : prog.stmts){
+    g_labels.clear();
+    g_gosub_stack.clear();
+    
+    // First pass: collect labels and function/sub declarations
+    for(size_t i = 0; i < prog.stmts.size(); ++i){
+      auto& s = prog.stmts[i];
+      if(auto lbl = dynamic_cast<Label*>(s.get())){
+        std::string labelKey = Env::up(lbl->name);
+        if(g_labels.find(labelKey) != g_labels.end()){
+          throw std::runtime_error("Duplicate label: " + lbl->name);
+        }
+        g_labels[labelKey] = i;
+        continue;
+      }
       if(auto sd = dynamic_cast<SubDecl*>(s.get())){
         g_subs[Env::up(sd->name)] = sd;
         continue;
@@ -1974,11 +2027,68 @@ int bas::interpret(const Program& prog, FunctionRegistry& R, bool debug_mode){
         g_funcs[Env::up(fd->name)] = fd;
       }
     }
-    // Execute non-sub statements
-    for(auto& s : prog.stmts){
-      if(dynamic_cast<SubDecl*>(s.get())) continue;
-      if(dynamic_cast<FunctionDecl*>(s.get())) continue;
-      exec(env, R, s.get(), debug_mode);
+    
+    // Second pass: execute statements with GOTO/GOSUB support
+    size_t pc = 0; // Program counter
+    while(pc < prog.stmts.size()){
+      auto& s = prog.stmts[pc];
+      
+      // Skip labels, subs, and functions during execution
+      if(dynamic_cast<Label*>(s.get()) || 
+         dynamic_cast<SubDecl*>(s.get()) || 
+         dynamic_cast<FunctionDecl*>(s.get())){
+        pc++;
+        continue;
+      }
+      
+      // Handle GOTO
+      if(auto gt = dynamic_cast<Goto*>(s.get())){
+        std::string labelKey = Env::up(gt->label);
+        auto it = g_labels.find(labelKey);
+        if(it == g_labels.end()){
+          throw std::runtime_error("Label not found: " + gt->label);
+        }
+        pc = it->second;
+        continue;
+      }
+      
+      // Handle GOSUB
+      if(auto gs = dynamic_cast<Gosub*>(s.get())){
+        g_gosub_stack.push_back(pc + 1); // Push return address
+        std::string labelKey = Env::up(gs->label);
+        auto it = g_labels.find(labelKey);
+        if(it == g_labels.end()){
+          throw std::runtime_error("Label not found: " + gs->label);
+        }
+        pc = it->second;
+        continue;
+      }
+      
+      // Handle RETURN (from GOSUB)
+      if(auto ret = dynamic_cast<Return*>(s.get())){
+        if(!g_gosub_stack.empty()){
+          pc = g_gosub_stack.back();
+          g_gosub_stack.pop_back();
+          continue;
+        }
+        // If not in GOSUB context, treat as normal RETURN (for functions/subs)
+        throw ReturnSignal{ret->value ? eval(env, R, ret->value.get(), debug_mode) : Value::nil()};
+      }
+      
+      // Handle END
+      if(dynamic_cast<End*>(s.get())){
+        return 0; // Terminate program
+      }
+      
+      // Execute normal statement
+      try {
+        exec(env, R, s.get(), debug_mode);
+      } catch(const ReturnSignal& rs){
+        // RETURN from function/sub - handled by call_func/call_sub
+        throw;
+      }
+      
+      pc++;
     }
     return 0;
   } catch(const std::exception& e){

@@ -70,8 +70,8 @@ Check the [Releases](https://github.com/CharmingBlaze/cyberbasic/releases) page 
 After building, the executable location depends on your build directory:
 
 ### Windows
-- **Default build:** `build-mingw/cyberbasic.exe`
-- **MSYS2 build:** `build/cyberbasic.exe`
+- **Development build:** `build/cyberbasic.exe` or `build-mingw/cyberbasic.exe`
+- **Distribution build (static):** `build-dist/cyberbasic.exe` (recommended for distribution)
 - **Custom build:** Check your `build` directory
 
 ### Linux/macOS
@@ -81,16 +81,20 @@ After building, the executable location depends on your build directory:
 ### Quick Test
 
 ```bash
-# Windows
-cd build-mingw  # or cd build
-./cyberbasic.exe --version
+# Windows - Development build
+cd build  # or cd build-mingw
+.\cyberbasic.exe examples\hello_text.bas
+
+# Windows - Distribution build (static linking, no DLLs)
+cd build-dist
+.\cyberbasic.exe ..\examples\hello_text.bas
 
 # Linux/macOS
 cd build
-./cyberbasic --version
+./cyberbasic ../examples/hello_text.bas
 ```
 
-**Note:** The executable location depends on which build directory you used. Check both `build/` and `build-mingw/` on Windows.
+**Note:** For distribution, use `build-dist/cyberbasic.exe` which is statically linked and requires no DLL files.
 
 ---
 
@@ -127,41 +131,68 @@ CLOSEWINDOW()
 
 ## Running Your Code
 
-### Command Line
+### Basic Usage
 
 ```bash
 # Windows
-cyberbasic.exe hello.bas
+cyberbasic.exe your_program.bas
 
 # Linux/macOS
-./cyberbasic hello.bas
+./cyberbasic your_program.bas
 ```
 
-### With Full Path
+### Running from Different Directories
 
 ```bash
-# Windows
-C:\path\to\cyberbasic.exe C:\path\to\hello.bas
+# Windows - From project root
+.\build-dist\cyberbasic.exe examples\hello_graphics.bas
 
-# Linux/macOS
-/path/to/cyberbasic /path/to/hello.bas
+# Windows - From build directory
+cd build-dist
+.\cyberbasic.exe ..\examples\hello_graphics.bas
+
+# Linux/macOS - From project root
+./build/cyberbasic examples/hello_graphics.bas
+
+# Linux/macOS - From build directory
+cd build
+./cyberbasic ../examples/hello_graphics.bas
 ```
 
 ### Running Examples
 
-The repository includes many examples:
+The repository includes 60+ examples in the `examples/` directory:
 
 ```bash
-# Windows
-cyberbasic.exe examples/hello_graphics.bas
-cyberbasic.exe examples/smooth_animation_demo.bas
-cyberbasic.exe pong_game.bas
+# Windows - Using distribution build (recommended)
+.\build-dist\cyberbasic.exe examples\hello_text.bas
+.\build-dist\cyberbasic.exe examples\hello_graphics.bas
+.\build-dist\cyberbasic.exe examples\simple_pong.bas
+.\build-dist\cyberbasic.exe examples\ai_pong.bas
+.\build-dist\cyberbasic.exe examples\space_invaders.bas
+.\build-dist\cyberbasic.exe examples\model_viewer.bas
+
+# Windows - Using development build
+.\build\cyberbasic.exe examples\hello_graphics.bas
+.\build\cyberbasic.exe examples\simple_pong.bas
 
 # Linux/macOS
-./cyberbasic examples/hello_graphics.bas
-./cyberbasic examples/smooth_animation_demo.bas
-./cyberbasic pong_game.bas
+./build/cyberbasic examples/hello_text.bas
+./build/cyberbasic examples/hello_graphics.bas
+./build/cyberbasic examples/simple_pong.bas
+./build/cyberbasic examples/space_invaders.bas
 ```
+
+### Popular Examples to Try
+
+- **`hello_text.bas`** - Simple text output
+- **`hello_graphics.bas`** - Basic graphics demo
+- **`simple_pong.bas`** - Classic Pong game
+- **`ai_pong.bas`** - Pong with AI opponent
+- **`space_invaders.bas`** - Complete Space Invaders game
+- **`model_viewer.bas`** - 3D model viewer with mouse controls
+- **`collision_demo.bas`** - Collision detection demo
+- **`minimal_test.bas`** - Minimal window test
 
 ---
 

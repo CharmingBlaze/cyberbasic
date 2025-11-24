@@ -30,6 +30,17 @@ void register_builtins_console(FunctionRegistry& R) {
         std::cout << std::endl;
         return Value::nil();
     }});
+    // PRINTC (print without newline)
+    R.add("PRINTC", NativeFn{"PRINTC", -1, [](const std::vector<Value>& a){
+        for (size_t i = 0; i < a.size(); ++i) {
+            print_value(a[i]);
+            if (i < a.size() - 1) {
+                std::cout << " ";
+            }
+        }
+        // No newline - cursor stays at end of line
+        return Value::nil();
+    }});
   // SETCURSORVISIBLE(flag)
   R.add("SETCURSORVISIBLE", NativeFn{"SETCURSORVISIBLE", 1, [](const std::vector<Value>& a){
     bool show = a[0].as_bool();
