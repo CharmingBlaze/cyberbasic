@@ -1,0 +1,37 @@
+CyberBasic License
+
+Copyright (c) 2024 CharmingBlaze
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, and distribute copies of the Software,
+and to permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+1. The above copyright notice and this permission notice shall be included
+   in all copies or substantial portions of the Software.
+
+2. You may NOT sell, resell, or otherwise commercially distribute the Software
+   itself (including any modified versions of CyberBasic) for monetary gain.
+
+3. You may NOT use the Software's source code to create, develop, or distribute
+   a competing interpreter, compiler, or language runtime system that is
+   intended for commercial sale or resale. This includes but is not limited to:
+   - Creating derivative interpreters or compilers based on CyberBasic's code
+   - Using CyberBasic's code as a foundation for commercial language products
+   - Packaging or rebranding CyberBasic as a commercial product
+
+4. You MAY use CyberBasic to create games, applications, or other software
+   products and sell or distribute those products commercially. The restrictions
+   in this license apply only to the CyberBasic interpreter/compiler itself,
+   not to software created using CyberBasic.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
