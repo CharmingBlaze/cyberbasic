@@ -8,7 +8,7 @@
 - **Python**: 3.10+ with PyYAML
 
 ### Runtime Dependencies
-- **Raylib**: 5.0 (automatically downloaded via FetchContent)
+- **Raylib**: 5.5 (included as git submodule)
 
 ## Optional Dependencies
 
@@ -20,9 +20,9 @@
 ## Dependency Management
 
 ### Raylib
-Raylib is automatically downloaded and built during CMake configuration using FetchContent. No manual installation required.
+Raylib is included as a git submodule in the repository. When cloning, use `git clone --recursive` to get raylib automatically. No manual installation required.
 
-**Version**: 5.0 (latest stable)
+**Version**: 5.5 (latest stable, included as git submodule)
 **Source**: https://github.com/raysan5/raylib.git
 
 ### Python Packages
@@ -56,7 +56,7 @@ pip install PyYAML
 | GCC | 13.0 | Latest | C++20 support required |
 | Clang | 15.0 | Latest | C++20 support required |
 | Python | 3.10 | 3.11+ | For code generation |
-| Raylib | 5.0 | 5.0 | Auto-downloaded |
+| Raylib | 5.5 | 5.5 | Included as submodule |
 
 ## Reproducible Builds
 
@@ -75,7 +75,8 @@ Update the `GIT_TAG` in `CMakeLists.txt`:
 FetchContent_Declare(
     raylib
     GIT_REPOSITORY https://github.com/raysan5/raylib.git
-    GIT_TAG 5.0  # Update this to newer version
+    # Note: Raylib is now included as a git submodule, not via FetchContent
+    # To update: cd raylib && git checkout <new-version> && cd ..
 )
 ```
 

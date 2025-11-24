@@ -23,7 +23,7 @@ This document summarizes the upgrades made to the CyberBasic repository.
 
 ### 3. Dependency Management
 - **Raylib Integration**: Migrated from vendored subdirectory to modern `FetchContent` approach
-  - Automatically downloads and builds Raylib 5.0 during CMake configuration
+  - Includes Raylib 5.5 as a git submodule (no download needed)
   - Configured raylib build options (static library, no examples/tools)
   - No need for manual submodule management
   - Easier to update to newer Raylib versions

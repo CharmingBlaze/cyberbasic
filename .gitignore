@@ -62,5 +62,5 @@ __pycache__/
 
 # Legacy directories (if any)
 basic-raylib/
-raylib/
 raylib-cpp/
+# Note: raylib/ is now a git submodule, so it should NOT be ignored

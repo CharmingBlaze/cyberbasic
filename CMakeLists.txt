@@ -25,9 +25,7 @@ option(BUILD_AI_MODULE "Build AI module" ON)
 option(BUILD_GAME_MODULE "Build game systems module" ON)
 option(BUILD_RAYMATH_MODULE "Build raymath module" ON)
 
-# Use FetchContent to get raylib (modern CMake approach)
-include(FetchContent)
-
+# Use raylib from git submodule (included in repository)
 # Set policy minimum to allow compatibility with raylib's CMake requirements
 # This is needed for CMake 4.2+ which removed compatibility with older versions
 if(POLICY CMP0001)
@@ -35,17 +33,13 @@ if(POLICY CMP0001)
 endif()
 set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 
-# Configure raylib build options before fetching
+# Configure raylib build options
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build raylib as static library" FORCE)
 set(RAYLIB_BUILD_EXAMPLES OFF CACHE BOOL "Build raylib examples" FORCE)
 set(RAYLIB_BUILD_TOOLS OFF CACHE BOOL "Build raylib tools" FORCE)
 
-FetchContent_Declare(
-    raylib
-    GIT_REPOSITORY https://github.com/raysan5/raylib.git
-    GIT_TAG 5.0
-)
-FetchContent_MakeAvailable(raylib)
+# Add raylib submodule
+add_subdirectory(raylib)
 
 # Generate raylib bindings
 find_package(Python3 COMPONENTS Interpreter REQUIRED)

@@ -6,9 +6,32 @@
 
 CyberBasic combines the simplicity and elegance of classic BASIC programming with the full power of modern game development. Write games, graphics applications, and interactive programs using familiar BASIC syntax while leveraging the complete Raylib graphics library.
 
-**Note:** For distribution, use `build-dist/cyberbasic.exe` which is statically linked and requires no DLL files. Build it with `.\build-dist.bat` (Windows).
+## 🚀 Quick Start
 
-### 3. Create Your Own Game
+### Download Pre-built Executable (Recommended)
+
+**For users who just want to run CyberBasic without building from source:**
+
+1. **Go to [GitHub Releases](https://github.com/CharmingBlaze/cyberbasic/releases)**
+2. **Download the executable for your platform:**
+   - **Windows:** `cyberbasic-windows-x64.exe` (rename to `cyberbasic.exe`)
+   - **Linux:** `cyberbasic-linux-x64` 
+   - **macOS:** `cyberbasic-macos-x64`
+3. **Make executable (Linux/macOS):** `chmod +x cyberbasic`
+4. **Run your programs:** `./cyberbasic your_game.bas`
+
+**Benefits:**
+- ✅ No build tools required (CMake, compiler, etc.)
+- ✅ No internet needed after download
+- ✅ Ready to use immediately
+- ✅ Statically linked (no DLL dependencies on Windows)
+- ✅ Perfect for end users and game distribution
+
+**Note:** If pre-built executables aren't available yet, see [Building from Source](#building-cyberbasic) below.
+
+---
+
+### Create Your First Game
 
 Create `my_game.bas`:
 
@@ -390,15 +413,29 @@ cyberbasic/
 
 ##  Building from Source
 
+**Note:** Most users should download pre-built executables from [GitHub Releases](https://github.com/CharmingBlaze/cyberbasic/releases) instead of building from source. Building from source is only needed if you want to:
+- Modify CyberBasic itself
+- Use the latest development version
+- Build for a platform not available in releases
+
 ### Prerequisites
 - **CMake** 3.25 or higher
 - **C++20 compiler**: MinGW-w64 GCC 13+ (Windows) or GCC/Clang (Linux/macOS)
 - **Python** 3.10+ with PyYAML
-- **Internet connection** (required for first-time build to download raylib)
+- **Git with submodule support** (raylib is included as a submodule)
 
 ### About Raylib
 
-**Raylib is automatically included:** CyberBasic uses CMake's `FetchContent` to automatically download and build raylib during the CMake configuration step. You do NOT need to manually install raylib.
+**Raylib is included as a git submodule:** CyberBasic includes raylib as a git submodule, so the source code is part of the repository. You do NOT need to manually install raylib or download it separately.
+
+**To get raylib when cloning:**
+```bash
+# Clone with submodules
+git clone --recursive https://github.com/CharmingBlaze/cyberbasic.git
+
+# Or if you already cloned without --recursive:
+git submodule update --init --recursive
+```
 
 **Legal inclusion:** Raylib is licensed under the zlib license, which is a very permissive open source license that allows:
 - Commercial use
@@ -406,11 +443,11 @@ cyberbasic/
 - Distribution
 - Private use
 
-This means CyberBasic can legally include and distribute raylib with the project. The raylib source code is automatically downloaded during the build process and statically linked into the CyberBasic executable.
+This means CyberBasic can legally include and distribute raylib with the project. The raylib source code is included in the repository and statically linked into the CyberBasic executable.
 
 ### Windows Build
 ```bash
-git clone https://github.com/CharmingBlaze/cyberbasic.git
+git clone --recursive https://github.com/CharmingBlaze/cyberbasic.git
 cd cyberbasic
 mkdir build-mingw && cd build-mingw
 cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release ..
@@ -419,7 +456,7 @@ cmake --build .
 
 ### Linux Build
 ```bash
-git clone https://github.com/CharmingBlaze/cyberbasic.git
+git clone --recursive https://github.com/CharmingBlaze/cyberbasic.git
 cd cyberbasic
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
@@ -436,7 +473,7 @@ make -j$(nproc)
 
 **Build:**
 ```bash
-git clone https://github.com/CharmingBlaze/cyberbasic.git
+git clone --recursive https://github.com/CharmingBlaze/cyberbasic.git
 cd cyberbasic
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
@@ -460,7 +497,10 @@ Or use the provided script:
 
 **"Missing raylib module" or "Could not find raylib" errors:**
 
-1. **Check internet connection:** Raylib is downloaded automatically during CMake configuration. Make sure you have internet access when running `cmake` for the first time.
+1. **Initialize submodules:** If you cloned without `--recursive`, initialize the raylib submodule:
+   ```bash
+   git submodule update --init --recursive
+   ```
 
 2. **Clear CMake cache:** If the download failed, try clearing the build directory and reconfiguring:
    ```bash
@@ -754,11 +794,11 @@ For questions, bug reports, or feature requests:
 
 ## Building CyberBasic
 
-**Important:** Raylib is automatically downloaded and built during CMake configuration. You do NOT need to install raylib separately. CMake will fetch it from GitHub during the build process. Make sure you have an internet connection when running CMake for the first time.
+**Important:** Raylib is included as a git submodule in this repository. When cloning, use `git clone --recursive` to get raylib automatically, or run `git submodule update --init --recursive` after cloning. You do NOT need to install raylib separately.
 
 **Windows:**
 ```bash
-git clone https://github.com/CharmingBlaze/cyberbasic.git
+git clone --recursive https://github.com/CharmingBlaze/cyberbasic.git
 cd cyberbasic
 mkdir build-mingw && cd build-mingw
 cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release ..
@@ -767,7 +807,7 @@ cmake --build .
 
 **Linux/macOS:**
 ```bash
-git clone https://github.com/CharmingBlaze/cyberbasic.git
+git clone --recursive https://github.com/CharmingBlaze/cyberbasic.git
 cd cyberbasic
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
