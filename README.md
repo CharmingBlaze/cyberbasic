@@ -6,7 +6,7 @@
 
 CyberBasic combines the simplicity and elegance of classic BASIC programming with the full power of modern game development. Write games, graphics applications, and interactive programs using familiar BASIC syntax while leveraging the complete Raylib graphics library.
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Download Pre-built Executable (Recommended)
 
@@ -651,7 +651,7 @@ This project is open source. See the LICENSE file for details.
 
 ---
 
-## 📚 Documentation Index
+##  Documentation Index
 
 ### Getting Started
 - [Getting Started Guide](docs/GETTING_STARTED.md) - Installation and first steps
@@ -673,7 +673,7 @@ This project is open source. See the LICENSE file for details.
 
 ---
 
-## 🎮 Example: Complete 2D Game
+##  Example: Complete 2D Game
 
 ```basic
 REM Complete 2D Game Example
@@ -709,7 +709,7 @@ CLOSEWINDOW()
 
 ---
 
-## 🎮 Example: Complete 3D Game
+##  Example: Complete 3D Game
 
 ```basic
 REM Complete 3D Game Example
@@ -760,7 +760,7 @@ CLOSEWINDOW()
 
 ---
 
-## 🎯 Roadmap
+##  Roadmap
 
 - Enhanced error messages with line numbers and suggestions
 - Integrated debugger with breakpoints and variable inspection
@@ -771,7 +771,7 @@ CLOSEWINDOW()
 
 ---
 
-## 💬 Support
+##  Support
 
 For questions, bug reports, or feature requests:
 - **Issues**: [Open an issue on GitHub](https://github.com/CharmingBlaze/cyberbasic/issues)
