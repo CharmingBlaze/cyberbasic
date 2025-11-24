@@ -6,28 +6,6 @@
 
 CyberBasic combines the simplicity and elegance of classic BASIC programming with the full power of modern game development. Write games, graphics applications, and interactive programs using familiar BASIC syntax while leveraging the complete Raylib graphics library.
 
-##  Quick Start
-
-**Finding the Executable:**
-- **Windows (development build):** `build/cyberbasic.exe` or `build-mingw/cyberbasic.exe`
-- **Windows (distribution build):** `build-dist/cyberbasic.exe` (statically linked, no DLLs required)
-- **Linux/macOS:** `build/cyberbasic`
-
-The executable is located in your build directory. After building, navigate to that directory or use the full path to run CyberBasic.
-
-### 2. Run Your First Game
-
-```bash
-# Windows - Using distribution build (recommended)
-.\build-dist\cyberbasic.exe examples\simple_pong.bas
-
-# Windows - Using development build
-.\build\cyberbasic.exe examples\simple_pong.bas
-
-# Linux/macOS
-./build/cyberbasic examples/simple_pong.bas
-```
-
 **Note:** For distribution, use `build-dist/cyberbasic.exe` which is statically linked and requires no DLL files. Build it with `.\build-dist.bat` (Windows).
 
 ### 3. Create Your Own Game
