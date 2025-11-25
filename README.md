@@ -484,6 +484,10 @@ make -j$(sysctl -n hw.ncpu)
 
 The executable will be at: `build/cyberbasic`
 
+#### macOS Support Policy
+
+I currently do not own a Mac and have no way to reproduce macOS issues. You're welcome to build CyberBasic on macOS using the steps above, but please understand that I cannot provide hands-on support, fixes, or troubleshooting for macOS-specific problems until I have access to that platform again. If you encounter issues, you'll need to resolve them on your own system or contribute a fix back to the project.
+
 ### Static Linking (Windows)
 For distribution without DLL dependencies:
 ```bash
