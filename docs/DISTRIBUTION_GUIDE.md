@@ -22,6 +22,8 @@ CyberBasic games are distributed as:
 
 Players run your game by executing: `cyberbasic.exe game.bas`
 
+**No compiler handy?** Grab the latest `cyberbasic-windows` or `cyberbasic-linux` artifact from the [Build CyberBasic](https://github.com/CharmingBlaze/cyberbasic/actions/workflows/build.yml) workflow—each successful run uploads fresh binaries produced on clean CI runners.
+
 ---
 
 ## What to Include

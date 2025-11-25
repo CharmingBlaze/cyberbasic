@@ -1,9 +1,0 @@
-x = 3
-SELECT CASE x
-CASE 1
-  PRINT "lt"
-CASE 3
-  PRINT "eq"
-CASE ELSE
-  PRINT "gt"
-ENDSELECT

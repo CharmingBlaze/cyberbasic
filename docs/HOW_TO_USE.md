@@ -12,6 +12,8 @@
 
 ---
 
+> **Need the interpreter without compiling?** Download the latest `cyberbasic-windows` or `cyberbasic-linux` artifact from the [Build CyberBasic workflow](https://github.com/CharmingBlaze/cyberbasic/actions/workflows/build.yml). Each artifact contains the binary along with this guide.
+
 ## Running Programs
 
 ### Basic Syntax
@@ -375,6 +377,7 @@ cmake --build build-dist
 ---
 
 **Happy coding!** 🎮
+
 
 
 

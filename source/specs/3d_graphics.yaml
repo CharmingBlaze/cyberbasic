@@ -1,0 +1,168 @@
+functions:
+  # === 3D GRAPHICS SYSTEM ===
+  - name: DRAWCUBE
+    map_to: DrawCube
+    args: [double, double, double, double, double, double, int, int, int]
+    ret: void
+    custom_body: |
+      ::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+      ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
+      ::DrawCube(position, (float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number(), c);
+  
+  - name: DRAWCUBEV
+    map_to: DrawCubeV
+    args: [double, double, double, double, double, double, int, int, int]
+    ret: void
+    custom_body: |
+      ::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+      ::Vector3 size{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+      ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
+      ::DrawCubeV(position, size, c);
+  
+  - name: DRAWCUBEWIRES
+    map_to: DrawCubeWires
+    args: [double, double, double, double, double, double, int, int, int]
+    ret: void
+    custom_body: |
+      ::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+      ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
+      ::DrawCubeWires(position, (float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number(), c);
+  
+  - name: DRAWCUBEWIRESV
+    map_to: DrawCubeWiresV
+    args: [double, double, double, double, double, double, int, int, int]
+    ret: void
+    custom_body: |
+      ::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+      ::Vector3 size{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+      ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
+      ::DrawCubeWiresV(position, size, c);
+  
+  - name: DRAWSPHERE
+    map_to: DrawSphere
+    args: [double, double, double, double, int, int, int]
+    ret: void
+    custom_body: |
+      ::Vector3 center{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+      ::Color c{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), 255};
+      ::DrawSphere(center, (float)args[3].as_number(), c);
+  
+  - name: DRAWSPHEREWIRES
+    map_to: DrawSphereWires
+    args: [double, double, double, double, int, int, int]
+    ret: void
+    custom_body: |
+      ::Vector3 center{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+      ::Color c{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), 255};
+      ::DrawSphereWires(center, (float)args[3].as_number(), 8, 8, c);
+  
+  - name: DRAWCYLINDER
+    map_to: DrawCylinder
+    args: [double, double, double, double, double, double, int, int, int]
+    ret: void
+    custom_body: |
+      ::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+      ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
+      ::DrawCylinder(position, (float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number(), 8, c);
+  
+  - name: DRAWCYLINDERWIRES
+    map_to: DrawCylinderWires
+    args: [double, double, double, double, double, double, int, int, int]
+    ret: void
+    custom_body: |
+      ::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+      ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
+      ::DrawCylinderWires(position, (float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number(), 8, c);
+  
+  - name: DRAWCONE
+    map_to: DrawCone
+    args: [double, double, double, double, double, int, int, int]
+    ret: void
+    custom_body: |
+      // DrawCone not available in current Raylib version
+      // Using DrawCylinder as alternative
+      ::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+      ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255};
+      ::DrawCylinder(position, (float)args[3].as_number(), 0.0f, (float)args[4].as_number(), 8, c);
+  
+  - name: DRAWCONEWIRES
+    map_to: DrawConeWires
+    args: [double, double, double, double, double, int, int, int]
+    ret: void
+    custom_body: |
+      // DrawConeWires not available in current Raylib version
+      // Using DrawCylinderWires as alternative
+      ::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+      ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255};
+      ::DrawCylinderWires(position, (float)args[3].as_number(), 0.0f, (float)args[4].as_number(), 8, c);
+  
+  - name: DRAWTORUS
+    map_to: DrawTorus
+    args: [double, double, double, double, double, int, int, int]
+    ret: void
+    custom_body: |
+      // DrawTorus not available in current Raylib version
+      // Using DrawCylinder as alternative
+      ::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+      ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255};
+      ::DrawCylinder(position, (float)args[3].as_number(), (float)args[3].as_number(), (float)args[4].as_number(), 8, c);
+  
+  - name: DRAWTORUSWIRES
+    map_to: DrawTorusWires
+    args: [double, double, double, double, double, int, int, int]
+    ret: void
+    custom_body: |
+      // DrawTorusWires not available in current Raylib version
+      // Using DrawCylinderWires as alternative
+      ::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+      ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255};
+      ::DrawCylinderWires(position, (float)args[3].as_number(), (float)args[3].as_number(), (float)args[4].as_number(), 8, c);
+  
+  - name: DRAWMODEL
+    map_to: DrawModel
+    args: [int, double, double, double, double, int, int, int]
+    ret: void
+    custom_body: |
+      int model_id = args[0].as_int();
+      ::Vector3 position{(float)args[1].as_number(), (float)args[2].as_number(), (float)args[3].as_number()};
+      ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255};
+      auto it = rlreg::models.find(model_id);
+      if (it != rlreg::models.end()) {
+        ::DrawModel(it->second, position, (float)args[4].as_number(), c);
+      }
+  
+  - name: DRAWMODELWIRES
+    map_to: DrawModelWires
+    args: [int, double, double, double, double, int, int, int]
+    ret: void
+    custom_body: |
+      int model_id = args[0].as_int();
+      ::Vector3 position{(float)args[1].as_number(), (float)args[2].as_number(), (float)args[3].as_number()};
+      ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255};
+      auto it = rlreg::models.find(model_id);
+      if (it != rlreg::models.end()) {
+        ::DrawModelWires(it->second, position, (float)args[4].as_number(), c);
+      }
+  
+  - name: LOADMODEL
+    map_to: LoadModel
+    args: [string]
+    ret: int
+    custom_body: |
+      ::Model model = ::LoadModel(args[0].as_string().c_str());
+      int id = rlreg::next_model_id++;
+      rlreg::models[id] = model;
+      return Value::from_int(id);
+  
+  - name: UNLOADMODEL
+    map_to: UnloadModel
+    args: [int]
+    ret: void
+    custom_body: |
+      int id = args[0].as_int();
+      auto it = rlreg::models.find(id);
+      if (it != rlreg::models.end()) {
+        ::UnloadModel(it->second);
+        rlreg::models.erase(it);
+      }
+      return Value::nil();

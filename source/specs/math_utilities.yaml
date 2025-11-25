@@ -1,0 +1,168 @@
+functions:
+  # === MATH & UTILITY FUNCTIONS ===
+  - name: ABS
+    map_to: abs
+    args: [double]
+    ret: double
+    custom_body: |
+      return Value::from_number(std::abs(args[0].as_number()));
+  
+  - name: MIN
+    map_to: min
+    args: [double, double]
+    ret: double
+    custom_body: |
+      return Value::from_number(std::min(args[0].as_number(), args[1].as_number()));
+  
+  - name: MAX
+    map_to: max
+    args: [double, double]
+    ret: double
+    custom_body: |
+      return Value::from_number(std::max(args[0].as_number(), args[1].as_number()));
+  
+  - name: CLAMP
+    map_to: clamp
+    args: [double, double, double]
+    ret: double
+    custom_body: |
+      double value = args[0].as_number();
+      double min_val = args[1].as_number();
+      double max_val = args[2].as_number();
+      return Value::from_number(std::clamp(value, min_val, max_val));
+  
+  - name: DISTANCE
+    map_to: distance
+    args: [double, double, double, double]
+    ret: double
+    custom_body: |
+      double x1 = args[0].as_number();
+      double y1 = args[1].as_number();
+      double x2 = args[2].as_number();
+      double y2 = args[3].as_number();
+      double dx = x2 - x1;
+      double dy = y2 - y1;
+      return Value::from_number(dx * dx + dy * dy); // Returns distance squared
+  
+  - name: SIN
+    map_to: sin
+    args: [double]
+    ret: double
+    custom_body: |
+      return Value::from_number(std::sin(args[0].as_number()));
+  
+  - name: COS
+    map_to: cos
+    args: [double]
+    ret: double
+    custom_body: |
+      return Value::from_number(std::cos(args[0].as_number()));
+  
+  - name: TAN
+    map_to: tan
+    args: [double]
+    ret: double
+    custom_body: |
+      return Value::from_number(std::tan(args[0].as_number()));
+  
+  - name: ASIN
+    map_to: asin
+    args: [double]
+    ret: double
+    custom_body: |
+      return Value::from_number(std::asin(args[0].as_number()));
+  
+  - name: ACOS
+    map_to: acos
+    args: [double]
+    ret: double
+    custom_body: |
+      return Value::from_number(std::acos(args[0].as_number()));
+  
+  - name: ATAN
+    map_to: atan
+    args: [double]
+    ret: double
+    custom_body: |
+      return Value::from_number(std::atan(args[0].as_number()));
+  
+  - name: ATAN2
+    map_to: atan2
+    args: [double, double]
+    ret: double
+    custom_body: |
+      return Value::from_number(std::atan2(args[0].as_number(), args[1].as_number()));
+  
+  - name: SQRT
+    map_to: sqrt
+    args: [double]
+    ret: double
+    custom_body: |
+      return Value::from_number(std::sqrt(args[0].as_number()));
+  
+  - name: POW
+    map_to: pow
+    args: [double, double]
+    ret: double
+    custom_body: |
+      return Value::from_number(std::pow(args[0].as_number(), args[1].as_number()));
+  
+  - name: LOG
+    map_to: log
+    args: [double]
+    ret: double
+    custom_body: |
+      return Value::from_number(std::log(args[0].as_number()));
+  
+  - name: LOG10
+    map_to: log10
+    args: [double]
+    ret: double
+    custom_body: |
+      return Value::from_number(std::log10(args[0].as_number()));
+  
+  - name: EXP
+    map_to: exp
+    args: [double]
+    ret: double
+    custom_body: |
+      return Value::from_number(std::exp(args[0].as_number()));
+  
+  - name: FLOOR
+    map_to: floor
+    args: [double]
+    ret: double
+    custom_body: |
+      return Value::from_number(std::floor(args[0].as_number()));
+  
+  - name: CEIL
+    map_to: ceil
+    args: [double]
+    ret: double
+    custom_body: |
+      return Value::from_number(std::ceil(args[0].as_number()));
+  
+  - name: ROUND
+    map_to: round
+    args: [double]
+    ret: double
+    custom_body: |
+      return Value::from_number(std::round(args[0].as_number()));
+  
+  - name: RANDOM
+    map_to: random
+    args: [double, double]
+    ret: double
+    custom_body: |
+      double min_val = args[0].as_number();
+      double max_val = args[1].as_number();
+      double range = max_val - min_val;
+      return Value::from_number(min_val + (static_cast<double>(rand()) / RAND_MAX) * range);
+  
+  - name: RANDOMSEED
+    map_to: randomseed
+    args: [int]
+    ret: void
+    custom_body: |
+      srand(args[0].as_int());
+      return Value::nil();

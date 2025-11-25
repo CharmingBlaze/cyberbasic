@@ -59,9 +59,14 @@
 
 3. **The executable will be at:** `build/cyberbasic`
 
-### Option 2: Use Pre-built Binary (When Available)
+### Option 2: Download CI Artifacts (Fastest)
 
-Check the [Releases](https://github.com/CharmingBlaze/cyberbasic/releases) page for pre-built binaries.
+Every push to `master` kicks off the [Build CyberBasic](https://github.com/CharmingBlaze/cyberbasic/actions/workflows/build.yml) workflow. Open the latest successful run and download:
+
+- `cyberbasic-windows` – contains `cyberbasic.exe`, `README.md`, and `docs/HOW_TO_USE.md`
+- `cyberbasic-linux` – contains the Linux binary plus documentation
+
+Extract the archive, mark the Linux binary executable (`chmod +x cyberbasic`), and you’re ready to go.
 
 ---
 

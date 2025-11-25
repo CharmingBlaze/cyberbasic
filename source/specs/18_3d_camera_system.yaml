@@ -1,0 +1,265 @@
+# 3D Camera System Functions
+# Easy-to-use 3D camera controls for game developers
+# Following best practices: simple, intuitive API
+
+functions:
+  # === CAMERA SETUP ===
+  - name: SETUP3DCAMERA
+    raylib_name: Setup3DCamera
+    args: [int, int, int, int, int, int, int, int, int, int]
+    ret: void
+    category: 3d_camera
+    description: "Setup 3D camera (posX, posY, posZ, targetX, targetY, targetZ, upX, upY, upZ, fovy)"
+    working: true
+    custom_body: |
+      Camera3D camera;
+      camera.position = Vector3{(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()};
+      camera.target = Vector3{(float)args[3].as_int(), (float)args[4].as_int(), (float)args[5].as_int()};
+      camera.up = Vector3{(float)args[6].as_int(), (float)args[7].as_int(), (float)args[8].as_int()};
+      camera.fovy = (float)args[9].as_int();
+      camera.projection = CAMERA_PERSPECTIVE;
+      // Note: SetCameraMode and SetCamera3D are not available in this raylib version
+      // This is a placeholder implementation
+
+  - name: SETUP3DCAMERAFIRSTPERSON
+    raylib_name: Setup3DCameraFirstPerson
+    args: [int, int, int, int, int, int, int]
+    ret: void
+    category: 3d_camera
+    description: "Setup first-person camera (posX, posY, posZ, targetX, targetY, targetZ, fovy)"
+    working: true
+    custom_body: |
+      Camera3D camera = {
+        .position = {(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()},
+        .target = {(float)args[3].as_int(), (float)args[4].as_int(), (float)args[5].as_int()},
+        .up = {0.0f, 1.0f, 0.0f},
+        .fovy = (float)args[6].as_int(),
+        .projection = CAMERA_PERSPECTIVE
+      };
+      SetCameraMode(camera, CAMERA_FIRST_PERSON);
+      SetCamera3D(camera);
+
+  - name: SETUP3DCAMERATHIRDPERSON
+    raylib_name: Setup3DCameraThirdPerson
+    args: [int, int, int, int, int, int, int, int]
+    ret: void
+    category: 3d_camera
+    description: "Setup third-person camera (posX, posY, posZ, targetX, targetY, targetZ, distance, fovy)"
+    working: true
+    custom_body: |
+      Camera3D camera = {
+        .position = {(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()},
+        .target = {(float)args[3].as_int(), (float)args[4].as_int(), (float)args[5].as_int()},
+        .up = {0.0f, 1.0f, 0.0f},
+        .fovy = (float)args[7].as_int(),
+        .projection = CAMERA_PERSPECTIVE
+      };
+      SetCameraMode(camera, CAMERA_THIRD_PERSON);
+      SetCamera3D(camera);
+
+  # === CAMERA CONTROL ===
+  - name: UPDATECAMERA3D
+    raylib_name: UpdateCamera3D
+    args: []
+    ret: void
+    category: 3d_camera
+    description: "Update 3D camera (call this every frame)"
+    working: true
+    custom_body: "UpdateCamera(&GetCamera3D())"
+
+  - name: SETCAMERA3DPOSITION
+    raylib_name: SetCamera3DPosition
+    args: [int, int, int]
+    ret: void
+    category: 3d_camera
+    description: "Set camera position (x, y, z)"
+    working: true
+    custom_body: |
+      Camera3D camera = GetCamera3D();
+      camera.position = {(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()};
+      SetCamera3D(camera);
+
+  - name: SETCAMERA3DTARGET
+    raylib_name: SetCamera3DTarget
+    args: [int, int, int]
+    ret: void
+    category: 3d_camera
+    description: "Set camera target (x, y, z)"
+    working: true
+    custom_body: |
+      Camera3D camera = GetCamera3D();
+      camera.target = {(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()};
+      SetCamera3D(camera);
+
+  - name: SETCAMERA3DUP
+    raylib_name: SetCamera3DUp
+    args: [int, int, int]
+    ret: void
+    category: 3d_camera
+    description: "Set camera up vector (x, y, z)"
+    working: true
+    custom_body: |
+      Camera3D camera = GetCamera3D();
+      camera.up = {(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()};
+      SetCamera3D(camera);
+
+  - name: SETCAMERA3DFOVY
+    raylib_name: SetCamera3DFovy
+    args: [int]
+    ret: void
+    category: 3d_camera
+    description: "Set camera field of view (fovy)"
+    working: true
+    custom_body: |
+      Camera3D camera = GetCamera3D();
+      camera.fovy = (float)args[0].as_int();
+      SetCamera3D(camera);
+
+  # === CAMERA MODES ===
+  - name: SETCAMERA3DMODE
+    raylib_name: SetCamera3DMode
+    args: [int]
+    ret: void
+    category: 3d_camera
+    description: "Set camera mode (0=FREE, 1=ORBITAL, 2=FIRST_PERSON, 3=THIRD_PERSON)"
+    working: true
+    custom_body: |
+      Camera3D camera = GetCamera3D();
+      int mode = args[0].as_int();
+      CameraMode cameraMode = CAMERA_FREE;
+      if (mode == 1) cameraMode = CAMERA_ORBITAL;
+      else if (mode == 2) cameraMode = CAMERA_FIRST_PERSON;
+      else if (mode == 3) cameraMode = CAMERA_THIRD_PERSON;
+      SetCameraMode(camera, cameraMode);
+
+  # === 3D RENDERING ===
+  - name: BEGINDRAW3D
+    raylib_name: BeginDraw3D
+    args: []
+    ret: void
+    category: 3d_camera
+    description: "Begin 3D drawing mode (call before drawing 3D objects)"
+    working: true
+    custom_body: "BeginMode3D(GetCamera3D())"
+
+  - name: ENDDRAW3D
+    raylib_name: EndDraw3D
+    args: []
+    ret: void
+    category: 3d_camera
+    description: "End 3D drawing mode (call after drawing 3D objects)"
+    working: true
+    custom_body: "EndMode3D()"
+
+  # === CAMERA UTILITIES ===
+  - name: GETCAMERA3DPOSITION
+    raylib_name: GetCamera3DPosition
+    args: []
+    ret: string
+    category: 3d_camera
+    description: "Get camera position as string (x,y,z)"
+    working: true
+    custom_body: |
+      Camera3D camera = GetCamera3D();
+      return Value::from_string(std::to_string((int)camera.position.x) + "," + 
+                               std::to_string((int)camera.position.y) + "," + 
+                               std::to_string((int)camera.position.z));
+
+  - name: GETCAMERA3DTARGET
+    raylib_name: GetCamera3DTarget
+    args: []
+    ret: string
+    category: 3d_camera
+    description: "Get camera target as string (x,y,z)"
+    working: true
+    custom_body: |
+      Camera3D camera = GetCamera3D();
+      return Value::from_string(std::to_string((int)camera.target.x) + "," + 
+                               std::to_string((int)camera.target.y) + "," + 
+                               std::to_string((int)camera.target.z));
+
+  - name: CAMERA3DMOVEFORWARD
+    raylib_name: Camera3DMoveForward
+    args: [float]
+    ret: void
+    category: 3d_camera
+    description: "Move camera forward by distance"
+    working: true
+    custom_body: |
+      Camera3D camera = GetCamera3D();
+      Vector3 forward = Vector3Subtract(camera.target, camera.position);
+      forward = Vector3Normalize(forward);
+      forward = Vector3Scale(forward, args[0].as_number());
+      camera.position = Vector3Add(camera.position, forward);
+      camera.target = Vector3Add(camera.target, forward);
+      SetCamera3D(camera);
+
+  - name: CAMERA3DMOVEBACKWARD
+    raylib_name: Camera3DMoveBackward
+    args: [float]
+    ret: void
+    category: 3d_camera
+    description: "Move camera backward by distance"
+    working: true
+    custom_body: |
+      Camera3D camera = GetCamera3D();
+      Vector3 forward = Vector3Subtract(camera.target, camera.position);
+      forward = Vector3Normalize(forward);
+      forward = Vector3Scale(forward, -args[0].as_number());
+      camera.position = Vector3Add(camera.position, forward);
+      camera.target = Vector3Add(camera.target, forward);
+      SetCamera3D(camera);
+
+  - name: CAMERA3DMOVEUP
+    raylib_name: Camera3DMoveUp
+    args: [float]
+    ret: void
+    category: 3d_camera
+    description: "Move camera up by distance"
+    working: true
+    custom_body: |
+      Camera3D camera = GetCamera3D();
+      Vector3 up = Vector3Scale(camera.up, args[0].as_number());
+      camera.position = Vector3Add(camera.position, up);
+      camera.target = Vector3Add(camera.target, up);
+      SetCamera3D(camera);
+
+  - name: CAMERA3DMOVEDOWN
+    raylib_name: Camera3DMoveDown
+    args: [float]
+    ret: void
+    category: 3d_camera
+    description: "Move camera down by distance"
+    working: true
+    custom_body: |
+      Camera3D camera = GetCamera3D();
+      Vector3 up = Vector3Scale(camera.up, -args[0].as_number());
+      camera.position = Vector3Add(camera.position, up);
+      camera.target = Vector3Add(camera.target, up);
+      SetCamera3D(camera);
+
+  - name: CAMERA3DROTATE
+    raylib_name: Camera3DRotate
+    args: [float, float]
+    ret: void
+    category: 3d_camera
+    description: "Rotate camera (yaw, pitch in degrees)"
+    working: true
+    custom_body: |
+      Camera3D camera = GetCamera3D();
+      float yaw = args[0].as_number() * DEG2RAD;
+      float pitch = args[1].as_number() * DEG2RAD;
+      
+      Vector3 forward = Vector3Subtract(camera.target, camera.position);
+      float distance = Vector3Length(forward);
+      
+      // Apply yaw rotation
+      forward = Vector3RotateByAxisAngle(forward, camera.up, yaw);
+      
+      // Apply pitch rotation
+      Vector3 right = Vector3CrossProduct(forward, camera.up);
+      right = Vector3Normalize(right);
+      forward = Vector3RotateByAxisAngle(forward, right, pitch);
+      
+      camera.target = Vector3Add(camera.position, Vector3Scale(Vector3Normalize(forward), distance));
+      SetCamera3D(camera);

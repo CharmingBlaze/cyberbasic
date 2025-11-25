@@ -2,8 +2,13 @@
 build/
 build_*/
 build-*/
+source/build/
+source/build_*/
+source/build-*/
 _deps/
 out/
+source/_deps/
+source/out/
 
 # CMake generated files
 CMakeCache.txt
@@ -19,6 +24,8 @@ rules.ninja
 
 # Executables
 *.exe
+!bin/cyberbasic.exe
+source/bin/
 *.out
 *.app
 
@@ -63,4 +70,4 @@ __pycache__/
 # Legacy directories (if any)
 basic-raylib/
 raylib-cpp/
-# Note: raylib/ is now a git submodule, so it should NOT be ignored
+# Note: source/raylib is a git submodule, so it should NOT be ignored

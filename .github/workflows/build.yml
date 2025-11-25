@@ -1,0 +1,87 @@
+name: Build CyberBasic
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-mingw:
+    name: Windows (MinGW)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-make
+            mingw-w64-ucrt-x86_64-pkg-config
+            mingw-w64-ucrt-x86_64-python
+
+      - name: Configure CMake
+        shell: msys2 {0}
+        run: cmake -S . -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DBASIC_STATIC_LINK=ON
+
+      - name: Build
+        shell: msys2 {0}
+        run: cmake --build build --config Release --verbose
+
+      - name: Collect artifacts
+        shell: msys2 {0}
+        run: |
+          mkdir -p artifacts/windows
+          cp build/cyberbasic.exe artifacts/windows/cyberbasic.exe
+          cp README.md artifacts/windows/
+          cp docs/HOW_TO_USE.md artifacts/windows/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cyberbasic-windows
+          path: artifacts/windows
+
+  linux-release:
+    name: Linux (GCC)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake python3
+
+      - name: Configure CMake
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --config Release -- -j$(nproc)
+
+      - name: Collect artifacts
+        run: |
+          mkdir -p artifacts/linux
+          cp build/cyberbasic artifacts/linux/cyberbasic
+          cp README.md artifacts/linux/
+          cp docs/HOW_TO_USE.md artifacts/linux/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cyberbasic-linux
+          path: artifacts/linux
+

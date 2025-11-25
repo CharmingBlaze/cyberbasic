@@ -1,0 +1,122 @@
+# Advanced 3D Graphics Functions
+# Advanced 3D shapes, camera controls, and 3D utilities
+# Following best practices: proper 3D handling
+
+functions:
+  # === ADVANCED 3D SHAPES ===
+  - name: DRAWSPHERE
+    raylib_name: DrawSphere
+    args: [int, int, int, float, int, int, int]
+    ret: void
+    category: advanced_3d
+    description: "Draw sphere at x,y,z with radius and RGB color (x, y, z, radius, R, G, B)"
+    working: true
+    custom_body: "DrawSphere(Vector3{(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()}, args[3].as_number(), Color{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), 255})"
+
+  - name: DRAWSPHEREWIRES
+    raylib_name: DrawSphereWires
+    args: [int, int, int, float, int, int, int, int]
+    ret: void
+    category: advanced_3d
+    description: "Draw sphere wires at x,y,z with radius, rings, slices and RGB color (x, y, z, radius, rings, slices, R, G, B)"
+    working: true
+    custom_body: "DrawSphereWires(Vector3{(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()}, args[3].as_number(), args[4].as_int(), args[5].as_int(), Color{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255})"
+
+  - name: DRAWCYLINDER
+    raylib_name: DrawCylinder
+    args: [int, int, int, float, float, float, int, int, int]
+    ret: void
+    category: advanced_3d
+    description: "Draw cylinder at x,y,z with radiusTop, radiusBottom, height and RGB color (x, y, z, radiusTop, radiusBottom, height, R, G, B)"
+    working: true
+    custom_body: "DrawCylinder(Vector3{(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()}, args[3].as_number(), args[4].as_number(), args[5].as_number(), args[6].as_int(), Color{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), 255})"
+
+  - name: DRAWCYLINDERWIRES
+    raylib_name: DrawCylinderWires
+    args: [int, int, int, float, float, float, int, int, int]
+    ret: void
+    category: advanced_3d
+    description: "Draw cylinder wires at x,y,z with radiusTop, radiusBottom, height and RGB color (x, y, z, radiusTop, radiusBottom, height, R, G, B)"
+    working: true
+    custom_body: "DrawCylinderWires(Vector3{(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()}, args[3].as_number(), args[4].as_number(), args[5].as_number(), args[6].as_int(), Color{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), 255})"
+
+  - name: DRAWCAPSULE
+    raylib_name: DrawCapsule
+    args: [int, int, int, int, int, int, float, int, int, int]
+    ret: void
+    category: advanced_3d
+    description: "Draw capsule between start and end points with radius, slices, rings and RGB color (startX, startY, startZ, endX, endY, endZ, radius, slices, rings, R, G, B)"
+    working: true
+    custom_body: "DrawCapsule(Vector3{(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()}, Vector3{(float)args[3].as_int(), (float)args[4].as_int(), (float)args[5].as_int()}, args[6].as_number(), args[7].as_int(), args[8].as_int(), Color{(unsigned char)args[9].as_int(), (unsigned char)args[10].as_int(), (unsigned char)args[11].as_int(), 255})"
+
+  - name: DRAWCAPSULEWIRES
+    raylib_name: DrawCapsuleWires
+    args: [int, int, int, int, int, int, float, int, int, int]
+    ret: void
+    category: advanced_3d
+    description: "Draw capsule wires between start and end points with radius, slices, rings and RGB color (startX, startY, startZ, endX, endY, endZ, radius, slices, rings, R, G, B)"
+    working: true
+    custom_body: "DrawCapsuleWires(Vector3{(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()}, Vector3{(float)args[3].as_int(), (float)args[4].as_int(), (float)args[5].as_int()}, args[6].as_number(), args[7].as_int(), args[8].as_int(), Color{(unsigned char)args[9].as_int(), (unsigned char)args[10].as_int(), (unsigned char)args[11].as_int(), 255})"
+
+  - name: DRAWPLANE
+    raylib_name: DrawPlane
+    args: [int, int, int, int, int, int, int, int]
+    ret: void
+    category: advanced_3d
+    description: "Draw plane at x,y,z with width, length and RGB color (x, y, z, width, length, R, G, B)"
+    working: true
+    custom_body: "DrawPlane(Vector3{(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()}, Vector2{(float)args[3].as_int(), (float)args[4].as_int()}, Color{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255})"
+
+  - name: DRAWRAY
+    raylib_name: DrawRay
+    args: [int, int, int, int, int, int, int, int, int]
+    ret: void
+    category: advanced_3d
+    description: "Draw ray from start to end with RGB color (startX, startY, startZ, endX, endY, endZ, R, G, B)"
+    working: true
+    custom_body: "DrawRay(Ray{Vector3{(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()}, Vector3{(float)args[3].as_int(), (float)args[4].as_int(), (float)args[5].as_int()}}, Color{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255})"
+
+  - name: DRAWGRID
+    raylib_name: DrawGrid
+    args: [int, float]
+    ret: void
+    category: advanced_3d
+    description: "Draw grid with slices and spacing (slices, spacing)"
+    working: true
+    custom_body: "DrawGrid(args[0].as_int(), args[1].as_number())"
+
+  # === ADVANCED 3D UTILITIES ===
+  - name: CHECKCOLLISIONSPHERES
+    raylib_name: CheckCollisionSpheres
+    args: [int, int, int, float, int, int, int, float]
+    ret: bool
+    category: advanced_3d
+    description: "Check collision between two spheres (center1X, center1Y, center1Z, radius1, center2X, center2Y, center2Z, radius2)"
+    working: true
+    custom_body: "CheckCollisionSpheres(Vector3{(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()}, args[3].as_number(), Vector3{(float)args[4].as_int(), (float)args[5].as_int(), (float)args[6].as_int()}, args[7].as_number())"
+
+  - name: CHECKCOLLISIONBOXES
+    raylib_name: CheckCollisionBoxes
+    args: [int, int, int, int, int, int, int, int, int, int, int, int]
+    ret: bool
+    category: advanced_3d
+    description: "Check collision between two boxes (box1MinX, box1MinY, box1MinZ, box1MaxX, box1MaxY, box1MaxZ, box2MinX, box2MinY, box2MinZ, box2MaxX, box2MaxY, box2MaxZ)"
+    working: true
+    custom_body: "CheckCollisionBoxes(BoundingBox{Vector3{(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()}, Vector3{(float)args[3].as_int(), (float)args[4].as_int(), (float)args[5].as_int()}}, BoundingBox{Vector3{(float)args[6].as_int(), (float)args[7].as_int(), (float)args[8].as_int()}, Vector3{(float)args[9].as_int(), (float)args[10].as_int(), (float)args[11].as_int()}})"
+
+  - name: CHECKCOLLISIONBOXSPHERE
+    raylib_name: CheckCollisionBoxSphere
+    args: [int, int, int, int, int, int, int, int, int, float]
+    ret: bool
+    category: advanced_3d
+    description: "Check collision between box and sphere (boxMinX, boxMinY, boxMinZ, boxMaxX, boxMaxY, boxMaxZ, sphereX, sphereY, sphereZ, radius)"
+    working: true
+    custom_body: "CheckCollisionBoxSphere(BoundingBox{Vector3{(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()}, Vector3{(float)args[3].as_int(), (float)args[4].as_int(), (float)args[5].as_int()}}, Vector3{(float)args[6].as_int(), (float)args[7].as_int(), (float)args[8].as_int()}, args[9].as_number())"
+
+
+
+
+
+
+
+

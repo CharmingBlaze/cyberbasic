@@ -1,2 +1,0 @@
-PRINT STR(VAL("42") + 1)
-ASSERT(1)

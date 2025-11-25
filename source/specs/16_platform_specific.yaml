@@ -1,0 +1,215 @@
+# Platform-Specific Features
+# Windows, Linux, and macOS specific functions
+# Following best practices: proper platform handling
+
+functions:
+  # === WINDOWS-SPECIFIC FEATURES ===
+  - name: SETWINDOWSTATE
+    raylib_name: SetWindowState
+    args: [int]
+    ret: void
+    category: platform_specific
+    description: "Set window state flags (flags)"
+    working: true
+    custom_body: "SetWindowState(args[0].as_int())"
+
+  - name: CLEARWINDOWSTATE
+    raylib_name: ClearWindowState
+    args: [int]
+    ret: void
+    category: platform_specific
+    description: "Clear window state flags (flags)"
+    working: true
+    custom_body: "ClearWindowState(args[0].as_int())"
+
+  - name: ISWINDOWSTATE
+    raylib_name: IsWindowState
+    args: [int]
+    ret: bool
+    category: platform_specific
+    description: "Check if window state flag is set (flag)"
+    working: true
+    custom_body: "IsWindowState(args[0].as_int())"
+
+  - name: SETWINDOWFOCUSED
+    raylib_name: SetWindowFocused
+    args: []
+    ret: void
+    category: platform_specific
+    description: "Set window focused"
+    working: true
+    custom_body: "SetWindowFocused()"
+
+
+
+  # === MONITOR AND DISPLAY FEATURES ===
+  - name: GETCURRENTMONITOR
+    raylib_name: GetCurrentMonitor
+    args: []
+    ret: int
+    category: platform_specific
+    description: "Get current monitor index"
+    working: true
+    custom_body: "GetCurrentMonitor()"
+
+  - name: GETMONITORWIDTH
+    raylib_name: GetMonitorWidth
+    args: [int]
+    ret: int
+    category: platform_specific
+    description: "Get monitor width (monitor index)"
+    working: true
+    custom_body: "GetMonitorWidth(args[0].as_int())"
+
+  - name: GETMONITORHEIGHT
+    raylib_name: GetMonitorHeight
+    args: [int]
+    ret: int
+    category: platform_specific
+    description: "Get monitor height (monitor index)"
+    working: true
+    custom_body: "GetMonitorHeight(args[0].as_int())"
+
+  - name: GETMONITORPHYSICALWIDTH
+    raylib_name: GetMonitorPhysicalWidth
+    args: [int]
+    ret: int
+    category: platform_specific
+    description: "Get monitor physical width in millimeters (monitor index)"
+    working: true
+    custom_body: "GetMonitorPhysicalWidth(args[0].as_int())"
+
+  - name: GETMONITORPHYSICALHEIGHT
+    raylib_name: GetMonitorPhysicalHeight
+    args: [int]
+    ret: int
+    category: platform_specific
+    description: "Get monitor physical height in millimeters (monitor index)"
+    working: true
+    custom_body: "GetMonitorPhysicalHeight(args[0].as_int())"
+
+  - name: GETMONITORREFRESHRATE
+    raylib_name: GetMonitorRefreshRate
+    args: [int]
+    ret: int
+    category: platform_specific
+    description: "Get monitor refresh rate (monitor index)"
+    working: true
+    custom_body: "GetMonitorRefreshRate(args[0].as_int())"
+
+  # === WINDOW POSITION AND SIZE FEATURES ===
+  - name: GETWINDOWPOSITION
+    raylib_name: GetWindowPosition
+    args: []
+    ret: vector2
+    category: platform_specific
+    description: "Get window position"
+    working: true
+    custom_body: "GetWindowPosition()"
+
+  - name: GETWINDOWSCALE
+    raylib_name: GetWindowScaleDPI
+    args: []
+    ret: vector2
+    category: platform_specific
+    description: "Get window scale DPI"
+    working: true
+    custom_body: "GetWindowScaleDPI()"
+
+
+
+  # === CLIPBOARD FEATURES ===
+  - name: SETCLIPBOARDTEXT
+    raylib_name: SetClipboardText
+    args: [string]
+    ret: void
+    category: platform_specific
+    description: "Set clipboard text (text)"
+    working: true
+    custom_body: "SetClipboardText(args[0].as_string().c_str())"
+
+  - name: GETCLIPBOARDTEXT
+    raylib_name: GetClipboardText
+    args: []
+    ret: string
+    category: platform_specific
+    description: "Get clipboard text"
+    working: true
+    custom_body: "GetClipboardText()"
+
+
+
+
+
+  # === PLATFORM DETECTION ===
+  - name: ISWINDOWREADY
+    raylib_name: IsWindowReady
+    args: []
+    ret: bool
+    category: platform_specific
+    description: "Check if window is ready"
+    working: true
+    custom_body: "IsWindowReady()"
+
+  - name: ISWINDOWFULLSCREEN
+    raylib_name: IsWindowFullscreen
+    args: []
+    ret: bool
+    category: platform_specific
+    description: "Check if window is fullscreen"
+    working: true
+    custom_body: "IsWindowFullscreen()"
+
+  - name: ISWINDOWHIDDEN
+    raylib_name: IsWindowHidden
+    args: []
+    ret: bool
+    category: platform_specific
+    description: "Check if window is hidden"
+    working: true
+    custom_body: "IsWindowHidden()"
+
+  - name: ISWINDOWMINIMIZED
+    raylib_name: IsWindowMinimized
+    args: []
+    ret: bool
+    category: platform_specific
+    description: "Check if window is minimized"
+    working: true
+    custom_body: "IsWindowMinimized()"
+
+  - name: ISWINDOWMAXIMIZED
+    raylib_name: IsWindowMaximized
+    args: []
+    ret: bool
+    category: platform_specific
+    description: "Check if window is maximized"
+    working: true
+    custom_body: "IsWindowMaximized()"
+
+  - name: ISWINDOWFOCUSED
+    raylib_name: IsWindowFocused
+    args: []
+    ret: bool
+    category: platform_specific
+    description: "Check if window is focused"
+    working: true
+    custom_body: "IsWindowFocused()"
+
+  - name: ISWINDOWRESIZED
+    raylib_name: IsWindowResized
+    args: []
+    ret: bool
+    category: platform_specific
+    description: "Check if window was resized"
+    working: true
+    custom_body: "IsWindowResized()"
+
+  - name: ISWINDOWSTATE
+    raylib_name: IsWindowState
+    args: [int]
+    ret: bool
+    category: platform_specific
+    description: "Check if window state flag is set (flag)"
+    working: true
+    custom_body: "IsWindowState(args[0].as_int())"

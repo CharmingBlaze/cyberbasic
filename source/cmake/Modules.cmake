@@ -1,0 +1,22 @@
+# Helper function to conditionally add module files
+function(add_module_if_enabled module_name module_dir)
+    if(${BUILD_${module_name}_MODULE})
+        # Add module implementation file if it exists
+        set(module_file "${CMAKE_SOURCE_DIR}/src/modules/${module_dir}/${module_dir}_module.cpp")
+        if(EXISTS ${module_file})
+            target_sources(cyberbasic PRIVATE ${module_file})
+        endif()
+    endif()
+endfunction()
+
+# Add modules conditionally (called after executable is created)
+add_module_if_enabled(GRAPHICS graphics)
+add_module_if_enabled(AUDIO audio)
+add_module_if_enabled(INPUT input)
+add_module_if_enabled(NETWORKING networking)
+add_module_if_enabled(PHYSICS physics)
+add_module_if_enabled(GUI gui)
+add_module_if_enabled(3D 3d)
+add_module_if_enabled(AI ai)
+add_module_if_enabled(GAME game)
+add_module_if_enabled(RAYMATH raylib)

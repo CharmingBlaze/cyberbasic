@@ -6,32 +6,43 @@
 
 CyberBasic combines the simplicity and elegance of classic BASIC programming with the full power of modern game development. Write games, graphics applications, and interactive programs using familiar BASIC syntax while leveraging the complete Raylib graphics library.
 
+> **Distribution focus:** CyberBasic is primarily offered as a plug-and-play Windows executable (`cyberbasic.exe`). Linux and macOS users are welcome—and fully supported—to compile from source using the instructions later in this README, but I only distribute binaries for Windows.
+
 ##  Quick Start
 
-### Download Pre-built Executable (Recommended)
+### Download the Windows Executable (Recommended)
 
-**For users who just want to run CyberBasic without building from source:**
+CyberBasic is primarily distributed as a ready-to-run Windows executable so players never have to touch a compiler. Every push to `master` produces a fresh `cyberbasic.exe` on GitHub Actions—grab it and start building games immediately.
 
-1. **Go to [GitHub Releases](https://github.com/CharmingBlaze/cyberbasic/releases)**
-2. **Download the executable for your platform:**
-   - **Windows:** `cyberbasic.exe`
-   - **Linux:** `cyberbasic` 
-   - **macOS:** `cyberbasic`
-3. **Make executable (Linux/macOS):** `chmod +x cyberbasic`
-4. **Run your programs:**
-   - **Windows:** `cyberbasic.exe your_game.bas`
-   - **Linux/macOS:** `./cyberbasic your_game.bas`
+**Steps (pick whichever you prefer):**
 
-**Benefits:**
-- ✅ No build tools required (CMake, compiler, etc.)
-- ✅ No internet needed after download
-- ✅ Ready to use immediately
-- ✅ Statically linked (no DLL dependencies on Windows)
-- ✅ Perfect for end users and game distribution
+1. **Direct download:** Grab the current binary at [bin/cyberbasic.exe](https://github.com/CharmingBlaze/cyberbasic/raw/master/bin/cyberbasic.exe) (committed in this repo so the URL is permanent). Save it somewhere convenient and run `cyberbasic.exe your_game.bas`.
+2. **CI artifact download:**  
+   a. Open the latest [Build CyberBasic workflow run](https://github.com/CharmingBlaze/cyberbasic/actions/workflows/build.yml).  
+   b. Select the newest successful run on `master`.  
+   c. Download the `cyberbasic-windows` artifact (zip).  
+   d. Extract it and run `cyberbasic.exe your_game.bas`.
 
-**Note:** If pre-built executables aren't available yet, see [Building from Source](#building-cyberbasic) below.
+**Why Windows users should rely on the artifact:**
+- ✅ Fresh, statically linked `cyberbasic.exe` on every push
+- ✅ Same binary I use locally—fully tested before distribution
+- ✅ No toolchains, MinGW, or CMake setup required
+- ✅ Includes `README.md` and `docs/HOW_TO_USE.md` so everything is in one zip
+
+> **Linux/macOS developers:** I don’t ship executables for those platforms. You’re welcome to build CyberBasic yourself using the documentation inside `source/README.md`, but please understand I can’t provide hands-on macOS support because I don’t own that hardware.
+
+**Need a portable Windows exe for your own release builds?** The repository already includes `bin/cyberbasic.exe`. Copy it wherever you like and share it with your players—no extra tooling required. Developers who want to rebuild the runtime can visit `source/README.md` for full instructions (kept separate from this user-focused guide).
 
 ---
+
+### Continuous Integration Builds
+
+The `.github/workflows/build.yml` pipeline keeps CyberBasic honest:
+
+- **Windows (MinGW + MSYS2)** – produces the official `cyberbasic.exe` artifact described above. This is the version I expect most users to run.
+- **Linux (GCC)** – ensures the project keeps compiling cleanly on Linux so developers there can build locally without surprises. I don’t redistribute that binary, but the job proves the source stays portable.
+
+Anyone can inspect the workflow run to audit the build steps before downloading the Windows artifact or before compiling on their own system.
 
 ### Create Your First Game
 
@@ -71,24 +82,16 @@ Run it: `cyberbasic.exe my_game.bas`
 
 The CyberBasic interpreter runs `.bas` files. Here's how to use it:
 
-**Windows:**
+**Windows (prebuilt):**
 ```bash
-# From the build directory
-.\cyberbasic.exe path\to\your\program.bas
-
-# From project root
-.\build\cyberbasic.exe examples\hello_text.bas
-.\build-dist\cyberbasic.exe examples\hello_graphics.bas
+# From anywhere inside the repo
+.\bin\cyberbasic.exe path\to\your\program.bas
+.\bin\cyberbasic.exe examples\hello_text.bas
 ```
 
-**Linux/macOS:**
-```bash
-# From the build directory
-./cyberbasic path/to/your/program.bas
+> If you downloaded the `cyberbasic-windows` artifact or copied `bin\cyberbasic.exe` elsewhere, just run it directly—no build step required.
 
-# From project root
-./build/cyberbasic examples/hello_text.bas
-```
+**Linux/macOS:** CyberBasic currently ships as a Windows executable only. If you’re on another platform you’ll need to build it yourself—see `source/README.md` for the developer-focused steps (kept out of this guide so end users aren’t distracted).
 
 ### Running Examples
 
@@ -96,14 +99,15 @@ The repository includes 69+ example programs in the `examples/` directory:
 
 ```bash
 # Windows
-.\build\cyberbasic.exe examples\hello_text.bas
-.\build\cyberbasic.exe examples\simple_pong.bas
-.\build\cyberbasic.exe examples\space_invaders.bas
+.\bin\cyberbasic.exe examples\hello_text.bas
+.\bin\cyberbasic.exe examples\simple_pong.bas
+.\bin\cyberbasic.exe examples\space_invaders.bas
 
-# Linux/macOS
-./build/cyberbasic examples/hello_text.bas
-./build/cyberbasic examples/simple_pong.bas
-./build/cyberbasic examples/space_invaders.bas
+# Linux/macOS (after you produce your own build)
+# See source/README.md if you truly need this.
+./cyberbasic examples/hello_text.bas
+./cyberbasic examples/simple_pong.bas
+./cyberbasic examples/space_invaders.bas
 ```
 
 ### Paths and Directories
@@ -112,18 +116,9 @@ The repository includes 69+ example programs in the `examples/` directory:
 - Relative paths are relative to the current working directory, not the executable location
 - You can run programs from any directory by using absolute or relative paths
 
-### Distribution Build (Recommended for Sharing)
+### Distribution Build (Windows)
 
-For distributing your games or sharing the interpreter, use the statically linked build:
-
-**Windows:**
-```bash
-# Build distribution version
-.\build-dist.bat
-
-# The executable will be at: build-dist\cyberbasic.exe
-# This version requires no DLL files and can run on any Windows system
-```
+The repo already includes a statically linked Windows interpreter at `bin/cyberbasic.exe`. Drop that file next to your `.bas` game and ship it. Nothing else required.
 
 ---
 
@@ -399,157 +394,15 @@ CyberBasic is built with modern C++20 and follows clean architecture principles:
 ### File Structure
 ```
 cyberbasic/
-├── src/                    # Core interpreter implementation
-│   ├── core/              # Lexer, parser, interpreter
-│   ├── modules/           # Feature modules (ECS, graphics, audio, etc.)
-│   └── bindings/          # Generated Raylib bindings
-├── include/bas/           # Public headers
-├── specs/                 # YAML function specifications
-├── tools/                 # Build and code generation tools
-├── examples/              # 69+ example programs
-├── docs/                  # Comprehensive documentation
-└── images/                # Logo and screenshots
+├── bin/                 # Ready-to-run Windows executable
+├── docs/                # Guides for learning and shipping CyberBasic games
+├── examples/            # 69+ sample games and demos
+├── images/              # Logos + showcase screenshots
+├── source/              # Full compiler/runtime source tree (for developers)
+└── 3Dmodels/            # Assets used by bundled examples
 ```
 
----
-
-##  Building from Source
-
-**Note:** Most users should download pre-built executables from [GitHub Releases](https://github.com/CharmingBlaze/cyberbasic/releases) instead of building from source. Building from source is only needed if you want to:
-- Modify CyberBasic itself
-- Use the latest development version
-- Build for a platform not available in releases
-
-### Prerequisites
-- **CMake** 3.25 or higher
-- **C++20 compiler**: MinGW-w64 GCC 13+ (Windows) or GCC/Clang (Linux/macOS)
-- **Python** 3.10+ with PyYAML
-- **Git with submodule support** (raylib is included as a submodule)
-
-### About Raylib
-
-**Raylib is included as a git submodule:** CyberBasic includes raylib as a git submodule, so the source code is part of the repository. You do NOT need to manually install raylib or download it separately.
-
-**To get raylib when cloning:**
-```bash
-# Clone with submodules
-git clone --recursive https://github.com/CharmingBlaze/cyberbasic.git
-
-# Or if you already cloned without --recursive:
-git submodule update --init --recursive
-```
-
-**Legal inclusion:** Raylib is licensed under the zlib license, which is a very permissive open source license that allows:
-- Commercial use
-- Modification
-- Distribution
-- Private use
-
-This means CyberBasic can legally include and distribute raylib with the project. The raylib source code is included in the repository and statically linked into the CyberBasic executable.
-
-### Windows Build
-```bash
-git clone --recursive https://github.com/CharmingBlaze/cyberbasic.git
-cd cyberbasic
-mkdir build-mingw && cd build-mingw
-cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release ..
-cmake --build .
-```
-
-### Linux Build
-```bash
-git clone --recursive https://github.com/CharmingBlaze/cyberbasic.git
-cd cyberbasic
-mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..
-make -j$(nproc)
-```
-
-### macOS Build
-**Note:** macOS uses the same `CMakeLists.txt` as Linux. CMake automatically detects macOS and links the required frameworks (Cocoa, IOKit, OpenGL). No special configuration needed.
-
-**Prerequisites:**
-- Xcode Command Line Tools: `xcode-select --install`
-- CMake: `brew install cmake` (or download from cmake.org)
-- Python 3.10+ with PyYAML: `pip3 install pyyaml`
-
-**Build:**
-```bash
-git clone --recursive https://github.com/CharmingBlaze/cyberbasic.git
-cd cyberbasic
-mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..
-make -j$(sysctl -n hw.ncpu)
-```
-
-The executable will be at: `build/cyberbasic`
-
-#### macOS Support Policy
-
-I currently do not own a Mac and have no way to reproduce macOS issues. You're welcome to build CyberBasic on macOS using the steps above, but please understand that I cannot provide hands-on support, fixes, or troubleshooting for macOS-specific problems until I have access to that platform again. If you encounter issues, you'll need to resolve them on your own system or contribute a fix back to the project.
-
-### Static Linking (Windows)
-For distribution without DLL dependencies:
-```bash
-cmake .. -DBASIC_STATIC_LINK=ON -DCMAKE_BUILD_TYPE=Release
-```
-
-Or use the provided script:
-```bash
-.\build-dist.bat
-```
-
-### Troubleshooting Build Issues
-
-**"Missing raylib module" or "Could not find raylib" errors:**
-
-1. **Initialize submodules:** If you cloned without `--recursive`, initialize the raylib submodule:
-   ```bash
-   git submodule update --init --recursive
-   ```
-
-2. **Clear CMake cache:** If the download failed, try clearing the build directory and reconfiguring:
-   ```bash
-   # Windows
-   rmdir /s /q build
-   mkdir build && cd build
-   cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release ..
-   
-   # Linux/macOS
-   rm -rf build
-   mkdir build && cd build
-   cmake -DCMAKE_BUILD_TYPE=Release ..
-   ```
-
-3. **Check CMake version:** Ensure you have CMake 3.25 or higher:
-   ```bash
-   cmake --version
-   ```
-
-4. **Verify Python and PyYAML:** The build process requires Python with PyYAML:
-   ```bash
-   python --version
-   pip install pyyaml
-   ```
-
-5. **Check compiler:** Make sure your C++ compiler supports C++20:
-   ```bash
-   # Windows (MinGW)
-   g++ --version
-   
-   # Linux/macOS
-   g++ --version
-   # or
-   clang++ --version
-   ```
-
-**Build succeeds but executable not found:**
-
-- The executable is in your build directory. Check:
-  - Windows: `build\cyberbasic.exe` or `build-mingw\cyberbasic.exe`
-  - Linux/macOS: `build/cyberbasic`
-- Make sure the build completed successfully (check for errors)
-- Try building again: `cmake --build .` or `make`
+Developers who need the full C++ source can dive into `source/` and read `source/README.md`, but everyone else can ignore that folder entirely.
 
 ---
 

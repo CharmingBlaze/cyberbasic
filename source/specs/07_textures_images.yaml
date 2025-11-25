@@ -1,0 +1,165 @@
+# Texture and Image System Functions
+# Loading, manipulation, and rendering of textures and images
+# Following best practices: proper texture and image handling
+
+functions:
+  # === IMAGE FUNCTIONS ===
+  - name: LOADIMAGE
+    raylib_name: LoadImage
+    args: [string]
+    ret: image
+    category: textures
+    description: "Load image from file"
+    working: true
+    custom_body: "LoadImage(args[0].as_string().c_str())"
+
+  - name: LOADIMAGEFROMMEMORY
+    raylib_name: LoadImageFromMemory
+    args: [string, string, int]
+    ret: image
+    category: textures
+    description: "Load image from memory buffer (fileType, data, dataSize)"
+    working: true
+    custom_body: "LoadImageFromMemory(args[0].as_string().c_str(), (const unsigned char*)args[1].as_string().c_str(), args[2].as_int())"
+
+  - name: UNLOADIMAGE
+    raylib_name: UnloadImage
+    args: [int]
+    ret: void
+    category: textures
+    description: "Unload image from memory (pass image ID)"
+    working: true
+    custom_body: "UnloadImage(*(Image*)args[0].as_int())"
+
+  - name: EXPORTIMAGE
+    raylib_name: ExportImage
+    args: [int, string]
+    ret: bool
+    category: textures
+    description: "Export image to file (pass image ID)"
+    working: true
+    custom_body: "ExportImage(*(Image*)args[0].as_int(), args[1].as_string().c_str())"
+
+  - name: EXPORTIMAGEASCODE
+    raylib_name: ExportImageAsCode
+    args: [int, string]
+    ret: bool
+    category: textures
+    description: "Export image as code file (pass image ID)"
+    working: true
+    custom_body: "ExportImageAsCode(*(Image*)args[0].as_int(), args[1].as_string().c_str())"
+
+  # === TEXTURE FUNCTIONS ===
+  - name: LOADTEXTURE
+    raylib_name: LoadTexture
+    args: [string]
+    ret: texture2d
+    category: textures
+    description: "Load texture from file"
+    working: true
+    custom_body: "LoadTexture(args[0].as_string().c_str())"
+
+  - name: LOADTEXTUREFROMIMAGE
+    raylib_name: LoadTextureFromImage
+    args: [int]
+    ret: texture2d
+    category: textures
+    description: "Load texture from image (pass image ID)"
+    working: true
+    custom_body: "LoadTextureFromImage(*(Image*)args[0].as_int())"
+
+  - name: UNLOADTEXTURE
+    raylib_name: UnloadTexture
+    args: [int]
+    ret: void
+    category: textures
+    description: "Unload texture from memory (pass texture ID)"
+    working: true
+    custom_body: "UnloadTexture(*(Texture2D*)args[0].as_int())"
+
+  - name: UPDATETEXTURE
+    raylib_name: UpdateTexture
+    args: [int, string]
+    ret: void
+    category: textures
+    description: "Update texture with new data (pass texture ID, data)"
+    working: true
+    custom_body: "UpdateTexture(*(Texture2D*)args[0].as_int(), args[1].as_string().c_str())"
+
+  # === DRAWING FUNCTIONS ===
+  - name: DRAWTEXTURE
+    raylib_name: DrawTexture
+    args: [int, int, int, int, int, int, int]
+    ret: void
+    category: textures
+    description: "Draw texture at x,y with RGB color (pass texture ID, x, y, R, G, B)"
+    working: true
+    custom_body: "DrawTexture(*(Texture2D*)args[0].as_int(), args[1].as_int(), args[2].as_int(), Color{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), 255})"
+
+  - name: DRAWTEXTUREV
+    raylib_name: DrawTextureV
+    args: [int, int, int, int, int, int, int]
+    ret: void
+    category: textures
+    description: "Draw texture at position with RGB color (pass texture ID, x, y, R, G, B)"
+    working: true
+    custom_body: "DrawTextureV(*(Texture2D*)args[0].as_int(), Vector2{(float)args[1].as_int(), (float)args[2].as_int()}, Color{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), 255})"
+
+  - name: DRAWTEXTUREREC
+    raylib_name: DrawTextureRec
+    args: [int, int, int, int, int, int, int, int, int]
+    ret: void
+    category: textures
+    description: "Draw texture region with RGB color (pass texture ID, x, y, width, height, R, G, B)"
+    working: true
+    custom_body: "DrawTextureRec(*(Texture2D*)args[0].as_int(), Rectangle{(float)args[1].as_int(), (float)args[2].as_int(), (float)args[3].as_int(), (float)args[4].as_int()}, Vector2{0, 0}, Color{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255})"
+
+
+
+  # === IMAGE MANIPULATION ===
+  - name: IMAGECOPY
+    raylib_name: ImageCopy
+    args: [int]
+    ret: image
+    category: textures
+    description: "Create a copy of an image (pass image ID)"
+    working: true
+    custom_body: "ImageCopy(*(Image*)args[0].as_int())"
+
+
+
+  # === RENDER TEXTURE ===
+  - name: LOADRENDERTEXTURE
+    raylib_name: LoadRenderTexture
+    args: [int, int]
+    ret: rendertexture2d
+    category: textures
+    description: "Load render texture with width and height"
+    working: true
+    custom_body: "LoadRenderTexture(args[0].as_int(), args[1].as_int())"
+
+  - name: UNLOADRENDERTEXTURE
+    raylib_name: UnloadRenderTexture
+    args: [int]
+    ret: void
+    category: textures
+    description: "Unload render texture (pass render texture ID)"
+    working: true
+    custom_body: "UnloadRenderTexture(*(RenderTexture2D*)args[0].as_int())"
+
+  - name: BEGINTEXTUREMODE
+    raylib_name: BeginTextureMode
+    args: [int]
+    ret: void
+    category: textures
+    description: "Begin drawing to render texture (pass render texture ID)"
+    working: true
+    custom_body: "BeginTextureMode(*(RenderTexture2D*)args[0].as_int())"
+
+  - name: ENDTEXTUREMODE
+    raylib_name: EndTextureMode
+    args: []
+    ret: void
+    category: textures
+    description: "End drawing to render texture"
+    working: true

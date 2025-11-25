@@ -1,0 +1,316 @@
+# Missing 3D Models Functions from API.MD
+# Module: rmodels - Additional 3D model, mesh, material, and animation functions
+
+functions:
+  # === 3D DRAWING ===
+  - name: DRAWCAPSULE
+    raylib_name: DrawCapsule
+    args: [float, float, float, float, float, float, float, int, int, int, int, int]
+    ret: void
+    category: 3d
+    description: "Draw capsule (startX, startY, startZ, endX, endY, endZ, radius, slices, rings, R, G, B)"
+    custom_body: |
+      ::Vector3 startPos{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+      ::Vector3 endPos{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+      ::Color color{(unsigned char)args[9].as_int(), (unsigned char)args[10].as_int(), (unsigned char)args[11].as_int(), 255};
+      ::DrawCapsule(startPos, endPos, (float)args[6].as_number(), args[7].as_int(), args[8].as_int(), color);
+
+  - name: DRAWCAPSULEWIRES
+    raylib_name: DrawCapsuleWires
+    args: [float, float, float, float, float, float, float, int, int, int, int, int]
+    ret: void
+    category: 3d
+    description: "Draw capsule wireframe (startX, startY, startZ, endX, endY, endZ, radius, slices, rings, R, G, B)"
+    custom_body: |
+      ::Vector3 startPos{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+      ::Vector3 endPos{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+      ::Color color{(unsigned char)args[9].as_int(), (unsigned char)args[10].as_int(), (unsigned char)args[11].as_int(), 255};
+      ::DrawCapsuleWires(startPos, endPos, (float)args[6].as_number(), args[7].as_int(), args[8].as_int(), color);
+
+  - name: DRAWMODELPOINTS
+    raylib_name: DrawModelPoints
+    args: [int, float, float, float, float, int, int, int]
+    ret: void
+    category: 3d
+    description: "Draw model as points (pass model ID, x, y, z, scale, R, G, B)"
+    custom_body: |
+      ::Vector3 position{(float)args[1].as_number(), (float)args[2].as_number(), (float)args[3].as_number()};
+      ::Color tint{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255};
+      ::DrawModelPoints(rlreg::models.at(args[0].as_int()), position, (float)args[4].as_number(), tint);
+
+  - name: DRAWMODELPOINTSEX
+    raylib_name: DrawModelPointsEx
+    args: [int, float, float, float, float, float, float, float, float, float, float, int, int, int]
+    ret: void
+    category: 3d
+    description: "Draw model as points with extended parameters (pass model ID, x, y, z, rotAxisX, rotAxisY, rotAxisZ, rotAngle, scaleX, scaleY, scaleZ, R, G, B)"
+    custom_body: |
+      ::Vector3 position{(float)args[1].as_number(), (float)args[2].as_number(), (float)args[3].as_number()};
+      ::Vector3 rotationAxis{(float)args[4].as_number(), (float)args[5].as_number(), (float)args[6].as_number()};
+      ::Vector3 scale{(float)args[8].as_number(), (float)args[9].as_number(), (float)args[10].as_number()};
+      ::Color tint{(unsigned char)args[11].as_int(), (unsigned char)args[12].as_int(), (unsigned char)args[13].as_int(), 255};
+      ::DrawModelPointsEx(rlreg::models.at(args[0].as_int()), position, rotationAxis, (float)args[7].as_number(), scale, tint);
+
+  - name: DRAWBILLBOARD
+    raylib_name: DrawBillboard
+    args: [int, int, float, float, float, float, int, int, int]
+    ret: void
+    category: 3d
+    description: "Draw billboard texture (pass camera ID, texture ID, x, y, z, scale, R, G, B)"
+    custom_body: |
+      // TODO: Camera handling
+      ::Vector3 position{(float)args[2].as_number(), (float)args[3].as_number(), (float)args[4].as_number()};
+      ::Color tint{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
+      // ::DrawBillboard(camera, rlreg::textures.at(args[1].as_int()), position, (float)args[5].as_number(), tint);
+
+  - name: DRAWBILLBOARDREC
+    raylib_name: DrawBillboardRec
+    args: [int, int, float, float, float, float, float, float, float, float, int, int, int]
+    ret: void
+    category: 3d
+    description: "Draw billboard texture defined by source (pass camera ID, texture ID, x, y, z, sizeX, sizeY, R, G, B)"
+    custom_body: |
+      // TODO: Camera and Rectangle handling
+
+  - name: DRAWBILLBOARDPRO
+    raylib_name: DrawBillboardPro
+    args: [int, int, float, float, float, float, float, float, float, float, float, float, float, float, float, int, int, int]
+    ret: void
+    category: 3d
+    description: "Draw billboard texture with rotation (pass camera ID, texture ID, x, y, z, upX, upY, upZ, sizeX, sizeY, originX, originY, rotation, R, G, B)"
+    custom_body: |
+      // TODO: Camera handling
+
+  # === MODEL FUNCTIONS ===
+  - name: ISMODELVALID
+    raylib_name: IsModelValid
+    args: [int]
+    ret: bool
+    category: 3d
+    description: "Check if model is valid (pass model ID)"
+    custom_body: |
+      return Value::from_bool(::IsModelValid(rlreg::models.at(args[0].as_int())));
+
+  - name: GETMODELBOUNDINGBOX
+    raylib_name: GetModelBoundingBox
+    args: [int]
+    ret: string
+    category: 3d
+    description: "Compute model bounding box limits (pass model ID)"
+    custom_body: |
+      ::BoundingBox box = ::GetModelBoundingBox(rlreg::models.at(args[0].as_int()));
+      return Value::from_string(std::to_string(box.min.x) + "," + std::to_string(box.min.y) + "," + std::to_string(box.min.z) + "," + std::to_string(box.max.x) + "," + std::to_string(box.max.y) + "," + std::to_string(box.max.z));
+
+  # === MESH FUNCTIONS ===
+  - name: UPLOADMESH
+    raylib_name: UploadMesh
+    args: [int, bool]
+    ret: void
+    category: 3d
+    description: "Upload mesh vertex data in GPU (pass mesh ID, dynamic)"
+    custom_body: |
+      ::UploadMesh(&rlreg::meshes.at(args[0].as_int()), args[1].as_bool());
+
+  - name: UPDATEMESHBUFFER
+    raylib_name: UpdateMeshBuffer
+    args: [int, int, string, int, int]
+    ret: void
+    category: 3d
+    description: "Update mesh vertex data in GPU (pass mesh ID, index, data as string, dataSize, offset)"
+    custom_body: |
+      // TODO: Proper data handling
+
+  - name: GETMESHBOUNDINGBOX
+    raylib_name: GetMeshBoundingBox
+    args: [int]
+    ret: string
+    category: 3d
+    description: "Compute mesh bounding box limits (pass mesh ID)"
+    custom_body: |
+      ::BoundingBox box = ::GetMeshBoundingBox(rlreg::meshes.at(args[0].as_int()));
+      return Value::from_string(std::to_string(box.min.x) + "," + std::to_string(box.min.y) + "," + std::to_string(box.min.z) + "," + std::to_string(box.max.x) + "," + std::to_string(box.max.y) + "," + std::to_string(box.max.z));
+
+  - name: GENMESHTANGENTS
+    raylib_name: GenMeshTangents
+    args: [int]
+    ret: void
+    category: 3d
+    description: "Compute mesh tangents (pass mesh ID)"
+    custom_body: |
+      ::GenMeshTangents(&rlreg::meshes.at(args[0].as_int()));
+
+  - name: EXPORTMESH
+    raylib_name: ExportMesh
+    args: [int, string]
+    ret: bool
+    category: 3d
+    description: "Export mesh data to file (pass mesh ID, fileName)"
+    custom_body: |
+      return Value::from_bool(::ExportMesh(rlreg::meshes.at(args[0].as_int()), args[1].as_string().c_str()));
+
+  - name: EXPORTMESHASCODE
+    raylib_name: ExportMeshAsCode
+    args: [int, string]
+    ret: bool
+    category: 3d
+    description: "Export mesh as code file (pass mesh ID, fileName)"
+    custom_body: |
+      return Value::from_bool(::ExportMeshAsCode(rlreg::meshes.at(args[0].as_int()), args[1].as_string().c_str()));
+
+  - name: GENMESHHEMISPHERE
+    raylib_name: GenMeshHemiSphere
+    args: [float, int, int]
+    ret: int
+    category: 3d
+    description: "Generate half-sphere mesh (radius, rings, slices)"
+    custom_body: |
+      ::Mesh mesh = ::GenMeshHemiSphere((float)args[0].as_number(), args[1].as_int(), args[2].as_int());
+      int id = rlreg::next_mesh_id++;
+      rlreg::meshes[id] = mesh;
+      return Value::from_int(id);
+
+  - name: GENMESHCONE
+    raylib_name: GenMeshCone
+    args: [float, float, int]
+    ret: int
+    category: 3d
+    description: "Generate cone/pyramid mesh (radius, height, slices)"
+    custom_body: |
+      ::Mesh mesh = ::GenMeshCone((float)args[0].as_number(), (float)args[1].as_number(), args[2].as_int());
+      int id = rlreg::next_mesh_id++;
+      rlreg::meshes[id] = mesh;
+      return Value::from_int(id);
+
+  # === MATERIAL FUNCTIONS ===
+  - name: ISMATERIALVALID
+    raylib_name: IsMaterialValid
+    args: [int]
+    ret: bool
+    category: 3d
+    description: "Check if material is valid (pass material ID)"
+    custom_body: |
+      return Value::from_bool(::IsMaterialValid(rlreg::materials.at(args[0].as_int())));
+
+  - name: SETMODELMESHMATERIAL
+    raylib_name: SetModelMeshMaterial
+    args: [int, int, int]
+    ret: void
+    category: 3d
+    description: "Set material for a mesh (pass model ID, meshId, materialId)"
+    custom_body: |
+      ::SetModelMeshMaterial(&rlreg::models.at(args[0].as_int()), args[1].as_int(), args[2].as_int());
+
+  # === COLLISION FUNCTIONS ===
+  - name: CHECKCOLLISIONSPHERES
+    raylib_name: CheckCollisionSpheres
+    args: [float, float, float, float, float, float, float, float]
+    ret: bool
+    category: collision
+    description: "Check collision between two spheres (center1X, center1Y, center1Z, radius1, center2X, center2Y, center2Z, radius2)"
+    custom_body: |
+      ::Vector3 center1{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+      ::Vector3 center2{(float)args[4].as_number(), (float)args[5].as_number(), (float)args[6].as_number()};
+      return Value::from_bool(::CheckCollisionSpheres(center1, (float)args[3].as_number(), center2, (float)args[7].as_number()));
+
+  - name: CHECKCOLLISIONBOXES
+    raylib_name: CheckCollisionBoxes
+    args: [float, float, float, float, float, float, float, float, float, float, float, float]
+    ret: bool
+    category: collision
+    description: "Check collision between two bounding boxes (box1 minX, minY, minZ, maxX, maxY, maxZ, box2 minX, minY, minZ, maxX, maxY, maxZ)"
+    custom_body: |
+      ::BoundingBox box1;
+      box1.min = {(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+      box1.max = {(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+      ::BoundingBox box2;
+      box2.min = {(float)args[6].as_number(), (float)args[7].as_number(), (float)args[8].as_number()};
+      box2.max = {(float)args[9].as_number(), (float)args[10].as_number(), (float)args[11].as_number()};
+      return Value::from_bool(::CheckCollisionBoxes(box1, box2));
+
+  - name: CHECKCOLLISIONBOXSPHERE
+    raylib_name: CheckCollisionBoxSphere
+    args: [float, float, float, float, float, float, float, float, float, float]
+    ret: bool
+    category: collision
+    description: "Check collision between box and sphere (box minX, minY, minZ, maxX, maxY, maxZ, centerX, centerY, centerZ, radius)"
+    custom_body: |
+      ::BoundingBox box;
+      box.min = {(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+      box.max = {(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+      ::Vector3 center{(float)args[6].as_number(), (float)args[7].as_number(), (float)args[8].as_number()};
+      return Value::from_bool(::CheckCollisionBoxSphere(box, center, (float)args[9].as_number()));
+
+  - name: GETRAYCOLLISIONSPHERE
+    raylib_name: GetRayCollisionSphere
+    args: [float, float, float, float, float, float, float, float, float, float]
+    ret: string
+    category: collision
+    description: "Get collision info between ray and sphere (ray posX, posY, posZ, dirX, dirY, dirZ, centerX, centerY, centerZ, radius)"
+    custom_body: |
+      ::Ray ray;
+      ray.position = {(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+      ray.direction = {(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+      ::Vector3 center{(float)args[6].as_number(), (float)args[7].as_number(), (float)args[8].as_number()};
+      ::RayCollision collision = ::GetRayCollisionSphere(ray, center, (float)args[9].as_number());
+      if (collision.hit) {
+        return Value::from_string(std::to_string(collision.point.x) + "," + std::to_string(collision.point.y) + "," + std::to_string(collision.point.z) + "," + std::to_string(collision.distance));
+      }
+      return Value::from_string("");
+
+  - name: GETRAYCOLLISIONBOX
+    raylib_name: GetRayCollisionBox
+    args: [float, float, float, float, float, float, float, float, float, float, float, float]
+    ret: string
+    category: collision
+    description: "Get collision info between ray and box (ray posX, posY, posZ, dirX, dirY, dirZ, box minX, minY, minZ, maxX, maxY, maxZ)"
+    custom_body: |
+      ::Ray ray;
+      ray.position = {(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+      ray.direction = {(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+      ::BoundingBox box;
+      box.min = {(float)args[6].as_number(), (float)args[7].as_number(), (float)args[8].as_number()};
+      box.max = {(float)args[9].as_number(), (float)args[10].as_number(), (float)args[11].as_number()};
+      ::RayCollision collision = ::GetRayCollisionBox(ray, box);
+      if (collision.hit) {
+        return Value::from_string(std::to_string(collision.point.x) + "," + std::to_string(collision.point.y) + "," + std::to_string(collision.point.z) + "," + std::to_string(collision.distance));
+      }
+      return Value::from_string("");
+
+  - name: GETRAYCOLLISIONTRIANGLE
+    raylib_name: GetRayCollisionTriangle
+    args: [float, float, float, float, float, float, float, float, float, float, float, float, float, float, float]
+    ret: string
+    category: collision
+    description: "Get collision info between ray and triangle (ray posX, posY, posZ, dirX, dirY, dirZ, p1X, p1Y, p1Z, p2X, p2Y, p2Z, p3X, p3Y, p3Z)"
+    custom_body: |
+      ::Ray ray;
+      ray.position = {(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+      ray.direction = {(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+      ::Vector3 p1{(float)args[6].as_number(), (float)args[7].as_number(), (float)args[8].as_number()};
+      ::Vector3 p2{(float)args[9].as_number(), (float)args[10].as_number(), (float)args[11].as_number()};
+      ::Vector3 p3{(float)args[12].as_number(), (float)args[13].as_number(), (float)args[14].as_number()};
+      ::RayCollision collision = ::GetRayCollisionTriangle(ray, p1, p2, p3);
+      if (collision.hit) {
+        return Value::from_string(std::to_string(collision.point.x) + "," + std::to_string(collision.point.y) + "," + std::to_string(collision.point.z) + "," + std::to_string(collision.distance));
+      }
+      return Value::from_string("");
+
+  - name: GETRAYCOLLISIONQUAD
+    raylib_name: GetRayCollisionQuad
+    args: [float, float, float, float, float, float, float, float, float, float, float, float, float, float, float, float, float, float]
+    ret: string
+    category: collision
+    description: "Get collision info between ray and quad (ray posX, posY, posZ, dirX, dirY, dirZ, p1X, p1Y, p1Z, p2X, p2Y, p2Z, p3X, p3Y, p3Z, p4X, p4Y, p4Z)"
+    custom_body: |
+      ::Ray ray;
+      ray.position = {(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+      ray.direction = {(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+      ::Vector3 p1{(float)args[6].as_number(), (float)args[7].as_number(), (float)args[8].as_number()};
+      ::Vector3 p2{(float)args[9].as_number(), (float)args[10].as_number(), (float)args[11].as_number()};
+      ::Vector3 p3{(float)args[12].as_number(), (float)args[13].as_number(), (float)args[14].as_number()};
+      ::Vector3 p4{(float)args[15].as_number(), (float)args[16].as_number(), (float)args[17].as_number()};
+      ::RayCollision collision = ::GetRayCollisionQuad(ray, p1, p2, p3, p4);
+      if (collision.hit) {
+        return Value::from_string(std::to_string(collision.point.x) + "," + std::to_string(collision.point.y) + "," + std::to_string(collision.point.z) + "," + std::to_string(collision.distance));
+      }
+      return Value::from_string("");

@@ -1,0 +1,341 @@
+# Game Development APIs
+# Easy-to-use high-level APIs for game developers
+# Following best practices: simple, powerful game development tools
+
+functions:
+  # === GAME SETUP ===
+  - name: INITGAME
+    raylib_name: InitGame
+    args: [int, int, string]
+    ret: void
+    category: game_dev
+    description: "Initialize game (width, height, title)"
+    working: true
+    custom_body: |
+      InitWindow(args[0].as_int(), args[1].as_int(), args[2].as_string().c_str());
+      SetTargetFPS(60);
+
+  - name: CLOSEGAME
+    raylib_name: CloseGame
+    args: []
+    ret: void
+    category: game_dev
+    description: "Close game"
+    working: true
+    custom_body: "CloseWindow()"
+
+  - name: GAMESHOULDCLOSE
+    raylib_name: GameShouldClose
+    args: []
+    ret: bool
+    category: game_dev
+    description: "Check if game should close"
+    working: true
+    custom_body: "WindowShouldClose()"
+
+  # === GAME LOOP ===
+  - name: BEGINGAMEFRAME
+    raylib_name: BeginGameFrame
+    args: []
+    ret: void
+    category: game_dev
+    description: "Begin game frame (call at start of game loop)"
+    working: true
+    custom_body: |
+      BeginDrawing();
+      ClearBackground(Color{0, 0, 0, 255});
+
+  - name: ENDGAMEFRAME
+    raylib_name: EndGameFrame
+    args: []
+    ret: void
+    category: game_dev
+    description: "End game frame (call at end of game loop)"
+    working: true
+    custom_body: "EndDrawing()"
+
+  - name: GETGAMEDELTATIME
+    raylib_name: GetGameDeltaTime
+    args: []
+    ret: float
+    category: game_dev
+    description: "Get game delta time"
+    working: true
+    custom_body: "GetFrameTime()"
+
+  - name: GETGAMEFPS
+    raylib_name: GetGameFPS
+    args: []
+    ret: int
+    category: game_dev
+    description: "Get game FPS"
+    working: true
+    custom_body: "GetFPS()"
+
+  # === SPRITE SYSTEM ===
+  - name: LOADSPRITE
+    raylib_name: LoadSprite
+    args: [string]
+    ret: int
+    category: game_dev
+    description: "Load sprite from file, returns sprite ID"
+    working: true
+    custom_body: "LoadTexture(args[0].as_string().c_str())"
+
+  - name: DRAWSPRITE
+    raylib_name: DrawSprite
+    args: [int, int, int, int, int, int, int, int]
+    ret: void
+    category: game_dev
+    description: "Draw sprite (spriteID, x, y, width, height, rotation, R, G, B)"
+    working: true
+    custom_body: |
+      Texture2D texture = *(Texture2D*)args[0].as_int();
+      Rectangle source = {0, 0, (float)texture.width, (float)texture.height};
+      Rectangle dest = {(float)args[1].as_int(), (float)args[2].as_int(), (float)args[3].as_int(), (float)args[4].as_int()};
+      Vector2 origin = {(float)args[3].as_int()/2, (float)args[4].as_int()/2};
+      Color tint = {(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
+      DrawTexturePro(texture, source, dest, origin, (float)args[5].as_int(), tint);
+
+  - name: DRAWSPRITEANIMATED
+    raylib_name: DrawSpriteAnimated
+    args: [int, int, int, int, int, int, int, int, int, int]
+    ret: void
+    category: game_dev
+    description: "Draw animated sprite (spriteID, x, y, width, height, frame, totalFrames, rotation, R, G, B)"
+    working: true
+    custom_body: |
+      Texture2D texture = *(Texture2D*)args[0].as_int();
+      int frame = args[5].as_int();
+      int totalFrames = args[6].as_int();
+      float frameWidth = (float)texture.width / totalFrames;
+      Rectangle source = {(float)frame * frameWidth, 0, frameWidth, (float)texture.height};
+      Rectangle dest = {(float)args[1].as_int(), (float)args[2].as_int(), (float)args[3].as_int(), (float)args[4].as_int()};
+      Vector2 origin = {(float)args[3].as_int()/2, (float)args[4].as_int()/2};
+      Color tint = {(unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), (unsigned char)args[10].as_int(), 255};
+      DrawTexturePro(texture, source, dest, origin, (float)args[7].as_int(), tint);
+
+  # === COLLISION SYSTEM ===
+  - name: CHECKCOLLISIONRECTS
+    raylib_name: CheckCollisionRects
+    args: [int, int, int, int, int, int, int, int]
+    ret: bool
+    category: game_dev
+    description: "Check collision between two rectangles (x1, y1, w1, h1, x2, y2, w2, h2)"
+    working: true
+    custom_body: |
+      Rectangle rect1 = {(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int(), (float)args[3].as_int()};
+      Rectangle rect2 = {(float)args[4].as_int(), (float)args[5].as_int(), (float)args[6].as_int(), (float)args[7].as_int()};
+      return Value::from_bool(CheckCollisionRecs(rect1, rect2));
+
+  - name: CHECKCOLLISIONCIRCLES
+    raylib_name: CheckCollisionCircles
+    args: [int, int, int, int, int, int]
+    ret: bool
+    category: game_dev
+    description: "Check collision between two circles (x1, y1, r1, x2, y2, r2)"
+    working: true
+    custom_body: |
+      Vector2 center1 = {(float)args[0].as_int(), (float)args[1].as_int()};
+      Vector2 center2 = {(float)args[3].as_int(), (float)args[4].as_int()};
+      return Value::from_bool(CheckCollisionCircles(center1, (float)args[2].as_int(), center2, (float)args[5].as_int()));
+
+  - name: CHECKCOLLISIONCIRCLERECT
+    raylib_name: CheckCollisionCircleRect
+    args: [int, int, int, int, int, int, int]
+    ret: bool
+    category: game_dev
+    description: "Check collision between circle and rectangle (cx, cy, radius, rx, ry, rw, rh)"
+    working: true
+    custom_body: |
+      Vector2 center = {(float)args[0].as_int(), (float)args[1].as_int()};
+      Rectangle rect = {(float)args[3].as_int(), (float)args[4].as_int(), (float)args[5].as_int(), (float)args[6].as_int()};
+      return Value::from_bool(CheckCollisionCircleRec(center, (float)args[2].as_int(), rect));
+
+  # === INPUT HELPERS ===
+  - name: ISKEYHELD
+    raylib_name: IsKeyHeld
+    args: [int]
+    ret: bool
+    category: game_dev
+    description: "Check if key is held down (keyCode)"
+    working: true
+    custom_body: "IsKeyDown(args[0].as_int())"
+
+  - name: ISKEYPRESSED
+    raylib_name: IsKeyPressed
+    args: [int]
+    ret: bool
+    category: game_dev
+    description: "Check if key was just pressed (keyCode)"
+    working: true
+    custom_body: "IsKeyPressed(args[0].as_int())"
+
+  - name: ISKEYRELEASED
+    raylib_name: IsKeyReleased
+    args: [int]
+    ret: bool
+    category: game_dev
+    description: "Check if key was just released (keyCode)"
+    working: true
+    custom_body: "IsKeyReleased(args[0].as_int())"
+
+  - name: ISMOUSEHELD
+    raylib_name: IsMouseHeld
+    args: [int]
+    ret: bool
+    category: game_dev
+    description: "Check if mouse button is held down (button)"
+    working: true
+    custom_body: "IsMouseButtonDown(args[0].as_int())"
+
+  - name: ISMOUSEPRESSED
+    raylib_name: IsMousePressed
+    args: [int]
+    ret: bool
+    category: game_dev
+    description: "Check if mouse button was just pressed (button)"
+    working: true
+    custom_body: "IsMouseButtonPressed(args[0].as_int())"
+
+  - name: ISMOUSERELEASED
+    raylib_name: IsMouseReleased
+    args: [int]
+    ret: bool
+    category: game_dev
+    description: "Check if mouse button was just released (button)"
+    working: true
+    custom_body: "IsMouseButtonReleased(args[0].as_int())"
+
+  - name: GETMOUSEPOSITION
+    raylib_name: GetMousePosition
+    args: []
+    ret: string
+    category: game_dev
+    description: "Get mouse position as string (x,y)"
+    working: true
+    custom_body: |
+      Vector2 mousePos = GetMousePosition();
+      return Value::from_string(std::to_string((int)mousePos.x) + "," + std::to_string((int)mousePos.y));
+
+  # === AUDIO HELPERS ===
+  - name: LOADGAMESOUND
+    raylib_name: LoadGameSound
+    args: [string]
+    ret: int
+    category: game_dev
+    description: "Load game sound, returns sound ID"
+    working: true
+    custom_body: "LoadSound(args[0].as_string().c_str())"
+
+  - name: PLAYGAMESOUND
+    raylib_name: PlayGameSound
+    args: [int]
+    ret: void
+    category: game_dev
+    description: "Play game sound (soundID)"
+    working: true
+    custom_body: |
+      Sound sound = *(Sound*)args[0].as_int();
+      PlaySound(sound);
+
+  - name: STOPGAMESOUND
+    raylib_name: StopGameSound
+    args: [int]
+    ret: void
+    category: game_dev
+    description: "Stop game sound (soundID)"
+    working: true
+    custom_body: |
+      Sound sound = *(Sound*)args[0].as_int();
+      StopSound(sound);
+
+  - name: LOADGAMEMUSIC
+    raylib_name: LoadGameMusic
+    args: [string]
+    ret: int
+    category: game_dev
+    description: "Load game music, returns music ID"
+    working: true
+    custom_body: "LoadMusicStream(args[0].as_string().c_str())"
+
+  - name: PLAYGAMEMUSIC
+    raylib_name: PlayGameMusic
+    args: [int]
+    ret: void
+    category: game_dev
+    description: "Play game music (musicID)"
+    working: true
+    custom_body: |
+      Music music = *(Music*)args[0].as_int();
+      PlayMusicStream(music);
+
+  - name: STOPGAMEMUSIC
+    raylib_name: StopGameMusic
+    args: [int]
+    ret: void
+    category: game_dev
+    description: "Stop game music (musicID)"
+    working: true
+    custom_body: |
+      Music music = *(Music*)args[0].as_int();
+      StopMusicStream(music);
+
+  # === UTILITY FUNCTIONS ===
+  - name: RANDOMINT
+    raylib_name: RandomInt
+    args: [int, int]
+    ret: int
+    category: game_dev
+    description: "Get random integer between min and max (inclusive)"
+    working: true
+    custom_body: "GetRandomValue(args[0].as_int(), args[1].as_int())"
+
+  - name: RANDOMFLOAT
+    raylib_name: RandomFloat
+    args: [float, float]
+    ret: float
+    category: game_dev
+    description: "Get random float between min and max"
+    working: true
+    custom_body: |
+      float min = args[0].as_number();
+      float max = args[1].as_number();
+      return Value::from_number(min + (max - min) * ((float)GetRandomValue(0, 1000) / 1000.0f));
+
+  - name: LERP
+    raylib_name: Lerp
+    args: [float, float, float]
+    ret: float
+    category: game_dev
+    description: "Linear interpolation between two values (start, end, t)"
+    working: true
+    custom_body: |
+      float start = args[0].as_number();
+      float end = args[1].as_number();
+      float t = args[2].as_number();
+      return Value::from_number(start + (end - start) * t);
+
+  - name: DISTANCE2D
+    raylib_name: Distance2D
+    args: [int, int, int, int]
+    ret: float
+    category: game_dev
+    description: "Calculate distance between two 2D points (x1, y1, x2, y2)"
+    working: true
+    custom_body: |
+      Vector2 p1 = {(float)args[0].as_int(), (float)args[1].as_int()};
+      Vector2 p2 = {(float)args[2].as_int(), (float)args[3].as_int()};
+      return Value::from_number(Vector2Distance(p1, p2));
+
+  - name: DISTANCE3D
+    raylib_name: Distance3D
+    args: [int, int, int, int, int, int]
+    ret: float
+    category: game_dev
+    description: "Calculate distance between two 3D points (x1, y1, z1, x2, y2, z2)"
+    working: true
+    custom_body: |
+      Vector3 p1 = {(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()};
+      Vector3 p2 = {(float)args[3].as_int(), (float)args[4].as_int(), (float)args[5].as_int()};
+      return Value::from_number(Vector3Distance(p1, p2));

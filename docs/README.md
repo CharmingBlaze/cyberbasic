@@ -27,11 +27,12 @@ Welcome to the CyberBasic documentation! This directory contains all the documen
 - **[Coding Style](CODING_STYLE.md)** - Code style guidelines
 
 ### Implementation Documentation
-Implementation notes and status documents are in the [`implementation/`](implementation/) subdirectory.
+Implementation notes and status documents now live under the developer tree at [`source/docs/implementation`](../source/docs/implementation). End users can safely ignore that folder.
 
 ---
 
 **Start with the [Documentation Index](DOCUMENTATION_INDEX.md) for a complete overview!**
+
 
 
 

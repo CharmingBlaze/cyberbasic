@@ -1,0 +1,287 @@
+# Missing Text/Fonts Functions from API.MD
+# Module: rtext - Additional text and font functions
+
+functions:
+  # === FONT FUNCTIONS ===
+  - name: LOADFONTFROMIMAGE
+    raylib_name: LoadFontFromImage
+    args: [int, int, int, int, int]
+    ret: font
+    category: fonts
+    description: "Load font from Image (XNA style) (pass image ID, R, G, B for key, firstChar)"
+    custom_body: |
+      ::Color key{(unsigned char)args[1].as_int(), (unsigned char)args[2].as_int(), (unsigned char)args[3].as_int(), 255};
+      ::Font font = ::LoadFontFromImage(rlreg::images.at(args[0].as_int()), key, args[4].as_int());
+      int id = rlreg::next_font_id++;
+      rlreg::fonts[id] = font;
+      return Value::from_int(id);
+
+  - name: LOADFONTFROMMEMORY
+    raylib_name: LoadFontFromMemory
+    args: [string, string, int, int]
+    ret: font
+    category: fonts
+    description: "Load font from memory buffer (fileType, data, dataSize, fontSize)"
+    custom_body: |
+      // TODO: Proper codepoints handling
+      ::Font font = ::LoadFontFromMemory(args[0].as_string().c_str(), (const unsigned char*)args[1].as_string().c_str(), args[2].as_int(), args[3].as_int(), nullptr, 0);
+      int id = rlreg::next_font_id++;
+      rlreg::fonts[id] = font;
+      return Value::from_int(id);
+
+  - name: ISFONTVALID
+    raylib_name: IsFontValid
+    args: [int]
+    ret: bool
+    category: fonts
+    description: "Check if font is valid (pass font ID)"
+    custom_body: |
+      return Value::from_bool(::IsFontValid(rlreg::fonts.at(args[0].as_int())));
+
+  - name: EXPORTFONTASCODE
+    raylib_name: ExportFontAsCode
+    args: [int, string]
+    ret: bool
+    category: fonts
+    description: "Export font as code file (pass font ID, fileName)"
+    custom_body: |
+      return Value::from_bool(::ExportFontAsCode(rlreg::fonts.at(args[0].as_int()), args[1].as_string().c_str()));
+
+  # === TEXT DRAWING ===
+  - name: DRAWTEXTCODEPOINTS
+    raylib_name: DrawTextCodepoints
+    args: [int, string, float, float, float, float, int, int, int]
+    ret: void
+    category: fonts
+    description: "Draw multiple character (codepoint) (pass font ID, codepoints as string, posX, posY, fontSize, spacing, R, G, B)"
+    custom_body: |
+      // TODO: Proper codepoints array handling
+
+  # === TEXT FONT INFO ===
+  - name: SETTEXTLINESPACING
+    raylib_name: SetTextLineSpacing
+    args: [int]
+    ret: void
+    category: fonts
+    description: "Set vertical line spacing when drawing with line-breaks"
+
+  - name: GETGLYPHINDEX
+    raylib_name: GetGlyphIndex
+    args: [int, int]
+    ret: int
+    category: fonts
+    description: "Get glyph index position in font (pass font ID, codepoint)"
+    custom_body: |
+      return Value::from_int(::GetGlyphIndex(rlreg::fonts.at(args[0].as_int()), args[1].as_int()));
+
+  - name: GETGLYPHINFO
+    raylib_name: GetGlyphInfo
+    args: [int, int]
+    ret: string
+    category: fonts
+    description: "Get glyph font info data (pass font ID, codepoint)"
+    custom_body: |
+      ::GlyphInfo info = ::GetGlyphInfo(rlreg::fonts.at(args[0].as_int()), args[1].as_int());
+      return Value::from_string(std::to_string(info.value) + "," + std::to_string(info.offsetX) + "," + std::to_string(info.offsetY) + "," + std::to_string(info.advanceX) + "," + std::to_string(info.image.width) + "," + std::to_string(info.image.height));
+
+  - name: GETGLYPHATLASREC
+    raylib_name: GetGlyphAtlasRec
+    args: [int, int]
+    ret: string
+    category: fonts
+    description: "Get glyph rectangle in font atlas (pass font ID, codepoint)"
+    custom_body: |
+      ::Rectangle rec = ::GetGlyphAtlasRec(rlreg::fonts.at(args[0].as_int()), args[1].as_int());
+      return Value::from_string(std::to_string(rec.x) + "," + std::to_string(rec.y) + "," + std::to_string(rec.width) + "," + std::to_string(rec.height));
+
+  # === TEXT CODEPOINTS ===
+  - name: GETCODEPOINTCOUNT
+    raylib_name: GetCodepointCount
+    args: [string]
+    ret: int
+    category: fonts
+    description: "Get total number of codepoints in UTF-8 encoded string"
+
+  - name: GETCODEPOINT
+    raylib_name: GetCodepoint
+    args: [string]
+    ret: int
+    category: fonts
+    description: "Get next codepoint in UTF-8 encoded string"
+    custom_body: |
+      int codepointSize;
+      int codepoint = ::GetCodepoint(args[0].as_string().c_str(), &codepointSize);
+      return Value::from_int(codepoint);
+
+  - name: GETCODEPOINTNEXT
+    raylib_name: GetCodepointNext
+    args: [string]
+    ret: int
+    category: fonts
+    description: "Get next codepoint in UTF-8 encoded string"
+    custom_body: |
+      int codepointSize;
+      int codepoint = ::GetCodepointNext(args[0].as_string().c_str(), &codepointSize);
+      return Value::from_int(codepoint);
+
+  - name: GETCODEPOINTPREVIOUS
+    raylib_name: GetCodepointPrevious
+    args: [string]
+    ret: int
+    category: fonts
+    description: "Get previous codepoint in UTF-8 encoded string"
+    custom_body: |
+      int codepointSize;
+      int codepoint = ::GetCodepointPrevious(args[0].as_string().c_str(), &codepointSize);
+      return Value::from_int(codepoint);
+
+  - name: CODEPOINTTOUTF8
+    raylib_name: CodepointToUTF8
+    args: [int]
+    ret: string
+    category: fonts
+    description: "Encode one codepoint into UTF-8 byte array"
+    custom_body: |
+      int utf8Size;
+      const char* utf8 = ::CodepointToUTF8(args[0].as_int(), &utf8Size);
+      return Value::from_string(std::string(utf8, utf8Size));
+
+  # === TEXT STRING FUNCTIONS ===
+  - name: TEXTCOPY
+    raylib_name: TextCopy
+    args: [string, string]
+    ret: int
+    category: fonts
+    description: "Copy one string to another, returns bytes copied"
+    custom_body: |
+      // Note: TextCopy modifies dst, simplified for BASIC
+      return Value::from_int(0);
+
+  - name: TEXTISEQUAL
+    raylib_name: TextIsEqual
+    args: [string, string]
+    ret: bool
+    category: fonts
+    description: "Check if two text strings are equal"
+
+  - name: TEXTLENGTH
+    raylib_name: TextLength
+    args: [string]
+    ret: int
+    category: fonts
+    description: "Get text length, checks for '\0' ending"
+
+  - name: TEXTFORMAT
+    raylib_name: TextFormat
+    args: [string]
+    ret: string
+    category: fonts
+    description: "Text formatting with variables (sprintf style) - simplified, single string"
+    custom_body: |
+      // Note: TextFormat supports variadic args, simplified for BASIC
+      return Value::from_string(args[0].as_string());
+
+  - name: TEXTSUBTEXT
+    raylib_name: TextSubtext
+    args: [string, int, int]
+    ret: string
+    category: fonts
+    description: "Get a piece of a text string"
+
+  - name: TEXTREPLACE
+    raylib_name: TextReplace
+    args: [string, string, string]
+    ret: string
+    category: fonts
+    description: "Replace text string (WARNING: must be enough room)"
+    custom_body: |
+      // Note: TextReplace modifies text, simplified for BASIC
+      return Value::from_string(args[0].as_string());
+
+  - name: TEXTINSERT
+    raylib_name: TextInsert
+    args: [string, string, int]
+    ret: string
+    category: fonts
+    description: "Insert text in a position (WARNING: must be enough room)"
+    custom_body: |
+      // Note: TextInsert modifies text, simplified for BASIC
+      return Value::from_string(args[0].as_string());
+
+  - name: TEXTJOIN
+    raylib_name: TextJoin
+    args: [string, int, string]
+    ret: string
+    category: fonts
+    description: "Join text strings with delimiter (textList as comma-separated string, count, delimiter)"
+    custom_body: |
+      // TODO: Proper text list handling
+      return Value::from_string("");
+
+  - name: TEXTSPLIT
+    raylib_name: TextSplit
+    args: [string, string]
+    ret: string
+    category: fonts
+    description: "Split text into multiple strings (text, delimiter as single char string)"
+    custom_body: |
+      int count;
+      const char** result = ::TextSplit(args[0].as_string().c_str(), args[1].as_string()[0], &count);
+      // TODO: Return array of strings
+      return Value::from_string("");
+
+  - name: TEXTFINDINDEX
+    raylib_name: TextFindIndex
+    args: [string, string]
+    ret: int
+    category: fonts
+    description: "Find first text occurrence within a string, returns position"
+
+  - name: TEXTTOUPPER
+    raylib_name: TextToUpper
+    args: [string]
+    ret: string
+    category: fonts
+    description: "Get upper case version of provided string"
+
+  - name: TEXTTOLOWER
+    raylib_name: TextToLower
+    args: [string]
+    ret: string
+    category: fonts
+    description: "Get lower case version of provided string"
+
+  - name: TEXTOPASCAL
+    raylib_name: TextToPascal
+    args: [string]
+    ret: string
+    category: fonts
+    description: "Get Pascal case notation version of provided string"
+
+  - name: TEXTTOSNAKE
+    raylib_name: TextToSnake
+    args: [string]
+    ret: string
+    category: fonts
+    description: "Get Snake case notation version of provided string"
+
+  - name: TEXTTOCAMEL
+    raylib_name: TextToCamel
+    args: [string]
+    ret: string
+    category: fonts
+    description: "Get Camel case notation version of provided string"
+
+  - name: TEXTTOINTEGER
+    raylib_name: TextToInteger
+    args: [string]
+    ret: int
+    category: fonts
+    description: "Get integer value from text (negative values not supported)"
+
+  - name: TEXTTOFLOAT
+    raylib_name: TextToFloat
+    args: [string]
+    ret: float
+    category: fonts
+    description: "Get float value from text (negative values not supported)"

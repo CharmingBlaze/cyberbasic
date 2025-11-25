@@ -1,0 +1,258 @@
+# Colors and Color Management
+# Functions that work with Color types and RGB values
+# Following best practices: proper type handling for colors
+
+functions:
+  # === COLOR CREATION ===
+  - name: MAKECOLOR
+    raylib_name: Color
+    args: [int, int, int]
+    ret: color
+    category: colors
+    description: "Create a color from RGB values (0-255)"
+    working: true
+    custom_body: "Color{(unsigned char)args[0].as_int(), (unsigned char)args[1].as_int(), (unsigned char)args[2].as_int(), 255}"
+
+  - name: MAKECOLORALPHA
+    raylib_name: Color
+    args: [int, int, int, int]
+    ret: color
+    category: colors
+    description: "Create a color from RGBA values (0-255)"
+    working: true
+    custom_body: "Color{(unsigned char)args[0].as_int(), (unsigned char)args[1].as_int(), (unsigned char)args[2].as_int(), (unsigned char)args[3].as_int()}"
+
+  # === COLOR CONSTANTS ===
+  - name: COLORWHITE
+    raylib_name: WHITE
+    args: []
+    ret: color
+    category: colors
+    description: "Get white color constant"
+    working: true
+    custom_body: "WHITE"
+
+  - name: COLORBLACK
+    raylib_name: BLACK
+    args: []
+    ret: color
+    category: colors
+    description: "Get black color constant"
+    working: true
+    custom_body: "BLACK"
+
+  - name: COLORRED
+    raylib_name: RED
+    args: []
+    ret: color
+    category: colors
+    description: "Get red color constant"
+    working: true
+    custom_body: "RED"
+
+  - name: COLORGREEN
+    raylib_name: GREEN
+    args: []
+    ret: color
+    category: colors
+    description: "Get green color constant"
+    working: true
+    custom_body: "GREEN"
+
+  - name: COLORBLUE
+    raylib_name: BLUE
+    args: []
+    ret: color
+    category: colors
+    description: "Get blue color constant"
+    working: true
+    custom_body: "BLUE"
+
+  - name: COLORYELLOW
+    raylib_name: YELLOW
+    args: []
+    ret: color
+    category: colors
+    description: "Get yellow color constant"
+    working: true
+    custom_body: "YELLOW"
+
+  - name: COLORMAGENTA
+    raylib_name: MAGENTA
+    args: []
+    ret: color
+    category: colors
+    description: "Get magenta color constant"
+    working: true
+    custom_body: "MAGENTA"
+
+  - name: COLORORANGE
+    raylib_name: ORANGE
+    args: []
+    ret: color
+    category: colors
+    description: "Get orange color constant"
+    working: true
+    custom_body: "ORANGE"
+
+  - name: COLORPURPLE
+    raylib_name: PURPLE
+    args: []
+    ret: color
+    category: colors
+    description: "Get purple color constant"
+    working: true
+    custom_body: "PURPLE"
+
+  - name: COLORGRAY
+    raylib_name: GRAY
+    args: []
+    ret: color
+    category: colors
+    description: "Get gray color constant"
+    working: true
+    custom_body: "GRAY"
+
+  - name: COLORDARKGRAY
+    raylib_name: DARKGRAY
+    args: []
+    ret: color
+    category: colors
+    description: "Get dark gray color constant"
+    working: true
+    custom_body: "DARKGRAY"
+
+  - name: COLORSKYBLUE
+    raylib_name: SKYBLUE
+    args: []
+    ret: color
+    category: colors
+    description: "Get sky blue color constant"
+    working: true
+    custom_body: "SKYBLUE"
+
+  - name: COLORDARKBLUE
+    raylib_name: DARKBLUE
+    args: []
+    ret: color
+    category: colors
+    description: "Get dark blue color constant"
+    working: true
+    custom_body: "DARKBLUE"
+
+  - name: COLORDARKGREEN
+    raylib_name: DARKGREEN
+    args: []
+    ret: color
+    category: colors
+    description: "Get dark green color constant"
+    working: true
+    custom_body: "DARKGREEN"
+
+  - name: COLORMAROON
+    raylib_name: MAROON
+    args: []
+    ret: color
+    category: colors
+    description: "Get maroon color constant"
+    working: true
+    custom_body: "MAROON"
+
+  - name: COLORDARKPURPLE
+    raylib_name: DARKPURPLE
+    args: []
+    ret: color
+    category: colors
+    description: "Get dark purple color constant"
+    working: true
+    custom_body: "DARKPURPLE"
+
+  - name: COLORBROWN
+    raylib_name: BROWN
+    args: []
+    ret: color
+    category: colors
+    description: "Get brown color constant"
+    working: true
+    custom_body: "BROWN"
+
+  - name: COLORDARKBROWN
+    raylib_name: DARKBROWN
+    args: []
+    ret: color
+    category: colors
+    description: "Get dark brown color constant"
+    working: true
+    custom_body: "DARKBROWN"
+
+  - name: COLORLIGHTGRAY
+    raylib_name: LIGHTGRAY
+    args: []
+    ret: color
+    category: colors
+    description: "Get light gray color constant"
+    working: true
+    custom_body: "LIGHTGRAY"
+
+  - name: COLORPINK
+    raylib_name: PINK
+    args: []
+    ret: color
+    category: colors
+    description: "Get pink color constant"
+    working: true
+    custom_body: "PINK"
+
+  - name: COLORGOLD
+    raylib_name: GOLD
+    args: []
+    ret: color
+    category: colors
+    description: "Get gold color constant"
+    working: true
+    custom_body: "GOLD"
+
+  - name: COLORLIME
+    raylib_name: LIME
+    args: []
+    ret: color
+    category: colors
+    description: "Get lime color constant"
+    working: true
+    custom_body: "LIME"
+
+  - name: COLORVIOLET
+    raylib_name: VIOLET
+    args: []
+    ret: color
+    category: colors
+    description: "Get violet color constant"
+    working: true
+    custom_body: "VIOLET"
+
+  - name: COLORBEIGE
+    raylib_name: BEIGE
+    args: []
+    ret: color
+    category: colors
+    description: "Get beige color constant"
+    working: true
+    custom_body: "BEIGE"
+
+  - name: COLORBLANK
+    raylib_name: BLANK
+    args: []
+    ret: color
+    category: colors
+    description: "Get blank (transparent) color constant"
+    working: true
+    custom_body: "BLANK"
+
+  - name: COLORRAYWHITE
+    raylib_name: RAYWHITE
+    args: []
+    ret: color
+    category: colors
+    description: "Get raylib white color constant"
+    working: true
+    custom_body: "RAYWHITE"
