@@ -63,7 +63,7 @@ struct Entity {
 
 static std::unordered_map<EntityID, Entity> g_entities;
 static EntityID g_next_entity_id = 1;
-static EntityID g_root_entity = 0;
+[[maybe_unused]] static EntityID g_root_entity = 0;
 
 // Scene object
 struct SceneData {
@@ -74,7 +74,7 @@ struct SceneData {
 
 static std::unordered_map<int, SceneData> g_scenes;
 static int g_next_scene_id = 1;
-static int g_current_scene = 0;
+[[maybe_unused]] static int g_current_scene = 0;
 
 // Scene constructor: Scene(name)
 static Value scene_constructor(const std::vector<Value>& args) {

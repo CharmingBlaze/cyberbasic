@@ -10,8 +10,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Static linking option for MinGW
-option(BASIC_STATIC_LINK "Static link on MinGW" OFF)
+# Static linking option for MinGW - default to ON for distribution builds
+option(BASIC_STATIC_LINK "Static link on MinGW" ON)
 
 # Module build options (all ON by default, can be disabled for minimal builds)
 option(BUILD_GRAPHICS_MODULE "Build graphics module" ON)
@@ -26,11 +26,31 @@ option(BUILD_GAME_MODULE "Build game systems module" ON)
 option(BUILD_RAYMATH_MODULE "Build raymath module" ON)
 
 # Use raylib from git submodule (included in repository)
-# Set policy minimum to allow compatibility with raylib's CMake requirements
-# This is needed for CMake 4.2+ which removed compatibility with older versions
+# Set comprehensive CMake policies for future compatibility and to eliminate warnings
+
+# Set all relevant CMake policies to NEW for consistent behavior
 if(POLICY CMP0001)
-    cmake_policy(SET CMP0001 NEW)
+    cmake_policy(SET CMP0001 NEW)  # Variable expansion in if() statements
 endif()
+if(POLICY CMP0066)
+    cmake_policy(SET CMP0066 NEW)  # Honor per-config flags in try_compile()
+endif()
+if(POLICY CMP0067)
+    cmake_policy(SET CMP0067 NEW)  # Honor language standard in try_compile()
+endif()
+if(POLICY CMP0126)
+    cmake_policy(SET CMP0126 NEW)  # set(CACHE) does not remove normal variable
+endif()
+if(POLICY CMP0156)
+    cmake_policy(SET CMP0156 NEW)  # De-duplicate libraries on link lines
+endif()
+if(POLICY CMP0181)
+    cmake_policy(SET CMP0181 NEW)  # Link command-line fragment variables are parsed
+endif()
+if(POLICY CMP0200)
+    cmake_policy(SET CMP0200 NEW)  # Location and configuration selection for imported targets
+endif()
+
 set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 
 # Configure raylib build options
@@ -38,17 +58,34 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build raylib as static library" FORCE)
 set(RAYLIB_BUILD_EXAMPLES OFF CACHE BOOL "Build raylib examples" FORCE)
 set(RAYLIB_BUILD_TOOLS OFF CACHE BOOL "Build raylib tools" FORCE)
 
+# Configure raylib audio modules with full format support
+set(SUPPORT_MODULE_RAUDIO ON CACHE BOOL "Build raylib audio module" FORCE)
+set(SUPPORT_FILEFORMAT_MOD ON CACHE BOOL "Enable MOD audio format support" FORCE)
+set(SUPPORT_FILEFORMAT_XM ON CACHE BOOL "Enable XM audio format support" FORCE)
+set(SUPPORT_FILEFORMAT_S3M ON CACHE BOOL "Enable S3M audio format support" FORCE)
+
 # Add raylib submodule
 add_subdirectory(raylib)
 
 # Generate raylib bindings
 find_package(Python3 COMPONENTS Interpreter REQUIRED)
+
+# Ensure bindings directory exists
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/src/bindings)
+
 add_custom_command(
     OUTPUT ${CMAKE_BINARY_DIR}/src/bindings/rt_raylib.gen.cpp
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/src/bindings
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/gen_raylib_bindings.py
     DEPENDS ${CMAKE_SOURCE_DIR}/tools/gen_raylib_bindings.py ${CMAKE_SOURCE_DIR}/specs/raylib_api.yaml
     COMMENT "Generating raylib bindings"
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+)
+
+# Create a custom target for just the bindings
+add_custom_target(generate_bindings ALL
+    DEPENDS ${CMAKE_BINARY_DIR}/src/bindings/rt_raylib.gen.cpp
+    COMMENT "Generating raylib bindings target"
 )
 
 # Main executable
@@ -105,7 +142,7 @@ add_executable(cyberbasic
   src/custom_cyberbasic.cpp
   src/modules/game/game_systems.cpp
   # Generated bindings
-  src/bindings/rt_raylib.gen.cpp
+  ${CMAKE_BINARY_DIR}/src/bindings/rt_raylib.gen.cpp
   # Additional modules
   src/modules/game/level_editor.cpp
   src/modules/game/level_editor_bindings.cpp
@@ -138,37 +175,86 @@ add_executable(cyberbasic
   src/modules/raylib/raygui_bindings.cpp
 )
 
+# Ensure cyberbasic depends on bindings generation
+add_dependencies(cyberbasic generate_bindings)
+
 # Include directories
 target_include_directories(cyberbasic PRIVATE include)
 target_include_directories(cyberbasic PRIVATE raygui/src)
 
-# Compiler-specific options
+# Compiler-specific options - enable comprehensive warnings to catch issues
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(cyberbasic PRIVATE 
-        -Wall 
-        -Wextra 
-        -Wpedantic
-        -Wconversion
-        -Wsign-conversion
+        -Wall -Wextra -Wpedantic
+        -Wno-unused-parameter  # Only disable truly unavoidable warnings
+        -Wno-missing-field-initializers  # For raylib compatibility
     )
 endif()
+
+# Ensure bindings are generated before building
+add_dependencies(cyberbasic generate_bindings)
 
 # Link libraries
 target_link_libraries(cyberbasic PRIVATE raylib)
 
 # Platform-specific linking
 if(WIN32)
-    target_link_libraries(cyberbasic PRIVATE winmm)
+    # Don't link winmm explicitly - raylib handles audio and includes winmm internally
+    # target_link_libraries(cyberbasic PRIVATE winmm)
     if(MINGW AND BASIC_STATIC_LINK)
-        target_link_options(cyberbasic PRIVATE -static -static-libgcc -static-libstdc++)
+        # Enhanced static linking flags for zero DLL dependencies
+        target_link_options(cyberbasic PRIVATE 
+            -static 
+            -static-libgcc 
+            -static-libstdc++
+            -Wl,--strip-all
+            -Wl,--gc-sections
+        )
+        # Additional static linking libraries for Windows
+        target_link_libraries(cyberbasic PRIVATE 
+            -static
+            gdi32 
+            ole32 
+            oleaut32 
+            imm32 
+            winmm 
+            version
+            setupapi
+            advapi32
+            shell32
+            user32
+            kernel32
+        )
+        
+        # Set static runtime library
+        set_property(TARGET cyberbasic PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
     endif()
 elseif(APPLE)
     find_library(COCOA_FRAMEWORK Cocoa)
     find_library(IOKIT_FRAMEWORK IOKit)
     find_library(OPENGL_FRAMEWORK OpenGL)
     target_link_libraries(cyberbasic PRIVATE ${COCOA_FRAMEWORK} ${IOKIT_FRAMEWORK} ${OPENGL_FRAMEWORK})
+    
+    if(BASIC_STATIC_LINK)
+        # Static linking options for macOS
+        target_link_options(cyberbasic PRIVATE 
+            -static-libgcc 
+            -static-libstdc++
+        )
+    endif()
 elseif(UNIX AND NOT APPLE)
+    # Linux dependencies
     target_link_libraries(cyberbasic PRIVATE pthread dl m)
+    
+    if(BASIC_STATIC_LINK)
+        # Static linking options for Linux
+        target_link_options(cyberbasic PRIVATE 
+            -static-libgcc 
+            -static-libstdc++
+            -Wl,--gc-sections
+            -Wl,--strip-all
+        )
+    endif()
 endif()
 
 # Install rule

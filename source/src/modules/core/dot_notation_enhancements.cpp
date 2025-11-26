@@ -219,7 +219,7 @@ static Value object_unwatch(const std::vector<Value>& args) {
 // ===== BETTER METHOD CHAINING =====
 
 // Helper to check if method should return self for chaining
-static bool is_chainable_method(const std::string& methodName) {
+[[maybe_unused]] static bool is_chainable_method(const std::string& methodName) {
     // Methods that typically return self for chaining
     static const std::vector<std::string> chainableMethods = {
         "SET", "ADD", "REMOVE", "CLEAR", "UPDATE", "MOVE", "SCALE", "ROTATE",
@@ -258,7 +258,7 @@ static Value::Array get_available_properties(const Value& obj) {
 }
 
 // Find similar property names (fuzzy matching)
-static Value::Array find_similar_properties(const std::string& target, const Value::Array& available) {
+[[maybe_unused]] static Value::Array find_similar_properties(const std::string& target, const Value::Array& available) {
     Value::Array suggestions;
     std::string targetUpper;
     targetUpper.reserve(target.size());

@@ -82,6 +82,7 @@ functions:
     description: "Load random values sequence"
     custom_body: |
       int* seq = ::LoadRandomSequence(args[0].as_int(), args[1].as_int(), args[2].as_int());
+      (void)seq; // Suppress unused variable warning
       // Simplified: return count as string
       return Value::from_string("sequence_loaded");
   
@@ -103,6 +104,7 @@ functions:
     description: "Get ray trace from screen position in viewport"
     custom_body: |
       ::Vector2 pos{(float)args[0].as_number(), (float)args[1].as_number()};
+      (void)pos; // Suppress unused variable warning
       // TODO: Camera handling
       return Value::from_string("");
   
@@ -114,6 +116,7 @@ functions:
     description: "Get screen position for 3d world space position in viewport"
     custom_body: |
       ::Vector3 pos{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+      (void)pos; // Suppress unused variable warning
       // TODO: Camera handling
       return Value::from_string("");
   
@@ -125,6 +128,7 @@ functions:
     description: "Get screen position for 2d camera world space position"
     custom_body: |
       ::Vector2 pos{(float)args[0].as_number(), (float)args[1].as_number()};
+      (void)pos; // Suppress unused variable warning
       // TODO: Camera2D handling
       return Value::from_string("");
   
@@ -136,6 +140,7 @@ functions:
     description: "Get world position for 2d camera screen space position"
     custom_body: |
       ::Vector2 pos{(float)args[0].as_number(), (float)args[1].as_number()};
+      (void)pos; // Suppress unused variable warning
       // TODO: Camera2D handling
       return Value::from_string("");
   

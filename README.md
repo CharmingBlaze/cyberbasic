@@ -125,7 +125,7 @@ The repo already includes a statically linked Windows interpreter at `bin/cyberb
 ##  Documentation
 
 ### Essential Guides
-- **[Getting Started Guide](docs/GETTING_STARTED.md)** - Installation, finding the executable, first steps
+
 - **[How to Use CyberBasic](docs/HOW_TO_USE.md)** - Complete guide to using cyberbasic.exe, running examples, and troubleshooting
 - **[Game Development Guide](docs/GAME_DEVELOPMENT_GUIDE.md)** - Complete guide to making games
 - **[2D Graphics API Guide](docs/2D_GRAPHICS_GUIDE.md)** - Learn 2D rendering, sprites, textures

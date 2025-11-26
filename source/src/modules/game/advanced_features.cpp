@@ -282,6 +282,7 @@ static Value shake_camera(const std::vector<Value>& args) {
         }
     }
     
+    (void)intensity; (void)cameraId; // Suppress unused variable warnings
     // Call camera shake system
     // Would call: Camera.shake(intensity)
     
@@ -418,6 +419,7 @@ static Value ai_pathfind(const std::vector<Value>& args) {
     double x = args[1].as_number();
     double y = args[2].as_number();
     double z = args.size() > 3 ? args[3].as_number() : 0.0;
+    (void)x; (void)y; (void)z; // Suppress unused variable warnings
     
     // Would call navigation system to pathfind
     // For now, return success
@@ -545,34 +547,8 @@ static Value broadcast_event(const std::vector<Value>& args) {
 }
 
 // ===== MEMORY-SAFE SANDBOXING =====
-
-struct SandboxConfig {
-    int maxLoopIterations{10000};
-    int maxExecutionTime{5000}; // milliseconds
-    bool allowFileAccess{true};
-    std::vector<std::string> allowedFilePaths;
-    bool allowNetworkAccess{false};
-};
-
-static SandboxConfig g_sandbox_config;
-static std::unordered_map<int, std::chrono::steady_clock::time_point> g_execution_starts;
-static int g_next_sandbox_id = 1;
-
-// ENABLE SANDBOX [config]
-static Value enable_sandbox(const std::vector<Value>& args) {
-    // Would configure sandbox settings
-    // For now, just return success
-    return Value::from_bool(true);
-}
-
-// CHECK SANDBOX [id] -> bool (check if execution should continue)
-static Value check_sandbox(const std::vector<Value>& args) {
-    int sandboxId = static_cast<int>(args.empty() ? 0 : args[0].as_int());
-    
-    // Would check execution time, loop counts, etc.
-    // For now, always return true
-    return Value::from_bool(true);
-}
+// Sandbox functionality has been removed to eliminate complexity and warnings
+// Future implementation should use proper OS-level sandboxing mechanisms
 
 // Register all game advanced features (macros, particles, dialogue, etc.)
 void register_game_advanced_features(FunctionRegistry& R) {
@@ -617,8 +593,7 @@ void register_game_advanced_features(FunctionRegistry& R) {
     R.add("BROADCAST_EVENT", NativeFn{"BROADCAST_EVENT", -1, broadcast_event});
     
     // Sandboxing
-    R.add("ENABLE_SANDBOX", NativeFn{"ENABLE_SANDBOX", 1, enable_sandbox});
-    R.add("CHECK_SANDBOX", NativeFn{"CHECK_SANDBOX", 1, check_sandbox});
+    // Sandbox functions removed - use OS-level sandboxing if needed
 }
 
 } // namespace bas

@@ -61,6 +61,7 @@ functions:
       // TODO: Camera handling
       ::Vector3 position{(float)args[2].as_number(), (float)args[3].as_number(), (float)args[4].as_number()};
       ::Color tint{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
+      (void)position; (void)tint; // Suppress unused variable warnings
       // ::DrawBillboard(camera, rlreg::textures.at(args[1].as_int()), position, (float)args[5].as_number(), tint);
 
   - name: DRAWBILLBOARDREC

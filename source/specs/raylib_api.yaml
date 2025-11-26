@@ -1275,19 +1275,19 @@ functions:
 
     '
 - name: ISTEXTUREVALID
-  map_to: IsTextureReady
+  map_to: IsTextureValid
   args:
   - int
   ret: bool
-  custom_body: 'return Value::from_bool(::IsTextureReady(rlreg::textures.at(args[0].as_int())));
+  custom_body: 'return Value::from_bool(::IsTextureValid(rlreg::textures.at(args[0].as_int())));
 
     '
 - name: ISRENDERTEXTUREVALID
-  map_to: IsRenderTextureReady
+  map_to: IsRenderTextureValid
   args:
   - int
   ret: bool
-  custom_body: 'return Value::from_bool(::IsRenderTextureReady(rlreg::rendertextures.at(args[0].as_int())));
+  custom_body: 'return Value::from_bool(::IsRenderTextureValid(rlreg::rendertextures.at(args[0].as_int())));
 
     '
 - name: UPDATETEXTURE
@@ -1571,11 +1571,11 @@ functions:
 
     '
 - name: ISWAVEVALID
-  map_to: IsWaveReady
+  map_to: IsWaveValid
   args:
   - int
   ret: bool
-  custom_body: 'return Value::from_bool(::IsWaveReady(rlreg::waves.at(args[0].as_int())));
+  custom_body: 'return Value::from_bool(::IsWaveValid(rlreg::waves.at(args[0].as_int())));
 
     '
 - name: LOADSOUNDFROMWAVE
@@ -1607,11 +1607,11 @@ functions:
 
     '
 - name: ISSOUNDVALID
-  map_to: IsSoundReady
+  map_to: IsSoundValid
   args:
   - int
   ret: bool
-  custom_body: 'return Value::from_bool(::IsSoundReady(rlreg::sounds.at(args[0].as_int())));
+  custom_body: 'return Value::from_bool(::IsSoundValid(rlreg::sounds.at(args[0].as_int())));
 
     '
 - name: UPDATESOUND
@@ -1900,11 +1900,11 @@ functions:
 
     '
 - name: ISAUDIOSTREAMVALID
-  map_to: IsAudioStreamReady
+  map_to: IsAudioStreamValid
   args:
   - int
   ret: bool
-  custom_body: 'return Value::from_bool(::IsAudioStreamReady(rlreg::audiostreams.at(args[0].as_int())));
+  custom_body: 'return Value::from_bool(::IsAudioStreamValid(rlreg::audiostreams.at(args[0].as_int())));
 
     '
 - name: UNLOADAUDIOSTREAM
@@ -2124,11 +2124,11 @@ functions:
 
     '
 - name: ISMODELVALID
-  map_to: IsModelReady
+  map_to: IsModelValid
   args:
   - int
   ret: bool
-  custom_body: 'return Value::from_bool(::IsModelReady(rlreg::models.at(args[0].as_int())));
+  custom_body: 'return Value::from_bool(::IsModelValid(rlreg::models.at(args[0].as_int())));
 
     '
 - name: GETMODELBOUNDINGBOX
@@ -2686,11 +2686,11 @@ functions:
 
     '
 - name: ISMATERIALVALID
-  map_to: IsMaterialReady
+  map_to: IsMaterialValid
   args:
   - int
   ret: bool
-  custom_body: 'return Value::from_bool(::IsMaterialReady(rlreg::materials.at(args[0].as_int())));
+  custom_body: 'return Value::from_bool(::IsMaterialValid(rlreg::materials.at(args[0].as_int())));
 
     '
 - name: UNLOADMATERIAL
@@ -3697,11 +3697,11 @@ functions:
 
     '
 - name: ISSHADERVALID
-  map_to: IsShaderReady
+  map_to: IsShaderValid
   args:
   - int
   ret: bool
-  custom_body: 'return Value::from_bool(::IsShaderReady(rlreg::shaders.at(args[0].as_int())));
+  custom_body: 'return Value::from_bool(::IsShaderValid(rlreg::shaders.at(args[0].as_int())));
 
     '
 - name: GETSHADERLOCATION
@@ -4250,11 +4250,11 @@ functions:
 
     '
 - name: ISIMAGEVALID
-  map_to: IsImageReady
+  map_to: IsImageValid
   args:
   - int
   ret: bool
-  custom_body: 'return Value::from_bool(::IsImageReady(rlreg::images.at(args[0].as_int())));
+  custom_body: 'return Value::from_bool(::IsImageValid(rlreg::images.at(args[0].as_int())));
 
     '
 - name: EXPORTIMAGE
@@ -4600,11 +4600,11 @@ functions:
 
     '
 - name: ISFONTVALID
-  map_to: IsFontReady
+  map_to: IsFontValid
   args:
   - int
   ret: bool
-  custom_body: 'return Value::from_bool(::IsFontReady(rlreg::fonts.at(args[0].as_int())));
+  custom_body: 'return Value::from_bool(::IsFontValid(rlreg::fonts.at(args[0].as_int())));
 
     '
 - name: LOADFONTDATA

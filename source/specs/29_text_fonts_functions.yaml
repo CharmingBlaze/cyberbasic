@@ -227,6 +227,7 @@ functions:
     custom_body: |
       int count;
       const char** result = ::TextSplit(args[0].as_string().c_str(), args[1].as_string()[0], &count);
+      (void)result; // Suppress unused variable warning
       // TODO: Return array of strings
       return Value::from_string("");
 

@@ -901,11 +901,11 @@ static Value eval(Env& env, FunctionRegistry& R, const Expr* e, bool debug_mode)
         typeName = "INTEGER";
       } catch (...) {
         try {
-          val.as_number();
+          (void)val.as_number();
           typeName = "NUMBER";
         } catch (...) {
           try {
-            val.as_bool();
+            (void)val.as_bool();
             typeName = "BOOLEAN";
           } catch (...) {
             typeName = "UNKNOWN";
@@ -1290,12 +1290,12 @@ static void exec(Env& env, FunctionRegistry& R, const Stmt* s, bool debug_mode){
   }
       if(auto p = dynamic_cast<const Print*>(s)){
       Value v = eval(env,R,p->value.get(), debug_mode);
-      call(R, "PRINT", {v});
+      (void)call(R, "PRINT", {v});
       return;
     }
   if(auto pc = dynamic_cast<const PrintC*>(s)){
       Value v = eval(env,R,pc->value.get(), debug_mode);
-      call(R, "PRINTC", {v});
+      (void)call(R, "PRINTC", {v});
       return;
     }
   if(auto l = dynamic_cast<const Let*>(s)){
@@ -1723,6 +1723,7 @@ static void exec(Env& env, FunctionRegistry& R, const Stmt* s, bool debug_mode){
     return;
   }
   if (auto bp = dynamic_cast<const BreakpointStmt*>(s)) {
+    (void)bp; // Suppress unused variable warning
     if (debug_mode) {
       std::cerr << "[BREAKPOINT] Execution paused" << std::endl;
     }
@@ -1768,6 +1769,7 @@ static void exec(Env& env, FunctionRegistry& R, const Stmt* s, bool debug_mode){
     return;
   }
   if (auto union_decl = dynamic_cast<const UnionDecl*>(s)) {
+    (void)union_decl; // Suppress unused variable warning
     // Register union type (for now, just store the declaration)
     // Full implementation would require type checking
     return;
@@ -1800,6 +1802,7 @@ static void exec(Env& env, FunctionRegistry& R, const Stmt* s, bool debug_mode){
     return;
   }
   if (auto yield_stmt = dynamic_cast<const YieldStmt*>(s)) {
+    (void)yield_stmt; // Suppress unused variable warning
     // YIELD pauses execution until next frame/iteration
     // For now, just continue (full coroutine support would suspend here)
     // TODO: Implement proper coroutine suspension

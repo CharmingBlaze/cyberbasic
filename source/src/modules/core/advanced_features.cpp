@@ -386,7 +386,7 @@ struct Breakpoint {
 };
 
 static std::vector<Breakpoint> g_breakpoints;
-static bool g_debug_mode{false};
+[[maybe_unused]] static bool g_debug_mode{false};
 
 // Debug.setBreakpoint(file, line, [condition]) -> bool
 static Value debug_setBreakpoint(const std::vector<Value>& args) {

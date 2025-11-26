@@ -15,6 +15,8 @@ struct StateMachineData {
     std::unordered_map<std::string, std::string> states;  // state name -> handler function name
     std::vector<std::string> stateStack;  // For push/pop operations
     int id;
+    
+    StateMachineData() : id(0) {}
 };
 
 static std::unordered_map<int, StateMachineData> g_state_machines;

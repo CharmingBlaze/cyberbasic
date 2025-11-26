@@ -693,6 +693,7 @@ functions:
     description: "Update GPU texture rectangle (pass texture ID, x, y, width, height, pixels as string)"
     custom_body: |
       ::Rectangle rec{(float)args[1].as_number(), (float)args[2].as_number(), (float)args[3].as_number(), (float)args[4].as_number()};
+      (void)rec; // Suppress unused variable warning
       // TODO: Proper pixel data handling
 
   # === COLOR FUNCTIONS ===

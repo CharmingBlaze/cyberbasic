@@ -9,7 +9,7 @@
 using namespace bas;
 
 // Helper to create an object (map) with properties
-static Value create_object(const std::string& type_name) {
+[[maybe_unused]] static Value create_object(const std::string& type_name) {
     Value::Map obj;
     obj["_type"] = Value::from_string(type_name);
     return Value::from_map(std::move(obj));

@@ -1739,21 +1739,77 @@ std::unique_ptr<Stmt> Parser::parse_union() {
     return union_decl;
 }
 
-// Parse IMPORT/INCLUDE statement: IMPORT "file.bas" or INCLUDE "file.bas"
+// Parse IMPORT/INCLUDE statement with flexible syntax:
+// IMPORT "file.bas" or INCLUDE "file.bas" 
+// INCLUDE file.bas (without quotes)
+// INCLUDE (file.bas) (with parentheses)
+// INCLUDE ("file.bas") (with parentheses and quotes)
 std::unique_ptr<Stmt> Parser::parse_import() {
     // Consume IMPORT or INCLUDE token
     bool is_include = check(Tok::Include);
     advance(); // consume IMPORT or INCLUDE
     
-    if (!check(Tok::String)) {
-        diag.err_at(peek().line, peek().col, is_include ? "INCLUDE: expected string literal" : "IMPORT: expected string literal", 
-                     "Provide a file path in quotes", is_include ? "INCLUDE \"file.bas\"" : "IMPORT \"file.bas\"");
+    std::string file_path;
+    bool has_parentheses = false;
+    
+    // Check for optional parentheses: INCLUDE (file.bas)
+    if (check(Tok::LParen)) {
+        advance(); // consume '('
+        has_parentheses = true;
+    }
+    
+    // Handle different path formats
+    if (check(Tok::String)) {
+        // Quoted string: "file.bas"
+        Token path_token = advance();
+        file_path = path_token.lex;
+    } else if (check(Tok::Ident)) {
+        // Unquoted identifier: file.bas (need to handle extensions)
+        std::string base_name = advance().lex; // consume identifier
+        
+        // Check for file extension with dot
+        if (check(Tok::Dot)) {
+            advance(); // consume '.'
+            if (check(Tok::Ident)) {
+                std::string extension = advance().lex; // consume extension
+                file_path = base_name + "." + extension;
+            } else {
+                diag.err_at(peek().line, peek().col, 
+                           is_include ? "INCLUDE: expected file extension after '.'" : "IMPORT: expected file extension after '.'", 
+                           "Provide a valid extension", 
+                           is_include ? "INCLUDE file.bas" : "IMPORT file.bas");
+                return nullptr;
+            }
+        } else {
+            // No extension provided, assume .bas
+            file_path = base_name + ".bas";
+        }
+    } else {
+        // Invalid syntax
+        std::string expected = has_parentheses ? 
+            (is_include ? "INCLUDE (\"file.bas\") or INCLUDE (file.bas)" : "IMPORT (\"file.bas\") or IMPORT (file.bas)") :
+            (is_include ? "INCLUDE \"file.bas\" or INCLUDE file.bas" : "IMPORT \"file.bas\" or IMPORT file.bas");
+        
+        diag.err_at(peek().line, peek().col, 
+                   is_include ? "INCLUDE: expected file path" : "IMPORT: expected file path", 
+                   "Provide a file path", expected);
         return nullptr;
     }
     
-    Token path_token = advance(); // consume string
+    // Check for closing parenthesis if we had an opening one
+    if (has_parentheses) {
+        if (!check(Tok::RParen)) {
+            diag.err_at(peek().line, peek().col, 
+                       is_include ? "INCLUDE: expected closing ')'" : "IMPORT: expected closing ')'", 
+                       "Close the parentheses", 
+                       is_include ? "INCLUDE (file.bas)" : "IMPORT (file.bas)");
+            return nullptr;
+        }
+        advance(); // consume ')'
+    }
+    
     auto import_stmt = std::make_unique<ImportStmt>();
-    import_stmt->path = path_token.lex;
+    import_stmt->path = file_path;
     
     return import_stmt;
 }

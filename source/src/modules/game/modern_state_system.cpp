@@ -52,7 +52,7 @@ static std::unordered_map<std::string, StateSystemData> g_state_systems;
 static std::unordered_map<int, std::string> g_entity_systems; // entityId -> systemName
 
 // Helper: Execute code string
-static Value execute_code(const std::string& code, FunctionRegistry& R) {
+[[maybe_unused]] static Value execute_code(const std::string& code, FunctionRegistry& R) {
     // This would need to parse and execute the code
     // For now, return nil - full implementation would integrate with interpreter
     return Value::nil();
@@ -75,6 +75,7 @@ static Value transition_decl_handler(const std::vector<Value>& args) {
     std::string toState = args[1].as_string();
     std::string condition = args.size() > 2 ? args[2].as_string() : "TRUE";
     int priority = args.size() > 3 ? static_cast<int>(args[3].as_int()) : 0;
+    (void)priority; // Suppress unused variable warning
     
     // Store transition in current state system context
     // This would be set by parser/interpreter context

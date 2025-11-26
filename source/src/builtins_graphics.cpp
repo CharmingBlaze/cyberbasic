@@ -21,6 +21,10 @@ void register_builtins_graphics(FunctionRegistry& R) {
     float y;
     float w;
     float h;
+    
+    Sprite() : texId(0), x(0.0f), y(0.0f), w(0.0f), h(0.0f) {}
+    Sprite(long long tid, float px, float py, float pw, float ph) 
+        : texId(tid), x(px), y(py), w(pw), h(ph) {}
   };
 
   struct GfxState {

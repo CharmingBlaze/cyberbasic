@@ -58,11 +58,14 @@ namespace easing {
         if (t < 1.0 / d1) {
             return n1 * t * t;
         } else if (t < 2.0 / d1) {
-            return n1 * (t -= 1.5 / d1) * t + 0.75;
+            t = t - (1.5 / d1);
+            return n1 * t * t + 0.75;
         } else if (t < 2.5 / d1) {
-            return n1 * (t -= 2.25 / d1) * t + 0.9375;
+            t = t - (2.25 / d1);
+            return n1 * t * t + 0.9375;
         } else {
-            return n1 * (t -= 2.625 / d1) * t + 0.984375;
+            t = t - (2.625 / d1);
+            return n1 * t * t + 0.984375;
         }
     }
     

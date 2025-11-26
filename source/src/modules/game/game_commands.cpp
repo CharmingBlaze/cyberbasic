@@ -64,6 +64,7 @@ static Value destroy_entity(const std::vector<Value>& args) {
     }
     
     int entityId = static_cast<int>(idIt->second.as_int());
+    (void)entityId; // Suppress unused variable warning
     // Would call scene.destroyEntity() here
     return Value::nil();
 }
@@ -138,6 +139,7 @@ static Value blend_animation(const std::vector<Value>& args) {
     
     std::string animName = args[0].as_string();
     double blendTime = args.size() > 1 ? args[1].as_number() : 0.2;
+    (void)blendTime; // Suppress unused variable warning
     
     // Find animation and set blend time
     for (auto& pair : g_animations) {
@@ -233,10 +235,12 @@ static Value apply_force(const std::vector<Value>& args) {
     double fx = args[1].as_number();
     double fy = args[2].as_number();
     double fz = args.size() > 3 ? args[3].as_number() : 0.0;
+    (void)fx; (void)fy; (void)fz; // Suppress unused variable warnings
     
     // Get entity's physics body ID (would be stored in component)
     // For now, assume entityId maps to bodyId
     int bodyId = entityId;
+    (void)bodyId; // Suppress unused variable warning
     
     // Apply force using physics world
     // Would call: g_physics_world->apply_force(bodyId, fx, fy, fz);
@@ -253,6 +257,7 @@ static Value set_gravity(const std::vector<Value>& args) {
     double gx = args[0].as_number();
     double gy = args[1].as_number();
     double gz = args.size() > 2 ? args[2].as_number() : 0.0;
+    (void)gx; (void)gy; (void)gz; // Suppress unused variable warnings
     
     // Set gravity using physics world
     // Would call: g_physics_world->set_gravity(gx, gy, gz);
@@ -401,6 +406,7 @@ static Value stop_sound(const std::vector<Value>& args) {
     }
     
     int soundId = static_cast<int>(args[0].as_int());
+    (void)soundId; // Suppress unused variable warning
     // Stop specific sound (would use Raylib StopSound)
     // StopSound(soundId);
     

@@ -20,7 +20,7 @@ struct CameraShakeData {
 };
 
 static std::unordered_map<int, CameraShakeData> g_camera_shakes;
-static int g_next_shake_id = 1;
+// static int g_next_shake_id = 1; // Unused for now
 static CameraShakeData g_global_shake;
 
 // Camera.shake(amount, [decay], [maxOffset], [maxRotation])
@@ -91,16 +91,19 @@ static Value camera_updateShake(const std::vector<Value>& args) {
 
 // Camera.getShakeOffsetX() -> float
 static Value camera_getShakeOffsetX(const std::vector<Value>& args) {
+    (void)args; // Suppress unused parameter warning
     return Value::from_number(static_cast<double>(g_global_shake.currentOffsetX));
 }
 
 // Camera.getShakeOffsetY() -> float
 static Value camera_getShakeOffsetY(const std::vector<Value>& args) {
+    (void)args; // Suppress unused parameter warning
     return Value::from_number(static_cast<double>(g_global_shake.currentOffsetY));
 }
 
 // Camera.getShakeRotation() -> float
 static Value camera_getShakeRotation(const std::vector<Value>& args) {
+    (void)args; // Suppress unused parameter warning
     return Value::from_number(static_cast<double>(g_global_shake.currentRotation));
 }
 

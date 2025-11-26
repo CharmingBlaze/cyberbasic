@@ -21,7 +21,7 @@ std::unordered_map<EntityID, EntityData> g_entities;
 std::unordered_map<int, SceneData> g_scenes;
 static EntityID g_next_entity_id = 1;
 static int g_next_scene_id = 1;
-static int g_current_scene = 0;
+[[maybe_unused]] static int g_current_scene = 0;
 
 // Component type registry
 static std::unordered_map<std::string, ComponentTypeID> g_component_types;
@@ -780,6 +780,7 @@ static Value scene_update(const std::vector<Value>& args) {
     }
     
     double deltaTime = args.size() > 1 ? args[1].as_number() : 0.016;
+    (void)deltaTime; // Suppress unused variable warning
     
     // Update all active entities
     for (EntityID entityId : sceneIt->second.entities) {
@@ -858,7 +859,7 @@ static Value scene_getEntityCount(const std::vector<Value>& args) {
 }
 
 // Convenience helpers
-static Value ecs_get_entity(const std::vector<Value>& args) {
+[[maybe_unused]] static Value ecs_get_entity(const std::vector<Value>& args) {
     if (args.empty()) {
         return Value::nil();
     }
@@ -885,7 +886,7 @@ static Value ecs_get_entity(const std::vector<Value>& args) {
     return entity ? make_entity_value(*entity) : Value::nil();
 }
 
-static Value ecs_get_scene(const std::vector<Value>& args) {
+[[maybe_unused]] static Value ecs_get_scene(const std::vector<Value>& args) {
     if (args.empty()) {
         return Value::nil();
     }
@@ -912,7 +913,7 @@ static Value ecs_get_scene(const std::vector<Value>& args) {
     return scene ? make_scene_value(*scene, id) : Value::nil();
 }
 
-static Value ecs_find_entities(const std::vector<Value>& args) {
+[[maybe_unused]] static Value ecs_find_entities(const std::vector<Value>& args) {
     if (args.empty()) {
         return Value::from_array({});
     }
@@ -1321,6 +1322,7 @@ static Value ecs_registerSystem(const std::vector<Value>& args) {
         }
     }
     int priority = args.size() > 2 ? static_cast<int>(args[2].as_int()) : 0;
+    (void)priority; // Suppress unused variable warning
     
     // Note: SystemUpdateFn would need to be callable from BASIC
     // For now, this is a placeholder - systems would need to be registered from C++

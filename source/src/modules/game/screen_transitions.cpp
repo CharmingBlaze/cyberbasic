@@ -30,6 +30,10 @@ struct TransitionData {
     bool isIn;  // true = fade in, false = fade out
     Color color;
     int id;
+    
+    TransitionData() : type(TransitionType::FADE), duration(1.0f), elapsed(0.0f), 
+                      isActive(false), isIn(true), 
+                      color({0, 0, 0, 255}), id(0) {}
 };
 
 static std::unordered_map<int, TransitionData> g_transitions;

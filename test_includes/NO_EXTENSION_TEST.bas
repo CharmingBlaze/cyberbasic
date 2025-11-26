@@ -1,0 +1,1 @@
+PRINT "File without .bas extension loaded"

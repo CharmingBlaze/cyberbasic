@@ -93,6 +93,7 @@ void register_raygui_functions(FunctionRegistry& R) {
     
     R.add_with_policy("GUIGETFONT", NativeFn{"GUIGETFONT", 0, [](const std::vector<Value>&) {
         Font font = GuiGetFont();
+        (void)font; // Suppress unused variable warning
         // Return font ID - in practice, we'd need to look up or create an ID
         // For now, return 0 (default font)
         return Value::from_int(0);

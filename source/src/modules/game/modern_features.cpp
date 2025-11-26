@@ -48,6 +48,8 @@ struct ValueEqual {
 struct SetData {
     std::unordered_set<Value, ValueHash, ValueEqual> elements;
     int id;
+    
+    SetData() : id(0) {}
 };
 
 static std::unordered_map<int, SetData> g_sets;
@@ -279,6 +281,8 @@ static Value receive_message(const std::vector<Value>& args) {
             id = args[0].as_int();
         }
     }
+    
+    (void)id; // Suppress unused variable warning - TODO: implement ID-specific message filtering
     
     // Get message from queue
     if (g_networking_system->has_messages()) {

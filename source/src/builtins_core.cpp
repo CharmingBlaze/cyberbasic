@@ -681,6 +681,7 @@ void bas::register_builtins(FunctionRegistry& R){
   R.add("SEEK", NativeFn{"SEEK", 2, [](const std::vector<Value>& a){
     std::string path = a[0].as_string();
     long long pos = a[1].as_int();
+    (void)path; (void)pos; // Suppress unused variable warnings
     // Note: This is a simplified implementation
     // Full file handle support would maintain open file streams
     return Value::nil();

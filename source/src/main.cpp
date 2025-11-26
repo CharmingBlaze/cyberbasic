@@ -79,6 +79,744 @@ void print_usage(const char* program_name) {
     std::cerr << "  " << program_name << " --verbose demo.bas" << std::endl;
 }
 
+// Forward declaration for file execution
+int execute_basic_file(const std::string& filename, bool debug_mode, bool verbose_mode);
+
+// Welcome screen with drag-and-drop functionality
+int show_welcome_screen(bool debug_mode, bool verbose_mode) {
+    // Initialize window
+    const int screenWidth = 800;
+    const int screenHeight = 600;
+    
+    InitWindow(screenWidth, screenHeight, "CyberBasic - Welcome");
+    SetTargetFPS(60);
+    
+    // Colors
+    Color bgColor = {15, 15, 25, 255};        // Dark blue background
+    Color titleColor = {100, 200, 255, 255}; // Light blue
+    Color textColor = {200, 200, 200, 255};  // Light gray
+    Color accentColor = {255, 100, 100, 255}; // Red accent
+    Color dropZoneColor = {50, 50, 80, 255}; // Drop zone background
+    Color dropZoneActiveColor = {80, 80, 120, 255}; // Drop zone when hovering
+    
+    // Animation variables
+    float titlePulse = 0.0f;
+    float dropZoneAlpha = 0.8f;
+    bool isDragging = false;
+    
+    // File browser state
+    std::vector<std::string> basFiles;
+    std::vector<std::string> directories;
+    std::string currentPath = std::filesystem::current_path().string();
+    int selectedFile = -1;
+    int scrollOffset = 0;
+    bool showFileBrowser = false;
+    
+    // Function to scan for .bas files
+    auto scanForBasFiles = [&]() {
+        basFiles.clear();
+        directories.clear();
+        
+        try {
+            // Add parent directory option (except for root)
+            if (std::filesystem::path(currentPath).has_parent_path()) {
+                directories.push_back("..");
+            }
+            
+            for (const auto& entry : std::filesystem::directory_iterator(currentPath)) {
+                if (entry.is_directory()) {
+                    directories.push_back(entry.path().filename().string());
+                } else if (entry.is_regular_file()) {
+                    std::string ext = entry.path().extension().string();
+                    std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+                    if (ext == ".bas" || ext == ".basic") {
+                        basFiles.push_back(entry.path().filename().string());
+                    }
+                }
+            }
+        } catch (const std::exception& e) {
+            if (debug_mode) {
+                std::cerr << "Error scanning directory: " << e.what() << std::endl;
+            }
+        }
+        
+        selectedFile = -1;
+        scrollOffset = 0;
+    };
+    
+    scanForBasFiles();
+    
+    while (!WindowShouldClose()) {
+        // Update animations
+        titlePulse += GetFrameTime() * 2.0f;
+        
+        // Handle drag and drop
+        if (IsFileDropped()) {
+            FilePathList droppedFiles = LoadDroppedFiles();
+            
+            for (int i = 0; i < (int)droppedFiles.count; i++) {
+                std::string filePath = droppedFiles.paths[i];
+                std::filesystem::path path(filePath);
+                
+                if (std::filesystem::is_directory(path)) {
+                    // If it's a directory, first look for main.bas
+                    std::filesystem::path mainBasPath = path / "main.bas";
+                    if (std::filesystem::exists(mainBasPath) && std::filesystem::is_regular_file(mainBasPath)) {
+                        // Found main.bas, run it directly
+                        UnloadDroppedFiles(droppedFiles);
+                        CloseWindow();
+                        return execute_basic_file(mainBasPath.string(), debug_mode, verbose_mode);
+                    } else {
+                        // No main.bas found, scan for .bas files and show browser
+                        currentPath = path.string();
+                        scanForBasFiles();
+                        showFileBrowser = true;
+                    }
+                } else {
+                    // Check if it's a .bas file
+                    std::string ext = path.extension().string();
+                    std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+                    if (ext == ".bas" || ext == ".basic") {
+                        UnloadDroppedFiles(droppedFiles);
+                        CloseWindow();
+                        return execute_basic_file(filePath, debug_mode, verbose_mode);
+                    }
+                }
+            }
+            
+            UnloadDroppedFiles(droppedFiles);
+        }
+        
+        // Handle keyboard input
+        if (IsKeyPressed(KEY_ESCAPE)) {
+            if (showFileBrowser) {
+                showFileBrowser = false;
+            } else {
+                break;
+            }
+        }
+        
+        if (IsKeyPressed(KEY_F1) || IsKeyPressed(KEY_B)) {
+            showFileBrowser = !showFileBrowser;
+        }
+        
+        if (showFileBrowser) {
+            // File browser navigation
+            int totalItems = (int)(directories.size() + basFiles.size());
+            
+            if (IsKeyPressed(KEY_UP) && selectedFile > 0) {
+                selectedFile--;
+            }
+            if (IsKeyPressed(KEY_DOWN) && selectedFile < totalItems - 1) {
+                selectedFile++;
+            }
+            if (IsKeyPressed(KEY_ENTER) && selectedFile >= 0) {
+                if (selectedFile < (int)directories.size()) {
+                    // Navigate to directory
+                    std::string dirName = directories[selectedFile];
+                    if (dirName == "..") {
+                        currentPath = std::filesystem::path(currentPath).parent_path().string();
+                    } else {
+                        currentPath = (std::filesystem::path(currentPath) / dirName).string();
+                    }
+                    scanForBasFiles();
+                } else {
+                    // Execute selected .bas file
+                    int fileIndex = selectedFile - (int)directories.size();
+                    if (fileIndex >= 0 && fileIndex < (int)basFiles.size()) {
+                        std::string filePath = (std::filesystem::path(currentPath) / basFiles[fileIndex]).string();
+                        CloseWindow();
+                        return execute_basic_file(filePath, debug_mode, verbose_mode);
+                    }
+                }
+            }
+            
+            // Mouse selection in file browser
+            Vector2 mousePos = GetMousePosition();
+            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+                int itemHeight = 25;
+                int startY = 150;
+                int itemIndex = (int)(mousePos.y - startY) / itemHeight;
+                if (itemIndex >= 0 && itemIndex < totalItems) {
+                    selectedFile = itemIndex;
+                }
+            }
+            
+            // Double-click to open
+            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+                static double lastClickTime = 0;
+                double currentTime = GetTime();
+                if (currentTime - lastClickTime < 0.3 && selectedFile >= 0) {
+                    // Double click detected
+                    if (selectedFile < (int)directories.size()) {
+                        std::string dirName = directories[selectedFile];
+                        if (dirName == "..") {
+                            currentPath = std::filesystem::path(currentPath).parent_path().string();
+                        } else {
+                            currentPath = (std::filesystem::path(currentPath) / dirName).string();
+                        }
+                        scanForBasFiles();
+                    } else {
+                        int fileIndex = selectedFile - (int)directories.size();
+                        if (fileIndex >= 0 && fileIndex < (int)basFiles.size()) {
+                            std::string filePath = (std::filesystem::path(currentPath) / basFiles[fileIndex]).string();
+                            CloseWindow();
+                            return execute_basic_file(filePath, debug_mode, verbose_mode);
+                        }
+                    }
+                }
+                lastClickTime = currentTime;
+            }
+        }
+        
+        BeginDrawing();
+        ClearBackground(bgColor);
+        
+        if (!showFileBrowser) {
+            // Welcome screen
+            int centerX = screenWidth / 2;
+            int y = 80;
+            
+            // Animated title
+            float titleScale = 1.0f + sin(titlePulse) * 0.05f;
+            int titleSize = (int)(48 * titleScale);
+            const char* title = "CyberBasic";
+            int titleWidth = MeasureText(title, titleSize);
+            DrawText(title, centerX - titleWidth/2, y, titleSize, titleColor);
+            
+            y += 80;
+            
+            // Subtitle
+            const char* subtitle = "BASIC + Raylib Game Development";
+            int subtitleSize = 20;
+            int subtitleWidth = MeasureText(subtitle, subtitleSize);
+            DrawText(subtitle, centerX - subtitleWidth/2, y, subtitleSize, textColor);
+            
+            y += 60;
+            
+            // Drop zone
+            Rectangle dropZone = {(float)(centerX - 200), (float)y, 400.0f, 150.0f};
+            Color currentDropColor = isDragging ? dropZoneActiveColor : dropZoneColor;
+            currentDropColor.a = (unsigned char)(255 * dropZoneAlpha);
+            DrawRectangleRec(dropZone, currentDropColor);
+            DrawRectangleLinesEx(dropZone, 2, accentColor);
+            
+            // Drop zone text
+            const char* dropText1 = "Drop .bas files here";
+            const char* dropText2 = "or folders (runs main.bas if found)";
+            int dropTextSize = 18;
+            int dropText1Width = MeasureText(dropText1, dropTextSize);
+            int dropText2Width = MeasureText(dropText2, dropTextSize);
+            
+            DrawText(dropText1, centerX - dropText1Width/2, (int)dropZone.y + 40, dropTextSize, textColor);
+            DrawText(dropText2, centerX - dropText2Width/2, (int)dropZone.y + 65, dropTextSize, textColor);
+            
+            // Additional info
+            const char* dropText3 = "Otherwise shows file browser";
+            int dropText3Size = 14;
+            int dropText3Width = MeasureText(dropText3, dropText3Size);
+            DrawText(dropText3, centerX - dropText3Width/2, (int)dropZone.y + 90, dropText3Size, Color{150, 150, 150, 255});
+            
+            y += 200;
+            
+            // Instructions
+            const char* instructions[] = {
+                "Press F1 or B to browse for .bas files",
+                "Press ESC to exit",
+                "Drag .bas files to run them directly",
+                "Drag folders to run main.bas (or browse if not found)"
+            };
+            
+            for (int i = 0; i < 4; i++) {
+                int instrWidth = MeasureText(instructions[i], 16);
+                DrawText(instructions[i], centerX - instrWidth/2, y + i * 25, 16, textColor);
+            }
+            
+            // Version info
+            const char* version = "Version 1.0 - Built with Raylib";
+            int versionWidth = MeasureText(version, 14);
+            DrawText(version, centerX - versionWidth/2, screenHeight - 40, 14, Color{150, 150, 150, 255});
+            
+        } else {
+            // File browser
+            DrawText("File Browser", 20, 20, 24, titleColor);
+            
+            // Current path
+            std::string pathDisplay = "Path: " + currentPath;
+            DrawText(pathDisplay.c_str(), 20, 50, 16, textColor);
+            
+            // Instructions
+            DrawText("Use arrow keys to navigate, ENTER to select, ESC to go back", 20, 80, 14, textColor);
+            DrawText("Double-click or ENTER on directories to navigate", 20, 100, 14, textColor);
+            
+            // File list
+            int y = 150;
+            int itemHeight = 25;
+            int maxVisibleItems = (screenHeight - y - 50) / itemHeight;
+            
+            // Draw directories first
+            for (int i = 0; i < (int)directories.size(); i++) {
+                if (i - scrollOffset >= 0 && i - scrollOffset < maxVisibleItems) {
+                    Color itemColor = (i == selectedFile) ? accentColor : Color{100, 150, 255, 255};
+                    std::string displayName = "[DIR] " + directories[i];
+                    DrawText(displayName.c_str(), 30, y + (i - scrollOffset) * itemHeight, 16, itemColor);
+                }
+            }
+            
+            // Draw .bas files
+            for (int i = 0; i < (int)basFiles.size(); i++) {
+                int itemIndex = i + (int)directories.size();
+                if (itemIndex - scrollOffset >= 0 && itemIndex - scrollOffset < maxVisibleItems) {
+                    Color itemColor = (itemIndex == selectedFile) ? accentColor : textColor;
+                    DrawText(basFiles[i].c_str(), 30, y + (itemIndex - scrollOffset) * itemHeight, 16, itemColor);
+                }
+            }
+            
+            // Scroll indicators
+            if (scrollOffset > 0) {
+                DrawText("↑ More files above", screenWidth - 150, y, 14, accentColor);
+            }
+            if (scrollOffset + maxVisibleItems < (int)(directories.size() + basFiles.size())) {
+                DrawText("↓ More files below", screenWidth - 150, screenHeight - 80, 14, accentColor);
+            }
+        }
+        
+        EndDrawing();
+    }
+    
+    CloseWindow();
+    return 0;
+}
+
+// Execute a BASIC file with the given options
+int execute_basic_file(const std::string& filename, bool debug_mode, bool verbose_mode) {
+    // Use permissive mode by default
+    bool agk_mode = true;
+    std::string dialect;
+    bool suppressDialectWarn = false;
+    
+    if (debug_mode) std::cerr << "[DEBUG] Filename to execute: " << filename << std::endl;
+    
+    if (verbose_mode) {
+        std::cout << "BASIC + Raylib Interpreter v1.0" << std::endl;
+        if (debug_mode) std::cerr << "Debug mode: ENABLED" << std::endl;
+        std::cout << "Loading: " << filename << std::endl;
+        std::cout << std::endl;
+    }
+    
+    // Read the source file
+    std::string src;
+    if (debug_mode) std::cerr << "[DEBUG] Attempting to open file..." << std::endl;
+    std::ifstream file(filename, std::ios::binary);
+    if (!file) {
+        if (debug_mode) std::cerr << "[DEBUG] Failed to open file." << std::endl;
+        std::cerr << "Error: Cannot open file '" << filename << "'" << std::endl;
+        std::cerr << "  Check if the file exists and you have read permissions" << std::endl;
+        return 66;
+    }
+    src = std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    
+    if (src.empty()) {
+        std::cerr << "Error: File '" << filename << "' is empty" << std::endl;
+        return 65;
+    }
+    
+    if (debug_mode) {
+        std::cerr << "Source file loaded: " << src.length() << " characters" << std::endl;
+    }
+    
+    // Check pragma in source to select dialect (case-insensitive)
+    {
+        std::string upper = src;
+        std::transform(upper.begin(), upper.end(), upper.begin(), [](unsigned char c){ return (char)std::toupper(c); });
+        // Warning suppression
+        if (upper.find("#PRAGMA NOWARN DIALECT") != std::string::npos) {
+            suppressDialectWarn = true;
+        }
+        // New preferred pragmas
+        if (upper.find("#PRAGMA DIALECT AGKLITE") != std::string::npos ||
+            upper.find("#PRAGMA DIALECT AGKLIKE") != std::string::npos) {
+            agk_mode = true;
+        }
+        // Back-compat pragma
+        if (upper.find("#PRAGMA AGK ON") != std::string::npos) {
+            agk_mode = true;
+        }
+        // Strict classic selection pragmas
+        if (upper.find("#PRAGMA DIALECT CLASSIC") != std::string::npos ||
+            upper.find("#PRAGMA STRICT CLASSIC") != std::string::npos ||
+            upper.find("#PRAGMA CLASSIC ON") != std::string::npos) {
+            agk_mode = false;
+        }
+    }
+
+    // Dialect from CLI overrides/augments pragma
+    if (!dialect.empty()) {
+        std::string d = dialect; std::transform(d.begin(), d.end(), d.begin(), [](unsigned char c){ return (char)std::tolower(c); });
+        if (d == "agk" || d == "agklike" || d == "agklite") agk_mode = true;
+        else if (d == "classic") agk_mode = false;
+    }
+
+    // Lexical analysis
+    if (debug_mode) std::cerr << "Phase 1: Lexical Analysis..." << std::endl;
+    bas::Lexer lx(std::move(src));
+    auto toks = lx.lex();
+    
+    if (debug_mode) {
+        std::cerr << "  Tokens generated: " << toks.size() << std::endl;
+        if (verbose_mode) {
+            std::cerr << "  First few tokens:" << std::endl;
+            size_t max_tokens = toks.size() < 10 ? toks.size() : 10;
+            for (size_t i = 0; i < max_tokens; i++) {
+                std::cerr << "    " << i << ": " << toks[i].lex << " (line " << toks[i].line << ")" << std::endl;
+            }
+        }
+    }
+    
+    // Auto-detect agklite dialect if not set by pragma/CLI and a single-line IF is present
+    bool autodetected_agk = false;
+    if (!agk_mode && dialect.empty()) {
+        bool detected = false;
+        for (size_t i = 0; i < toks.size(); ++i) {
+            if (toks[i].kind == bas::Tok::If) {
+                // scan until newline/eof for THEN
+                size_t j = i + 1;
+                bool foundThen = false;
+                bool anyAfterIf = false;
+                while (j < toks.size() && toks[j].kind != bas::Tok::Newline && toks[j].kind != bas::Tok::Eof) {
+                    if (toks[j].kind == bas::Tok::Then) { foundThen = true; break; }
+                    if (!anyAfterIf && toks[j].kind != bas::Tok::Ident && toks[j].kind != bas::Tok::Number && toks[j].kind != bas::Tok::String) anyAfterIf = true;
+                    ++j;
+                }
+                if (foundThen) {
+                    // after THEN, ensure there is at least one more token before newline/eof
+                    size_t k = j + 1;
+                    if (k < toks.size() && toks[k].kind != bas::Tok::Newline && toks[k].kind != bas::Tok::Eof) {
+                        agk_mode = true;
+                        detected = true;
+                        autodetected_agk = true;
+                        break;
+                    }
+                } else {
+                    // THEN-less single-line IF: tokens exist after IF before newline
+                    if (anyAfterIf) {
+                        agk_mode = true;
+                        detected = true;
+                        autodetected_agk = true;
+                        break;
+                    }
+                }
+            }
+        }
+        if (debug_mode && detected) {
+            std::cerr << "Auto-detected dialect: AGK/DBPro (single-line IF)" << std::endl;
+        }
+    }
+    if (autodetected_agk && verbose_mode && !suppressDialectWarn) {
+        std::cerr << "WARNING: Permissive mode engaged due to single-line IF. Use #pragma NOWARN DIALECT to suppress this message." << std::endl;
+    }
+    
+    // Parsing
+    if (debug_mode) std::cerr << "Phase 2: Parsing..." << std::endl;
+    bas::Diag diag;
+    diag.set_debug_mode(debug_mode);
+    
+    bas::Parser ps(std::move(toks), diag, agk_mode);
+    bas::Program prog = ps.parse();
+    
+    // Check for parsing errors
+    if (diag.has_errors()) {
+        std::cerr << std::endl;
+        std::cerr << "Parsing failed with " << diag.diagnostics.size() << " error(s):" << std::endl;
+        std::cerr << "================================================" << std::endl;
+        diag.print_errors();
+        
+        if (verbose_mode) {
+            std::cerr << "All diagnostics:" << std::endl;
+            std::cerr << "================================================" << std::endl;
+            diag.print_all();
+        }
+        
+        std::cerr << "Compilation failed. Please fix the errors above and try again." << std::endl;
+        return 65;
+    }
+    
+    if (debug_mode) {
+        std::cerr << "  Parse tree created successfully" << std::endl;
+        std::cerr << "  Statements: " << prog.stmts.size() << std::endl;
+        std::cerr << "  Dialect: " << (agk_mode? "Permissive" : "Classic (strict)") << std::endl;
+    }
+    
+    // Show warnings if any
+    if (verbose_mode && diag.diagnostics.size() > 0) {
+        std::cout << "Warnings during compilation:" << std::endl;
+        diag.print_warnings();
+    }
+    
+    // Expand IMPORT statements before runtime
+    if (debug_mode) std::cerr << "Phase 3: Resolving imports..." << std::endl;
+    auto expand_imports = [&](auto&& self, bas::Program& program, const std::filesystem::path& baseDir, std::unordered_set<std::string>& loaded)->bool{
+        std::vector<std::unique_ptr<bas::Stmt>> result;
+        result.reserve(program.stmts.size());
+        for (auto& up : program.stmts) {
+            if (auto imp = dynamic_cast<bas::ImportStmt*>(up.get())) {
+                std::filesystem::path rel(imp->path);
+                std::filesystem::path full = rel.is_absolute() ? rel : (baseDir / rel);
+                std::error_code ec;
+                std::filesystem::path canon = std::filesystem::weakly_canonical(full, ec);
+                if (ec) canon = full.lexically_normal();
+                std::string canonStr = canon.string();
+                if (verbose_mode) {
+                    std::cerr << "  IMPORT: '" << imp->path << "' -> " << canonStr << std::endl;
+                }
+                if (loaded.find(canonStr) != loaded.end()) {
+                    // Already loaded; skip
+                    continue;
+                }
+                // Load file
+                std::ifstream fin(canon, std::ios::binary);
+                if (!fin.good()) {
+                    std::cerr << "Error: Cannot open imported file '" << canonStr << "'" << std::endl;
+                    return false;
+                }
+                std::string src2((std::istreambuf_iterator<char>(fin)), std::istreambuf_iterator<char>());
+                bas::Lexer lx2(std::move(src2));
+                auto toks2 = lx2.lex();
+                bas::Diag d2; d2.set_debug_mode(debug_mode);
+                bas::Parser ps2(std::move(toks2), d2, agk_mode);
+                bas::Program p2 = ps2.parse();
+                if (d2.has_errors()) {
+                    std::cerr << "Parsing failed in imported file: " << canonStr << std::endl;
+                    d2.print_errors();
+                    return false;
+                }
+                // Mark loaded and recursively expand its imports
+                loaded.insert(canonStr);
+                if (!self(self, p2, canon.parent_path(), loaded)) return false;
+                // Splice imported statements into result
+                for (auto& s2 : p2.stmts) {
+                    result.push_back(std::move(s2));
+                }
+            } else {
+                result.push_back(std::move(up));
+            }
+        }
+        program.stmts = std::move(result);
+        return true;
+    };
+    {
+        std::unordered_set<std::string> loaded;
+        // Consider the main file as loaded to prevent accidental self-import if used
+        std::error_code ec;
+        std::filesystem::path mainPath = std::filesystem::weakly_canonical(std::filesystem::path(filename), ec);
+        if (ec) mainPath = std::filesystem::path(filename).lexically_normal();
+        loaded.insert(mainPath.string());
+        std::filesystem::path baseDir = mainPath.parent_path();
+        if (!expand_imports(expand_imports, prog, baseDir, loaded)) {
+            return 65;
+        }
+        if (debug_mode) {
+            std::cerr << "  After imports, statements: " << prog.stmts.size() << std::endl;
+        }
+    }
+
+    // Runtime setup
+    if (debug_mode) std::cerr << "Phase 3: Runtime Setup..." << std::endl;
+    bas::FunctionRegistry R;
+    
+    // Create and register namespace registry for dot notation
+    bas::NamespaceRegistry namespace_registry;
+    bas::register_raylib_namespaces(namespace_registry);
+    bas::set_namespace_registry(&namespace_registry);
+    
+    // Create and register type registry for user-defined types
+    bas::TypeRegistry type_registry;
+    bas::set_type_registry(&type_registry);
+    
+    // Core BASIC functions
+    bas::register_builtins(R);
+    
+    // Enums, dictionaries, and states
+    bas::register_enums_and_dicts(R);
+    
+    // Enhanced dot notation system
+    bas::register_dot_notation_enhancements(R);
+    
+    // Advanced features (coroutines, testing, profiling, etc.)
+    bas::register_advanced_features(R);
+    
+    // Object constructors (Vector3, Camera3D, Color, etc.)
+    bas::register_object_constructors(R);
+    
+    // Raylib graphics and multimedia
+    bas::register_raylib_bindings(R);
+    bas::register_raymath_functions(R);
+    bas::register_raygui_functions(R);
+    
+    // Game programming systems
+    bas::register_game_systems_bindings(R);
+    bas::register_navigation_functions(R);
+    bas::register_physics_functions(R);
+    bas::register_ai_functions(R);
+    bas::register_graphics_functions(R);
+    bas::register_networking_functions(R);
+    bas::register_audio_functions(R);
+    bas::register_camera3d_functions(R);
+    bas::register_lighting3d_functions(R);
+    bas::register_models3d_functions(R);
+    
+    // Enhanced game development systems
+    bas::register_level_editor_functions(R);
+    bas::register_asset_pipeline_functions(R);
+    bas::register_sprite_animation_functions(R);
+    bas::register_gui_functions(R);
+    
+    // New modular game systems
+    bas::register_sprite_system(R);
+    bas::register_timer_system(R);
+    bas::register_input_events(R);
+    bas::register_animation_system(R);
+    bas::register_scene_entity_system(R);
+    bas::register_ecs_system(R);  // Enhanced ECS system
+    bas::register_camera_system(R);
+    bas::register_collision_system(R);
+    bas::register_game_loop(R);
+    bas::register_game_helpers(R);
+    
+    // Modern game development helpers
+    bas::register_asset_manager(R);
+    bas::register_save_load(R);
+    bas::register_profiling(R);
+    bas::register_debug_viz(R);
+    
+    // JSON and File I/O support
+    bas::register_json_functions(R);
+    bas::register_file_functions(R);
+    
+    // New AGK2-style features
+    bas::register_tween_system(R);
+    bas::register_camera_shake(R);
+    bas::register_localization(R);
+    bas::register_state_machine(R);
+    bas::register_modern_state_system(R);  // Modern BASIC-style state system
+    bas::register_game_commands(R);  // High-level game commands
+    bas::register_modern_features(R);  // Modern features (Sets, high-level networking/file I/O)
+    bas::register_game_advanced_features(R);  // Advanced game features (macros, particles, dialogue, etc.)
+    bas::register_post_processing(R);
+    bas::register_streaming(R);
+    bas::register_enhanced_events(R);
+    bas::register_screen_transitions(R);
+    
+    bas::set_event_registry(&R);
+    
+    if (debug_mode) {
+        std::cerr << "  Built-in functions registered: " << R.size() << std::endl;
+    }
+    
+    // Execution
+    if (debug_mode) {
+        std::cerr << "Phase 4: Execution..." << std::endl;
+    }
+    
+    std::string error_message;
+    bool had_error = false;
+    int exit_code = 0;
+    
+    try {
+        int rc = bas::interpret(prog, R, debug_mode);
+        if (rc != 0) {
+            error_message = "Runtime error: Program returned exit code " + std::to_string(rc);
+            std::cerr << error_message << std::endl;
+            had_error = true;
+            exit_code = 70;
+        }
+    } catch (const std::exception& e) {
+        error_message = std::string("Fatal runtime error: ") + e.what();
+        std::cerr << std::endl;
+        std::cerr << error_message << std::endl;
+        if (debug_mode) {
+            std::cerr << "Exception type: " << typeid(e).name() << std::endl;
+        }
+        had_error = true;
+        exit_code = 70;
+    } catch (...) {
+        error_message = "Unknown fatal runtime error occurred";
+        std::cerr << std::endl;
+        std::cerr << error_message << std::endl;
+        had_error = true;
+        exit_code = 70;
+    }
+    
+    // If a window is open, keep it open until user closes it
+    // This allows the user to see the program output or error messages
+    if (IsWindowReady()) {
+        // If there was an error, display it in the window
+        if (had_error && !error_message.empty()) {
+            // Keep window open and show error message
+            while (!WindowShouldClose()) {
+                BeginDrawing();
+                ClearBackground(BLACK);
+                
+                // Draw error message
+                int y = 20;
+                int line_height = 25;
+                std::string display_msg = "ERROR:";
+                DrawText(display_msg.c_str(), 10, y, 20, RED);
+                y += line_height;
+                
+                // Split error message into lines if too long
+                size_t max_width = 70;
+                size_t pos = 0;
+                while (pos < error_message.length()) {
+                    size_t end = pos + max_width;
+                    if (end < error_message.length()) {
+                        // Try to break at a space
+                        size_t space_pos = error_message.rfind(' ', end);
+                        if (space_pos != std::string::npos && space_pos > pos) {
+                            end = space_pos;
+                        }
+                    }
+                    std::string line = error_message.substr(pos, end - pos);
+                    DrawText(line.c_str(), 10, y, 18, WHITE);
+                    y += line_height;
+                    pos = (end < error_message.length() && error_message[end] == ' ') ? end + 1 : end;
+                }
+                
+                DrawText("Press ESC or close window to exit", 10, y + 10, 16, YELLOW);
+                
+                EndDrawing();
+                
+                // Check for ESC key
+                if (IsKeyPressed(KEY_ESCAPE)) {
+                    break;
+                }
+            }
+        } else {
+            // No error - just keep window open until user closes it
+            while (!WindowShouldClose()) {
+                BeginDrawing();
+                ClearBackground(BLACK);
+                
+                // Show a simple message that program completed
+                DrawText("Program completed successfully.", 10, 10, 20, GREEN);
+                DrawText("Press ESC or close window to exit", 10, 40, 16, WHITE);
+                
+                EndDrawing();
+                
+                // Check for ESC key
+                if (IsKeyPressed(KEY_ESCAPE)) {
+                    break;
+                }
+            }
+        }
+        
+        // Clean up window
+        CloseWindow();
+    }
+    
+    return exit_code;
+}
+
 int main(int argc, char* argv[]) {
     bool debug_mode = false;
     for (int i = 1; i < argc; i++) {
@@ -105,7 +843,6 @@ int main(int argc, char* argv[]) {
     bool agk_mode = true;
     std::string dialect;
     std::string filename;
-    bool suppressDialectWarn = false;
     
     // Parse command line arguments
     for (int i = 1; i < argc; i++) {
@@ -272,436 +1009,37 @@ int main(int argc, char* argv[]) {
     
     if (debug_mode) std::cerr << "[DEBUG] Filename to execute: " << filename << std::endl;
 
+    // If no filename specified, show welcome screen
     if (filename.empty()) {
-        std::cerr << "Error: No input file specified" << std::endl;
-        print_usage(argv[0]);
-        return 64;
+        return show_welcome_screen(debug_mode, verbose_mode);
     }
     
-    if (verbose_mode) {
-        std::cout << "BASIC + Raylib Interpreter v1.0" << std::endl;
-        if (debug_mode) std::cerr << "Debug mode: ENABLED" << std::endl;
-        std::cout << "Loading: " << (filename == "-" ? "stdin" : filename) << std::endl;
-        std::cout << std::endl;
-    }
-    
-    // Read from stdin if filename is "-", otherwise read from file
-    std::string src;
+    // Handle stdin input
     if (filename == "-") {
         if (debug_mode) std::cerr << "[DEBUG] Reading from stdin..." << std::endl;
+        std::string src;
         std::string line;
         while (std::getline(std::cin, line)) {
             src += line + "\n";
         }
-    } else {
-        // Open and read the source file
-        if (debug_mode) std::cerr << "[DEBUG] Attempting to open file..." << std::endl;
-        std::ifstream file(filename, std::ios::binary);
-        if (!file) {
-            if (debug_mode) std::cerr << "[DEBUG] Failed to open file." << std::endl;
-            std::cerr << "Error: Cannot open file '" << filename << "'" << std::endl;
-            std::cerr << "  Check if the file exists and you have read permissions" << std::endl;
-            return 66;
-        }
-        src = std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-    }
-    if (src.empty()) {
-        std::cerr << "Error: File '" << filename << "' is empty" << std::endl;
-        return 65;
-    }
-    
-        if (debug_mode) {
-        std::cerr << "Source file loaded: " << src.length() << " characters" << std::endl;
-    }
-    
-    // Check pragma in source to select dialect (case-insensitive)
-    {
-        std::string upper = src;
-        std::transform(upper.begin(), upper.end(), upper.begin(), [](unsigned char c){ return (char)std::toupper(c); });
-        // Warning suppression
-        if (upper.find("#PRAGMA NOWARN DIALECT") != std::string::npos) {
-            suppressDialectWarn = true;
-        }
-        // New preferred pragmas
-        if (upper.find("#PRAGMA DIALECT AGKLITE") != std::string::npos ||
-            upper.find("#PRAGMA DIALECT AGKLIKE") != std::string::npos) {
-            agk_mode = true;
-        }
-        // Back-compat pragma
-        if (upper.find("#PRAGMA AGK ON") != std::string::npos) {
-            agk_mode = true;
-        }
-        // Strict classic selection pragmas
-        if (upper.find("#PRAGMA DIALECT CLASSIC") != std::string::npos ||
-            upper.find("#PRAGMA STRICT CLASSIC") != std::string::npos ||
-            upper.find("#PRAGMA CLASSIC ON") != std::string::npos) {
-            agk_mode = false;
-        }
-    }
-
-    // Dialect from CLI overrides/augments pragma
-    if (!dialect.empty()) {
-        std::string d = dialect; std::transform(d.begin(), d.end(), d.begin(), [](unsigned char c){ return (char)std::tolower(c); });
-        if (d == "agk" || d == "agklike" || d == "agklite") agk_mode = true;
-        else if (d == "classic") agk_mode = false;
-    }
-
-    // Lexical analysis
-        if (debug_mode) std::cerr << "Phase 1: Lexical Analysis..." << std::endl;
-    bas::Lexer lx(std::move(src));
-    auto toks = lx.lex();
-    
-    if (debug_mode) {
-        std::cerr << "  Tokens generated: " << toks.size() << std::endl;
-        if (verbose_mode) {
-            std::cerr << "  First few tokens:" << std::endl;
-            size_t max_tokens = toks.size() < 10 ? toks.size() : 10;
-            for (size_t i = 0; i < max_tokens; i++) {
-                std::cerr << "    " << i << ": " << toks[i].lex << " (line " << toks[i].line << ")" << std::endl;
-            }
-        }
-    }
-    
-    // Auto-detect agklite dialect if not set by pragma/CLI and a single-line IF is present
-    bool autodetected_agk = false;
-    if (!agk_mode && dialect.empty()) {
-        bool detected = false;
-        for (size_t i = 0; i < toks.size(); ++i) {
-            if (toks[i].kind == bas::Tok::If) {
-                // scan until newline/eof for THEN
-                size_t j = i + 1;
-                bool foundThen = false;
-                bool anyAfterIf = false;
-                while (j < toks.size() && toks[j].kind != bas::Tok::Newline && toks[j].kind != bas::Tok::Eof) {
-                    if (toks[j].kind == bas::Tok::Then) { foundThen = true; break; }
-                    if (!anyAfterIf && toks[j].kind != bas::Tok::Ident && toks[j].kind != bas::Tok::Number && toks[j].kind != bas::Tok::String) anyAfterIf = true;
-                    ++j;
-                }
-                if (foundThen) {
-                    // after THEN, ensure there is at least one more token before newline/eof
-                    size_t k = j + 1;
-                    if (k < toks.size() && toks[k].kind != bas::Tok::Newline && toks[k].kind != bas::Tok::Eof) {
-                        agk_mode = true;
-                        detected = true;
-                        autodetected_agk = true;
-                        break;
-                    }
-                } else {
-                    // THEN-less single-line IF: tokens exist after IF before newline
-                    if (anyAfterIf) {
-                        agk_mode = true;
-                        detected = true;
-                        autodetected_agk = true;
-                        break;
-                    }
-                }
-            }
-        }
-                if (debug_mode && detected) {
-            std::cerr << "Auto-detected dialect: AGK/DBPro (single-line IF)" << std::endl;
-        }
-    }
-    if (autodetected_agk && verbose_mode && !suppressDialectWarn) {
-        std::cerr << "WARNING: Permissive mode engaged due to single-line IF. Use #pragma NOWARN DIALECT to suppress this message." << std::endl;
-    }
-    
-    // Parsing
-        if (debug_mode) std::cerr << "Phase 2: Parsing..." << std::endl;
-    bas::Diag diag;
-    diag.set_debug_mode(debug_mode);
-    
-    bas::Parser ps(std::move(toks), diag, agk_mode);
-    bas::Program prog = ps.parse();
-    
-    // Check for parsing errors
-    if (diag.has_errors()) {
-        std::cerr << std::endl;
-        std::cerr << "Parsing failed with " << diag.diagnostics.size() << " error(s):" << std::endl;
-        std::cerr << "================================================" << std::endl;
-        diag.print_errors();
-        
-        if (verbose_mode) {
-            std::cerr << "All diagnostics:" << std::endl;
-            std::cerr << "================================================" << std::endl;
-            diag.print_all();
-        }
-        
-        std::cerr << "Compilation failed. Please fix the errors above and try again." << std::endl;
-        return 65;
-    }
-    
-    if (debug_mode) {
-        std::cerr << "  Parse tree created successfully" << std::endl;
-        std::cerr << "  Statements: " << prog.stmts.size() << std::endl;
-        std::cerr << "  Dialect: " << (agk_mode? "Permissive" : "Classic (strict)") << std::endl;
-    }
-    
-    // Show warnings if any
-    if (verbose_mode && diag.diagnostics.size() > 0) {
-        std::cout << "Warnings during compilation:" << std::endl;
-        diag.print_warnings();
-    }
-    
-    // Expand IMPORT statements before runtime
-        if (debug_mode) std::cerr << "Phase 3: Resolving imports..." << std::endl;
-    auto expand_imports = [&](auto&& self, bas::Program& program, const std::filesystem::path& baseDir, std::unordered_set<std::string>& loaded)->bool{
-        std::vector<std::unique_ptr<bas::Stmt>> result;
-        result.reserve(program.stmts.size());
-        for (auto& up : program.stmts) {
-            if (auto imp = dynamic_cast<bas::ImportStmt*>(up.get())) {
-                std::filesystem::path rel(imp->path);
-                std::filesystem::path full = rel.is_absolute() ? rel : (baseDir / rel);
-                std::error_code ec;
-                std::filesystem::path canon = std::filesystem::weakly_canonical(full, ec);
-                if (ec) canon = full.lexically_normal();
-                std::string canonStr = canon.string();
-                if (verbose_mode) {
-                    std::cerr << "  IMPORT: '" << imp->path << "' -> " << canonStr << std::endl;
-                }
-                if (loaded.find(canonStr) != loaded.end()) {
-                    // Already loaded; skip
-                    continue;
-                }
-                // Load file
-                std::ifstream fin(canon, std::ios::binary);
-                if (!fin.good()) {
-                    std::cerr << "Error: Cannot open imported file '" << canonStr << "'" << std::endl;
-                    return false;
-                }
-                std::string src2((std::istreambuf_iterator<char>(fin)), std::istreambuf_iterator<char>());
-                bas::Lexer lx2(std::move(src2));
-                auto toks2 = lx2.lex();
-                bas::Diag d2; d2.set_debug_mode(debug_mode);
-                bas::Parser ps2(std::move(toks2), d2, agk_mode);
-                bas::Program p2 = ps2.parse();
-                if (d2.has_errors()) {
-                    std::cerr << "Parsing failed in imported file: " << canonStr << std::endl;
-                    d2.print_errors();
-                    return false;
-                }
-                // Mark loaded and recursively expand its imports
-                loaded.insert(canonStr);
-                if (!self(self, p2, canon.parent_path(), loaded)) return false;
-                // Splice imported statements into result
-                for (auto& s2 : p2.stmts) {
-                    result.push_back(std::move(s2));
-                }
-            } else {
-                result.push_back(std::move(up));
-            }
-        }
-        program.stmts = std::move(result);
-        return true;
-    };
-    {
-        std::unordered_set<std::string> loaded;
-        // Consider the main file as loaded to prevent accidental self-import if used
-        std::error_code ec;
-        std::filesystem::path mainPath = std::filesystem::weakly_canonical(std::filesystem::path(filename), ec);
-        if (ec) mainPath = std::filesystem::path(filename).lexically_normal();
-        loaded.insert(mainPath.string());
-        std::filesystem::path baseDir = mainPath.parent_path();
-        if (!expand_imports(expand_imports, prog, baseDir, loaded)) {
+        if (src.empty()) {
+            std::cerr << "Error: No input provided via stdin" << std::endl;
             return 65;
         }
-        if (debug_mode) {
-            std::cerr << "  After imports, statements: " << prog.stmts.size() << std::endl;
-        }
-    }
-
-    // Runtime setup
-        if (debug_mode) std::cerr << "Phase 3: Runtime Setup..." << std::endl;
-    bas::FunctionRegistry R;
-    
-    // Create and register namespace registry for dot notation
-    bas::NamespaceRegistry namespace_registry;
-    bas::register_raylib_namespaces(namespace_registry);
-    bas::set_namespace_registry(&namespace_registry);
-    
-    // Create and register type registry for user-defined types
-    bas::TypeRegistry type_registry;
-    bas::set_type_registry(&type_registry);
-    
-    // Core BASIC functions
-    bas::register_builtins(R);
-    
-    // Enums, dictionaries, and states
-    bas::register_enums_and_dicts(R);
-    
-    // Enhanced dot notation system
-    bas::register_dot_notation_enhancements(R);
-    
-    // Advanced features (coroutines, testing, profiling, etc.)
-    bas::register_advanced_features(R);
-    
-    // Object constructors (Vector3, Camera3D, Color, etc.)
-    bas::register_object_constructors(R);
-    
-    // Raylib graphics and multimedia
-    bas::register_raylib_bindings(R);
-    bas::register_raymath_functions(R);
-    bas::register_raygui_functions(R);
-    
-    // Game programming systems
-    bas::register_game_systems_bindings(R);
-    bas::register_navigation_functions(R);
-    bas::register_physics_functions(R);
-    bas::register_ai_functions(R);
-    bas::register_graphics_functions(R);
-    bas::register_networking_functions(R);
-    bas::register_audio_functions(R);
-    bas::register_camera3d_functions(R);
-    bas::register_lighting3d_functions(R);
-    bas::register_models3d_functions(R);
-    
-    // Enhanced game development systems
-    bas::register_level_editor_functions(R);
-    bas::register_asset_pipeline_functions(R);
-    bas::register_sprite_animation_functions(R);
-    bas::register_gui_functions(R);
-    
-    // New modular game systems
-    bas::register_sprite_system(R);
-    bas::register_timer_system(R);
-    bas::register_input_events(R);
-    bas::register_animation_system(R);
-    bas::register_scene_entity_system(R);
-    bas::register_ecs_system(R);  // Enhanced ECS system
-    bas::register_camera_system(R);
-    bas::register_collision_system(R);
-    bas::register_game_loop(R);
-    bas::register_game_helpers(R);
-    
-    // Modern game development helpers
-    bas::register_asset_manager(R);
-    bas::register_save_load(R);
-    bas::register_profiling(R);
-    bas::register_debug_viz(R);
-    
-    // JSON and File I/O support
-    bas::register_json_functions(R);
-    bas::register_file_functions(R);
-    
-    // New AGK2-style features
-    bas::register_tween_system(R);
-    bas::register_camera_shake(R);
-    bas::register_localization(R);
-    bas::register_state_machine(R);
-    bas::register_modern_state_system(R);  // Modern BASIC-style state system
-    bas::register_game_commands(R);  // High-level game commands
-    bas::register_modern_features(R);  // Modern features (Sets, high-level networking/file I/O)
-    bas::register_game_advanced_features(R);  // Advanced game features (macros, particles, dialogue, etc.)
-    bas::register_post_processing(R);
-    bas::register_streaming(R);
-    bas::register_enhanced_events(R);
-    bas::register_screen_transitions(R);
-    
-    bas::set_event_registry(&R);
-    
-    if (debug_mode) {
-        std::cerr << "  Built-in functions registered: " << R.size() << std::endl;
-    }
-    
-    // Execution
-        if (debug_mode) {
-        std::cerr << "Phase 4: Execution..." << std::endl;
-    }
-    
-    std::string error_message;
-    bool had_error = false;
-    int exit_code = 0;
-    
-    try {
-        int rc = bas::interpret(prog, R, debug_mode);
-        if (rc != 0) {
-            error_message = "Runtime error: Program returned exit code " + std::to_string(rc);
-            std::cerr << error_message << std::endl;
-            had_error = true;
-            exit_code = 70;
-        }
-    } catch (const std::exception& e) {
-        error_message = std::string("Fatal runtime error: ") + e.what();
-        std::cerr << std::endl;
-        std::cerr << error_message << std::endl;
-        if (debug_mode) {
-            std::cerr << "Exception type: " << typeid(e).name() << std::endl;
-        }
-        had_error = true;
-        exit_code = 70;
-    } catch (...) {
-        error_message = "Unknown fatal runtime error occurred";
-        std::cerr << std::endl;
-        std::cerr << error_message << std::endl;
-        had_error = true;
-        exit_code = 70;
-    }
-    
-    // If a window is open, keep it open until user closes it
-    // This allows the user to see the program output or error messages
-    if (IsWindowReady()) {
-        // If there was an error, display it in the window
-        if (had_error && !error_message.empty()) {
-            // Keep window open and show error message
-            while (!WindowShouldClose()) {
-                BeginDrawing();
-                ClearBackground(BLACK);
-                
-                // Draw error message
-                int y = 20;
-                int line_height = 25;
-                std::string display_msg = "ERROR:";
-                DrawText(display_msg.c_str(), 10, y, 20, RED);
-                y += line_height;
-                
-                // Split error message into lines if too long
-                size_t max_width = 70;
-                size_t pos = 0;
-                while (pos < error_message.length()) {
-                    size_t end = pos + max_width;
-                    if (end < error_message.length()) {
-                        // Try to break at a space
-                        size_t space_pos = error_message.rfind(' ', end);
-                        if (space_pos != std::string::npos && space_pos > pos) {
-                            end = space_pos;
-                        }
-                    }
-                    std::string line = error_message.substr(pos, end - pos);
-                    DrawText(line.c_str(), 10, y, 18, WHITE);
-                    y += line_height;
-                    pos = (end < error_message.length() && error_message[end] == ' ') ? end + 1 : end;
-                }
-                
-                DrawText("Press ESC or close window to exit", 10, y + 10, 16, YELLOW);
-                
-                EndDrawing();
-                
-                // Check for ESC key
-                if (IsKeyPressed(KEY_ESCAPE)) {
-                    break;
-                }
-            }
-        } else {
-            // No error - just keep window open until user closes it
-            while (!WindowShouldClose()) {
-                BeginDrawing();
-                ClearBackground(BLACK);
-                
-                // Show a simple message that program completed
-                DrawText("Program completed successfully.", 10, 10, 20, GREEN);
-                DrawText("Press ESC or close window to exit", 10, 40, 16, WHITE);
-                
-                EndDrawing();
-                
-                // Check for ESC key
-                if (IsKeyPressed(KEY_ESCAPE)) {
-                    break;
-                }
-            }
-        }
         
-        // Clean up window
-        CloseWindow();
+        // Create a temporary file for stdin input
+        std::string tempFile = "stdin_input.bas";
+        std::ofstream temp(tempFile);
+        temp << src;
+        temp.close();
+        
+        int result = execute_basic_file(tempFile, debug_mode, verbose_mode);
+        
+        // Clean up temporary file
+        std::filesystem::remove(tempFile);
+        return result;
     }
     
-    return exit_code;
+    // Execute the specified file
+    return execute_basic_file(filename, debug_mode, verbose_mode);
 }
