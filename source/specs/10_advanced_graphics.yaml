@@ -11,7 +11,7 @@ functions:
     category: advanced_graphics
     description: "Draw triangle with RGB color (x1, y1, x2, y2, x3, y3, R, G, B)"
     working: true
-    custom_body: "DrawTriangle(Vector2{(float)args[0].as_int(), (float)args[1].as_int()}, Vector2{(float)args[2].as_int(), (float)args[3].as_int()}, Vector2{(float)args[4].as_int(), (float)args[5].as_int()}, Color{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255})"
+    custom_body: "DrawTriangle(Vector2{(float)INT(0), (float)INT(1)}, Vector2{(float)INT(2), (float)INT(3)}, Vector2{(float)INT(4), (float)INT(5)}, Color{(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255})"
 
   - name: DRAWTRIANGLELINES
     raylib_name: DrawTriangleLines
@@ -20,7 +20,7 @@ functions:
     category: advanced_graphics
     description: "Draw triangle outline with RGB color (x1, y1, x2, y2, x3, y3, R, G, B)"
     working: true
-    custom_body: "DrawTriangleLines(Vector2{(float)args[0].as_int(), (float)args[1].as_int()}, Vector2{(float)args[2].as_int(), (float)args[3].as_int()}, Vector2{(float)args[4].as_int(), (float)args[5].as_int()}, Color{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255})"
+    custom_body: "DrawTriangleLines(Vector2{(float)INT(0), (float)INT(1)}, Vector2{(float)INT(2), (float)INT(3)}, Vector2{(float)INT(4), (float)INT(5)}, Color{(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255})"
 
   - name: DRAWTRIANGLEFAN
     raylib_name: DrawTriangleFan
@@ -29,7 +29,7 @@ functions:
     category: advanced_graphics
     description: "Draw triangle fan with RGB color (points, pointCount, R, G, B)"
     working: true
-    custom_body: "DrawTriangleFan((Vector2*)args[0].as_int(), args[1].as_int(), Color{(unsigned char)args[2].as_int(), (unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), 255})"
+    custom_body: "DrawTriangleFan((Vector2*)INT(0), INT(1), Color{(unsigned char)INT(2), (unsigned char)INT(3), (unsigned char)INT(4), 255})"
 
   - name: DRAWTRIANGLESTRIP
     raylib_name: DrawTriangleStrip
@@ -38,7 +38,7 @@ functions:
     category: advanced_graphics
     description: "Draw triangle strip with RGB color (points, pointCount, R, G, B)"
     working: true
-    custom_body: "DrawTriangleStrip((Vector2*)args[0].as_int(), args[1].as_int(), Color{(unsigned char)args[2].as_int(), (unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), 255})"
+    custom_body: "DrawTriangleStrip((Vector2*)INT(0), INT(1), Color{(unsigned char)INT(2), (unsigned char)INT(3), (unsigned char)INT(4), 255})"
 
   # === POLYGON FUNCTIONS ===
   - name: DRAWPOLYGON
@@ -48,7 +48,7 @@ functions:
     category: advanced_graphics
     description: "Draw polygon with RGB color (centerX, centerY, sides, radius, rotation, R, G, B)"
     working: true
-    custom_body: "DrawPoly(Vector2{(float)args[0].as_int(), (float)args[1].as_int()}, args[2].as_int(), args[3].as_number(), args[4].as_number(), Color{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255})"
+    custom_body: "DrawPoly(Vector2{(float)INT(0), (float)INT(1)}, INT(2), FLOAT(3), FLOAT(4), Color{(unsigned char)INT(5), (unsigned char)INT(6), (unsigned char)INT(7), 255})"
 
   - name: DRAWPOLYGONLINES
     raylib_name: DrawPolyLines
@@ -57,7 +57,7 @@ functions:
     category: advanced_graphics
     description: "Draw polygon outline with RGB color (centerX, centerY, sides, radius, rotation, R, G, B)"
     working: true
-    custom_body: "DrawPolyLines(Vector2{(float)args[0].as_int(), (float)args[1].as_int()}, args[2].as_int(), args[3].as_number(), args[4].as_number(), Color{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255})"
+    custom_body: "DrawPolyLines(Vector2{(float)INT(0), (float)INT(1)}, INT(2), FLOAT(3), FLOAT(4), Color{(unsigned char)INT(5), (unsigned char)INT(6), (unsigned char)INT(7), 255})"
 
   - name: DRAWPOLYGONLINESEX
     raylib_name: DrawPolyLinesEx
@@ -66,7 +66,7 @@ functions:
     category: advanced_graphics
     description: "Draw polygon outline with thickness and RGB color (centerX, centerY, sides, radius, rotation, thickness, R, G, B)"
     working: true
-    custom_body: "DrawPolyLinesEx(Vector2{(float)args[0].as_int(), (float)args[1].as_int()}, args[2].as_int(), args[3].as_number(), args[4].as_number(), args[5].as_number(), Color{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255})"
+    custom_body: "DrawPolyLinesEx(Vector2{(float)INT(0), (float)INT(1)}, INT(2), FLOAT(3), FLOAT(4), FLOAT(5), Color{(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255})"
 
   # === ADVANCED SHAPES ===
   - name: DRAWCIRCLE
@@ -76,7 +76,7 @@ functions:
     category: advanced_graphics
     description: "Draw circle with RGB color (centerX, centerY, radius, R, G, B)"
     working: true
-    custom_body: "DrawCircle(args[0].as_int(), args[1].as_int(), args[2].as_number(), Color{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), 255})"
+    custom_body: "DrawCircle(INT(0), INT(1), FLOAT(2), Color{(unsigned char)INT(3), (unsigned char)INT(4), (unsigned char)INT(5), 255})"
 
   - name: DRAWCIRCLELINES
     raylib_name: DrawCircleLines
@@ -85,7 +85,7 @@ functions:
     category: advanced_graphics
     description: "Draw circle outline with RGB color (centerX, centerY, radius, R, G, B)"
     working: true
-    custom_body: "DrawCircleLines(args[0].as_int(), args[1].as_int(), args[2].as_number(), Color{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), 255})"
+    custom_body: "DrawCircleLines(INT(0), INT(1), FLOAT(2), Color{(unsigned char)INT(3), (unsigned char)INT(4), (unsigned char)INT(5), 255})"
 
   - name: DRAWCIRCLESECTOR
     raylib_name: DrawCircleSector
@@ -94,7 +94,7 @@ functions:
     category: advanced_graphics
     description: "Draw circle sector with RGB color (centerX, centerY, radius, startAngle, endAngle, segments, R, G, B)"
     working: true
-    custom_body: "DrawCircleSector(Vector2{(float)args[0].as_int(), (float)args[1].as_int()}, args[2].as_number(), args[3].as_number(), args[4].as_number(), args[5].as_int(), Color{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255})"
+    custom_body: "DrawCircleSector(Vector2{(float)INT(0), (float)INT(1)}, FLOAT(2), FLOAT(3), FLOAT(4), INT(5), Color{(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255})"
 
   - name: DRAWCIRCLESECTORLINES
     raylib_name: DrawCircleSectorLines
@@ -103,7 +103,7 @@ functions:
     category: advanced_graphics
     description: "Draw circle sector outline with RGB color (centerX, centerY, radius, startAngle, endAngle, segments, R, G, B)"
     working: true
-    custom_body: "DrawCircleSectorLines(Vector2{(float)args[0].as_int(), (float)args[1].as_int()}, args[2].as_number(), args[3].as_number(), args[4].as_number(), args[5].as_int(), Color{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255})"
+    custom_body: "DrawCircleSectorLines(Vector2{(float)INT(0), (float)INT(1)}, FLOAT(2), FLOAT(3), FLOAT(4), INT(5), Color{(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255})"
 
   - name: DRAWCIRCLEGRADIENT
     raylib_name: DrawCircleGradient
@@ -112,7 +112,7 @@ functions:
     category: advanced_graphics
     description: "Draw circle with gradient colors (centerX, centerY, radius, color1R, color1G, color1B, color2R, color2G, color2B)"
     working: true
-    custom_body: "DrawCircleGradient(args[0].as_int(), args[1].as_int(), args[2].as_number(), Color{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), 255}, Color{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255})"
+    custom_body: "DrawCircleGradient(INT(0), INT(1), FLOAT(2), Color{(unsigned char)INT(3), (unsigned char)INT(4), (unsigned char)INT(5), 255}, Color{(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255})"
 
   # === ELLIPSE FUNCTIONS ===
   - name: DRAWELLIPSE
@@ -122,7 +122,7 @@ functions:
     category: advanced_graphics
     description: "Draw ellipse with RGB color (centerX, centerY, radiusH, radiusV, R, G, B)"
     working: true
-    custom_body: "DrawEllipse(args[0].as_int(), args[1].as_int(), args[2].as_number(), args[3].as_number(), Color{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), 255})"
+    custom_body: "DrawEllipse(INT(0), INT(1), FLOAT(2), FLOAT(3), Color{(unsigned char)INT(4), (unsigned char)INT(5), (unsigned char)INT(6), 255})"
 
   - name: DRAWELLIPSELINES
     raylib_name: DrawEllipseLines
@@ -131,7 +131,7 @@ functions:
     category: advanced_graphics
     description: "Draw ellipse outline with RGB color (centerX, centerY, radiusH, radiusV, R, G, B)"
     working: true
-    custom_body: "DrawEllipseLines(args[0].as_int(), args[1].as_int(), args[2].as_number(), args[3].as_number(), Color{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), 255})"
+    custom_body: "DrawEllipseLines(INT(0), INT(1), FLOAT(2), FLOAT(3), Color{(unsigned char)INT(4), (unsigned char)INT(5), (unsigned char)INT(6), 255})"
 
   # === RING FUNCTIONS ===
   - name: DRAWRING
@@ -141,7 +141,7 @@ functions:
     category: advanced_graphics
     description: "Draw ring with RGB color (centerX, centerY, innerRadius, outerRadius, startAngle, endAngle, segments, R, G, B)"
     working: true
-    custom_body: "DrawRing(Vector2{(float)args[0].as_int(), (float)args[1].as_int()}, args[2].as_number(), args[3].as_number(), args[4].as_number(), args[5].as_number(), args[6].as_int(), Color{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), 255})"
+    custom_body: "DrawRing(Vector2{(float)INT(0), (float)INT(1)}, FLOAT(2), FLOAT(3), FLOAT(4), FLOAT(5), INT(6), Color{(unsigned char)INT(7), (unsigned char)INT(8), (unsigned char)INT(9), 255})"
 
   - name: DRAWRINGLINES
     raylib_name: DrawRingLines
@@ -150,7 +150,7 @@ functions:
     category: advanced_graphics
     description: "Draw ring outline with RGB color (centerX, centerY, innerRadius, outerRadius, startAngle, endAngle, segments, R, G, B)"
     working: true
-    custom_body: "DrawRingLines(Vector2{(float)args[0].as_int(), (float)args[1].as_int()}, args[2].as_number(), args[3].as_number(), args[4].as_number(), args[5].as_number(), args[6].as_int(), Color{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), 255})"
+    custom_body: "DrawRingLines(Vector2{(float)INT(0), (float)INT(1)}, FLOAT(2), FLOAT(3), FLOAT(4), FLOAT(5), INT(6), Color{(unsigned char)INT(7), (unsigned char)INT(8), (unsigned char)INT(9), 255})"
 
   # === LINE FUNCTIONS ===
   - name: DRAWLINE
@@ -160,7 +160,7 @@ functions:
     category: advanced_graphics
     description: "Draw line with RGB color (startX, startY, endX, endY, R, G, B)"
     working: true
-    custom_body: "DrawLine(args[0].as_int(), args[1].as_int(), args[2].as_int(), args[3].as_int(), Color{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), 255})"
+    custom_body: "DrawLine(INT(0), INT(1), INT(2), INT(3), Color{(unsigned char)INT(4), (unsigned char)INT(5), (unsigned char)INT(6), 255})"
 
   - name: DRAWLINEV
     raylib_name: DrawLineV
@@ -169,7 +169,7 @@ functions:
     category: advanced_graphics
     description: "Draw line using Vector2 with RGB color (startX, startY, endX, endY, R, G, B)"
     working: true
-    custom_body: "DrawLineV(Vector2{(float)args[0].as_int(), (float)args[1].as_int()}, Vector2{(float)args[2].as_int(), (float)args[3].as_int()}, Color{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), 255})"
+    custom_body: "DrawLineV(Vector2{(float)INT(0), (float)INT(1)}, Vector2{(float)INT(2), (float)INT(3)}, Color{(unsigned char)INT(4), (unsigned char)INT(5), (unsigned char)INT(6), 255})"
 
   - name: DRAWLINEBEZIER
     raylib_name: DrawLineBezier
@@ -178,7 +178,7 @@ functions:
     category: advanced_graphics
     description: "Draw line using cubic-bezier curves with RGB color (startX, startY, endX, endY, thickness, R, G, B)"
     working: true
-    custom_body: "DrawLineBezier(Vector2{(float)args[0].as_int(), (float)args[1].as_int()}, Vector2{(float)args[2].as_int(), (float)args[3].as_int()}, args[4].as_number(), Color{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255})"
+    custom_body: "DrawLineBezier(Vector2{(float)INT(0), (float)INT(1)}, Vector2{(float)INT(2), (float)INT(3)}, FLOAT(4), Color{(unsigned char)INT(5), (unsigned char)INT(6), (unsigned char)INT(7), 255})"
 
 
 
@@ -190,7 +190,7 @@ functions:
     category: advanced_graphics
     description: "Draw pixel with RGB color (x, y, R, G, B)"
     working: true
-    custom_body: "DrawPixel(args[0].as_int(), args[1].as_int(), Color{(unsigned char)args[2].as_int(), (unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), 255})"
+    custom_body: "DrawPixel(INT(0), INT(1), Color{(unsigned char)INT(2), (unsigned char)INT(3), (unsigned char)INT(4), 255})"
 
   - name: DRAWPIXELV
     raylib_name: DrawPixelV
@@ -199,7 +199,7 @@ functions:
     category: advanced_graphics
     description: "Draw pixel using Vector2 with RGB color (x, y, R, G, B)"
     working: true
-    custom_body: "DrawPixelV(Vector2{(float)args[0].as_int(), (float)args[1].as_int()}, Color{(unsigned char)args[2].as_int(), (unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), 255})"
+    custom_body: "DrawPixelV(Vector2{(float)INT(0), (float)INT(1)}, Color{(unsigned char)INT(2), (unsigned char)INT(3), (unsigned char)INT(4), 255})"
 
   # === GEOMETRIC OPERATIONS ===
   - name: CHECKCOLLISIONCIRCLES
@@ -209,7 +209,7 @@ functions:
     category: advanced_graphics
     description: "Check collision between two circles (center1X, center1Y, radius1, center2X, center2Y, radius2)"
     working: true
-    custom_body: "CheckCollisionCircles(Vector2{(float)args[0].as_int(), (float)args[1].as_int()}, args[2].as_number(), Vector2{(float)args[3].as_int(), (float)args[4].as_int()}, args[5].as_number())"
+    custom_body: "CheckCollisionCircles(Vector2{(float)INT(0), (float)INT(1)}, FLOAT(2), Vector2{(float)INT(3), (float)INT(4)}, FLOAT(5))"
 
   - name: CHECKCOLLISIONCIRCLERECT
     raylib_name: CheckCollisionCircleRec
@@ -218,7 +218,7 @@ functions:
     category: advanced_graphics
     description: "Check collision between circle and rectangle (centerX, centerY, radius, rectX, rectY, rectWidth, rectHeight)"
     working: true
-    custom_body: "CheckCollisionCircleRec(Vector2{(float)args[0].as_int(), (float)args[1].as_int()}, args[2].as_number(), Rectangle{(float)args[3].as_int(), (float)args[4].as_int(), (float)args[5].as_int(), (float)args[6].as_int()})"
+    custom_body: "CheckCollisionCircleRec(Vector2{(float)INT(0), (float)INT(1)}, FLOAT(2), Rectangle{(float)INT(3), (float)INT(4), (float)INT(5), (float)INT(6)})"
 
   - name: CHECKCOLLISIONRECTS
     raylib_name: CheckCollisionRecs
@@ -227,7 +227,7 @@ functions:
     category: advanced_graphics
     description: "Check collision between two rectangles (rect1X, rect1Y, rect1Width, rect1Height, rect2X, rect2Y, rect2Width, rect2Height)"
     working: true
-    custom_body: "CheckCollisionRecs(Rectangle{(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int(), (float)args[3].as_int()}, Rectangle{(float)args[4].as_int(), (float)args[5].as_int(), (float)args[6].as_int(), (float)args[7].as_int()})"
+    custom_body: "CheckCollisionRecs(Rectangle{(float)INT(0), (float)INT(1), (float)INT(2), (float)INT(3)}, Rectangle{(float)INT(4), (float)INT(5), (float)INT(6), (float)INT(7)})"
 
   - name: CHECKCOLLISIONPOINTRECT
     raylib_name: CheckCollisionPointRec
@@ -236,7 +236,7 @@ functions:
     category: advanced_graphics
     description: "Check collision between point and rectangle (pointX, pointY, rectX, rectY, rectWidth, rectHeight)"
     working: true
-    custom_body: "CheckCollisionPointRec(Vector2{(float)args[0].as_int(), (float)args[1].as_int()}, Rectangle{(float)args[2].as_int(), (float)args[3].as_int(), (float)args[4].as_int(), (float)args[5].as_int()})"
+    custom_body: "CheckCollisionPointRec(Vector2{(float)INT(0), (float)INT(1)}, Rectangle{(float)INT(2), (float)INT(3), (float)INT(4), (float)INT(5)})"
 
   - name: CHECKCOLLISIONPOINTCIRCLE
     raylib_name: CheckCollisionPointCircle
@@ -245,7 +245,7 @@ functions:
     category: advanced_graphics
     description: "Check collision between point and circle (pointX, pointY, centerX, centerY, radius)"
     working: true
-    custom_body: "CheckCollisionPointCircle(Vector2{(float)args[0].as_int(), (float)args[1].as_int()}, Vector2{(float)args[2].as_int(), (float)args[3].as_int()}, args[4].as_number())"
+    custom_body: "CheckCollisionPointCircle(Vector2{(float)INT(0), (float)INT(1)}, Vector2{(float)INT(2), (float)INT(3)}, FLOAT(4))"
 
   - name: CHECKCOLLISIONPOINTTRIANGLE
     raylib_name: CheckCollisionPointTriangle
@@ -254,7 +254,7 @@ functions:
     category: advanced_graphics
     description: "Check collision between point and triangle (pointX, pointY, x1, y1, x2, y2, x3, y3)"
     working: true
-    custom_body: "CheckCollisionPointTriangle(Vector2{(float)args[0].as_int(), (float)args[1].as_int()}, Vector2{(float)args[2].as_int(), (float)args[3].as_int()}, Vector2{(float)args[4].as_int(), (float)args[5].as_int()}, Vector2{(float)args[6].as_int(), (float)args[7].as_int()})"
+    custom_body: "CheckCollisionPointTriangle(Vector2{(float)INT(0), (float)INT(1)}, Vector2{(float)INT(2), (float)INT(3)}, Vector2{(float)INT(4), (float)INT(5)}, Vector2{(float)INT(6), (float)INT(7)})"
 
   # === ADDITIONAL LINE FUNCTIONS ===
   - name: DRAWLINEEX
@@ -264,7 +264,7 @@ functions:
     category: advanced_graphics
     description: "Draw line with thickness and RGB color (startX, startY, endX, endY, thickness, R, G, B)"
     working: true
-    custom_body: "DrawLineEx(Vector2{(float)args[0].as_int(), (float)args[1].as_int()}, Vector2{(float)args[2].as_int(), (float)args[3].as_int()}, args[4].as_number(), Color{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255})"
+    custom_body: "DrawLineEx(Vector2{(float)INT(0), (float)INT(1)}, Vector2{(float)INT(2), (float)INT(3)}, FLOAT(4), Color{(unsigned char)INT(5), (unsigned char)INT(6), (unsigned char)INT(7), 255})"
 
   - name: DRAWLINESTRIP
     raylib_name: DrawLineStrip
@@ -273,7 +273,7 @@ functions:
     category: advanced_graphics
     description: "Draw line strip from points array with RGB color (points, pointCount, R, G, B)"
     working: true
-    custom_body: "DrawLineStrip((Vector2*)args[0].as_int(), args[1].as_int(), Color{(unsigned char)args[2].as_int(), (unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), 255})"
+    custom_body: "DrawLineStrip((Vector2*)INT(0), INT(1), Color{(unsigned char)INT(2), (unsigned char)INT(3), (unsigned char)INT(4), 255})"
 
   # === CIRCLE VECTOR VARIANTS ===
   - name: DRAWCIRCLEV
@@ -283,7 +283,7 @@ functions:
     category: advanced_graphics
     description: "Draw circle using Vector2 center with RGB color (centerX, centerY, radius, R, G, B)"
     working: true
-    custom_body: "DrawCircleV(Vector2{(float)args[0].as_int(), (float)args[1].as_int()}, args[2].as_number(), Color{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), 255})"
+    custom_body: "DrawCircleV(Vector2{(float)INT(0), (float)INT(1)}, FLOAT(2), Color{(unsigned char)INT(3), (unsigned char)INT(4), (unsigned char)INT(5), 255})"
 
   - name: DRAWCIRCLELINESV
     raylib_name: DrawCircleLinesV
@@ -292,7 +292,7 @@ functions:
     category: advanced_graphics
     description: "Draw circle outline using Vector2 center with RGB color (centerX, centerY, radius, R, G, B)"
     working: true
-    custom_body: "DrawCircleLinesV(Vector2{(float)args[0].as_int(), (float)args[1].as_int()}, args[2].as_number(), Color{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), 255})"
+    custom_body: "DrawCircleLinesV(Vector2{(float)INT(0), (float)INT(1)}, FLOAT(2), Color{(unsigned char)INT(3), (unsigned char)INT(4), (unsigned char)INT(5), 255})"
 
   # === SPLINE DRAWING FUNCTIONS ===
   - name: DRAWSPLINELINEAR
@@ -302,7 +302,7 @@ functions:
     category: advanced_graphics
     description: "Draw linear spline from points array with thickness and RGB color (points, pointCount, thickness, R, G, B)"
     working: true
-    custom_body: "DrawSplineLinear((Vector2*)args[0].as_int(), args[1].as_int(), args[2].as_number(), Color{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), 255})"
+    custom_body: "DrawSplineLinear((Vector2*)INT(0), INT(1), FLOAT(2), Color{(unsigned char)INT(3), (unsigned char)INT(4), (unsigned char)INT(5), 255})"
 
   - name: DRAWSPLINEBASIS
     raylib_name: DrawSplineBasis
@@ -311,7 +311,7 @@ functions:
     category: advanced_graphics
     description: "Draw B-Spline from points array with thickness and RGB color (points, pointCount, thickness, R, G, B)"
     working: true
-    custom_body: "DrawSplineBasis((Vector2*)args[0].as_int(), args[1].as_int(), args[2].as_number(), Color{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), 255})"
+    custom_body: "DrawSplineBasis((Vector2*)INT(0), INT(1), FLOAT(2), Color{(unsigned char)INT(3), (unsigned char)INT(4), (unsigned char)INT(5), 255})"
 
   - name: DRAWSPLINECATMULLROM
     raylib_name: DrawSplineCatmullRom
@@ -320,7 +320,7 @@ functions:
     category: advanced_graphics
     description: "Draw Catmull-Rom spline from points array with thickness and RGB color (points, pointCount, thickness, R, G, B)"
     working: true
-    custom_body: "DrawSplineCatmullRom((Vector2*)args[0].as_int(), args[1].as_int(), args[2].as_number(), Color{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), 255})"
+    custom_body: "DrawSplineCatmullRom((Vector2*)INT(0), INT(1), FLOAT(2), Color{(unsigned char)INT(3), (unsigned char)INT(4), (unsigned char)INT(5), 255})"
 
   - name: DRAWSPLINEBEZIERQUADRATIC
     raylib_name: DrawSplineBezierQuadratic
@@ -329,7 +329,7 @@ functions:
     category: advanced_graphics
     description: "Draw Quadratic Bezier spline from points array with thickness and RGB color (points, pointCount, thickness, R, G, B)"
     working: true
-    custom_body: "DrawSplineBezierQuadratic((Vector2*)args[0].as_int(), args[1].as_int(), args[2].as_number(), Color{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), 255})"
+    custom_body: "DrawSplineBezierQuadratic((Vector2*)INT(0), INT(1), FLOAT(2), Color{(unsigned char)INT(3), (unsigned char)INT(4), (unsigned char)INT(5), 255})"
 
   - name: DRAWSPLINEBEZIERCUBIC
     raylib_name: DrawSplineBezierCubic
@@ -338,7 +338,7 @@ functions:
     category: advanced_graphics
     description: "Draw Cubic Bezier spline from points array with thickness and RGB color (points, pointCount, thickness, R, G, B)"
     working: true
-    custom_body: "DrawSplineBezierCubic((Vector2*)args[0].as_int(), args[1].as_int(), args[2].as_number(), Color{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), 255})"
+    custom_body: "DrawSplineBezierCubic((Vector2*)INT(0), INT(1), FLOAT(2), Color{(unsigned char)INT(3), (unsigned char)INT(4), (unsigned char)INT(5), 255})"
 
   # === SPLINE SEGMENT DRAWING FUNCTIONS ===
   - name: DRAWSPLINESEGMENTLINEAR
@@ -348,7 +348,7 @@ functions:
     category: advanced_graphics
     description: "Draw linear spline segment with thickness and RGB color (p1x, p1y, p2x, p2y, thickness, R, G, B)"
     working: true
-    custom_body: "DrawSplineSegmentLinear(Vector2{(float)args[0].as_int(), (float)args[1].as_int()}, Vector2{(float)args[2].as_int(), (float)args[3].as_int()}, args[4].as_number(), Color{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255})"
+    custom_body: "DrawSplineSegmentLinear(Vector2{(float)INT(0), (float)INT(1)}, Vector2{(float)INT(2), (float)INT(3)}, FLOAT(4), Color{(unsigned char)INT(5), (unsigned char)INT(6), (unsigned char)INT(7), 255})"
 
   - name: DRAWSPLINESEGMENTBASIS
     raylib_name: DrawSplineSegmentBasis
@@ -357,7 +357,7 @@ functions:
     category: advanced_graphics
     description: "Draw B-Spline segment with thickness and RGB color (p1x,p1y,p2x,p2y,p3x,p3y,p4x,p4y, thickness, R, G, B)"
     working: true
-    custom_body: "DrawSplineSegmentBasis(Vector2{(float)args[0].as_int(), (float)args[1].as_int()}, Vector2{(float)args[2].as_int(), (float)args[3].as_int()}, Vector2{(float)args[4].as_int(), (float)args[5].as_int()}, Vector2{(float)args[6].as_int(), (float)args[7].as_int()}, args[8].as_number(), Color{(unsigned char)args[9].as_int(), (unsigned char)args[10].as_int(), (unsigned char)args[11].as_int(), 255})"
+    custom_body: "DrawSplineSegmentBasis(Vector2{(float)INT(0), (float)INT(1)}, Vector2{(float)INT(2), (float)INT(3)}, Vector2{(float)INT(4), (float)INT(5)}, Vector2{(float)INT(6), (float)INT(7)}, FLOAT(8), Color{(unsigned char)INT(9), (unsigned char)INT(10), (unsigned char)INT(11), 255})"
 
   - name: DRAWSPLINESEGMENTCATMULLROM
     raylib_name: DrawSplineSegmentCatmullRom
@@ -366,7 +366,7 @@ functions:
     category: advanced_graphics
     description: "Draw Catmull-Rom spline segment with thickness and RGB color (p1x,p1y,p2x,p2y,p3x,p3y,p4x,p4y, thickness, R, G, B)"
     working: true
-    custom_body: "DrawSplineSegmentCatmullRom(Vector2{(float)args[0].as_int(), (float)args[1].as_int()}, Vector2{(float)args[2].as_int(), (float)args[3].as_int()}, Vector2{(float)args[4].as_int(), (float)args[5].as_int()}, Vector2{(float)args[6].as_int(), (float)args[7].as_int()}, args[8].as_number(), Color{(unsigned char)args[9].as_int(), (unsigned char)args[10].as_int(), (unsigned char)args[11].as_int(), 255})"
+    custom_body: "DrawSplineSegmentCatmullRom(Vector2{(float)INT(0), (float)INT(1)}, Vector2{(float)INT(2), (float)INT(3)}, Vector2{(float)INT(4), (float)INT(5)}, Vector2{(float)INT(6), (float)INT(7)}, FLOAT(8), Color{(unsigned char)INT(9), (unsigned char)INT(10), (unsigned char)INT(11), 255})"
 
   - name: DRAWSPLINESEGMENTBEZIERQUADRATIC
     raylib_name: DrawSplineSegmentBezierQuadratic
@@ -375,7 +375,7 @@ functions:
     category: advanced_graphics
     description: "Draw Quadratic Bezier spline segment with thickness and RGB color (p1x,p1y,cx,cy,p3x,p3y, thickness, R, G, B)"
     working: true
-    custom_body: "DrawSplineSegmentBezierQuadratic(Vector2{(float)args[0].as_int(), (float)args[1].as_int()}, Vector2{(float)args[2].as_int(), (float)args[3].as_int()}, Vector2{(float)args[4].as_int(), (float)args[5].as_int()}, args[6].as_number(), Color{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), 255})"
+    custom_body: "DrawSplineSegmentBezierQuadratic(Vector2{(float)INT(0), (float)INT(1)}, Vector2{(float)INT(2), (float)INT(3)}, Vector2{(float)INT(4), (float)INT(5)}, FLOAT(6), Color{(unsigned char)INT(7), (unsigned char)INT(8), (unsigned char)INT(9), 255})"
 
   - name: DRAWSPLINESEGMENTBEZIERCUBIC
     raylib_name: DrawSplineSegmentBezierCubic
@@ -384,7 +384,7 @@ functions:
     category: advanced_graphics
     description: "Draw Cubic Bezier spline segment with thickness and RGB color (p1x,p1y,c1x,c1y,c2x,c2y,p4x,p4y, thickness, R, G, B)"
     working: true
-    custom_body: "DrawSplineSegmentBezierCubic(Vector2{(float)args[0].as_int(), (float)args[1].as_int()}, Vector2{(float)args[2].as_int(), (float)args[3].as_int()}, Vector2{(float)args[4].as_int(), (float)args[5].as_int()}, Vector2{(float)args[6].as_int(), (float)args[7].as_int()}, args[8].as_number(), Color{(unsigned char)args[9].as_int(), (unsigned char)args[10].as_int(), (unsigned char)args[11].as_int(), 255})"
+    custom_body: "DrawSplineSegmentBezierCubic(Vector2{(float)INT(0), (float)INT(1)}, Vector2{(float)INT(2), (float)INT(3)}, Vector2{(float)INT(4), (float)INT(5)}, Vector2{(float)INT(6), (float)INT(7)}, FLOAT(8), Color{(unsigned char)INT(9), (unsigned char)INT(10), (unsigned char)INT(11), 255})"
 
   # === ADDITIONAL GEOMETRIC OPERATIONS ===
   - name: CHECKCOLLISIONPOINTPOLY
@@ -394,7 +394,7 @@ functions:
     category: advanced_graphics
     description: "Check if point is inside polygon described by points array (pointX, pointY, points, pointCount)"
     working: true
-    custom_body: "CheckCollisionPointPoly(Vector2{(float)args[0].as_int(), (float)args[1].as_int()}, (Vector2*)args[2].as_int(), args[3].as_int())"
+    custom_body: "CheckCollisionPointPoly(Vector2{(float)INT(0), (float)INT(1)}, (Vector2*)INT(2), INT(3))"
 
   - name: CHECKCOLLISIONPOINTLINE
     raylib_name: CheckCollisionPointLine
@@ -403,4 +403,4 @@ functions:
     category: advanced_graphics
     description: "Check if point is on line within threshold (pointX, pointY, p1x, p1y, p2x, p2y, threshold)"
     working: true
-    custom_body: "CheckCollisionPointLine(Vector2{(float)args[0].as_int(), (float)args[1].as_int()}, Vector2{(float)args[2].as_int(), (float)args[3].as_int()}, Vector2{(float)args[4].as_int(), (float)args[5].as_int()}, args[6].as_int())"
+    custom_body: "CheckCollisionPointLine(Vector2{(float)INT(0), (float)INT(1)}, Vector2{(float)INT(2), (float)INT(3)}, Vector2{(float)INT(4), (float)INT(5)}, INT(6))"

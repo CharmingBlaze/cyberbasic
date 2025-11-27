@@ -37,7 +37,7 @@ functions:
     category: physics
     description: "Set target FPS (maximum)"
     working: true
-    custom_body: "SetTargetFPS(args[0].as_int())"
+    custom_body: "SetTargetFPS(INT(0))"
 
   - name: GETFPS
     raylib_name: GetFPS
@@ -58,7 +58,7 @@ functions:
     category: physics
     description: "Set random seed for consistent results"
     working: true
-    custom_body: "SetRandomSeed(args[0].as_int())"
+    custom_body: "SetRandomSeed(INT(0))"
 
   - name: GETRANDOMVALUE
     raylib_name: GetRandomValue
@@ -67,7 +67,7 @@ functions:
     category: physics
     description: "Get random value between min and max (both inclusive)"
     working: true
-    custom_body: "GetRandomValue(args[0].as_int(), args[1].as_int())"
+    custom_body: "GetRandomValue(INT(0), INT(1))"
 
 
 

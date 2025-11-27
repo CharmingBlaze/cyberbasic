@@ -1,0 +1,245 @@
+# Math Utilities and Vector Operations
+# Comprehensive mathematical functions for utils, Vector2, Vector3, Matrix, and Quaternion operations
+
+functions:
+  # === UTILITY MATH ===
+  - name: CLAMP
+    raylib_name: Clamp
+    args: [float, float, float]
+    ret: float
+    description: "Clamp float value (value, min, max)"
+    custom_body: |
+      return Value::from_number(::Clamp(FLOAT(0), FLOAT(1), FLOAT(2)));
+    
+  - name: LERP
+    raylib_name: Lerp
+    args: [float, float, float]
+    ret: float
+    description: "Calculate linear interpolation between two floats (start, end, amount)"
+    custom_body: |
+      return Value::from_number(::Lerp(FLOAT(0), FLOAT(1), FLOAT(2)));
+    
+  - name: NORMALIZE
+    raylib_name: Normalize
+    args: [float, float, float]
+    ret: float
+    description: "Normalize input value within input range (value, start, end)"
+    custom_body: |
+      return Value::from_number(::Normalize(FLOAT(0), FLOAT(1), FLOAT(2)));
+    
+  - name: REMAP
+    raylib_name: Remap
+    args: [float, float, float, float, float]
+    ret: float
+    description: "Remap input value within input range to output range (value, inputStart, inputEnd, outputStart, outputEnd)"
+    custom_body: |
+      return Value::from_number(::Remap(FLOAT(0), FLOAT(1), FLOAT(2), FLOAT(3), FLOAT(4)));
+    
+  - name: WRAP
+    raylib_name: Wrap
+    args: [float, float, float]
+    ret: float
+    description: "Wrap input value from min to max (value, min, max)"
+    custom_body: |
+      return Value::from_number(::Wrap(FLOAT(0), FLOAT(1), FLOAT(2)));
+    
+  - name: FLOATEQUALS
+    raylib_name: FloatEquals
+    args: [float, float]
+    ret: int
+    description: "Check whether two given floats are almost equal"
+    custom_body: |
+      return Value::from_int(::FloatEquals(FLOAT(0), FLOAT(1)));
+    
+  # === VECTOR2 MATH ===
+  - name: VECTOR2ZERO
+    raylib_name: Vector2Zero
+    args: []
+    ret: string
+    description: "Vector with components value 0.0f, returns 'x,y'"
+    custom_body: |
+      ::Vector2 v = ::Vector2Zero();
+      return Value::from_string(std::to_string(v.x) + "," + std::to_string(v.y));
+    
+  - name: VECTOR2ONE
+    raylib_name: Vector2One
+    args: []
+    ret: string
+    description: "Vector with components value 1.0f, returns 'x,y'"
+    custom_body: |
+      ::Vector2 v = ::Vector2One();
+      return Value::from_string(std::to_string(v.x) + "," + std::to_string(v.y));
+    
+  - name: VECTOR2ADD
+    raylib_name: Vector2Add
+    args: [float, float, float, float]
+    ret: string
+    description: "Add two vectors (v1x, v1y, v2x, v2y), returns 'x,y'"
+    custom_body: |
+      ::Vector2 v1 = {FLOAT(0), FLOAT(1)};
+      ::Vector2 v2 = {FLOAT(2), FLOAT(3)};
+      ::Vector2 result = ::Vector2Add(v1, v2);
+      return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y));
+    
+  - name: VECTOR2SUBTRACT
+    raylib_name: Vector2Subtract
+    args: [float, float, float, float]
+    ret: string
+    description: "Subtract two vectors (v1x, v1y, v2x, v2y), returns 'x,y'"
+    custom_body: |
+      ::Vector2 v1 = {FLOAT(0), FLOAT(1)};
+      ::Vector2 v2 = {FLOAT(2), FLOAT(3)};
+      ::Vector2 result = ::Vector2Subtract(v1, v2);
+      return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y));
+    
+  - name: VECTOR2LENGTH
+    raylib_name: Vector2Length
+    args: [float, float]
+    ret: float
+    description: "Calculate vector length (vx, vy)"
+    custom_body: |
+      ::Vector2 v = {FLOAT(0), FLOAT(1)};
+      return Value::from_number(::Vector2Length(v));
+    
+  - name: VECTOR2DISTANCE
+    raylib_name: Vector2Distance
+    args: [float, float, float, float]
+    ret: float
+    description: "Calculate distance between two vectors (v1x, v1y, v2x, v2y)"
+    custom_body: |
+      ::Vector2 v1 = {FLOAT(0), FLOAT(1)};
+      ::Vector2 v2 = {FLOAT(2), FLOAT(3)};
+      return Value::from_number(::Vector2Distance(v1, v2));
+    
+  - name: VECTOR2DOTPRODUCT
+    raylib_name: Vector2DotProduct
+    args: [float, float, float, float]
+    ret: float
+    description: "Calculate two vectors dot product (v1x, v1y, v2x, v2y)"
+    custom_body: |
+      ::Vector2 v1 = {FLOAT(0), FLOAT(1)};
+      ::Vector2 v2 = {FLOAT(2), FLOAT(3)};
+      return Value::from_number(::Vector2DotProduct(v1, v2));
+    
+  - name: VECTOR2NORMALIZE
+    raylib_name: Vector2Normalize
+    args: [float, float]
+    ret: string
+    description: "Normalize provided vector (vx, vy), returns 'x,y'"
+    custom_body: |
+      ::Vector2 v = {FLOAT(0), FLOAT(1)};
+      ::Vector2 result = ::Vector2Normalize(v);
+      return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y));
+    
+  - name: VECTOR2LERP
+    raylib_name: Vector2Lerp
+    args: [float, float, float, float, float]
+    ret: string
+    description: "Calculate linear interpolation between two vectors (v1x, v1y, v2x, v2y, amount), returns 'x,y'"
+    custom_body: |
+      ::Vector2 v1 = {FLOAT(0), FLOAT(1)};
+      ::Vector2 v2 = {FLOAT(2), FLOAT(3)};
+      ::Vector2 result = ::Vector2Lerp(v1, v2, FLOAT(4));
+      return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y));
+    
+  # === VECTOR3 MATH ===
+  - name: VECTOR3ZERO
+    raylib_name: Vector3Zero
+    args: []
+    ret: string
+    description: "Vector with components value 0.0f, returns 'x,y,z'"
+    custom_body: |
+      ::Vector3 v = ::Vector3Zero();
+      return Value::from_string(std::to_string(v.x) + "," + std::to_string(v.y) + "," + std::to_string(v.z));
+    
+  - name: VECTOR3ONE
+    raylib_name: Vector3One
+    args: []
+    ret: string
+    description: "Vector with components value 1.0f, returns 'x,y,z'"
+    custom_body: |
+      ::Vector3 v = ::Vector3One();
+      return Value::from_string(std::to_string(v.x) + "," + std::to_string(v.y) + "," + std::to_string(v.z));
+    
+  - name: VECTOR3ADD
+    raylib_name: Vector3Add
+    args: [float, float, float, float, float, float]
+    ret: string
+    description: "Add two vectors (v1x, v1y, v1z, v2x, v2y, v2z), returns 'x,y,z'"
+    custom_body: |
+      ::Vector3 v1 = {FLOAT(0), FLOAT(1), FLOAT(2)};
+      ::Vector3 v2 = {FLOAT(3), FLOAT(4), FLOAT(5)};
+      ::Vector3 result = ::Vector3Add(v1, v2);
+      return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y) + "," + std::to_string(result.z));
+    
+  - name: VECTOR3SUBTRACT
+    raylib_name: Vector3Subtract
+    args: [float, float, float, float, float, float]
+    ret: string
+    description: "Subtract two vectors (v1x, v1y, v1z, v2x, v2y, v2z), returns 'x,y,z'"
+    custom_body: |
+      ::Vector3 v1 = {FLOAT(0), FLOAT(1), FLOAT(2)};
+      ::Vector3 v2 = {FLOAT(3), FLOAT(4), FLOAT(5)};
+      ::Vector3 result = ::Vector3Subtract(v1, v2);
+      return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y) + "," + std::to_string(result.z));
+    
+  - name: VECTOR3LENGTH
+    raylib_name: Vector3Length
+    args: [float, float, float]
+    ret: float
+    description: "Calculate vector length (vx, vy, vz)"
+    custom_body: |
+      ::Vector3 v = {FLOAT(0), FLOAT(1), FLOAT(2)};
+      return Value::from_number(::Vector3Length(v));
+    
+  - name: VECTOR3DISTANCE
+    raylib_name: Vector3Distance
+    args: [float, float, float, float, float, float]
+    ret: float
+    description: "Calculate distance between two vectors (v1x, v1y, v1z, v2x, v2y, v2z)"
+    custom_body: |
+      ::Vector3 v1 = {FLOAT(0), FLOAT(1), FLOAT(2)};
+      ::Vector3 v2 = {FLOAT(3), FLOAT(4), FLOAT(5)};
+      return Value::from_number(::Vector3Distance(v1, v2));
+    
+  - name: VECTOR3DOTPRODUCT
+    raylib_name: Vector3DotProduct
+    args: [float, float, float, float, float, float]
+    ret: float
+    description: "Calculate two vectors dot product (v1x, v1y, v1z, v2x, v2y, v2z)"
+    custom_body: |
+      ::Vector3 v1 = {FLOAT(0), FLOAT(1), FLOAT(2)};
+      ::Vector3 v2 = {FLOAT(3), FLOAT(4), FLOAT(5)};
+      return Value::from_number(::Vector3DotProduct(v1, v2));
+    
+  - name: VECTOR3CROSSPRODUCT
+    raylib_name: Vector3CrossProduct
+    args: [float, float, float, float, float, float]
+    ret: string
+    description: "Calculate two vectors cross product (v1x, v1y, v1z, v2x, v2y, v2z), returns 'x,y,z'"
+    custom_body: |
+      ::Vector3 v1 = {FLOAT(0), FLOAT(1), FLOAT(2)};
+      ::Vector3 v2 = {FLOAT(3), FLOAT(4), FLOAT(5)};
+      ::Vector3 result = ::Vector3CrossProduct(v1, v2);
+      return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y) + "," + std::to_string(result.z));
+    
+  - name: VECTOR3NORMALIZE
+    raylib_name: Vector3Normalize
+    args: [float, float, float]
+    ret: string
+    description: "Normalize provided vector (vx, vy, vz), returns 'x,y,z'"
+    custom_body: |
+      ::Vector3 v = {FLOAT(0), FLOAT(1), FLOAT(2)};
+      ::Vector3 result = ::Vector3Normalize(v);
+      return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y) + "," + std::to_string(result.z));
+    
+  - name: VECTOR3LERP
+    raylib_name: Vector3Lerp
+    args: [float, float, float, float, float, float, float]
+    ret: string
+    description: "Calculate linear interpolation between two vectors (v1x, v1y, v1z, v2x, v2y, v2z, amount), returns 'x,y,z'"
+    custom_body: |
+      ::Vector3 v1 = {FLOAT(0), FLOAT(1), FLOAT(2)};
+      ::Vector3 v2 = {FLOAT(3), FLOAT(4), FLOAT(5)};
+      ::Vector3 result = ::Vector3Lerp(v1, v2, FLOAT(6));
+      return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y) + "," + std::to_string(result.z));

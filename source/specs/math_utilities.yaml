@@ -5,30 +5,30 @@ functions:
     args: [double]
     ret: double
     custom_body: |
-      return Value::from_number(std::abs(args[0].as_number()));
+      return Value::from_number(std::abs(FLOAT(0)));
   
   - name: MIN
     map_to: min
     args: [double, double]
     ret: double
     custom_body: |
-      return Value::from_number(std::min(args[0].as_number(), args[1].as_number()));
+      return Value::from_number(std::min(FLOAT(0), FLOAT(1)));
   
   - name: MAX
     map_to: max
     args: [double, double]
     ret: double
     custom_body: |
-      return Value::from_number(std::max(args[0].as_number(), args[1].as_number()));
+      return Value::from_number(std::max(FLOAT(0), FLOAT(1)));
   
   - name: CLAMP
     map_to: clamp
     args: [double, double, double]
     ret: double
     custom_body: |
-      double value = args[0].as_number();
-      double min_val = args[1].as_number();
-      double max_val = args[2].as_number();
+      double value = FLOAT(0);
+      double min_val = FLOAT(1);
+      double max_val = FLOAT(2);
       return Value::from_number(std::clamp(value, min_val, max_val));
   
   - name: DISTANCE
@@ -36,10 +36,10 @@ functions:
     args: [double, double, double, double]
     ret: double
     custom_body: |
-      double x1 = args[0].as_number();
-      double y1 = args[1].as_number();
-      double x2 = args[2].as_number();
-      double y2 = args[3].as_number();
+      double x1 = FLOAT(0);
+      double y1 = FLOAT(1);
+      double x2 = FLOAT(2);
+      double y2 = FLOAT(3);
       double dx = x2 - x1;
       double dy = y2 - y1;
       return Value::from_number(dx * dx + dy * dy); // Returns distance squared
@@ -49,113 +49,113 @@ functions:
     args: [double]
     ret: double
     custom_body: |
-      return Value::from_number(std::sin(args[0].as_number()));
+      return Value::from_number(std::sin(FLOAT(0)));
   
   - name: COS
     map_to: cos
     args: [double]
     ret: double
     custom_body: |
-      return Value::from_number(std::cos(args[0].as_number()));
+      return Value::from_number(std::cos(FLOAT(0)));
   
   - name: TAN
     map_to: tan
     args: [double]
     ret: double
     custom_body: |
-      return Value::from_number(std::tan(args[0].as_number()));
+      return Value::from_number(std::tan(FLOAT(0)));
   
   - name: ASIN
     map_to: asin
     args: [double]
     ret: double
     custom_body: |
-      return Value::from_number(std::asin(args[0].as_number()));
+      return Value::from_number(std::asin(FLOAT(0)));
   
   - name: ACOS
     map_to: acos
     args: [double]
     ret: double
     custom_body: |
-      return Value::from_number(std::acos(args[0].as_number()));
+      return Value::from_number(std::acos(FLOAT(0)));
   
   - name: ATAN
     map_to: atan
     args: [double]
     ret: double
     custom_body: |
-      return Value::from_number(std::atan(args[0].as_number()));
+      return Value::from_number(std::atan(FLOAT(0)));
   
   - name: ATAN2
     map_to: atan2
     args: [double, double]
     ret: double
     custom_body: |
-      return Value::from_number(std::atan2(args[0].as_number(), args[1].as_number()));
+      return Value::from_number(std::atan2(FLOAT(0), FLOAT(1)));
   
   - name: SQRT
     map_to: sqrt
     args: [double]
     ret: double
     custom_body: |
-      return Value::from_number(std::sqrt(args[0].as_number()));
+      return Value::from_number(std::sqrt(FLOAT(0)));
   
   - name: POW
     map_to: pow
     args: [double, double]
     ret: double
     custom_body: |
-      return Value::from_number(std::pow(args[0].as_number(), args[1].as_number()));
+      return Value::from_number(std::pow(FLOAT(0), FLOAT(1)));
   
   - name: LOG
     map_to: log
     args: [double]
     ret: double
     custom_body: |
-      return Value::from_number(std::log(args[0].as_number()));
+      return Value::from_number(std::log(FLOAT(0)));
   
   - name: LOG10
     map_to: log10
     args: [double]
     ret: double
     custom_body: |
-      return Value::from_number(std::log10(args[0].as_number()));
+      return Value::from_number(std::log10(FLOAT(0)));
   
   - name: EXP
     map_to: exp
     args: [double]
     ret: double
     custom_body: |
-      return Value::from_number(std::exp(args[0].as_number()));
+      return Value::from_number(std::exp(FLOAT(0)));
   
   - name: FLOOR
     map_to: floor
     args: [double]
     ret: double
     custom_body: |
-      return Value::from_number(std::floor(args[0].as_number()));
+      return Value::from_number(std::floor(FLOAT(0)));
   
   - name: CEIL
     map_to: ceil
     args: [double]
     ret: double
     custom_body: |
-      return Value::from_number(std::ceil(args[0].as_number()));
+      return Value::from_number(std::ceil(FLOAT(0)));
   
   - name: ROUND
     map_to: round
     args: [double]
     ret: double
     custom_body: |
-      return Value::from_number(std::round(args[0].as_number()));
+      return Value::from_number(std::round(FLOAT(0)));
   
   - name: RANDOM
     map_to: random
     args: [double, double]
     ret: double
     custom_body: |
-      double min_val = args[0].as_number();
-      double max_val = args[1].as_number();
+      double min_val = FLOAT(0);
+      double max_val = FLOAT(1);
       double range = max_val - min_val;
       return Value::from_number(min_val + (static_cast<double>(rand()) / RAND_MAX) * range);
   
@@ -164,5 +164,5 @@ functions:
     args: [int]
     ret: void
     custom_body: |
-      srand(args[0].as_int());
+      srand(INT(0));
       return Value::nil();

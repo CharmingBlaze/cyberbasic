@@ -1,0 +1,277 @@
+# Window Management Functions
+# Core window initialization, configuration, and state management
+
+functions:
+  # === WINDOW INITIALIZATION ===
+  - name: INITWINDOW
+    raylib_name: InitWindow
+    args: [int, int, string]
+    ret: void
+    description: "Initialize window and OpenGL context"
+    
+  - name: CLOSEWINDOW
+    raylib_name: CloseWindow
+    args: []
+    ret: void
+    description: "Close window and unload OpenGL context"
+    
+  # === WINDOW STATE QUERIES ===
+  - name: WINDOWSHOULDCLOSE
+    raylib_name: WindowShouldClose
+    args: []
+    ret: bool
+    description: "Check if application should close (KEY_ESCAPE pressed or windows close icon clicked)"
+    
+  - name: ISWINDOWREADY
+    raylib_name: IsWindowReady
+    args: []
+    ret: bool
+    description: "Check if window has been initialized successfully"
+    
+  - name: ISWINDOWFULLSCREEN
+    raylib_name: IsWindowFullscreen
+    args: []
+    ret: bool
+    description: "Check if window is currently fullscreen"
+    
+  - name: ISWINDOWHIDDEN
+    raylib_name: IsWindowHidden
+    args: []
+    ret: bool
+    description: "Check if window is currently hidden"
+    
+  - name: ISWINDOWMINIMIZED
+    raylib_name: IsWindowMinimized
+    args: []
+    ret: bool
+    description: "Check if window is currently minimized"
+    
+  - name: ISWINDOWMAXIMIZED
+    raylib_name: IsWindowMaximized
+    args: []
+    ret: bool
+    description: "Check if window is currently maximized"
+    
+  - name: ISWINDOWFOCUSED
+    raylib_name: IsWindowFocused
+    args: []
+    ret: bool
+    description: "Check if window is currently focused"
+    
+  - name: ISWINDOWRESIZED
+    raylib_name: IsWindowResized
+    args: []
+    ret: bool
+    description: "Check if window has been resized last frame"
+    
+  - name: ISWINDOWSTATE
+    raylib_name: IsWindowState
+    args: [int]
+    ret: bool
+    description: "Check if one specific window flag is enabled"
+    
+  # === WINDOW STATE CONTROL ===
+  - name: SETWINDOWSTATE
+    raylib_name: SetWindowState
+    args: [int]
+    ret: void
+    description: "Set window configuration state using flags"
+    
+  - name: CLEARWINDOWSTATE
+    raylib_name: ClearWindowState
+    args: [int]
+    ret: void
+    description: "Clear window configuration state flags"
+    
+  - name: TOGGLEFULLSCREEN
+    raylib_name: ToggleFullscreen
+    args: []
+    ret: void
+    description: "Toggle window state: fullscreen/windowed"
+    
+  - name: TOGGLEBORDERLESSWINDOWED
+    raylib_name: ToggleBorderlessWindowed
+    args: []
+    ret: void
+    description: "Toggle window state: borderless windowed"
+    
+  - name: MAXIMIZEWINDOW
+    raylib_name: MaximizeWindow
+    args: []
+    ret: void
+    description: "Set window state: maximized, if resizable"
+    
+  - name: MINIMIZEWINDOW
+    raylib_name: MinimizeWindow
+    args: []
+    ret: void
+    description: "Set window state: minimized, if resizable"
+    
+  - name: RESTOREWINDOW
+    raylib_name: RestoreWindow
+    args: []
+    ret: void
+    description: "Set window state: not minimized/maximized"
+    
+  # === WINDOW PROPERTIES ===
+  - name: SETWINDOWTITLE
+    raylib_name: SetWindowTitle
+    args: [string]
+    ret: void
+    description: "Set title for window"
+    
+  - name: SETWINDOWPOSITION
+    raylib_name: SetWindowPosition
+    args: [int, int]
+    ret: void
+    description: "Set window position on screen"
+    
+  - name: SETWINDOWMONITOR
+    raylib_name: SetWindowMonitor
+    args: [int]
+    ret: void
+    description: "Set monitor for the current window"
+    
+  - name: SETWINDOWMINSIZE
+    raylib_name: SetWindowMinSize
+    args: [int, int]
+    ret: void
+    description: "Set window minimum dimensions (for FLAG_WINDOW_RESIZABLE)"
+    
+  - name: SETWINDOWMAXSIZE
+    raylib_name: SetWindowMaxSize
+    args: [int, int]
+    ret: void
+    description: "Set window maximum dimensions (for FLAG_WINDOW_RESIZABLE)"
+    
+  - name: SETWINDOWSIZE
+    raylib_name: SetWindowSize
+    args: [int, int]
+    ret: void
+    description: "Set window dimensions"
+    
+  - name: SETWINDOWOPACITY
+    raylib_name: SetWindowOpacity
+    args: [float]
+    ret: void
+    description: "Set window opacity [0.0f..1.0f]"
+    
+  - name: SETWINDOWFOCUSED
+    raylib_name: SetWindowFocused
+    args: []
+    ret: void
+    description: "Set window focused"
+    
+  # === SCREEN AND MONITOR INFO ===
+  - name: GETSCREENWIDTH
+    raylib_name: GetScreenWidth
+    args: []
+    ret: int
+    description: "Get current screen width"
+    
+  - name: GETSCREENHEIGHT
+    raylib_name: GetScreenHeight
+    args: []
+    ret: int
+    description: "Get current screen height"
+    
+  - name: GETRENDERWIDTH
+    raylib_name: GetRenderWidth
+    args: []
+    ret: int
+    description: "Get current render width (it considers HiDPI)"
+    
+  - name: GETRENDERHEIGHT
+    raylib_name: GetRenderHeight
+    args: []
+    ret: int
+    description: "Get current render height (it considers HiDPI)"
+    
+  - name: GETMONITORCOUNT
+    raylib_name: GetMonitorCount
+    args: []
+    ret: int
+    description: "Get number of connected monitors"
+    
+  - name: GETCURRENTMONITOR
+    raylib_name: GetCurrentMonitor
+    args: []
+    ret: int
+    description: "Get current monitor where window is placed"
+    
+  - name: GETMONITORPOSITION
+    raylib_name: GetMonitorPosition
+    args: [int]
+    ret: string
+    description: "Get specified monitor position"
+    custom_body: |
+      ::Vector2 pos = ::GetMonitorPosition(INT(0));
+      return Value::from_string(std::to_string(pos.x) + "," + std::to_string(pos.y));
+    
+  - name: GETMONITORWIDTH
+    raylib_name: GetMonitorWidth
+    args: [int]
+    ret: int
+    description: "Get specified monitor width (current video mode used by monitor)"
+    
+  - name: GETMONITORHEIGHT
+    raylib_name: GetMonitorHeight
+    args: [int]
+    ret: int
+    description: "Get specified monitor height (current video mode used by monitor)"
+    
+  - name: GETMONITORREFRESHRATE
+    raylib_name: GetMonitorRefreshRate
+    args: [int]
+    ret: int
+    description: "Get specified monitor refresh rate"
+    
+  - name: GETWINDOWPOSITION
+    raylib_name: GetWindowPosition
+    args: []
+    ret: string
+    description: "Get window position XY on monitor"
+    custom_body: |
+      ::Vector2 pos = ::GetWindowPosition();
+      return Value::from_string(std::to_string(pos.x) + "," + std::to_string(pos.y));
+    
+  - name: GETWINDOWSCALEDPI
+    raylib_name: GetWindowScaleDPI
+    args: []
+    ret: string
+    description: "Get window scale DPI factor"
+    custom_body: |
+      ::Vector2 scale = ::GetWindowScaleDPI();
+      return Value::from_string(std::to_string(scale.x) + "," + std::to_string(scale.y));
+    
+  - name: GETMONITORNAME
+    raylib_name: GetMonitorName
+    args: [int]
+    ret: string
+    description: "Get the human-readable, UTF-8 encoded name of the specified monitor"
+    
+  # === CLIPBOARD ===
+  - name: SETCLIPBOARDTEXT
+    raylib_name: SetClipboardText
+    args: [string]
+    ret: void
+    description: "Set clipboard text content"
+    
+  - name: GETCLIPBOARDTEXT
+    raylib_name: GetClipboardText
+    args: []
+    ret: string
+    description: "Get clipboard text content"
+    
+  # === EVENT HANDLING ===
+  - name: ENABLEEVENTWAITING
+    raylib_name: EnableEventWaiting
+    args: []
+    ret: void
+    description: "Enable waiting for events on EndDrawing(), no automatic event polling"
+    
+  - name: DISABLEEVENTWAITING
+    raylib_name: DisableEventWaiting
+    args: []
+    ret: void
+    description: "Disable waiting for events on EndDrawing(), automatic events polling"

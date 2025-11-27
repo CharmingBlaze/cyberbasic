@@ -30,7 +30,7 @@ functions:
     category: remaining_raylib
     description: "Get monitor name (monitor index)"
     working: true
-    custom_body: "GetMonitorName(args[0].as_int())"
+    custom_body: "GetMonitorName(INT(0))"
 
 
 
@@ -42,7 +42,7 @@ functions:
     category: remaining_raylib
     description: "Set window icon (pass image ID)"
     working: true
-    custom_body: "SetWindowIcon(*(Image*)args[0].as_int())"
+    custom_body: "SetWindowIcon(*(Image*)INT(0))"
 
   - name: SETWINDOWTITLE
     raylib_name: SetWindowTitle
@@ -51,7 +51,7 @@ functions:
     category: remaining_raylib
     description: "Set window title (title)"
     working: true
-    custom_body: "SetWindowTitle(args[0].as_string().c_str())"
+    custom_body: "SetWindowTitle(STR(0).c_str())"
 
   - name: SETWINDOWPOSITION
     raylib_name: SetWindowPosition
@@ -60,7 +60,7 @@ functions:
     category: remaining_raylib
     description: "Set window position (x, y)"
     working: true
-    custom_body: "SetWindowPosition(args[0].as_int(), args[1].as_int())"
+    custom_body: "SetWindowPosition(INT(0), INT(1))"
 
   - name: SETWINDOWMONITOR
     raylib_name: SetWindowMonitor
@@ -69,7 +69,7 @@ functions:
     category: remaining_raylib
     description: "Set window monitor (monitor index)"
     working: true
-    custom_body: "SetWindowMonitor(args[0].as_int())"
+    custom_body: "SetWindowMonitor(INT(0))"
 
   - name: SETWINDOWMIN
     raylib_name: SetWindowMinSize
@@ -78,7 +78,7 @@ functions:
     category: remaining_raylib
     description: "Set window minimum size (width, height)"
     working: true
-    custom_body: "SetWindowMinSize(args[0].as_int(), args[1].as_int())"
+    custom_body: "SetWindowMinSize(INT(0), INT(1))"
 
   - name: SETWINDOWMAX
     raylib_name: SetWindowMaxSize
@@ -87,7 +87,7 @@ functions:
     category: remaining_raylib
     description: "Set window maximum size (width, height)"
     working: true
-    custom_body: "SetWindowMaxSize(args[0].as_int(), args[1].as_int())"
+    custom_body: "SetWindowMaxSize(INT(0), INT(1))"
 
   # === REMAINING INPUT FUNCTIONS ===
   - name: SETEXITKEY
@@ -97,7 +97,7 @@ functions:
     category: remaining_raylib
     description: "Set exit key (key code)"
     working: true
-    custom_body: "SetExitKey(args[0].as_int())"
+    custom_body: "SetExitKey(INT(0))"
 
   - name: SETGAMEPADMAPPINGS
     raylib_name: SetGamepadMappings
@@ -106,7 +106,7 @@ functions:
     category: remaining_raylib
     description: "Set gamepad mappings (mappings string)"
     working: true
-    custom_body: "SetGamepadMappings(args[0].as_string().c_str())"
+    custom_body: "SetGamepadMappings(STR(0).c_str())"
 
   # === REMAINING GRAPHICS FUNCTIONS ===
   - name: SETTARGETFPS
@@ -116,7 +116,7 @@ functions:
     category: remaining_raylib
     description: "Set target FPS (fps)"
     working: true
-    custom_body: "SetTargetFPS(args[0].as_int())"
+    custom_body: "SetTargetFPS(INT(0))"
 
   - name: GETFRAMETIME
     raylib_name: GetFrameTime
@@ -143,4 +143,4 @@ functions:
     category: remaining_raylib
     description: "Get random value between min and max (min, max)"
     working: true
-    custom_body: "GetRandomValue(args[0].as_int(), args[1].as_int())"
+    custom_body: "GetRandomValue(INT(0), INT(1))"

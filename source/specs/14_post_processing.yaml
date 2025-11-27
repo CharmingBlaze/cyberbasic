@@ -11,7 +11,7 @@ functions:
     category: post_processing
     description: "Load render texture (width, height)"
     working: true
-    custom_body: "LoadRenderTexture(args[0].as_int(), args[1].as_int())"
+    custom_body: "LoadRenderTexture(INT(0), INT(1))"
 
   - name: UNLOADRENDERTEXTURE
     raylib_name: UnloadRenderTexture
@@ -20,7 +20,7 @@ functions:
     category: post_processing
     description: "Unload render texture (pass render texture ID)"
     working: true
-    custom_body: "UnloadRenderTexture(*(RenderTexture2D*)args[0].as_int())"
+    custom_body: "UnloadRenderTexture(*(RenderTexture2D*)INT(0))"
 
   - name: BEGINTEXTUREMODE
     raylib_name: BeginTextureMode
@@ -29,7 +29,7 @@ functions:
     category: post_processing
     description: "Begin rendering to texture (pass render texture ID)"
     working: true
-    custom_body: "BeginTextureMode(*(RenderTexture2D*)args[0].as_int())"
+    custom_body: "BeginTextureMode(*(RenderTexture2D*)INT(0))"
 
   - name: ENDTEXTUREMODE
     raylib_name: EndTextureMode
@@ -48,7 +48,7 @@ functions:
     category: post_processing
     description: "Draw texture at x,y with RGB color (texture ID, x, y, R, G, B)"
     working: true
-    custom_body: "DrawTexture(*(Texture2D*)args[0].as_int(), args[1].as_int(), args[2].as_int(), Color{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), 255})"
+    custom_body: "DrawTexture(*(Texture2D*)INT(0), INT(1), INT(2), Color{(unsigned char)INT(3), (unsigned char)INT(4), (unsigned char)INT(5), 255})"
 
   - name: DRAWTEXTUREV
     raylib_name: DrawTextureV
@@ -57,7 +57,7 @@ functions:
     category: post_processing
     description: "Draw texture at Vector2 position with RGB color (texture ID, x, y, R, G, B)"
     working: true
-    custom_body: "DrawTextureV(*(Texture2D*)args[0].as_int(), Vector2{(float)args[1].as_int(), (float)args[2].as_int()}, Color{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), 255})"
+    custom_body: "DrawTextureV(*(Texture2D*)INT(0), Vector2{(float)INT(1), (float)INT(2)}, Color{(unsigned char)INT(3), (unsigned char)INT(4), (unsigned char)INT(5), 255})"
 
   - name: DRAWTEXTUREREC
     raylib_name: DrawTextureRec
@@ -66,7 +66,7 @@ functions:
     category: post_processing
     description: "Draw texture rectangle at x,y with RGB color (texture ID, sourceX, sourceY, sourceWidth, sourceHeight, destX, destY, R, G, B)"
     working: true
-    custom_body: "DrawTextureRec(*(Texture2D*)args[0].as_int(), Rectangle{(float)args[1].as_int(), (float)args[2].as_int(), (float)args[3].as_int(), (float)args[4].as_int()}, Vector2{(float)args[5].as_int(), (float)args[6].as_int()}, Color{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), 255})"
+    custom_body: "DrawTextureRec(*(Texture2D*)INT(0), Rectangle{(float)INT(1), (float)INT(2), (float)INT(3), (float)INT(4)}, Vector2{(float)INT(5), (float)INT(6)}, Color{(unsigned char)INT(7), (unsigned char)INT(8), (unsigned char)INT(9), 255})"
 
 
 
@@ -80,7 +80,7 @@ functions:
     category: post_processing
     description: "Take screenshot and save to file (filename)"
     working: true
-    custom_body: "TakeScreenshot(args[0].as_string().c_str())"
+    custom_body: "TakeScreenshot(STR(0).c_str())"
 
   - name: SETCONFIGFLAGS
     raylib_name: SetConfigFlags
@@ -89,7 +89,7 @@ functions:
     category: post_processing
     description: "Set configuration flags (flags)"
     working: true
-    custom_body: "SetConfigFlags(args[0].as_int())"
+    custom_body: "SetConfigFlags(INT(0))"
 
   # === BLENDING MODES ===
   - name: BEGINBLENDMODE
@@ -99,7 +99,7 @@ functions:
     category: post_processing
     description: "Begin blending mode (mode)"
     working: true
-    custom_body: "BeginBlendMode(args[0].as_int())"
+    custom_body: "BeginBlendMode(INT(0))"
 
   - name: ENDBLENDMODE
     raylib_name: EndBlendMode
@@ -118,7 +118,7 @@ functions:
     category: post_processing
     description: "Begin scissor mode (x, y, width, height)"
     working: true
-    custom_body: "BeginScissorMode(args[0].as_int(), args[1].as_int(), args[2].as_int(), args[3].as_int())"
+    custom_body: "BeginScissorMode(INT(0), INT(1), INT(2), INT(3))"
 
   - name: ENDSCISSORMODE
     raylib_name: EndScissorMode

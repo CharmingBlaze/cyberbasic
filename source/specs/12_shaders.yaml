@@ -11,7 +11,7 @@ functions:
     category: shaders
     description: "Load shader from files (vertex shader file, fragment shader file)"
     working: true
-    custom_body: "LoadShader(args[0].as_string().c_str(), args[1].as_string().c_str())"
+    custom_body: "LoadShader(STR(0).c_str(), STR(1).c_str())"
 
   - name: LOADSHADERFROMMEMORY
     raylib_name: LoadShaderFromMemory
@@ -20,7 +20,7 @@ functions:
     category: shaders
     description: "Load shader from memory strings (vertex shader code, fragment shader code)"
     working: true
-    custom_body: "LoadShaderFromMemory(args[0].as_string().c_str(), args[1].as_string().c_str())"
+    custom_body: "LoadShaderFromMemory(STR(0).c_str(), STR(1).c_str())"
 
   - name: UNLOADSHADER
     raylib_name: UnloadShader
@@ -29,7 +29,7 @@ functions:
     category: shaders
     description: "Unload shader (pass shader ID)"
     working: true
-    custom_body: "UnloadShader(*(Shader*)args[0].as_int())"
+    custom_body: "UnloadShader(*(Shader*)INT(0))"
 
 
 
@@ -41,7 +41,7 @@ functions:
     category: shaders
     description: "Get shader uniform location (pass shader ID, uniform name)"
     working: true
-    custom_body: "GetShaderLocation(*(Shader*)args[0].as_int(), args[1].as_string().c_str())"
+    custom_body: "GetShaderLocation(*(Shader*)INT(0), STR(1).c_str())"
 
   - name: GETSHADERLOCATIONATTRIB
     raylib_name: GetShaderLocationAttrib
@@ -50,7 +50,7 @@ functions:
     category: shaders
     description: "Get shader attribute location (pass shader ID, attribute name)"
     working: true
-    custom_body: "GetShaderLocationAttrib(*(Shader*)args[0].as_int(), args[1].as_string().c_str())"
+    custom_body: "GetShaderLocationAttrib(*(Shader*)INT(0), STR(1).c_str())"
 
   # === SHADER UNIFORM SETTING ===
   - name: SETSHADERVALUE
@@ -60,7 +60,7 @@ functions:
     category: shaders
     description: "Set shader uniform value (pass shader ID, uniform location, value pointer, uniform type)"
     working: true
-    custom_body: "SetShaderValue(*(Shader*)args[0].as_int(), args[1].as_int(), (const void*)args[2].as_int(), args[3].as_int())"
+    custom_body: "SetShaderValue(*(Shader*)INT(0), INT(1), (const void*)INT(2), INT(3))"
 
   - name: SETSHADERVALUEV
     raylib_name: SetShaderValueV
@@ -69,7 +69,7 @@ functions:
     category: shaders
     description: "Set shader uniform array value (pass shader ID, uniform location, value pointer, uniform type, count)"
     working: true
-    custom_body: "SetShaderValueV(*(Shader*)args[0].as_int(), args[1].as_int(), (const void*)args[2].as_int(), args[3].as_int(), args[4].as_int())"
+    custom_body: "SetShaderValueV(*(Shader*)INT(0), INT(1), (const void*)INT(2), INT(3), INT(4))"
 
 
 
@@ -80,7 +80,7 @@ functions:
     category: shaders
     description: "Set shader uniform matrix value (pass shader ID, uniform location, matrix pointer)"
     working: true
-    custom_body: "SetShaderValueMatrix(*(Shader*)args[0].as_int(), args[1].as_int(), *(Matrix*)args[2].as_int())"
+    custom_body: "SetShaderValueMatrix(*(Shader*)INT(0), INT(1), *(Matrix*)INT(2))"
 
   - name: SETSHADERVALUETEXTURE
     raylib_name: SetShaderValueTexture
@@ -89,7 +89,7 @@ functions:
     category: shaders
     description: "Set shader uniform texture value (pass shader ID, uniform location, texture ID)"
     working: true
-    custom_body: "SetShaderValueTexture(*(Shader*)args[0].as_int(), args[1].as_int(), *(Texture2D*)args[2].as_int())"
+    custom_body: "SetShaderValueTexture(*(Shader*)INT(0), INT(1), *(Texture2D*)INT(2))"
 
   # === SHADER USAGE ===
   - name: BEGINSHADERMODE
@@ -99,7 +99,7 @@ functions:
     category: shaders
     description: "Begin custom shader drawing (pass shader ID)"
     working: true
-    custom_body: "BeginShaderMode(*(Shader*)args[0].as_int())"
+    custom_body: "BeginShaderMode(*(Shader*)INT(0))"
 
   - name: ENDSHADERMODE
     raylib_name: EndShaderMode

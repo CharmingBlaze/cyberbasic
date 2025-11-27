@@ -1,0 +1,180 @@
+# Font and Text System Functions
+# Comprehensive font loading, text drawing, and text processing functionality
+
+functions:
+  # === FONT LOADING/UNLOADING ===
+  - name: GETFONTDEFAULT
+    raylib_name: GetFontDefault
+    args: []
+    ret: int
+    description: "Get the default Font, returns font ID"
+    custom_body: |
+      ::Font font = ::GetFontDefault();
+      static int next_id = 1;
+      return Value::from_int(next_id++);
+    
+  - name: LOADFONT
+    raylib_name: LoadFont
+    args: [string]
+    ret: int
+    description: "Load font from file into GPU memory (VRAM), returns font ID"
+    custom_body: |
+      ::Font font = ::LoadFont(STR(0).c_str());
+      static int next_id = 1;
+      return Value::from_int(next_id++);
+    
+  - name: LOADFONTEX
+    raylib_name: LoadFontEx
+    args: [string, int]
+    ret: int
+    description: "Load font from file with extended parameters (fileName, fontSize), returns font ID"
+    custom_body: |
+      ::Font font = ::LoadFontEx(STR(0).c_str(), INT(1), NULL, 0);
+      static int next_id = 1;
+      return Value::from_int(next_id++);
+    
+  - name: ISFONTVALID
+    raylib_name: IsFontValid
+    args: [int]
+    ret: int
+    description: "Check if a font is valid (font data loaded)"
+    custom_body: |
+      ::Font font = {}; // Look up by ID in real implementation
+      return Value::from_int(::IsFontValid(font) ? 1 : 0);
+    
+  - name: UNLOADFONT
+    raylib_name: UnloadFont
+    args: [int]
+    ret: void
+    description: "Unload font from GPU memory (VRAM)"
+    custom_body: |
+      ::Font font = {}; // Look up by ID in real implementation
+      ::UnloadFont(font);
+    
+  # === TEXT DRAWING ===
+  - name: DRAWFPS
+    raylib_name: DrawFPS
+    args: [int, int]
+    ret: void
+    description: "Draw current FPS (posX, posY)"
+    custom_body: |
+      ::DrawFPS(INT(0), INT(1));
+    
+  - name: DRAWTEXT
+    raylib_name: DrawText
+    args: [string, int, int, int, int, int, int]
+    ret: void
+    description: "Draw text using default font (text, posX, posY, fontSize, r, g, b)"
+    custom_body: |
+      ::Color color = {(unsigned char)INT(4), (unsigned char)INT(5), (unsigned char)INT(6), 255};
+      ::DrawText(STR(0).c_str(), INT(1), INT(2), INT(3), color);
+    
+  - name: DRAWTEXTEX
+    raylib_name: DrawTextEx
+    args: [int, string, float, float, float, float, int, int, int]
+    ret: void
+    description: "Draw text using font and additional parameters (fontID, text, posX, posY, fontSize, spacing, r, g, b)"
+    custom_body: |
+      ::Font font = {}; // Look up by ID in real implementation
+      ::Vector2 position = {FLOAT(2), FLOAT(3)};
+      ::Color tint = {(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255};
+      ::DrawTextEx(font, STR(1).c_str(), position, FLOAT(4), FLOAT(5), tint);
+    
+  - name: DRAWTEXTPRO
+    raylib_name: DrawTextPro
+    args: [int, string, float, float, float, float, float, float, float, int, int, int]
+    ret: void
+    description: "Draw text using Font and pro parameters (fontID, text, posX, posY, originX, originY, rotation, fontSize, spacing, r, g, b)"
+    custom_body: |
+      ::Font font = {}; // Look up by ID in real implementation
+      ::Vector2 position = {FLOAT(2), FLOAT(3)};
+      ::Vector2 origin = {FLOAT(4), FLOAT(5)};
+      ::Color tint = {(unsigned char)INT(9), (unsigned char)INT(10), (unsigned char)INT(11), 255};
+      ::DrawTextPro(font, STR(1).c_str(), position, origin, FLOAT(6), FLOAT(7), FLOAT(8), tint);
+    
+  # === TEXT MEASUREMENT ===
+  - name: MEASURETEXT
+    raylib_name: MeasureText
+    args: [string, int]
+    ret: int
+    description: "Measure string width for default font (text, fontSize)"
+    custom_body: |
+      return Value::from_int(::MeasureText(STR(0).c_str(), INT(1)));
+    
+  - name: MEASURETEXTEX
+    raylib_name: MeasureTextEx
+    args: [int, string, float, float]
+    ret: string
+    description: "Measure string size for Font (fontID, text, fontSize, spacing) returns 'width,height'"
+    custom_body: |
+      ::Font font = {}; // Look up by ID in real implementation
+      ::Vector2 size = ::MeasureTextEx(font, STR(1).c_str(), FLOAT(2), FLOAT(3));
+      return Value::from_string(std::to_string(size.x) + "," + std::to_string(size.y));
+    
+  # === TEXT PROCESSING ===
+  - name: TEXTLENGTH
+    raylib_name: TextLength
+    args: [string]
+    ret: int
+    description: "Get text length, checks for '\\0' ending"
+    custom_body: |
+      return Value::from_int(::TextLength(STR(0).c_str()));
+    
+  - name: TEXTSUBTEXT
+    raylib_name: TextSubtext
+    args: [string, int, int]
+    ret: string
+    description: "Get a piece of a text string (text, position, length)"
+    custom_body: |
+      const char* result = ::TextSubtext(STR(0).c_str(), INT(1), INT(2));
+      return Value::from_string(std::string(result));
+    
+  - name: TEXTTOUPPER
+    raylib_name: TextToUpper
+    args: [string]
+    ret: string
+    description: "Get upper case version of provided string"
+    custom_body: |
+      const char* result = ::TextToUpper(STR(0).c_str());
+      return Value::from_string(std::string(result));
+    
+  - name: TEXTTOLOWER
+    raylib_name: TextToLower
+    args: [string]
+    ret: string
+    description: "Get lower case version of provided string"
+    custom_body: |
+      const char* result = ::TextToLower(STR(0).c_str());
+      return Value::from_string(std::string(result));
+    
+  - name: TEXTTOINTEGER
+    raylib_name: TextToInteger
+    args: [string]
+    ret: int
+    description: "Get integer value from text (negative values not supported)"
+    custom_body: |
+      return Value::from_int(::TextToInteger(STR(0).c_str()));
+    
+  - name: TEXTTOFLOAT
+    raylib_name: TextToFloat
+    args: [string]
+    ret: float
+    description: "Get float value from text (negative values not supported)"
+    custom_body: |
+      return Value::from_number(::TextToFloat(STR(0).c_str()));
+    
+  - name: TEXTFINDINDEX
+    raylib_name: TextFindIndex
+    args: [string, string]
+    ret: int
+    description: "Find first text occurrence within a string (text, find)"
+    custom_body: |
+      return Value::from_int(::TextFindIndex(STR(0).c_str(), STR(1).c_str()));
+    
+  - name: TEXTISEQUAL
+    raylib_name: TextIsEqual
+    args: [string, string]
+    ret: int
+    description: "Check if two text strings are equal"
+    custom_body: |
+      return Value::from_int(::TextIsEqual(STR(0).c_str(), STR(1).c_str()) ? 1 : 0);

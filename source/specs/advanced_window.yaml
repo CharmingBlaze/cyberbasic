@@ -140,7 +140,7 @@ functions:
     args: [int]
     ret: string
     custom_body: |
-      return Value::from_string(::GetMonitorName(args[0].as_int()));
+      return Value::from_string(::GetMonitorName(INT(0)));
   
   - name: GETCURRENTMONITOR
     map_to: GetCurrentMonitor

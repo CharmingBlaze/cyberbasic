@@ -11,7 +11,7 @@ functions:
     category: 3d
     description: "Load model from file"
     working: true
-    custom_body: "LoadModel(args[0].as_string().c_str())"
+    custom_body: "LoadModel(STR(0).c_str())"
 
   - name: LOADMODELFROMMESH
     raylib_name: LoadModelFromMesh
@@ -20,7 +20,7 @@ functions:
     category: 3d
     description: "Load model from mesh (pass mesh ID)"
     working: true
-    custom_body: "LoadModelFromMesh(*(Mesh*)args[0].as_int())"
+    custom_body: "LoadModelFromMesh(*(Mesh*)INT(0))"
 
   - name: UNLOADMODEL
     raylib_name: UnloadModel
@@ -29,7 +29,7 @@ functions:
     category: 3d
     description: "Unload model from memory (pass model ID)"
     working: true
-    custom_body: "UnloadModel(*(Model*)args[0].as_int())"
+    custom_body: "UnloadModel(*(Model*)INT(0))"
 
   - name: DRAWMODEL
     raylib_name: DrawModel
@@ -38,7 +38,7 @@ functions:
     category: 3d
     description: "Draw model at x,y,z with scale and RGB color (pass model ID, x, y, z, scale, R, G, B)"
     working: true
-    custom_body: "DrawModel(*(Model*)args[0].as_int(), Vector3{(float)args[1].as_int(), (float)args[2].as_int(), (float)args[3].as_int()}, args[4].as_number(), Color{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255})"
+    custom_body: "DrawModel(*(Model*)INT(0), Vector3{(float)INT(1), (float)INT(2), (float)INT(3)}, FLOAT(4), Color{(unsigned char)INT(5), (unsigned char)INT(6), (unsigned char)INT(7), 255})"
 
   - name: DRAWMODELWIREFRAME
     raylib_name: DrawModelWires
@@ -47,7 +47,7 @@ functions:
     category: 3d
     description: "Draw model wireframe at x,y,z with scale and RGB color (pass model ID, x, y, z, scale, R, G, B)"
     working: true
-    custom_body: "DrawModelWires(*(Model*)args[0].as_int(), Vector3{(float)args[1].as_int(), (float)args[2].as_int(), (float)args[3].as_int()}, args[4].as_number(), Color{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255})"
+    custom_body: "DrawModelWires(*(Model*)INT(0), Vector3{(float)INT(1), (float)INT(2), (float)INT(3)}, FLOAT(4), Color{(unsigned char)INT(5), (unsigned char)INT(6), (unsigned char)INT(7), 255})"
 
   # === MESH FUNCTIONS ===
 
@@ -59,7 +59,7 @@ functions:
     category: 3d
     description: "Unload mesh from memory (pass mesh ID)"
     working: true
-    custom_body: "UnloadMesh(*(Mesh*)args[0].as_int())"
+    custom_body: "UnloadMesh(*(Mesh*)INT(0))"
 
 
 
@@ -82,7 +82,7 @@ functions:
     category: 3d
     description: "Unload material from memory (pass material ID)"
     working: true
-    custom_body: "UnloadMaterial(*(Material*)args[0].as_int())"
+    custom_body: "UnloadMaterial(*(Material*)INT(0))"
 
 
 
@@ -94,7 +94,7 @@ functions:
     category: 3d
     description: "Load shader from files (vertex, fragment)"
     working: true
-    custom_body: "LoadShader(args[0].as_string().c_str(), args[1].as_string().c_str())"
+    custom_body: "LoadShader(STR(0).c_str(), STR(1).c_str())"
 
   - name: LOADSHADERFROMMEMORY
     raylib_name: LoadShaderFromMemory
@@ -103,7 +103,7 @@ functions:
     category: 3d
     description: "Load shader from memory (vertex, fragment)"
     working: true
-    custom_body: "LoadShaderFromMemory(args[0].as_string().c_str(), args[1].as_string().c_str())"
+    custom_body: "LoadShaderFromMemory(STR(0).c_str(), STR(1).c_str())"
 
   - name: UNLOADSHADER
     raylib_name: UnloadShader
@@ -112,7 +112,7 @@ functions:
     category: 3d
     description: "Unload shader from memory (pass shader ID)"
     working: true
-    custom_body: "UnloadShader(*(Shader*)args[0].as_int())"
+    custom_body: "UnloadShader(*(Shader*)INT(0))"
 
   - name: BEGINSHADERMODE
     raylib_name: BeginShaderMode
@@ -121,7 +121,7 @@ functions:
     category: 3d
     description: "Begin custom shader drawing (pass shader ID)"
     working: true
-    custom_body: "BeginShaderMode(*(Shader*)args[0].as_int())"
+    custom_body: "BeginShaderMode(*(Shader*)INT(0))"
 
   - name: ENDSHADERMODE
     raylib_name: EndShaderMode
@@ -139,7 +139,7 @@ functions:
     category: 3d
     description: "Draw sphere at x,y,z with radius and RGB color (x, y, z, radius, R, G, B)"
     working: true
-    custom_body: "DrawSphere(Vector3{(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()}, args[3].as_number(), Color{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), 255})"
+    custom_body: "DrawSphere(Vector3{(float)INT(0), (float)INT(1), (float)INT(2)}, FLOAT(3), Color{(unsigned char)INT(4), (unsigned char)INT(5), (unsigned char)INT(6), 255})"
 
   - name: DRAWSPHEREWIRES
     raylib_name: DrawSphereWires
@@ -148,7 +148,7 @@ functions:
     category: 3d
     description: "Draw sphere wireframe at x,y,z with radius, rings, slices and RGB color (x, y, z, radius, rings, slices, R, G, B)"
     working: true
-    custom_body: "DrawSphereWires(Vector3{(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()}, args[3].as_number(), args[4].as_int(), args[5].as_int(), Color{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255})"
+    custom_body: "DrawSphereWires(Vector3{(float)INT(0), (float)INT(1), (float)INT(2)}, FLOAT(3), INT(4), INT(5), Color{(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255})"
 
   - name: DRAWCUBE
     raylib_name: DrawCube
@@ -157,7 +157,7 @@ functions:
     category: 3d
     description: "Draw cube at x,y,z with size and RGB color (x, y, z, width, height, length, R, G, B)"
     working: true
-    custom_body: "DrawCube(Vector3{(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()}, args[3].as_number(), args[4].as_number(), args[5].as_number(), Color{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255})"
+    custom_body: "DrawCube(Vector3{(float)INT(0), (float)INT(1), (float)INT(2)}, FLOAT(3), FLOAT(4), FLOAT(5), Color{(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255})"
 
   - name: DRAWCUBEWIRES
     raylib_name: DrawCubeWires
@@ -166,7 +166,7 @@ functions:
     category: 3d
     description: "Draw cube wireframe at x,y,z with size and RGB color (x, y, z, width, height, length, R, G, B)"
     working: true
-    custom_body: "DrawCubeWires(Vector3{(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()}, args[3].as_number(), args[4].as_number(), args[5].as_number(), Color{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255})"
+    custom_body: "DrawCubeWires(Vector3{(float)INT(0), (float)INT(1), (float)INT(2)}, FLOAT(3), FLOAT(4), FLOAT(5), Color{(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255})"
 
 
 

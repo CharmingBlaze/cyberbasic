@@ -6,14 +6,14 @@ functions:
     ret: bool
     custom_body: |
       // Check collision between two rectangles
-      int x1 = args[0].as_int();
-      int y1 = args[1].as_int();
-      int w1 = args[2].as_int();
-      int h1 = args[3].as_int();
-      int x2 = args[4].as_int();
-      int y2 = args[5].as_int();
-      int w2 = args[6].as_int();
-      int h2 = args[7].as_int();
+      int x1 = INT(0);
+      int y1 = INT(1);
+      int w1 = INT(2);
+      int h1 = INT(3);
+      int x2 = INT(4);
+      int y2 = INT(5);
+      int w2 = INT(6);
+      int h2 = INT(7);
       
       bool collision = !(x1 + w1 < x2 || x2 + w2 < x1 || y1 + h1 < y2 || y2 + h2 < y1);
       return Value::from_bool(collision);
@@ -24,12 +24,12 @@ functions:
     ret: bool
     custom_body: |
       // Check if point is inside rectangle
-      int px = args[0].as_int();
-      int py = args[1].as_int();
-      int rx = args[2].as_int();
-      int ry = args[3].as_int();
-      int rw = args[4].as_int();
-      int rh = args[5].as_int();
+      int px = INT(0);
+      int py = INT(1);
+      int rx = INT(2);
+      int ry = INT(3);
+      int rw = INT(4);
+      int rh = INT(5);
       
       bool inside = (px >= rx && px <= rx + rw && py >= ry && py <= ry + rh);
       return Value::from_bool(inside);
@@ -40,11 +40,11 @@ functions:
     ret: bool
     custom_body: |
       // Check if point is inside circle
-      int px = args[0].as_int();
-      int py = args[1].as_int();
-      int cx = args[2].as_int();
-      int cy = args[3].as_int();
-      int radius = args[4].as_int();
+      int px = INT(0);
+      int py = INT(1);
+      int cx = INT(2);
+      int cy = INT(3);
+      int radius = INT(4);
       
       int dx = px - cx;
       int dy = py - cy;
@@ -57,13 +57,13 @@ functions:
     ret: bool
     custom_body: |
       // Check if circle is inside rectangle
-      int cx = args[0].as_int();
-      int cy = args[1].as_int();
-      int radius = args[2].as_int();
-      int rx = args[3].as_int();
-      int ry = args[4].as_int();
-      int rw = args[5].as_int();
-      int rh = args[6].as_int();
+      int cx = INT(0);
+      int cy = INT(1);
+      int radius = INT(2);
+      int rx = INT(3);
+      int ry = INT(4);
+      int rw = INT(5);
+      int rh = INT(6);
       
       bool inside = (cx - radius >= rx && cx + radius <= rx + rw && 
                      cy - radius >= ry && cy + radius <= ry + rh);
@@ -75,12 +75,12 @@ functions:
     ret: bool
     custom_body: |
       // Check if two circles overlap
-      int x1 = args[0].as_int();
-      int y1 = args[1].as_int();
-      int r1 = args[2].as_int();
-      int x2 = args[3].as_int();
-      int y2 = args[4].as_int();
-      int r2 = args[5].as_int();
+      int x1 = INT(0);
+      int y1 = INT(1);
+      int r1 = INT(2);
+      int x2 = INT(3);
+      int y2 = INT(4);
+      int r2 = INT(5);
       
       int dx = x2 - x1;
       int dy = y2 - y1;
@@ -95,14 +95,14 @@ functions:
     ret: bool
     custom_body: |
       // Check if one rectangle is completely inside another
-      int x1 = args[0].as_int();
-      int y1 = args[1].as_int();
-      int w1 = args[2].as_int();
-      int h1 = args[3].as_int();
-      int x2 = args[4].as_int();
-      int y2 = args[5].as_int();
-      int w2 = args[6].as_int();
-      int h2 = args[7].as_int();
+      int x1 = INT(0);
+      int y1 = INT(1);
+      int w1 = INT(2);
+      int h1 = INT(3);
+      int x2 = INT(4);
+      int y2 = INT(5);
+      int w2 = INT(6);
+      int h2 = INT(7);
       
       bool inside = (x1 >= x2 && y1 >= y2 && 
                      x1 + w1 <= x2 + w2 && y1 + h1 <= y2 + h2);
@@ -114,14 +114,14 @@ functions:
     ret: string
     custom_body: |
       // Get the intersection rectangle between two rectangles
-      int x1 = args[0].as_int();
-      int y1 = args[1].as_int();
-      int w1 = args[2].as_int();
-      int h1 = args[3].as_int();
-      int x2 = args[4].as_int();
-      int y2 = args[5].as_int();
-      int w2 = args[6].as_int();
-      int h2 = args[7].as_int();
+      int x1 = INT(0);
+      int y1 = INT(1);
+      int w1 = INT(2);
+      int h1 = INT(3);
+      int x2 = INT(4);
+      int y2 = INT(5);
+      int w2 = INT(6);
+      int h2 = INT(7);
       
       int left = std::max(x1, x2);
       int top = std::max(y1, y2);

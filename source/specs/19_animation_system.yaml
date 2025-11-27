@@ -13,7 +13,7 @@ functions:
     working: true
     custom_body: |
       unsigned int animCount = 0;
-      ModelAnimation *anims = LoadModelAnimations(args[0].as_string().c_str(), &animCount);
+      ModelAnimation *anims = LoadModelAnimations(STR(0).c_str(), &animCount);
       // Store animations in global array for later use
       return Value::from_number(animCount);
 

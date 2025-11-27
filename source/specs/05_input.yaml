@@ -183,7 +183,7 @@ functions:
     category: input
     description: "Get gamepad name"
     working: true
-    custom_body: "GetGamepadName(args[0].as_int())"
+    custom_body: "GetGamepadName(INT(0))"
 
   - name: ISGAMEPADBUTTONPRESSED
     raylib_name: IsGamepadButtonPressed
@@ -257,7 +257,7 @@ functions:
     category: input
     description: "Get touch position as Vector2"
     working: true
-    custom_body: "GetTouchPosition(args[0].as_int())"
+    custom_body: "GetTouchPosition(INT(0))"
 
   - name: GETTOUCHPOINTID
     raylib_name: GetTouchPointId

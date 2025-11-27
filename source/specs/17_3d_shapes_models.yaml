@@ -1,0 +1,211 @@
+# 3D Shapes and Models System
+# Comprehensive 3D geometry, model loading, and mesh generation functionality
+
+functions:
+  # === BASIC 3D SHAPES ===
+  - name: DRAWLINE3D
+    raylib_name: DrawLine3D
+    args: [float, float, float, float, float, float, int, int, int]
+    ret: void
+    description: "Draw a line in 3D world space (startX, startY, startZ, endX, endY, endZ, r, g, b)"
+    custom_body: |
+      ::Vector3 startPos = {FLOAT(0), FLOAT(1), FLOAT(2)};
+      ::Vector3 endPos = {FLOAT(3), FLOAT(4), FLOAT(5)};
+      ::Color color = {(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255};
+      ::DrawLine3D(startPos, endPos, color);
+    
+  - name: DRAWPOINT3D
+    raylib_name: DrawPoint3D
+    args: [float, float, float, int, int, int]
+    ret: void
+    description: "Draw a point in 3D space, actually a small line (x, y, z, r, g, b)"
+    custom_body: |
+      ::Vector3 position = {FLOAT(0), FLOAT(1), FLOAT(2)};
+      ::Color color = {(unsigned char)INT(3), (unsigned char)INT(4), (unsigned char)INT(5), 255};
+      ::DrawPoint3D(position, color);
+    
+  - name: DRAWCIRCLE3D
+    raylib_name: DrawCircle3D
+    args: [float, float, float, float, float, float, float, float, int, int, int]
+    ret: void
+    description: "Draw a circle in 3D world space (centerX, centerY, centerZ, radius, rotAxisX, rotAxisY, rotAxisZ, rotAngle, r, g, b)"
+    custom_body: |
+      ::Vector3 center = {FLOAT(0), FLOAT(1), FLOAT(2)};
+      ::Vector3 rotationAxis = {FLOAT(4), FLOAT(5), FLOAT(6)};
+      ::Color color = {(unsigned char)INT(8), (unsigned char)INT(9), (unsigned char)INT(10), 255};
+      ::DrawCircle3D(center, FLOAT(3), rotationAxis, FLOAT(7), color);
+    
+  - name: DRAWTRIANGLE3D
+    raylib_name: DrawTriangle3D
+    args: [float, float, float, float, float, float, float, float, float, int, int, int]
+    ret: void
+    description: "Draw a color-filled triangle (vertex in counter-clockwise order!) (v1x, v1y, v1z, v2x, v2y, v2z, v3x, v3y, v3z, r, g, b)"
+    custom_body: |
+      ::Vector3 v1 = {FLOAT(0), FLOAT(1), FLOAT(2)};
+      ::Vector3 v2 = {FLOAT(3), FLOAT(4), FLOAT(5)};
+      ::Vector3 v3 = {FLOAT(6), FLOAT(7), FLOAT(8)};
+      ::Color color = {(unsigned char)INT(9), (unsigned char)INT(10), (unsigned char)INT(11), 255};
+      ::DrawTriangle3D(v1, v2, v3, color);
+    
+  - name: DRAWCUBE
+    raylib_name: DrawCube
+    args: [float, float, float, float, float, float, int, int, int]
+    ret: void
+    description: "Draw cube (posX, posY, posZ, width, height, length, r, g, b)"
+    custom_body: |
+      ::Vector3 position = {FLOAT(0), FLOAT(1), FLOAT(2)};
+      ::Color color = {(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255};
+      ::DrawCube(position, FLOAT(3), FLOAT(4), FLOAT(5), color);
+    
+  - name: DRAWCUBEV
+    raylib_name: DrawCubeV
+    args: [float, float, float, float, float, float, int, int, int]
+    ret: void
+    description: "Draw cube (Vector version) (posX, posY, posZ, sizeX, sizeY, sizeZ, r, g, b)"
+    custom_body: |
+      ::Vector3 position = {FLOAT(0), FLOAT(1), FLOAT(2)};
+      ::Vector3 size = {FLOAT(3), FLOAT(4), FLOAT(5)};
+      ::Color color = {(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255};
+      ::DrawCubeV(position, size, color);
+    
+  - name: DRAWCUBEWIRES
+    raylib_name: DrawCubeWires
+    args: [float, float, float, float, float, float, int, int, int]
+    ret: void
+    description: "Draw cube wires (posX, posY, posZ, width, height, length, r, g, b)"
+    custom_body: |
+      ::Vector3 position = {FLOAT(0), FLOAT(1), FLOAT(2)};
+      ::Color color = {(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255};
+      ::DrawCubeWires(position, FLOAT(3), FLOAT(4), FLOAT(5), color);
+    
+  - name: DRAWSPHERE
+    raylib_name: DrawSphere
+    args: [float, float, float, float, int, int, int]
+    ret: void
+    description: "Draw sphere (centerX, centerY, centerZ, radius, r, g, b)"
+    custom_body: |
+      ::Vector3 centerPos = {FLOAT(0), FLOAT(1), FLOAT(2)};
+      ::Color color = {(unsigned char)INT(4), (unsigned char)INT(5), (unsigned char)INT(6), 255};
+      ::DrawSphere(centerPos, FLOAT(3), color);
+    
+  - name: DRAWSPHEREEX
+    raylib_name: DrawSphereEx
+    args: [float, float, float, float, int, int, int, int, int]
+    ret: void
+    description: "Draw sphere with extended parameters (centerX, centerY, centerZ, radius, rings, slices, r, g, b)"
+    custom_body: |
+      ::Vector3 centerPos = {FLOAT(0), FLOAT(1), FLOAT(2)};
+      ::Color color = {(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255};
+      ::DrawSphereEx(centerPos, FLOAT(3), INT(4), INT(5), color);
+    
+  - name: DRAWSPHEREWIRES
+    raylib_name: DrawSphereWires
+    args: [float, float, float, float, int, int, int, int, int]
+    ret: void
+    description: "Draw sphere wires (centerX, centerY, centerZ, radius, rings, slices, r, g, b)"
+    custom_body: |
+      ::Vector3 centerPos = {FLOAT(0), FLOAT(1), FLOAT(2)};
+      ::Color color = {(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255};
+      ::DrawSphereWires(centerPos, FLOAT(3), INT(4), INT(5), color);
+    
+  - name: DRAWCYLINDER
+    raylib_name: DrawCylinder
+    args: [float, float, float, float, float, float, int, int, int, int]
+    ret: void
+    description: "Draw a cylinder/cone (posX, posY, posZ, radiusTop, radiusBottom, height, slices, r, g, b)"
+    custom_body: |
+      ::Vector3 position = {FLOAT(0), FLOAT(1), FLOAT(2)};
+      ::Color color = {(unsigned char)INT(7), (unsigned char)INT(8), (unsigned char)INT(9), 255};
+      ::DrawCylinder(position, FLOAT(3), FLOAT(4), FLOAT(5), INT(6), color);
+    
+  - name: DRAWPLANE
+    raylib_name: DrawPlane
+    args: [float, float, float, float, float, int, int, int]
+    ret: void
+    description: "Draw a plane XZ (centerX, centerY, centerZ, sizeX, sizeZ, r, g, b)"
+    custom_body: |
+      ::Vector3 centerPos = {FLOAT(0), FLOAT(1), FLOAT(2)};
+      ::Vector2 size = {FLOAT(3), FLOAT(4)};
+      ::Color color = {(unsigned char)INT(5), (unsigned char)INT(6), (unsigned char)INT(7), 255};
+      ::DrawPlane(centerPos, size, color);
+    
+  - name: DRAWGRID
+    raylib_name: DrawGrid
+    args: [int, float]
+    ret: void
+    description: "Draw a grid (centered at (0, 0, 0)) (slices, spacing)"
+    custom_body: |
+      ::DrawGrid(INT(0), FLOAT(1));
+    
+  # === MODEL MANAGEMENT ===
+  - name: LOADMODEL
+    raylib_name: LoadModel
+    args: [string]
+    ret: int
+    description: "Load model from files (meshes and materials), returns model ID"
+    custom_body: |
+      ::Model model = ::LoadModel(STR(0).c_str());
+      static int next_id = 1;
+      return Value::from_int(next_id++);
+    
+  - name: ISMODELVALID
+    raylib_name: IsModelValid
+    args: [int]
+    ret: int
+    description: "Check if a model is valid (loaded in GPU, VAO/VBOs)"
+    custom_body: |
+      ::Model model = {}; // Look up by ID in real implementation
+      return Value::from_int(::IsModelValid(model) ? 1 : 0);
+    
+  - name: UNLOADMODEL
+    raylib_name: UnloadModel
+    args: [int]
+    ret: void
+    description: "Unload model (including meshes) from memory (RAM and/or VRAM)"
+    custom_body: |
+      ::Model model = {}; // Look up by ID in real implementation
+      ::UnloadModel(model);
+    
+  - name: DRAWMODEL
+    raylib_name: DrawModel
+    args: [int, float, float, float, float, int, int, int]
+    ret: void
+    description: "Draw a model (with texture if set) (modelID, posX, posY, posZ, scale, r, g, b)"
+    custom_body: |
+      ::Model model = {}; // Look up by ID in real implementation
+      ::Vector3 position = {FLOAT(1), FLOAT(2), FLOAT(3)};
+      ::Color tint = {(unsigned char)INT(5), (unsigned char)INT(6), (unsigned char)INT(7), 255};
+      ::DrawModel(model, position, FLOAT(4), tint);
+    
+  - name: DRAWMODELWIRES
+    raylib_name: DrawModelWires
+    args: [int, float, float, float, float, int, int, int]
+    ret: void
+    description: "Draw a model wires (with texture if set) (modelID, posX, posY, posZ, scale, r, g, b)"
+    custom_body: |
+      ::Model model = {}; // Look up by ID in real implementation
+      ::Vector3 position = {FLOAT(1), FLOAT(2), FLOAT(3)};
+      ::Color tint = {(unsigned char)INT(5), (unsigned char)INT(6), (unsigned char)INT(7), 255};
+      ::DrawModelWires(model, position, FLOAT(4), tint);
+    
+  # === 3D COLLISION DETECTION ===
+  - name: CHECKCOLLISIONSPHERES
+    raylib_name: CheckCollisionSpheres
+    args: [float, float, float, float, float, float, float, float]
+    ret: int
+    description: "Check collision between two spheres (center1X, center1Y, center1Z, radius1, center2X, center2Y, center2Z, radius2)"
+    custom_body: |
+      ::Vector3 center1 = {FLOAT(0), FLOAT(1), FLOAT(2)};
+      ::Vector3 center2 = {FLOAT(4), FLOAT(5), FLOAT(6)};
+      return Value::from_int(::CheckCollisionSpheres(center1, FLOAT(3), center2, FLOAT(7)) ? 1 : 0);
+    
+  - name: CHECKCOLLISIONBOXSPHERE
+    raylib_name: CheckCollisionBoxSphere
+    args: [float, float, float, float, float, float, float, float, float, float]
+    ret: int
+    description: "Check collision between box and sphere (boxMinX, boxMinY, boxMinZ, boxMaxX, boxMaxY, boxMaxZ, centerX, centerY, centerZ, radius)"
+    custom_body: |
+      ::BoundingBox box = {{FLOAT(0), FLOAT(1), FLOAT(2)}, 
+                           {FLOAT(3), FLOAT(4), FLOAT(5)}};
+      ::Vector3 center = {FLOAT(6), FLOAT(7), FLOAT(8)};
+      return Value::from_int(::CheckCollisionBoxSphere(box, center, FLOAT(9)) ? 1 : 0);

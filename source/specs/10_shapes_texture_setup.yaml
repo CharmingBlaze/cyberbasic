@@ -1,0 +1,42 @@
+# Shapes Texture Setup Functions
+# Configure textures and rectangles for optimized shape drawing
+
+functions:
+  # === SHAPES TEXTURE CONFIGURATION ===
+  - name: SETSHAPESTEXTURE
+    raylib_name: SetShapesTexture
+    args: [int, float, float, float, float]
+    ret: void
+    description: "Set texture and rectangle to be used on shapes drawing (texture_id, x, y, width, height)"
+    custom_body: |
+      // For now, use a simplified approach - would need texture registry
+      ::Texture2D texture = {};
+      texture.id = INT(0);
+      ::Rectangle source = {
+          FLOAT(1), 
+          FLOAT(2), 
+          FLOAT(3), 
+          FLOAT(4)
+      };
+      ::SetShapesTexture(texture, source);
+    
+  - name: GETSHAPESTEXTURE
+    raylib_name: GetShapesTexture
+    args: []
+    ret: int
+    description: "Get texture that is used for shapes drawing"
+    custom_body: |
+      ::Texture2D texture = ::GetShapesTexture();
+      return Value::from_int(texture.id);
+    
+  - name: GETSHAPESTEXTURERECTANGLE
+    raylib_name: GetShapesTextureRectangle
+    args: []
+    ret: string
+    description: "Get texture source rectangle that is used for shapes drawing"
+    custom_body: |
+      ::Rectangle rect = ::GetShapesTextureRectangle();
+      return Value::from_string(std::to_string(rect.x) + "," + 
+                               std::to_string(rect.y) + "," + 
+                               std::to_string(rect.width) + "," + 
+                               std::to_string(rect.height));

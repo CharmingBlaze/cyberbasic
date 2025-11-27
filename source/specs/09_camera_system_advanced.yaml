@@ -1,0 +1,237 @@
+# Advanced Camera System Functions
+# Camera updates, movement, and control for 3D scenes
+
+functions:
+  # === CAMERA UPDATE FUNCTIONS ===
+  - name: UPDATECAMERA
+    raylib_name: UpdateCamera
+    args: [int]
+    ret: void
+    description: "Update camera position for selected mode"
+    custom_body: |
+      // Use our advanced camera system if available
+      if (g_camera_system_3d) {
+          g_camera_system_3d->update(::GetFrameTime());
+      } else {
+          // Fallback to basic raylib camera update
+          ::Camera3D camera = {};
+          camera.position = ::Vector3{ 0.0f, 10.0f, 10.0f };
+          camera.target = ::Vector3{ 0.0f, 0.0f, 0.0f };
+          camera.up = ::Vector3{ 0.0f, 1.0f, 0.0f };
+          camera.fovy = 45.0f;
+          camera.projection = CAMERA_PERSPECTIVE;
+          ::UpdateCamera(&camera, INT(0));
+      }
+    
+  - name: UPDATECAMERAPRO
+    raylib_name: UpdateCameraPro
+    args: [float, float, float, float, float, float, float]
+    ret: void
+    description: "Update camera movement/rotation (movement.x, movement.y, movement.z, rotation.x, rotation.y, rotation.z, zoom)"
+    custom_body: |
+      // Use our advanced camera system if available
+      if (g_camera_system_3d) {
+          g_camera_system_3d->set_input_movement(FLOAT(0), FLOAT(1), FLOAT(2));
+          g_camera_system_3d->set_input_rotation(FLOAT(3), FLOAT(4), FLOAT(5));
+          g_camera_system_3d->set_input_zoom(FLOAT(6));
+          g_camera_system_3d->update(::GetFrameTime());
+      } else {
+          // Fallback to basic raylib camera update
+          ::Camera3D camera = {};
+          camera.position = ::Vector3{ 0.0f, 10.0f, 10.0f };
+          camera.target = ::Vector3{ 0.0f, 0.0f, 0.0f };
+          camera.up = ::Vector3{ 0.0f, 1.0f, 0.0f };
+          camera.fovy = 45.0f;
+          camera.projection = CAMERA_PERSPECTIVE;
+          
+          ::Vector3 movement = {FLOAT(0), FLOAT(1), FLOAT(2)};
+          ::Vector3 rotation = {FLOAT(3), FLOAT(4), FLOAT(5)};
+          float zoom = FLOAT(6);
+          
+          ::UpdateCameraPro(&camera, movement, rotation, zoom);
+      }
+    
+  # === CAMERA CREATION (ADVANCED SYSTEM) ===
+  - name: CREATEFPSCAMERA
+    raylib_name: CreateFPSCamera
+    args: [string, float, float, float]
+    ret: int
+    description: "Create FPS camera at position (name, x, y, z)"
+    custom_body: |
+      if (!g_camera_system_3d) {
+          g_camera_system_3d = std::make_unique<CameraSystem3D>();
+      }
+      return Value::from_int(g_camera_system_3d->create_fps_camera(
+          STR(0), 
+          FLOAT(1), 
+          FLOAT(2), 
+          FLOAT(3)
+      ));
+    
+  - name: CREATETPSCAMERA
+    raylib_name: CreateTPSCamera
+    args: [string, float, float, float]
+    ret: int
+    description: "Create third-person camera at position (name, x, y, z)"
+    custom_body: |
+      if (!g_camera_system_3d) {
+          g_camera_system_3d = std::make_unique<CameraSystem3D>();
+      }
+      return Value::from_int(g_camera_system_3d->create_tps_camera(
+          STR(0), 
+          FLOAT(1), 
+          FLOAT(2), 
+          FLOAT(3)
+      ));
+    
+  - name: CREATEORBITCAMERA
+    raylib_name: CreateOrbitCamera
+    args: [string, float, float, float, float]
+    ret: int
+    description: "Create orbit camera around target (name, target_x, target_y, target_z, distance)"
+    custom_body: |
+      if (!g_camera_system_3d) {
+          g_camera_system_3d = std::make_unique<CameraSystem3D>();
+      }
+      return Value::from_int(g_camera_system_3d->create_orbit_camera(
+          STR(0), 
+          FLOAT(1), 
+          FLOAT(2), 
+          FLOAT(3),
+          FLOAT(4)
+      ));
+    
+  - name: CREATEFREECAMERA
+    raylib_name: CreateFreeCamera
+    args: [string, float, float, float]
+    ret: int
+    description: "Create free-flying camera at position (name, x, y, z)"
+    custom_body: |
+      if (!g_camera_system_3d) {
+          g_camera_system_3d = std::make_unique<CameraSystem3D>();
+      }
+      return Value::from_int(g_camera_system_3d->create_free_camera(
+          STR(0), 
+          FLOAT(1), 
+          FLOAT(2), 
+          FLOAT(3)
+      ));
+    
+  # === CAMERA CONTROL ===
+  - name: SETACTIVECAMERA
+    raylib_name: SetActiveCamera
+    args: [int]
+    ret: void
+    description: "Set active camera by ID"
+    custom_body: |
+      if (g_camera_system_3d) {
+          g_camera_system_3d->set_active_camera(INT(0));
+      }
+    
+  - name: SETCAMERAPOSITION
+    raylib_name: SetCameraPosition
+    args: [int, float, float, float]
+    ret: void
+    description: "Set camera position (camera_id, x, y, z)"
+    custom_body: |
+      if (g_camera_system_3d) {
+          g_camera_system_3d->set_camera_position(
+              INT(0), 
+              FLOAT(1), 
+              FLOAT(2), 
+              FLOAT(3)
+          );
+      }
+    
+  - name: SETCAMERATARGET
+    raylib_name: SetCameraTarget
+    args: [int, float, float, float]
+    ret: void
+    description: "Set camera target (camera_id, x, y, z)"
+    custom_body: |
+      if (g_camera_system_3d) {
+          g_camera_system_3d->set_camera_target(
+              INT(0), 
+              FLOAT(1), 
+              FLOAT(2), 
+              FLOAT(3)
+          );
+      }
+    
+  - name: SETCAMERAFOV
+    raylib_name: SetCameraFOV
+    args: [int, float]
+    ret: void
+    description: "Set camera field of view (camera_id, fov)"
+    custom_body: |
+      if (g_camera_system_3d) {
+          g_camera_system_3d->set_camera_fov(INT(0), FLOAT(1));
+      }
+    
+  - name: SETCAMERAMOUSESENSITIVITY
+    raylib_name: SetCameraMouseSensitivity
+    args: [int, float, float]
+    ret: void
+    description: "Set camera mouse sensitivity (camera_id, x_sensitivity, y_sensitivity)"
+    custom_body: |
+      if (g_camera_system_3d) {
+          g_camera_system_3d->set_mouse_sensitivity(
+              INT(0), 
+              FLOAT(1), 
+              FLOAT(2)
+          );
+      }
+    
+  - name: SETCAMERASMOOTHING
+    raylib_name: SetCameraSmoothing
+    args: [int, bool, float]
+    ret: void
+    description: "Set camera smoothing (camera_id, enabled, factor)"
+    custom_body: |
+      if (g_camera_system_3d) {
+          g_camera_system_3d->set_smoothing(
+              INT(0), 
+              BOOL(1), 
+              FLOAT(2)
+          );
+      }
+    
+  # === CAMERA QUERIES ===
+  - name: GETCAMERAPOSITION
+    raylib_name: GetCameraPosition
+    args: [int]
+    ret: string
+    description: "Get camera position (camera_id) -> 'x,y,z'"
+    custom_body: |
+      if (g_camera_system_3d) {
+          bas::Vector3D pos = g_camera_system_3d->get_camera_position(INT(0));
+          return Value::from_string(std::to_string(pos.x) + "," + 
+                                   std::to_string(pos.y) + "," + 
+                                   std::to_string(pos.z));
+      }
+      return Value::from_string("0,10,10");
+    
+  - name: GETCAMERATARGET
+    raylib_name: GetCameraTarget
+    args: [int]
+    ret: string
+    description: "Get camera target (camera_id) -> 'x,y,z'"
+    custom_body: |
+      if (g_camera_system_3d) {
+          bas::Vector3D target = g_camera_system_3d->get_camera_target(INT(0));
+          return Value::from_string(std::to_string(target.x) + "," + 
+                                   std::to_string(target.y) + "," + 
+                                   std::to_string(target.z));
+      }
+      return Value::from_string("0,0,0");
+    
+  - name: GETCAMERACOUNT
+    raylib_name: GetCameraCount
+    args: []
+    ret: int
+    description: "Get number of cameras in the system"
+    custom_body: |
+      if (g_camera_system_3d) {
+          return Value::from_int(g_camera_system_3d->get_camera_count());
+      }
+      return Value::from_int(0);

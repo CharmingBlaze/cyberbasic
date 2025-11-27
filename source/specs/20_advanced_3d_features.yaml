@@ -11,7 +11,7 @@ functions:
     category: advanced_3d
     description: "Load mesh from file, returns mesh ID"
     working: true
-    custom_body: "LoadMesh(args[0].as_string().c_str())"
+    custom_body: "LoadMesh(STR(0).c_str())"
 
   - name: GENERATEMESHCUBE
     raylib_name: GenMeshCube
@@ -20,7 +20,7 @@ functions:
     category: advanced_3d
     description: "Generate cube mesh (width, height, length)"
     working: true
-    custom_body: "GenMeshCube(args[0].as_number(), args[1].as_number(), args[2].as_number())"
+    custom_body: "GenMeshCube(FLOAT(0), FLOAT(1), FLOAT(2))"
 
   - name: GENERATEMESHSPHERE
     raylib_name: GenMeshSphere
@@ -29,7 +29,7 @@ functions:
     category: advanced_3d
     description: "Generate sphere mesh (radius, rings, slices)"
     working: true
-    custom_body: "GenMeshSphere(args[0].as_number(), args[1].as_int(), args[2].as_int())"
+    custom_body: "GenMeshSphere(FLOAT(0), INT(1), INT(2))"
 
   - name: GENERATEMESHCYLINDER
     raylib_name: GenMeshCylinder
@@ -38,7 +38,7 @@ functions:
     category: advanced_3d
     description: "Generate cylinder mesh (radius, height, slices)"
     working: true
-    custom_body: "GenMeshCylinder(args[0].as_number(), args[1].as_number(), args[2].as_int())"
+    custom_body: "GenMeshCylinder(FLOAT(0), FLOAT(1), INT(2))"
 
   - name: GENERATEMESHPLANE
     raylib_name: GenMeshPlane
@@ -47,7 +47,7 @@ functions:
     category: advanced_3d
     description: "Generate plane mesh (width, length, resX, resZ)"
     working: true
-    custom_body: "GenMeshPlane(args[0].as_number(), args[1].as_number(), args[2].as_int(), args[3].as_int())"
+    custom_body: "GenMeshPlane(FLOAT(0), FLOAT(1), INT(2), INT(3))"
 
   - name: DRAWMESH
     raylib_name: DrawMesh
@@ -57,9 +57,9 @@ functions:
     description: "Draw mesh (meshID, x, y, z, scale, R, G, B)"
     working: true
     custom_body: |
-      Mesh mesh = *(Mesh*)args[0].as_int();
+      Mesh mesh = *(Mesh*)INT(0);
       DrawMesh(mesh, LoadMaterialDefault(), 
-               MatrixTranslate(args[1].as_int(), args[2].as_int(), args[3].as_int()));
+               MatrixTranslate(INT(1), INT(2), INT(3)));
 
   # === BOUNDING BOX FUNCTIONS ===
   - name: DRAWBOUNDINGBOX
@@ -71,10 +71,10 @@ functions:
     working: true
     custom_body: |
       BoundingBox box = {
-        .min = {(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()},
-        .max = {(float)args[3].as_int(), (float)args[4].as_int(), (float)args[5].as_int()}
+        .min = {(float)INT(0), (float)INT(1), (float)INT(2)},
+        .max = {(float)INT(3), (float)INT(4), (float)INT(5)}
       };
-      Color color = {(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
+      Color color = {(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255};
       DrawBoundingBox(box, color);
 
   - name: GETMODELBOUNDINGBOX
@@ -85,7 +85,7 @@ functions:
     description: "Get model bounding box as string (modelID)"
     working: true
     custom_body: |
-      Model model = *(Model*)args[0].as_int();
+      Model model = *(Model*)INT(0);
       BoundingBox box = GetModelBoundingBox(model);
       return Value::from_string(std::to_string((int)box.min.x) + "," + 
                                std::to_string((int)box.min.y) + "," + 
@@ -104,10 +104,10 @@ functions:
     working: true
     custom_body: |
       Ray ray = {
-        .position = {(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()},
-        .direction = {(float)args[3].as_int(), (float)args[4].as_int(), (float)args[5].as_int()}
+        .position = {(float)INT(0), (float)INT(1), (float)INT(2)},
+        .direction = {(float)INT(3), (float)INT(4), (float)INT(5)}
       };
-      Mesh mesh = *(Mesh*)args[6].as_int();
+      Mesh mesh = *(Mesh*)INT(6);
       RayCollision collision = GetRayCollisionMesh(ray, mesh, MatrixIdentity());
       return Value::from_string(std::to_string(collision.hit) + "," + 
                                std::to_string(collision.distance) + "," +
@@ -124,12 +124,12 @@ functions:
     working: true
     custom_body: |
       Ray ray = {
-        .position = {(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()},
-        .direction = {(float)args[3].as_int(), (float)args[4].as_int(), (float)args[5].as_int()}
+        .position = {(float)INT(0), (float)INT(1), (float)INT(2)},
+        .direction = {(float)INT(3), (float)INT(4), (float)INT(5)}
       };
-      Vector3 p1 = {(float)args[6].as_int(), (float)args[7].as_int(), (float)args[8].as_int()};
-      Vector3 p2 = {(float)args[9].as_int(), (float)args[10].as_int(), (float)args[11].as_int()};
-      Vector3 p3 = {(float)args[12].as_int(), (float)args[13].as_int(), (float)args[14].as_int()};
+      Vector3 p1 = {(float)INT(6), (float)INT(7), (float)INT(8)};
+      Vector3 p2 = {(float)INT(9), (float)INT(10), (float)INT(11)};
+      Vector3 p3 = {(float)INT(12), (float)INT(13), (float)INT(14)};
       RayCollision collision = GetRayCollisionTriangle(ray, p1, p2, p3);
       return Value::from_string(std::to_string(collision.hit) + "," + 
                                std::to_string(collision.distance) + "," +
@@ -181,7 +181,7 @@ functions:
     description: "Begin render-to-texture mode (textureID)"
     working: true
     custom_body: |
-      RenderTexture2D target = *(RenderTexture2D*)args[0].as_int();
+      RenderTexture2D target = *(RenderTexture2D*)INT(0);
       BeginTextureMode(target);
 
   - name: ENDTEXTUREMODE
@@ -200,7 +200,7 @@ functions:
     category: advanced_3d
     description: "Load render texture (width, height)"
     working: true
-    custom_body: "LoadRenderTexture(args[0].as_int(), args[1].as_int())"
+    custom_body: "LoadRenderTexture(INT(0), INT(1))"
 
   - name: UNLOADRENDERTEXTURE
     raylib_name: UnloadRenderTexture
@@ -210,5 +210,5 @@ functions:
     description: "Unload render texture (textureID)"
     working: true
     custom_body: |
-      RenderTexture2D target = *(RenderTexture2D*)args[0].as_int();
+      RenderTexture2D target = *(RenderTexture2D*)INT(0);
       UnloadRenderTexture(target);

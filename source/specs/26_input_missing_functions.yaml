@@ -65,7 +65,7 @@ functions:
     category: input
     description: "Get touch position XY for a touch point index (relative to screen size)"
     custom_body: |
-      ::Vector2 pos = ::GetTouchPosition(args[0].as_int());
+      ::Vector2 pos = ::GetTouchPosition(INT(0));
       return Value::from_string(std::to_string(pos.x) + "," + std::to_string(pos.y));
 
   - name: GETTOUCHPOINTID

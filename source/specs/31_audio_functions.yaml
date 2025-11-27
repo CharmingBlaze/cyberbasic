@@ -18,7 +18,7 @@ functions:
     category: audio
     description: "Create new sound that shares sample data (pass source sound ID)"
     custom_body: |
-      ::Sound sound = ::LoadSoundAlias(rlreg::sounds.at(args[0].as_int()));
+      ::Sound sound = ::LoadSoundAlias(rlreg::sounds.at(INT(0)));
       int id = rlreg::next_sound_id++;
       rlreg::sounds[id] = sound;
       return Value::from_int(id);
@@ -30,7 +30,7 @@ functions:
     category: audio
     description: "Check if sound is valid (pass sound ID)"
     custom_body: |
-      return Value::from_bool(::IsSoundValid(rlreg::sounds.at(args[0].as_int())));
+      return Value::from_bool(::IsSoundValid(rlreg::sounds.at(INT(0))));
 
   - name: ISWAVEVALID
     raylib_name: IsWaveValid
@@ -39,7 +39,7 @@ functions:
     category: audio
     description: "Check if wave data is valid (pass wave ID)"
     custom_body: |
-      return Value::from_bool(::IsWaveValid(rlreg::waves.at(args[0].as_int())));
+      return Value::from_bool(::IsWaveValid(rlreg::waves.at(INT(0))));
 
   - name: UNLOADSOUNDALIAS
     raylib_name: UnloadSoundAlias
@@ -48,8 +48,8 @@ functions:
     category: audio
     description: "Unload sound alias (pass sound alias ID)"
     custom_body: |
-      ::UnloadSoundAlias(rlreg::sounds.at(args[0].as_int()));
-      rlreg::sounds.erase(args[0].as_int());
+      ::UnloadSoundAlias(rlreg::sounds.at(INT(0)));
+      rlreg::sounds.erase(INT(0));
       return Value::nil();
 
   - name: WAVECOPY
@@ -59,7 +59,7 @@ functions:
     category: audio
     description: "Copy wave to new wave (pass wave ID)"
     custom_body: |
-      ::Wave wave = ::WaveCopy(rlreg::waves.at(args[0].as_int()));
+      ::Wave wave = ::WaveCopy(rlreg::waves.at(INT(0)));
       int id = rlreg::next_wave_id++;
       rlreg::waves[id] = wave;
       return Value::from_int(id);
@@ -71,7 +71,7 @@ functions:
     category: audio
     description: "Crop wave to defined frames range (pass wave ID, initFrame, finalFrame)"
     custom_body: |
-      ::WaveCrop(&rlreg::waves.at(args[0].as_int()), args[1].as_int(), args[2].as_int());
+      ::WaveCrop(&rlreg::waves.at(INT(0)), INT(1), INT(2));
       return Value::nil();
 
   - name: WAVEFORMAT
@@ -81,7 +81,7 @@ functions:
     category: audio
     description: "Convert wave data to desired format (pass wave ID, sampleRate, sampleSize, channels)"
     custom_body: |
-      ::WaveFormat(&rlreg::waves.at(args[0].as_int()), args[1].as_int(), args[2].as_int(), args[3].as_int());
+      ::WaveFormat(&rlreg::waves.at(INT(0)), INT(1), INT(2), INT(3));
       return Value::nil();
 
   # === MUSIC FUNCTIONS ===
@@ -92,7 +92,7 @@ functions:
     category: audio
     description: "Load music stream from data (fileType, data, dataSize)"
     custom_body: |
-      ::Music music = ::LoadMusicStreamFromMemory(args[0].as_string().c_str(), (const unsigned char*)args[1].as_string().c_str(), args[2].as_int());
+      ::Music music = ::LoadMusicStreamFromMemory(STR(0).c_str(), (const unsigned char*)STR(1).c_str(), INT(2));
       int id = rlreg::next_music_id++;
       rlreg::musics[id] = music;
       return Value::from_int(id);
@@ -104,7 +104,7 @@ functions:
     category: audio
     description: "Check if music stream is valid (pass music ID)"
     custom_body: |
-      return Value::from_bool(::IsMusicValid(rlreg::musics.at(args[0].as_int())));
+      return Value::from_bool(::IsMusicValid(rlreg::musics.at(INT(0))));
 
   # === AUDIOSTREAM FUNCTIONS ===
   - name: ISAUDIOSTREAMVALID
@@ -114,7 +114,7 @@ functions:
     category: audio
     description: "Check if audio stream is valid (pass audio stream ID)"
     custom_body: |
-      return Value::from_bool(::IsAudioStreamValid(rlreg::audiostreams.at(args[0].as_int())));
+      return Value::from_bool(::IsAudioStreamValid(rlreg::audiostreams.at(INT(0))));
 
   - name: ISAUDIOSTREAMPROCESSED
     raylib_name: IsAudioStreamProcessed
@@ -123,7 +123,7 @@ functions:
     category: audio
     description: "Check if any audio stream buffers requires refill (pass audio stream ID)"
     custom_body: |
-      return Value::from_bool(::IsAudioStreamProcessed(rlreg::audiostreams.at(args[0].as_int())));
+      return Value::from_bool(::IsAudioStreamProcessed(rlreg::audiostreams.at(INT(0))));
 
   - name: SETAUDIOSTREAMVOLUME
     raylib_name: SetAudioStreamVolume
@@ -132,7 +132,7 @@ functions:
     category: audio
     description: "Set volume for audio stream (pass audio stream ID, volume)"
     custom_body: |
-      ::SetAudioStreamVolume(rlreg::audiostreams.at(args[0].as_int()), static_cast<float>(args[1].as_number()));
+      ::SetAudioStreamVolume(rlreg::audiostreams.at(INT(0)), static_cast<float>(FLOAT(1)));
       return Value::nil();
 
   - name: SETAUDIOSTREAMPITCH
@@ -142,7 +142,7 @@ functions:
     category: audio
     description: "Set pitch for audio stream (pass audio stream ID, pitch)"
     custom_body: |
-      ::SetAudioStreamPitch(rlreg::audiostreams.at(args[0].as_int()), static_cast<float>(args[1].as_number()));
+      ::SetAudioStreamPitch(rlreg::audiostreams.at(INT(0)), static_cast<float>(FLOAT(1)));
       return Value::nil();
 
   - name: SETAUDIOSTREAMPAN
@@ -152,7 +152,7 @@ functions:
     category: audio
     description: "Set pan for audio stream (pass audio stream ID, pan)"
     custom_body: |
-      ::SetAudioStreamPan(rlreg::audiostreams.at(args[0].as_int()), static_cast<float>(args[1].as_number()));
+      ::SetAudioStreamPan(rlreg::audiostreams.at(INT(0)), static_cast<float>(FLOAT(1)));
       return Value::nil();
 
   - name: SETAUDIOSTREAMBUFFERSIZEDEFAULT

@@ -1,0 +1,41 @@
+# Cursor Management Functions
+# Cursor visibility, state, and control functions
+
+functions:
+  # === CURSOR VISIBILITY ===
+  - name: SHOWCURSOR
+    raylib_name: ShowCursor
+    args: []
+    ret: void
+    description: "Shows cursor"
+    
+  - name: HIDECURSOR
+    raylib_name: HideCursor
+    args: []
+    ret: void
+    description: "Hides cursor"
+    
+  - name: ISCURSORHIDDEN
+    raylib_name: IsCursorHidden
+    args: []
+    ret: bool
+    description: "Check if cursor is not visible"
+    
+  # === CURSOR STATE ===
+  - name: ENABLECURSOR
+    raylib_name: EnableCursor
+    args: []
+    ret: void
+    description: "Enables cursor (unlock cursor)"
+    
+  - name: DISABLECURSOR
+    raylib_name: DisableCursor
+    args: []
+    ret: void
+    description: "Disables cursor (lock cursor)"
+    
+  - name: ISCURSORONSCREEN
+    raylib_name: IsCursorOnScreen
+    args: []
+    ret: bool
+    description: "Check if cursor is on the screen"

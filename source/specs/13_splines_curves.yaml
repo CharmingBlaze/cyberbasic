@@ -1,0 +1,218 @@
+# Splines and Curves Drawing Functions
+# Advanced curve rendering with linear, basis, catmull-rom, and bezier splines
+
+functions:
+  # === SPLINE DRAWING ===
+  - name: DRAWSPLINELINEAR
+    raylib_name: DrawSplineLinear
+    args: [string, float, int, int, int]
+    ret: void
+    description: "Draw spline: Linear, minimum 2 points (points as 'x1,y1;x2,y2;...', thick, r, g, b)"
+    custom_body: |
+      std::string points_str = STR(0);
+      std::vector<::Vector2> points;
+      std::stringstream ss(points_str);
+      std::string point;
+      while (std::getline(ss, point, ';')) {
+          std::stringstream point_ss(point);
+          std::string x_str, y_str;
+          if (std::getline(point_ss, x_str, ',') && std::getline(point_ss, y_str, ',')) {
+              points.push_back({std::stof(x_str), std::stof(y_str)});
+          }
+      }
+      ::Color color = {(unsigned char)INT(2), (unsigned char)INT(3), (unsigned char)INT(4), 255};
+      if (points.size() >= 2) {
+          ::DrawSplineLinear(points.data(), points.size(), FLOAT(1), color);
+      }
+    
+  - name: DRAWSPLINEBASIS
+    raylib_name: DrawSplineBasis
+    args: [string, float, int, int, int]
+    ret: void
+    description: "Draw spline: B-Spline, minimum 4 points (points as 'x1,y1;x2,y2;...', thick, r, g, b)"
+    custom_body: |
+      std::string points_str = STR(0);
+      std::vector<::Vector2> points;
+      std::stringstream ss(points_str);
+      std::string point;
+      while (std::getline(ss, point, ';')) {
+          std::stringstream point_ss(point);
+          std::string x_str, y_str;
+          if (std::getline(point_ss, x_str, ',') && std::getline(point_ss, y_str, ',')) {
+              points.push_back({std::stof(x_str), std::stof(y_str)});
+          }
+      }
+      ::Color color = {(unsigned char)INT(2), (unsigned char)INT(3), (unsigned char)INT(4), 255};
+      if (points.size() >= 4) {
+          ::DrawSplineBasis(points.data(), points.size(), FLOAT(1), color);
+      }
+    
+  - name: DRAWSPLINECATMULLROM
+    raylib_name: DrawSplineCatmullRom
+    args: [string, float, int, int, int]
+    ret: void
+    description: "Draw spline: Catmull-Rom, minimum 4 points (points as 'x1,y1;x2,y2;...', thick, r, g, b)"
+    custom_body: |
+      std::string points_str = STR(0);
+      std::vector<::Vector2> points;
+      std::stringstream ss(points_str);
+      std::string point;
+      while (std::getline(ss, point, ';')) {
+          std::stringstream point_ss(point);
+          std::string x_str, y_str;
+          if (std::getline(point_ss, x_str, ',') && std::getline(point_ss, y_str, ',')) {
+              points.push_back({std::stof(x_str), std::stof(y_str)});
+          }
+      }
+      ::Color color = {(unsigned char)INT(2), (unsigned char)INT(3), (unsigned char)INT(4), 255};
+      if (points.size() >= 4) {
+          ::DrawSplineCatmullRom(points.data(), points.size(), FLOAT(1), color);
+      }
+    
+  - name: DRAWSPLINEBEZIERCUBIC
+    raylib_name: DrawSplineBezierCubic
+    args: [string, float, int, int, int]
+    ret: void
+    description: "Draw spline: Cubic Bezier, minimum 4 points (2 control points): [p1, c2, c3, p4, c5, c6...] (points as 'x1,y1;x2,y2;...', thick, r, g, b)"
+    custom_body: |
+      std::string points_str = STR(0);
+      std::vector<::Vector2> points;
+      std::stringstream ss(points_str);
+      std::string point;
+      while (std::getline(ss, point, ';')) {
+          std::stringstream point_ss(point);
+          std::string x_str, y_str;
+          if (std::getline(point_ss, x_str, ',') && std::getline(point_ss, y_str, ',')) {
+              points.push_back({std::stof(x_str), std::stof(y_str)});
+          }
+      }
+      ::Color color = {(unsigned char)INT(2), (unsigned char)INT(3), (unsigned char)INT(4), 255};
+      if (points.size() >= 4) {
+          ::DrawSplineBezierCubic(points.data(), points.size(), FLOAT(1), color);
+      }
+    
+  # === SPLINE SEGMENT DRAWING ===
+  - name: DRAWSPLINESEGMENTLINEAR
+    raylib_name: DrawSplineSegmentLinear
+    args: [float, float, float, float, float, int, int, int]
+    ret: void
+    description: "Draw spline segment: Linear, 2 points (p1x, p1y, p2x, p2y, thick, r, g, b)"
+    custom_body: |
+      ::Vector2 p1 = {FLOAT(0), FLOAT(1)};
+      ::Vector2 p2 = {FLOAT(2), FLOAT(3)};
+      ::Color color = {(unsigned char)INT(5), (unsigned char)INT(6), (unsigned char)INT(7), 255};
+      ::DrawSplineSegmentLinear(p1, p2, FLOAT(4), color);
+    
+  - name: DRAWSPLINESEGMENTBASIS
+    raylib_name: DrawSplineSegmentBasis
+    args: [float, float, float, float, float, float, float, float, float, int, int, int]
+    ret: void
+    description: "Draw spline segment: B-Spline, 4 points (p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y, thick, r, g, b)"
+    custom_body: |
+      ::Vector2 p1 = {FLOAT(0), FLOAT(1)};
+      ::Vector2 p2 = {FLOAT(2), FLOAT(3)};
+      ::Vector2 p3 = {FLOAT(4), FLOAT(5)};
+      ::Vector2 p4 = {FLOAT(6), FLOAT(7)};
+      ::Color color = {(unsigned char)INT(9), (unsigned char)INT(10), (unsigned char)INT(11), 255};
+      ::DrawSplineSegmentBasis(p1, p2, p3, p4, FLOAT(8), color);
+    
+  - name: DRAWSPLINESEGMENTCATMULLROM
+    raylib_name: DrawSplineSegmentCatmullRom
+    args: [float, float, float, float, float, float, float, float, float, int, int, int]
+    ret: void
+    description: "Draw spline segment: Catmull-Rom, 4 points (p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y, thick, r, g, b)"
+    custom_body: |
+      ::Vector2 p1 = {FLOAT(0), FLOAT(1)};
+      ::Vector2 p2 = {FLOAT(2), FLOAT(3)};
+      ::Vector2 p3 = {FLOAT(4), FLOAT(5)};
+      ::Vector2 p4 = {FLOAT(6), FLOAT(7)};
+      ::Color color = {(unsigned char)INT(9), (unsigned char)INT(10), (unsigned char)INT(11), 255};
+      ::DrawSplineSegmentCatmullRom(p1, p2, p3, p4, FLOAT(8), color);
+    
+  - name: DRAWSPLINESEGMENTBEZIERQUADRATIC
+    raylib_name: DrawSplineSegmentBezierQuadratic
+    args: [float, float, float, float, float, float, float, int, int, int]
+    ret: void
+    description: "Draw spline segment: Quadratic Bezier, 2 points, 1 control point (p1x, p1y, c2x, c2y, p3x, p3y, thick, r, g, b)"
+    custom_body: |
+      ::Vector2 p1 = {FLOAT(0), FLOAT(1)};
+      ::Vector2 c2 = {FLOAT(2), FLOAT(3)};
+      ::Vector2 p3 = {FLOAT(4), FLOAT(5)};
+      ::Color color = {(unsigned char)INT(7), (unsigned char)INT(8), (unsigned char)INT(9), 255};
+      ::DrawSplineSegmentBezierQuadratic(p1, c2, p3, FLOAT(6), color);
+    
+  - name: DRAWSPLINESEGMENTBEZIERCUBIC
+    raylib_name: DrawSplineSegmentBezierCubic
+    args: [float, float, float, float, float, float, float, float, float, int, int, int]
+    ret: void
+    description: "Draw spline segment: Cubic Bezier, 2 points, 2 control points (p1x, p1y, c2x, c2y, c3x, c3y, p4x, p4y, thick, r, g, b)"
+    custom_body: |
+      ::Vector2 p1 = {FLOAT(0), FLOAT(1)};
+      ::Vector2 c2 = {FLOAT(2), FLOAT(3)};
+      ::Vector2 c3 = {FLOAT(4), FLOAT(5)};
+      ::Vector2 p4 = {FLOAT(6), FLOAT(7)};
+      ::Color color = {(unsigned char)INT(9), (unsigned char)INT(10), (unsigned char)INT(11), 255};
+      ::DrawSplineSegmentBezierCubic(p1, c2, c3, p4, FLOAT(8), color);
+    
+  # === SPLINE POINT EVALUATION ===
+  - name: GETSPLINEPOINTLINEAR
+    raylib_name: GetSplinePointLinear
+    args: [float, float, float, float, float]
+    ret: string
+    description: "Get (evaluate) spline point: Linear (startX, startY, endX, endY, t)"
+    custom_body: |
+      ::Vector2 startPos = {FLOAT(0), FLOAT(1)};
+      ::Vector2 endPos = {FLOAT(2), FLOAT(3)};
+      ::Vector2 result = ::GetSplinePointLinear(startPos, endPos, FLOAT(4));
+      return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y));
+    
+  - name: GETSPLINEPOINTBASIS
+    raylib_name: GetSplinePointBasis
+    args: [float, float, float, float, float, float, float, float, float]
+    ret: string
+    description: "Get (evaluate) spline point: B-Spline (p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y, t)"
+    custom_body: |
+      ::Vector2 p1 = {FLOAT(0), FLOAT(1)};
+      ::Vector2 p2 = {FLOAT(2), FLOAT(3)};
+      ::Vector2 p3 = {FLOAT(4), FLOAT(5)};
+      ::Vector2 p4 = {FLOAT(6), FLOAT(7)};
+      ::Vector2 result = ::GetSplinePointBasis(p1, p2, p3, p4, FLOAT(8));
+      return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y));
+    
+  - name: GETSPLINEPOINTCATMULLROM
+    raylib_name: GetSplinePointCatmullRom
+    args: [float, float, float, float, float, float, float, float, float]
+    ret: string
+    description: "Get (evaluate) spline point: Catmull-Rom (p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y, t)"
+    custom_body: |
+      ::Vector2 p1 = {FLOAT(0), FLOAT(1)};
+      ::Vector2 p2 = {FLOAT(2), FLOAT(3)};
+      ::Vector2 p3 = {FLOAT(4), FLOAT(5)};
+      ::Vector2 p4 = {FLOAT(6), FLOAT(7)};
+      ::Vector2 result = ::GetSplinePointCatmullRom(p1, p2, p3, p4, FLOAT(8));
+      return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y));
+    
+  - name: GETSPLINEPOINTBEZIERQUAD
+    raylib_name: GetSplinePointBezierQuad
+    args: [float, float, float, float, float, float, float]
+    ret: string
+    description: "Get (evaluate) spline point: Quadratic Bezier (p1x, p1y, c2x, c2y, p3x, p3y, t)"
+    custom_body: |
+      ::Vector2 p1 = {FLOAT(0), FLOAT(1)};
+      ::Vector2 c2 = {FLOAT(2), FLOAT(3)};
+      ::Vector2 p3 = {FLOAT(4), FLOAT(5)};
+      ::Vector2 result = ::GetSplinePointBezierQuad(p1, c2, p3, FLOAT(6));
+      return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y));
+    
+  - name: GETSPLINEPOINTBEZIERCUBIC
+    raylib_name: GetSplinePointBezierCubic
+    args: [float, float, float, float, float, float, float, float, float]
+    ret: string
+    description: "Get (evaluate) spline point: Cubic Bezier (p1x, p1y, c2x, c2y, c3x, c3y, p4x, p4y, t)"
+    custom_body: |
+      ::Vector2 p1 = {FLOAT(0), FLOAT(1)};
+      ::Vector2 c2 = {FLOAT(2), FLOAT(3)};
+      ::Vector2 c3 = {FLOAT(4), FLOAT(5)};
+      ::Vector2 p4 = {FLOAT(6), FLOAT(7)};
+      ::Vector2 result = ::GetSplinePointBezierCubic(p1, c2, c3, p4, FLOAT(8));
+      return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y));

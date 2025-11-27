@@ -12,14 +12,14 @@ functions:
     args: [int]
     ret: int
     custom_body: |
-      return Value::from_int(::GetTouchPointId(args[0].as_int()));
+      return Value::from_int(::GetTouchPointId(INT(0)));
   
   - name: GETTOUCHPOSITION
     map_to: GetTouchPosition
     args: [int]
     ret: string
     custom_body: |
-      ::Vector2 pos = ::GetTouchPosition(args[0].as_int());
+      ::Vector2 pos = ::GetTouchPosition(INT(0));
       return Value::from_string(std::to_string((int)pos.x) + "," + std::to_string((int)pos.y));
   
   - name: GETTOUCHX
@@ -27,7 +27,7 @@ functions:
     args: [int]
     ret: int
     custom_body: |
-      ::Vector2 pos = ::GetTouchPosition(args[0].as_int());
+      ::Vector2 pos = ::GetTouchPosition(INT(0));
       return Value::from_int((int)pos.x);
   
   - name: GETTOUCHY
@@ -35,7 +35,7 @@ functions:
     args: [int]
     ret: int
     custom_body: |
-      ::Vector2 pos = ::GetTouchPosition(args[0].as_int());
+      ::Vector2 pos = ::GetTouchPosition(INT(0));
       return Value::from_int((int)pos.y);
   
   - name: SETGESTURESENABLED
@@ -43,7 +43,7 @@ functions:
     args: [int]
     ret: void
     custom_body: |
-      ::SetGesturesEnabled(args[0].as_int());
+      ::SetGesturesEnabled(INT(0));
       return Value::nil();
   
   - name: ISGESTUREDETECTED
@@ -51,7 +51,7 @@ functions:
     args: [int]
     ret: bool
     custom_body: |
-      return Value::from_bool(::IsGestureDetected(args[0].as_int()));
+      return Value::from_bool(::IsGestureDetected(INT(0)));
   
   - name: GETGESTUREDETECTED
     map_to: GetGestureDetected

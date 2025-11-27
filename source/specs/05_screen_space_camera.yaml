@@ -1,0 +1,110 @@
+# Screen Space and Camera Functions
+# 3D/2D coordinate conversion and camera utilities
+
+functions:
+  # === SCREEN-SPACE CONVERSIONS ===
+  - name: GETSCREENTOWORLDRAY
+    raylib_name: GetScreenToWorldRay
+    args: [float, float, int]
+    ret: string
+    description: "Get a ray trace from screen position (mouse to 3D world)"
+    custom_body: |
+      ::Vector2 position = {FLOAT(0), FLOAT(1)};
+      ::Camera3D camera = {};
+      camera.position = ::Vector3{ 0.0f, 10.0f, 10.0f };
+      camera.target = ::Vector3{ 0.0f, 0.0f, 0.0f };
+      camera.up = ::Vector3{ 0.0f, 1.0f, 0.0f };
+      camera.fovy = 45.0f;
+      camera.projection = CAMERA_PERSPECTIVE;
+      ::Ray ray = ::GetScreenToWorldRay(position, camera);
+      return Value::from_string(std::to_string(ray.position.x) + "," + 
+                               std::to_string(ray.position.y) + "," + 
+                               std::to_string(ray.position.z) + "," +
+                               std::to_string(ray.direction.x) + "," + 
+                               std::to_string(ray.direction.y) + "," + 
+                               std::to_string(ray.direction.z));
+    
+  - name: GETWORLDTOSCREEN
+    raylib_name: GetWorldToScreen
+    args: [float, float, float]
+    ret: string
+    description: "Get the screen space position for a 3d world space position"
+    custom_body: |
+      ::Vector3 position = {FLOAT(0), FLOAT(1), FLOAT(2)};
+      ::Camera3D camera = {};
+      camera.position = ::Vector3{ 0.0f, 10.0f, 10.0f };
+      camera.target = ::Vector3{ 0.0f, 0.0f, 0.0f };
+      camera.up = ::Vector3{ 0.0f, 1.0f, 0.0f };
+      camera.fovy = 45.0f;
+      camera.projection = CAMERA_PERSPECTIVE;
+      ::Vector2 screen_pos = ::GetWorldToScreen(position, camera);
+      return Value::from_string(std::to_string(screen_pos.x) + "," + std::to_string(screen_pos.y));
+    
+  - name: GETWORLDTOSCREEN2D
+    raylib_name: GetWorldToScreen2D
+    args: [float, float]
+    ret: string
+    description: "Get the screen space position for a 2d camera world space position"
+    custom_body: |
+      ::Vector2 position = {FLOAT(0), FLOAT(1)};
+      ::Camera2D camera = {};
+      camera.offset = ::Vector2{ 0.0f, 0.0f };
+      camera.target = ::Vector2{ 0.0f, 0.0f };
+      camera.rotation = 0.0f;
+      camera.zoom = 1.0f;
+      ::Vector2 screen_pos = ::GetWorldToScreen2D(position, camera);
+      return Value::from_string(std::to_string(screen_pos.x) + "," + std::to_string(screen_pos.y));
+    
+  - name: GETSCREENTOWORLD2D
+    raylib_name: GetScreenToWorld2D
+    args: [float, float]
+    ret: string
+    description: "Get the world space position for a 2d camera screen space position"
+    custom_body: |
+      ::Vector2 position = {FLOAT(0), FLOAT(1)};
+      ::Camera2D camera = {};
+      camera.offset = ::Vector2{ 0.0f, 0.0f };
+      camera.target = ::Vector2{ 0.0f, 0.0f };
+      camera.rotation = 0.0f;
+      camera.zoom = 1.0f;
+      ::Vector2 world_pos = ::GetScreenToWorld2D(position, camera);
+      return Value::from_string(std::to_string(world_pos.x) + "," + std::to_string(world_pos.y));
+    
+  # === CAMERA MATRIX FUNCTIONS ===
+  - name: GETCAMERAMATRIX
+    raylib_name: GetCameraMatrix
+    args: []
+    ret: string
+    description: "Get camera transform matrix (view matrix)"
+    custom_body: |
+      ::Camera3D camera = {};
+      camera.position = ::Vector3{ 0.0f, 10.0f, 10.0f };
+      camera.target = ::Vector3{ 0.0f, 0.0f, 0.0f };
+      camera.up = ::Vector3{ 0.0f, 1.0f, 0.0f };
+      camera.fovy = 45.0f;
+      camera.projection = CAMERA_PERSPECTIVE;
+      ::Matrix matrix = ::GetCameraMatrix(camera);
+      // Return matrix as comma-separated string (16 values)
+      std::string result = std::to_string(matrix.m0) + "," + std::to_string(matrix.m4) + "," + std::to_string(matrix.m8) + "," + std::to_string(matrix.m12) + "," +
+                          std::to_string(matrix.m1) + "," + std::to_string(matrix.m5) + "," + std::to_string(matrix.m9) + "," + std::to_string(matrix.m13) + "," +
+                          std::to_string(matrix.m2) + "," + std::to_string(matrix.m6) + "," + std::to_string(matrix.m10) + "," + std::to_string(matrix.m14) + "," +
+                          std::to_string(matrix.m3) + "," + std::to_string(matrix.m7) + "," + std::to_string(matrix.m11) + "," + std::to_string(matrix.m15);
+      return Value::from_string(result);
+    
+  - name: GETCAMERAMATRIX2D
+    raylib_name: GetCameraMatrix2D
+    args: []
+    ret: string
+    description: "Get camera 2d transform matrix"
+    custom_body: |
+      ::Camera2D camera = {};
+      camera.offset = ::Vector2{ 0.0f, 0.0f };
+      camera.target = ::Vector2{ 0.0f, 0.0f };
+      camera.rotation = 0.0f;
+      camera.zoom = 1.0f;
+      ::Matrix matrix = ::GetCameraMatrix2D(camera);
+      std::string result = std::to_string(matrix.m0) + "," + std::to_string(matrix.m4) + "," + std::to_string(matrix.m8) + "," + std::to_string(matrix.m12) + "," +
+                          std::to_string(matrix.m1) + "," + std::to_string(matrix.m5) + "," + std::to_string(matrix.m9) + "," + std::to_string(matrix.m13) + "," +
+                          std::to_string(matrix.m2) + "," + std::to_string(matrix.m6) + "," + std::to_string(matrix.m10) + "," + std::to_string(matrix.m14) + "," +
+                          std::to_string(matrix.m3) + "," + std::to_string(matrix.m7) + "," + std::to_string(matrix.m11) + "," + std::to_string(matrix.m15);
+      return Value::from_string(result);

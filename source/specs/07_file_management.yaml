@@ -1,0 +1,257 @@
+# File Management Functions
+# File I/O, directory operations, and data handling
+
+functions:
+  # === FILE DATA OPERATIONS ===
+  - name: LOADFILEDATA
+    raylib_name: LoadFileData
+    args: [string]
+    ret: string
+    description: "Load file data as byte array (read)"
+    custom_body: |
+      int dataSize;
+      unsigned char *data = ::LoadFileData(STR(0).c_str(), &dataSize);
+      if (data == nullptr) return Value::from_string("");
+      
+      // Convert to base64 string for safe transport
+      std::string result = "";
+      for (int i = 0; i < dataSize; i++) {
+          if (i > 0) result += ",";
+          result += std::to_string(data[i]);
+      }
+      
+      ::UnloadFileData(data);
+      return Value::from_string(result);
+    
+  - name: SAVEFILEDATA
+    raylib_name: SaveFileData
+    args: [string, string]
+    ret: bool
+    description: "Save data to file from byte array (write), returns true on success"
+    custom_body: |
+      // Parse comma-separated byte values
+      std::string dataStr = STR(1);
+      std::vector<unsigned char> bytes;
+      
+      size_t pos = 0;
+      while (pos < dataStr.length()) {
+          size_t comma = dataStr.find(',', pos);
+          if (comma == std::string::npos) comma = dataStr.length();
+          
+          std::string byteStr = dataStr.substr(pos, comma - pos);
+          bytes.push_back(static_cast<unsigned char>(std::stoi(byteStr)));
+          pos = comma + 1;
+      }
+      
+      bool success = ::SaveFileData(STR(0).c_str(), bytes.data(), bytes.size());
+      return Value::from_bool(success);
+    
+  # === FILE TEXT OPERATIONS ===
+  - name: LOADFILETEXT
+    raylib_name: LoadFileText
+    args: [string]
+    ret: string
+    description: "Load text data from file (read), returns a '\\0' terminated string"
+    custom_body: |
+      char *text = ::LoadFileText(STR(0).c_str());
+      if (text == nullptr) return Value::from_string("");
+      
+      std::string result(text);
+      ::UnloadFileText(text);
+      return Value::from_string(result);
+    
+  - name: SAVEFILETEXT
+    raylib_name: SaveFileText
+    args: [string, string]
+    ret: bool
+    description: "Save text data to file (write), string must be '\\0' terminated, returns true on success"
+    custom_body: |
+      std::string text = STR(1);
+      char *cText = const_cast<char*>(text.c_str());
+      bool success = ::SaveFileText(STR(0).c_str(), cText);
+      return Value::from_bool(success);
+    
+  # === FILE SYSTEM QUERIES ===
+  - name: FILEEXISTS
+    raylib_name: FileExists
+    args: [string]
+    ret: bool
+    description: "Check if file exists"
+    
+  - name: DIRECTORYEXISTS
+    raylib_name: DirectoryExists
+    args: [string]
+    ret: bool
+    description: "Check if a directory path exists"
+    
+  - name: ISFILEEXTENSION
+    raylib_name: IsFileExtension
+    args: [string, string]
+    ret: bool
+    description: "Check file extension (including point: .png, .wav)"
+    
+  - name: GETFILELENGTH
+    raylib_name: GetFileLength
+    args: [string]
+    ret: int
+    description: "Get file length in bytes"
+    
+  - name: GETFILEEXTENSION
+    raylib_name: GetFileExtension
+    args: [string]
+    ret: string
+    description: "Get pointer to extension for a filename string (includes dot: '.png')"
+    
+  - name: GETFILENAME
+    raylib_name: GetFileName
+    args: [string]
+    ret: string
+    description: "Get pointer to filename for a path string"
+    
+  - name: GETFILENAMEWITHHOUTEXT
+    raylib_name: GetFileNameWithoutExt
+    args: [string]
+    ret: string
+    description: "Get filename string without extension (uses static string)"
+    
+  - name: GETDIRECTORYPATH
+    raylib_name: GetDirectoryPath
+    args: [string]
+    ret: string
+    description: "Get full path for a given fileName with path (uses static string)"
+    
+  - name: GETPREVDIRECTORYPATH
+    raylib_name: GetPrevDirectoryPath
+    args: [string]
+    ret: string
+    description: "Get previous directory path for a given path (uses static string)"
+    
+  - name: GETWORKINGDIRECTORY
+    raylib_name: GetWorkingDirectory
+    args: []
+    ret: string
+    description: "Get current working directory (uses static string)"
+    
+  - name: GETAPPLICATIONDIRECTORY
+    raylib_name: GetApplicationDirectory
+    args: []
+    ret: string
+    description: "Get the directory of the running application (uses static string)"
+    
+  # === DIRECTORY OPERATIONS ===
+  - name: MAKEDIRECTORY
+    raylib_name: MakeDirectory
+    args: [string]
+    ret: int
+    description: "Create directories (including full path requested), returns 0 on success"
+    
+  - name: CHANGEDIRECTORY
+    raylib_name: ChangeDirectory
+    args: [string]
+    ret: bool
+    description: "Change working directory, return true on success"
+    
+  - name: ISPATHFILE
+    raylib_name: IsPathFile
+    args: [string]
+    ret: bool
+    description: "Check if a given path is a file or a directory"
+    
+  - name: ISFILENAMEVALID
+    raylib_name: IsFileNameValid
+    args: [string]
+    ret: bool
+    description: "Check if fileName is valid for the platform/OS"
+    
+  - name: LOADDIRECTORYFILES
+    raylib_name: LoadDirectoryFiles
+    args: [string]
+    ret: string
+    description: "Load directory filepaths"
+    custom_body: |
+      ::FilePathList files = ::LoadDirectoryFiles(STR(0).c_str());
+      
+      std::string result = "";
+      for (int i = 0; i < files.count; i++) {
+          if (i > 0) result += ";";
+          result += files.paths[i];
+      }
+      
+      ::UnloadDirectoryFiles(files);
+      return Value::from_string(result);
+    
+  # === FILE DROP OPERATIONS ===
+  - name: ISFILEDROPPED
+    raylib_name: IsFileDropped
+    args: []
+    ret: bool
+    description: "Check if a file has been dropped into window"
+    
+  - name: LOADDROPPEDFILES
+    raylib_name: LoadDroppedFiles
+    args: []
+    ret: string
+    description: "Load dropped filepaths"
+    custom_body: |
+      ::FilePathList files = ::LoadDroppedFiles();
+      
+      std::string result = "";
+      for (int i = 0; i < files.count; i++) {
+          if (i > 0) result += ";";
+          result += files.paths[i];
+      }
+      
+      ::UnloadDroppedFiles(files);
+      return Value::from_string(result);
+    
+  - name: GETFILEMODTIME
+    raylib_name: GetFileModTime
+    args: [string]
+    ret: int
+    description: "Get file modification time (last write time)"
+    
+  # === COMPRESSION/ENCODING ===
+  - name: COMPRESSDATA
+    raylib_name: CompressData
+    args: [string]
+    ret: string
+    description: "Compress data (DEFLATE algorithm)"
+    custom_body: |
+      std::string input = STR(0);
+      int compDataSize;
+      unsigned char *compData = ::CompressData(
+          reinterpret_cast<const unsigned char*>(input.c_str()), 
+          input.length(), 
+          &compDataSize
+      );
+      
+      if (compData == nullptr) return Value::from_string("");
+      
+      std::string result = "";
+      for (int i = 0; i < compDataSize; i++) {
+          if (i > 0) result += ",";
+          result += std::to_string(compData[i]);
+      }
+      
+      ::MemFree(compData);
+      return Value::from_string(result);
+    
+  - name: ENCODEDATABASE64
+    raylib_name: EncodeDataBase64
+    args: [string]
+    ret: string
+    description: "Encode data to Base64 string"
+    custom_body: |
+      std::string input = STR(0);
+      int outputSize;
+      char *encoded = ::EncodeDataBase64(
+          reinterpret_cast<const unsigned char*>(input.c_str()), 
+          input.length(), 
+          &outputSize
+      );
+      
+      if (encoded == nullptr) return Value::from_string("");
+      
+      std::string result(encoded);
+      ::MemFree(encoded);
+      return Value::from_string(result);

@@ -1,0 +1,302 @@
+# Input System Functions
+# Keyboard, mouse, gamepad, touch, and gesture input handling
+
+functions:
+  # === KEYBOARD INPUT ===
+  - name: ISKEYPRESSED
+    raylib_name: IsKeyPressed
+    args: [int]
+    ret: bool
+    description: "Check if a key has been pressed once"
+    
+  - name: ISKEYPRESSEDREPEAT
+    raylib_name: IsKeyPressedRepeat
+    args: [int]
+    ret: bool
+    description: "Check if a key has been pressed again"
+    
+  - name: ISKEYDOWN
+    raylib_name: IsKeyDown
+    args: [int]
+    ret: bool
+    description: "Check if a key is being pressed"
+    
+  - name: ISKEYRELEASED
+    raylib_name: IsKeyReleased
+    args: [int]
+    ret: bool
+    description: "Check if a key has been released once"
+    
+  - name: ISKEYUP
+    raylib_name: IsKeyUp
+    args: [int]
+    ret: bool
+    description: "Check if a key is NOT being pressed"
+    
+  - name: GETKEYPRESSED
+    raylib_name: GetKeyPressed
+    args: []
+    ret: int
+    description: "Get key pressed (keycode), call it multiple times for keys queued, returns 0 when the queue is empty"
+    
+  - name: GETCHARPRESSED
+    raylib_name: GetCharPressed
+    args: []
+    ret: int
+    description: "Get char pressed (unicode), call it multiple times for chars queued, returns 0 when the queue is empty"
+    
+  - name: SETEXITKEY
+    raylib_name: SetExitKey
+    args: [int]
+    ret: void
+    description: "Set a custom key to exit program (default is ESC)"
+    
+  # === GAMEPAD INPUT ===
+  - name: ISGAMEPADAVAILABLE
+    raylib_name: IsGamepadAvailable
+    args: [int]
+    ret: bool
+    description: "Check if a gamepad is available"
+    
+  - name: GETGAMEPADNAME
+    raylib_name: GetGamepadName
+    args: [int]
+    ret: string
+    description: "Get gamepad internal name id"
+    
+  - name: ISGAMEPADBUTTONPRESSED
+    raylib_name: IsGamepadButtonPressed
+    args: [int, int]
+    ret: bool
+    description: "Check if a gamepad button has been pressed once"
+    
+  - name: ISGAMEPADBUTTONDOWN
+    raylib_name: IsGamepadButtonDown
+    args: [int, int]
+    ret: bool
+    description: "Check if a gamepad button is being pressed"
+    
+  - name: ISGAMEPADBUTTONRELEASED
+    raylib_name: IsGamepadButtonReleased
+    args: [int, int]
+    ret: bool
+    description: "Check if a gamepad button has been released once"
+    
+  - name: ISGAMEPADBUTTONUP
+    raylib_name: IsGamepadButtonUp
+    args: [int, int]
+    ret: bool
+    description: "Check if a gamepad button is NOT being pressed"
+    
+  - name: GETGAMEPADBUTTONPRESSED
+    raylib_name: GetGamepadButtonPressed
+    args: []
+    ret: int
+    description: "Get the last gamepad button pressed"
+    
+  - name: GETGAMEPADAXISCOUNT
+    raylib_name: GetGamepadAxisCount
+    args: [int]
+    ret: int
+    description: "Get gamepad axis count for a gamepad"
+    
+  - name: GETGAMEPADAXISMOVEMENT
+    raylib_name: GetGamepadAxisMovement
+    args: [int, int]
+    ret: float
+    description: "Get axis movement value for a gamepad axis"
+    
+  - name: SETGAMEPADMAPPINGS
+    raylib_name: SetGamepadMappings
+    args: [string]
+    ret: int
+    description: "Set internal gamepad mappings (SDL_GameControllerDB)"
+    
+  - name: SETGAMEPADVIBRTION
+    raylib_name: SetGamepadVibration
+    args: [int, float, float, float]
+    ret: void
+    description: "Set gamepad vibration for both motors (duration in seconds)"
+    
+  # === MOUSE INPUT ===
+  - name: ISMOUSEBUTTONPRESSED
+    raylib_name: IsMouseButtonPressed
+    args: [int]
+    ret: bool
+    description: "Check if a mouse button has been pressed once"
+    
+  - name: ISMOUSEBUTTONDOWN
+    raylib_name: IsMouseButtonDown
+    args: [int]
+    ret: bool
+    description: "Check if a mouse button is being pressed"
+    
+  - name: ISMOUSEBUTTONRELEASED
+    raylib_name: IsMouseButtonReleased
+    args: [int]
+    ret: bool
+    description: "Check if a mouse button has been released once"
+    
+  - name: ISMOUSEBUTTONUP
+    raylib_name: IsMouseButtonUp
+    args: [int]
+    ret: bool
+    description: "Check if a mouse button is NOT being pressed"
+    
+  - name: GETMOUSEX
+    raylib_name: GetMouseX
+    args: []
+    ret: int
+    description: "Get mouse position X"
+    
+  - name: GETMOUSEY
+    raylib_name: GetMouseY
+    args: []
+    ret: int
+    description: "Get mouse position Y"
+    
+  - name: GETMOUSEPOSITION
+    raylib_name: GetMousePosition
+    args: []
+    ret: string
+    description: "Get mouse position XY"
+    custom_body: |
+      ::Vector2 pos = ::GetMousePosition();
+      return Value::from_string(std::to_string(pos.x) + "," + std::to_string(pos.y));
+    
+  - name: GETMOUSEDELTA
+    raylib_name: GetMouseDelta
+    args: []
+    ret: string
+    description: "Get mouse delta between frames"
+    custom_body: |
+      ::Vector2 delta = ::GetMouseDelta();
+      return Value::from_string(std::to_string(delta.x) + "," + std::to_string(delta.y));
+    
+  - name: SETMOUSEPOSITION
+    raylib_name: SetMousePosition
+    args: [int, int]
+    ret: void
+    description: "Set mouse position XY"
+    
+  - name: SETMOUSEOFFSET
+    raylib_name: SetMouseOffset
+    args: [int, int]
+    ret: void
+    description: "Set mouse offset"
+    
+  - name: SETMOUSESCALE
+    raylib_name: SetMouseScale
+    args: [float, float]
+    ret: void
+    description: "Set mouse scaling"
+    
+  - name: GETMOUSEWHEELMOVE
+    raylib_name: GetMouseWheelMove
+    args: []
+    ret: float
+    description: "Get mouse wheel movement for X or Y, whichever is larger"
+    
+  - name: GETMOUSEWHEELMOVEV
+    raylib_name: GetMouseWheelMoveV
+    args: []
+    ret: string
+    description: "Get mouse wheel movement for both X and Y"
+    custom_body: |
+      ::Vector2 wheel = ::GetMouseWheelMoveV();
+      return Value::from_string(std::to_string(wheel.x) + "," + std::to_string(wheel.y));
+    
+  - name: SETMOUSECURSOR
+    raylib_name: SetMouseCursor
+    args: [int]
+    ret: void
+    description: "Set mouse cursor"
+    
+  # === TOUCH INPUT ===
+  - name: GETTOUCHX
+    raylib_name: GetTouchX
+    args: []
+    ret: int
+    description: "Get touch position X for touch point 0 (relative to screen size)"
+    
+  - name: GETTOUCHY
+    raylib_name: GetTouchY
+    args: []
+    ret: int
+    description: "Get touch position Y for touch point 0 (relative to screen size)"
+    
+  - name: GETTOUCHPOSITION
+    raylib_name: GetTouchPosition
+    args: [int]
+    ret: string
+    description: "Get touch position XY for a touch point index (relative to screen size)"
+    custom_body: |
+      ::Vector2 pos = ::GetTouchPosition(INT(0));
+      return Value::from_string(std::to_string(pos.x) + "," + std::to_string(pos.y));
+    
+  - name: GETTOUCHPOINTID
+    raylib_name: GetTouchPointId
+    args: [int]
+    ret: int
+    description: "Get touch point identifier for given index"
+    
+  - name: GETTOUCHPOINTCOUNT
+    raylib_name: GetTouchPointCount
+    args: []
+    ret: int
+    description: "Get number of touch points"
+    
+  # === GESTURE RECOGNITION ===
+  - name: SETGESTURESENABLED
+    raylib_name: SetGesturesEnabled
+    args: [int]
+    ret: void
+    description: "Enable a set of gestures using flags"
+    
+  - name: ISGESTUREDETECTED
+    raylib_name: IsGestureDetected
+    args: [int]
+    ret: bool
+    description: "Check if a gesture have been detected"
+    
+  - name: GETGESTUREDETECTED
+    raylib_name: GetGestureDetected
+    args: []
+    ret: int
+    description: "Get latest detected gesture"
+    
+  - name: GETGESTUREHOLDDURATION
+    raylib_name: GetGestureHoldDuration
+    args: []
+    ret: float
+    description: "Get gesture hold time in seconds"
+    
+  - name: GETGESTUREDRAGVECTOR
+    raylib_name: GetGestureDragVector
+    args: []
+    ret: string
+    description: "Get gesture drag vector"
+    custom_body: |
+      ::Vector2 drag = ::GetGestureDragVector();
+      return Value::from_string(std::to_string(drag.x) + "," + std::to_string(drag.y));
+    
+  - name: GETGESTUREDRAGANGLE
+    raylib_name: GetGestureDragAngle
+    args: []
+    ret: float
+    description: "Get gesture drag angle"
+    
+  - name: GETGESTUREPINCHVECTOR
+    raylib_name: GetGesturePinchVector
+    args: []
+    ret: string
+    description: "Get gesture pinch delta"
+    custom_body: |
+      ::Vector2 pinch = ::GetGesturePinchVector();
+      return Value::from_string(std::to_string(pinch.x) + "," + std::to_string(pinch.y));
+    
+  - name: GETGESTUREPINCHANGLE
+    raylib_name: GetGesturePinchAngle
+    args: []
+    ret: float
+    description: "Get gesture pinch angle"

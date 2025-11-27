@@ -1,0 +1,219 @@
+# Color Constants and Utilities
+# Predefined color constants and color manipulation functions
+
+constants:
+  # === PREDEFINED COLORS ===
+  - name: LIGHTGRAY
+    value: "200,200,200,255"
+    description: "Light Gray color (200, 200, 200, 255)"
+    
+  - name: GRAY
+    value: "130,130,130,255"
+    description: "Gray color (130, 130, 130, 255)"
+    
+  - name: DARKGRAY
+    value: "80,80,80,255"
+    description: "Dark Gray color (80, 80, 80, 255)"
+    
+  - name: YELLOW
+    value: "253,249,0,255"
+    description: "Yellow color (253, 249, 0, 255)"
+    
+  - name: GOLD
+    value: "255,203,0,255"
+    description: "Gold color (255, 203, 0, 255)"
+    
+  - name: ORANGE
+    value: "255,161,0,255"
+    description: "Orange color (255, 161, 0, 255)"
+    
+  - name: PINK
+    value: "255,109,194,255"
+    description: "Pink color (255, 109, 194, 255)"
+    
+  - name: RED
+    value: "230,41,55,255"
+    description: "Red color (230, 41, 55, 255)"
+    
+  - name: MAROON
+    value: "190,33,55,255"
+    description: "Maroon color (190, 33, 55, 255)"
+    
+  - name: GREEN
+    value: "0,228,48,255"
+    description: "Green color (0, 228, 48, 255)"
+    
+  - name: LIME
+    value: "0,158,47,255"
+    description: "Lime color (0, 158, 47, 255)"
+    
+  - name: DARKGREEN
+    value: "0,117,44,255"
+    description: "Dark Green color (0, 117, 44, 255)"
+    
+  - name: SKYBLUE
+    value: "102,191,255,255"
+    description: "Sky Blue color (102, 191, 255, 255)"
+    
+  - name: BLUE
+    value: "0,121,241,255"
+    description: "Blue color (0, 121, 241, 255)"
+    
+  - name: DARKBLUE
+    value: "0,82,172,255"
+    description: "Dark Blue color (0, 82, 172, 255)"
+    
+  - name: PURPLE
+    value: "200,122,255,255"
+    description: "Purple color (200, 122, 255, 255)"
+    
+  - name: VIOLET
+    value: "135,60,190,255"
+    description: "Violet color (135, 60, 190, 255)"
+    
+  - name: DARKPURPLE
+    value: "112,31,126,255"
+    description: "Dark Purple color (112, 31, 126, 255)"
+    
+  - name: BEIGE
+    value: "211,176,131,255"
+    description: "Beige color (211, 176, 131, 255)"
+    
+  - name: BROWN
+    value: "127,106,79,255"
+    description: "Brown color (127, 106, 79, 255)"
+    
+  - name: DARKBROWN
+    value: "76,63,47,255"
+    description: "Dark Brown color (76, 63, 47, 255)"
+    
+  - name: WHITE
+    value: "255,255,255,255"
+    description: "White color (255, 255, 255, 255)"
+    
+  - name: BLACK
+    value: "0,0,0,255"
+    description: "Black color (0, 0, 0, 255)"
+    
+  - name: BLANK
+    value: "0,0,0,0"
+    description: "Blank (Transparent) color (0, 0, 0, 0)"
+    
+  - name: MAGENTA
+    value: "255,0,255,255"
+    description: "Magenta color (255, 0, 255, 255)"
+    
+  - name: RAYWHITE
+    value: "245,245,245,255"
+    description: "Ray White color (245, 245, 245, 255)"
+
+functions:
+  # === COLOR MANIPULATION ===
+  - name: COLOREQUAL
+    raylib_name: ColorIsEqual
+    args: [int, int, int, int, int, int, int, int]
+    ret: int
+    description: "Check if two colors are equal (r1, g1, b1, a1, r2, g2, b2, a2)"
+    custom_body: |
+      ::Color col1 = {(unsigned char)INT(0), (unsigned char)INT(1), (unsigned char)INT(2), (unsigned char)INT(3)};
+      ::Color col2 = {(unsigned char)INT(4), (unsigned char)INT(5), (unsigned char)INT(6), (unsigned char)INT(7)};
+      return Value::from_int(::ColorIsEqual(col1, col2) ? 1 : 0);
+    
+  - name: FADE
+    raylib_name: Fade
+    args: [int, int, int, int, float]
+    ret: string
+    description: "Get color with alpha applied (r, g, b, a, alpha), returns 'r,g,b,a'"
+    custom_body: |
+      ::Color color = {(unsigned char)INT(0), (unsigned char)INT(1), (unsigned char)INT(2), (unsigned char)INT(3)};
+      ::Color result = ::Fade(color, FLOAT(4));
+      return Value::from_string(std::to_string(result.r) + "," + std::to_string(result.g) + "," + std::to_string(result.b) + "," + std::to_string(result.a));
+    
+  - name: COLORTOINT
+    raylib_name: ColorToInt
+    args: [int, int, int, int]
+    ret: int
+    description: "Get hexadecimal value for a Color (0xRRGGBBAA) (r, g, b, a)"
+    custom_body: |
+      ::Color color = {(unsigned char)INT(0), (unsigned char)INT(1), (unsigned char)INT(2), (unsigned char)INT(3)};
+      return Value::from_int(::ColorToInt(color));
+    
+  - name: COLORTOHSV
+    raylib_name: ColorToHSV
+    args: [int, int, int, int]
+    ret: string
+    description: "Get HSV values for a Color (r, g, b, a), returns 'hue,saturation,value'"
+    custom_body: |
+      ::Color color = {(unsigned char)INT(0), (unsigned char)INT(1), (unsigned char)INT(2), (unsigned char)INT(3)};
+      ::Vector3 hsv = ::ColorToHSV(color);
+      return Value::from_string(std::to_string(hsv.x) + "," + std::to_string(hsv.y) + "," + std::to_string(hsv.z));
+    
+  - name: COLORFROMHSV
+    raylib_name: ColorFromHSV
+    args: [float, float, float]
+    ret: string
+    description: "Get a Color from HSV values (hue, saturation, value), returns 'r,g,b,a'"
+    custom_body: |
+      ::Color result = ::ColorFromHSV(FLOAT(0), FLOAT(1), FLOAT(2));
+      return Value::from_string(std::to_string(result.r) + "," + std::to_string(result.g) + "," + std::to_string(result.b) + "," + std::to_string(result.a));
+    
+  - name: COLORTINT
+    raylib_name: ColorTint
+    args: [int, int, int, int, int, int, int, int]
+    ret: string
+    description: "Get color multiplied with another color (r1, g1, b1, a1, r2, g2, b2, a2), returns 'r,g,b,a'"
+    custom_body: |
+      ::Color color = {(unsigned char)INT(0), (unsigned char)INT(1), (unsigned char)INT(2), (unsigned char)INT(3)};
+      ::Color tint = {(unsigned char)INT(4), (unsigned char)INT(5), (unsigned char)INT(6), (unsigned char)INT(7)};
+      ::Color result = ::ColorTint(color, tint);
+      return Value::from_string(std::to_string(result.r) + "," + std::to_string(result.g) + "," + std::to_string(result.b) + "," + std::to_string(result.a));
+    
+  - name: COLORBRIGHTNESS
+    raylib_name: ColorBrightness
+    args: [int, int, int, int, float]
+    ret: string
+    description: "Get color with brightness correction (r, g, b, a, factor), returns 'r,g,b,a'"
+    custom_body: |
+      ::Color color = {(unsigned char)INT(0), (unsigned char)INT(1), (unsigned char)INT(2), (unsigned char)INT(3)};
+      ::Color result = ::ColorBrightness(color, FLOAT(4));
+      return Value::from_string(std::to_string(result.r) + "," + std::to_string(result.g) + "," + std::to_string(result.b) + "," + std::to_string(result.a));
+    
+  - name: COLORCONTRAST
+    raylib_name: ColorContrast
+    args: [int, int, int, int, float]
+    ret: string
+    description: "Get color with contrast correction (r, g, b, a, contrast), returns 'r,g,b,a'"
+    custom_body: |
+      ::Color color = {(unsigned char)INT(0), (unsigned char)INT(1), (unsigned char)INT(2), (unsigned char)INT(3)};
+      ::Color result = ::ColorContrast(color, FLOAT(4));
+      return Value::from_string(std::to_string(result.r) + "," + std::to_string(result.g) + "," + std::to_string(result.b) + "," + std::to_string(result.a));
+    
+  - name: COLORALPHA
+    raylib_name: ColorAlpha
+    args: [int, int, int, int, float]
+    ret: string
+    description: "Get color with alpha applied (r, g, b, a, alpha), returns 'r,g,b,a'"
+    custom_body: |
+      ::Color color = {(unsigned char)INT(0), (unsigned char)INT(1), (unsigned char)INT(2), (unsigned char)INT(3)};
+      ::Color result = ::ColorAlpha(color, FLOAT(4));
+      return Value::from_string(std::to_string(result.r) + "," + std::to_string(result.g) + "," + std::to_string(result.b) + "," + std::to_string(result.a));
+    
+  - name: COLORLERP
+    raylib_name: ColorLerp
+    args: [int, int, int, int, int, int, int, int, float]
+    ret: string
+    description: "Get color lerp interpolation between two colors (r1, g1, b1, a1, r2, g2, b2, a2, factor), returns 'r,g,b,a'"
+    custom_body: |
+      ::Color color1 = {(unsigned char)INT(0), (unsigned char)INT(1), (unsigned char)INT(2), (unsigned char)INT(3)};
+      ::Color color2 = {(unsigned char)INT(4), (unsigned char)INT(5), (unsigned char)INT(6), (unsigned char)INT(7)};
+      ::Color result = ::ColorLerp(color1, color2, FLOAT(8));
+      return Value::from_string(std::to_string(result.r) + "," + std::to_string(result.g) + "," + std::to_string(result.b) + "," + std::to_string(result.a));
+    
+  - name: GETCOLOR
+    raylib_name: GetColor
+    args: [int]
+    ret: string
+    description: "Get Color structure from hexadecimal value (hexValue), returns 'r,g,b,a'"
+    custom_body: |
+      ::Color result = ::GetColor(INT(0));
+      return Value::from_string(std::to_string(result.r) + "," + std::to_string(result.g) + "," + std::to_string(result.b) + "," + std::to_string(result.a));

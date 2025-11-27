@@ -5,7 +5,7 @@ functions:
     args: [string]
     ret: int
     custom_body: |
-      ::Image image = ::LoadImage(args[0].as_string().c_str());
+      ::Image image = ::LoadImage(STR(0).c_str());
       int id = rlreg::next_image_id++;
       rlreg::images[id] = image;
       return Value::from_int(id);
@@ -15,7 +15,7 @@ functions:
     args: [int]
     ret: void
     custom_body: |
-      int id = args[0].as_int();
+      int id = INT(0);
       auto it = rlreg::images.find(id);
       if (it != rlreg::images.end()) {
         ::UnloadImage(it->second);
@@ -28,7 +28,7 @@ functions:
     args: [string]
     ret: int
     custom_body: |
-      ::Texture2D texture = ::LoadTexture(args[0].as_string().c_str());
+      ::Texture2D texture = ::LoadTexture(STR(0).c_str());
       int id = rlreg::next_tex_id++;
       rlreg::textures[id] = texture;
       return Value::from_int(id);
@@ -38,7 +38,7 @@ functions:
     args: [int]
     ret: void
     custom_body: |
-      int id = args[0].as_int();
+      int id = INT(0);
       auto it = rlreg::textures.find(id);
       if (it != rlreg::textures.end()) {
         ::UnloadTexture(it->second);
@@ -51,12 +51,12 @@ functions:
     args: [int, int, int, int, int, int, int]
     ret: void
     custom_body: |
-      int id = args[0].as_int();
-      int x = args[1].as_int();
-      int y = args[2].as_int();
-      int width = args[3].as_int();
-      int height = args[4].as_int();
-      ::Color tint{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), 255, 255};
+      int id = INT(0);
+      int x = INT(1);
+      int y = INT(2);
+      int width = INT(3);
+      int height = INT(4);
+      ::Color tint{(unsigned char)INT(5), (unsigned char)INT(6), 255, 255};
       auto it = rlreg::textures.find(id);
       if (it != rlreg::textures.end()) {
         ::Rectangle source{0, 0, (float)it->second.width, (float)it->second.height};
@@ -70,17 +70,17 @@ functions:
     args: [int, int, int, int, int, int, int, int, double, int, int, int]
     ret: void
     custom_body: |
-      int id = args[0].as_int();
-      int src_x = args[1].as_int();
-      int src_y = args[2].as_int();
-      int src_w = args[3].as_int();
-      int src_h = args[4].as_int();
-      int dest_x = args[5].as_int();
-      int dest_y = args[6].as_int();
-      int dest_w = args[7].as_int();
-      int dest_h = args[8].as_int();
-      float rotation = (float)args[9].as_number();
-      ::Color tint{(unsigned char)args[10].as_int(), (unsigned char)args[11].as_int(), (unsigned char)args[12].as_int(), 255};
+      int id = INT(0);
+      int src_x = INT(1);
+      int src_y = INT(2);
+      int src_w = INT(3);
+      int src_h = INT(4);
+      int dest_x = INT(5);
+      int dest_y = INT(6);
+      int dest_w = INT(7);
+      int dest_h = INT(8);
+      float rotation = (float)FLOAT(9);
+      ::Color tint{(unsigned char)INT(10), (unsigned char)INT(11), (unsigned char)INT(12), 255};
       auto it = rlreg::textures.find(id);
       if (it != rlreg::textures.end()) {
         ::Rectangle source{(float)src_x, (float)src_y, (float)src_w, (float)src_h};
@@ -94,7 +94,7 @@ functions:
     args: [int]
     ret: int
     custom_body: |
-      int id = args[0].as_int();
+      int id = INT(0);
       auto it = rlreg::textures.find(id);
       if (it != rlreg::textures.end()) {
         return Value::from_int(it->second.width);
@@ -106,7 +106,7 @@ functions:
     args: [int]
     ret: int
     custom_body: |
-      int id = args[0].as_int();
+      int id = INT(0);
       auto it = rlreg::textures.find(id);
       if (it != rlreg::textures.end()) {
         return Value::from_int(it->second.height);
@@ -127,7 +127,7 @@ functions:
     args: [int]
     ret: int
     custom_body: |
-      int id = args[0].as_int();
+      int id = INT(0);
       auto it = rlreg::images.find(id);
       if (it != rlreg::images.end()) {
         ::Texture2D texture = ::LoadTextureFromImage(it->second);
@@ -142,9 +142,9 @@ functions:
     args: [int, int, int]
     ret: void
     custom_body: |
-      int id = args[0].as_int();
-      int new_width = args[1].as_int();
-      int new_height = args[2].as_int();
+      int id = INT(0);
+      int new_width = INT(1);
+      int new_height = INT(2);
       auto it = rlreg::images.find(id);
       if (it != rlreg::images.end()) {
         ::ImageResize(&it->second, new_width, new_height);
@@ -156,11 +156,11 @@ functions:
     args: [int, int, int, int, int]
     ret: void
     custom_body: |
-      int id = args[0].as_int();
-      int x = args[1].as_int();
-      int y = args[2].as_int();
-      int width = args[3].as_int();
-      int height = args[4].as_int();
+      int id = INT(0);
+      int x = INT(1);
+      int y = INT(2);
+      int width = INT(3);
+      int height = INT(4);
       auto it = rlreg::images.find(id);
       if (it != rlreg::images.end()) {
         ::Rectangle crop{(float)x, (float)y, (float)width, (float)height};
@@ -173,7 +173,7 @@ functions:
     args: [int]
     ret: void
     custom_body: |
-      int id = args[0].as_int();
+      int id = INT(0);
       auto it = rlreg::images.find(id);
       if (it != rlreg::images.end()) {
         ::ImageFlipVertical(&it->second);
@@ -185,8 +185,8 @@ functions:
     args: [int, int]
     ret: void
     custom_body: |
-      int id = args[0].as_int();
-      int degrees = args[1].as_int();
+      int id = INT(0);
+      int degrees = INT(1);
       auto it = rlreg::images.find(id);
       if (it != rlreg::images.end()) {
         ::ImageRotate(&it->second, degrees);

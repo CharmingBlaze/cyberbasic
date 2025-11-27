@@ -170,9 +170,9 @@ functions:
     args: [double, double, double, int, double, int, int, int]
     ret: void
     custom_body: |
-      ::Vector2 center{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
-      ::DrawPoly(center, args[3].as_int(), (float)args[4].as_number(), 0.0f, c);
+      ::Vector2 center{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Color c{(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255};
+      ::DrawPoly(center, INT(3), (float)FLOAT(4), 0.0f, c);
       return Value::nil();
   
   - name: DRAWPOLYLINES
@@ -180,9 +180,9 @@ functions:
     args: [double, double, double, int, double, int, int, int]
     ret: void
     custom_body: |
-      ::Vector2 center{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
-      ::DrawPolyLines(center, args[3].as_int(), (float)args[4].as_number(), 0.0f, c);
+      ::Vector2 center{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Color c{(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255};
+      ::DrawPolyLines(center, INT(3), (float)FLOAT(4), 0.0f, c);
       return Value::nil();
   
   - name: DRAWPOLYLINESEX
@@ -190,7 +190,7 @@ functions:
     args: [double, double, double, int, double, double, int, int, int]
     ret: void
     custom_body: |
-      ::Vector2 center{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Color c{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), 255};
-      ::DrawPolyLinesEx(center, args[3].as_int(), (float)args[4].as_number(), (float)args[5].as_number(), (float)args[6].as_number(), c);
+      ::Vector2 center{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Color c{(unsigned char)INT(7), (unsigned char)INT(8), (unsigned char)INT(9), 255};
+      ::DrawPolyLinesEx(center, INT(3), (float)FLOAT(4), (float)FLOAT(5), (float)FLOAT(6), c);
       return Value::nil();

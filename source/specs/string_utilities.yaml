@@ -5,8 +5,8 @@ functions:
     args: [string, int]
     ret: string
     custom_body: |
-      std::string text = args[0].as_string();
-      int length = args[1].as_int();
+      std::string text = STR(0);
+      int length = INT(1);
       if (length <= 0) return Value::from_string("");
       if (length >= (int)text.length()) return Value::from_string(text);
       return Value::from_string(text.substr(0, length));
@@ -16,8 +16,8 @@ functions:
     args: [string, int]
     ret: string
     custom_body: |
-      std::string text = args[0].as_string();
-      int length = args[1].as_int();
+      std::string text = STR(0);
+      int length = INT(1);
       if (length <= 0) return Value::from_string("");
       if (length >= (int)text.length()) return Value::from_string(text);
       return Value::from_string(text.substr(text.length() - length));
@@ -27,9 +27,9 @@ functions:
     args: [string, int, int]
     ret: string
     custom_body: |
-      std::string text = args[0].as_string();
-      int start = args[1].as_int() - 1; // BASIC uses 1-based indexing
-      int length = args[2].as_int();
+      std::string text = STR(0);
+      int start = INT(1) - 1; // BASIC uses 1-based indexing
+      int length = INT(2);
       if (start < 0 || start >= (int)text.length() || length <= 0) return Value::from_string("");
       if (start + length > (int)text.length()) length = (int)text.length() - start;
       return Value::from_string(text.substr(start, length));
@@ -39,14 +39,14 @@ functions:
     args: [string]
     ret: int
     custom_body: |
-      return Value::from_int((int)args[0].as_string().length());
+      return Value::from_int((int)STR(0).length());
   
   - name: UCASE
     map_to: ucase
     args: [string]
     ret: string
     custom_body: |
-      std::string text = args[0].as_string();
+      std::string text = STR(0);
       std::transform(text.begin(), text.end(), text.begin(), ::toupper);
       return Value::from_string(text);
   
@@ -55,7 +55,7 @@ functions:
     args: [string]
     ret: string
     custom_body: |
-      std::string text = args[0].as_string();
+      std::string text = STR(0);
       std::transform(text.begin(), text.end(), text.begin(), ::tolower);
       return Value::from_string(text);
   
@@ -64,7 +64,7 @@ functions:
     args: [string]
     ret: string
     custom_body: |
-      std::string text = args[0].as_string();
+      std::string text = STR(0);
       text.erase(0, text.find_first_not_of(" \t\r\n"));
       text.erase(text.find_last_not_of(" \t\r\n") + 1);
       return Value::from_string(text);
@@ -74,9 +74,9 @@ functions:
     args: [string, string, string]
     ret: string
     custom_body: |
-      std::string text = args[0].as_string();
-      std::string search = args[1].as_string();
-      std::string replace = args[2].as_string();
+      std::string text = STR(0);
+      std::string search = STR(1);
+      std::string replace = STR(2);
       size_t pos = 0;
       while ((pos = text.find(search, pos)) != std::string::npos) {
         text.replace(pos, search.length(), replace);
@@ -89,8 +89,8 @@ functions:
     args: [string, string]
     ret: int
     custom_body: |
-      std::string text = args[0].as_string();
-      std::string search = args[1].as_string();
+      std::string text = STR(0);
+      std::string search = STR(1);
       size_t pos = text.find(search);
       if (pos == std::string::npos) return Value::from_int(0);
       return Value::from_int((int)pos + 1); // BASIC uses 1-based indexing
@@ -100,8 +100,8 @@ functions:
     args: [string, string]
     ret: int
     custom_body: |
-      std::string text = args[0].as_string();
-      std::string search = args[1].as_string();
+      std::string text = STR(0);
+      std::string search = STR(1);
       size_t pos = text.rfind(search);
       if (pos == std::string::npos) return Value::from_int(0);
       return Value::from_int((int)pos + 1); // BASIC uses 1-based indexing
@@ -111,8 +111,8 @@ functions:
     args: [string, int]
     ret: string
     custom_body: |
-      std::string text = args[0].as_string();
-      int count = args[1].as_int();
+      std::string text = STR(0);
+      int count = INT(1);
       std::string result;
       for (int i = 0; i < count; i++) {
         result += text;
@@ -124,7 +124,7 @@ functions:
     args: [string]
     ret: string
     custom_body: |
-      std::string text = args[0].as_string();
+      std::string text = STR(0);
       std::reverse(text.begin(), text.end());
       return Value::from_string(text);
   
@@ -134,8 +134,8 @@ functions:
     ret: int
     custom_body: |
       // Simple split function - returns array index of first occurrence
-      std::string text = args[0].as_string();
-      std::string delimiter = args[1].as_string();
+      std::string text = STR(0);
+      std::string delimiter = STR(1);
       size_t pos = text.find(delimiter);
       if (pos == std::string::npos) {
         return Value::from_int(-1); // Not found
@@ -147,7 +147,7 @@ functions:
     args: [string]
     ret: bool
     custom_body: |
-      std::string text = args[0].as_string();
+      std::string text = STR(0);
       if (text.empty()) return Value::from_bool(false);
       size_t pos = 0;
       if (text[0] == '+' || text[0] == '-') pos = 1;
@@ -178,7 +178,7 @@ functions:
     args: [double]
     ret: string
     custom_body: |
-      return Value::from_string(std::to_string(args[0].as_number()));
+      return Value::from_string(std::to_string(FLOAT(0)));
   
   - name: VAL
     map_to: val
@@ -186,7 +186,7 @@ functions:
     ret: double
     custom_body: |
       try {
-        return Value::from_number(std::stod(args[0].as_string()));
+        return Value::from_number(std::stod(STR(0)));
       } catch (...) {
         return Value::from_number(0.0);
       }

@@ -81,7 +81,7 @@ functions:
     category: utility
     description: "Load random values sequence"
     custom_body: |
-      int* seq = ::LoadRandomSequence(args[0].as_int(), args[1].as_int(), args[2].as_int());
+      int* seq = ::LoadRandomSequence(INT(0), INT(1), INT(2));
       (void)seq; // Suppress unused variable warning
       // Simplified: return count as string
       return Value::from_string("sequence_loaded");
@@ -103,7 +103,7 @@ functions:
     category: camera
     description: "Get ray trace from screen position in viewport"
     custom_body: |
-      ::Vector2 pos{(float)args[0].as_number(), (float)args[1].as_number()};
+      ::Vector2 pos{(float)FLOAT(0), (float)FLOAT(1)};
       (void)pos; // Suppress unused variable warning
       // TODO: Camera handling
       return Value::from_string("");
@@ -115,7 +115,7 @@ functions:
     category: camera
     description: "Get screen position for 3d world space position in viewport"
     custom_body: |
-      ::Vector3 pos{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+      ::Vector3 pos{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2)};
       (void)pos; // Suppress unused variable warning
       // TODO: Camera handling
       return Value::from_string("");
@@ -127,7 +127,7 @@ functions:
     category: camera
     description: "Get screen position for 2d camera world space position"
     custom_body: |
-      ::Vector2 pos{(float)args[0].as_number(), (float)args[1].as_number()};
+      ::Vector2 pos{(float)FLOAT(0), (float)FLOAT(1)};
       (void)pos; // Suppress unused variable warning
       // TODO: Camera2D handling
       return Value::from_string("");
@@ -139,7 +139,7 @@ functions:
     category: camera
     description: "Get world position for 2d camera screen space position"
     custom_body: |
-      ::Vector2 pos{(float)args[0].as_number(), (float)args[1].as_number()};
+      ::Vector2 pos{(float)FLOAT(0), (float)FLOAT(1)};
       (void)pos; // Suppress unused variable warning
       // TODO: Camera2D handling
       return Value::from_string("");
@@ -208,7 +208,7 @@ functions:
     category: shader
     description: "Check if shader is valid (loaded on GPU)"
     custom_body: |
-      return Value::from_bool(::IsShaderValid(rlreg::shaders.at(args[0].as_int())));
+      return Value::from_bool(::IsShaderValid(rlreg::shaders.at(INT(0))));
   
   - name: GETSHADERLOCATIONATTRIB
     raylib_name: GetShaderLocationAttrib
@@ -217,7 +217,7 @@ functions:
     category: shader
     description: "Get shader attribute location"
     custom_body: |
-      return Value::from_int(::GetShaderLocationAttrib(rlreg::shaders.at(args[0].as_int()), args[1].as_string().c_str()));
+      return Value::from_int(::GetShaderLocationAttrib(rlreg::shaders.at(INT(0)), STR(1).c_str()));
   
   - name: SETSHADERVALUEV
     raylib_name: SetShaderValueV
@@ -244,7 +244,7 @@ functions:
     category: shader
     description: "Set shader uniform value for texture (sampler2d)"
     custom_body: |
-      ::SetShaderValueTexture(rlreg::shaders.at(args[0].as_int()), args[1].as_int(), rlreg::textures.at(args[2].as_int()));
+      ::SetShaderValueTexture(rlreg::shaders.at(INT(0)), INT(1), rlreg::textures.at(INT(2)));
   
   # === FILE SYSTEM FUNCTIONS ===
   - name: MAKEDIRECTORY
@@ -269,7 +269,7 @@ functions:
     description: "Decode Base64 string data"
     custom_body: |
       int outputSize;
-      unsigned char* data = ::DecodeDataBase64((const unsigned char*)args[0].as_string().c_str(), &outputSize);
+      unsigned char* data = ::DecodeDataBase64((const unsigned char*)STR(0).c_str(), &outputSize);
       std::string result((char*)data, outputSize);
       ::MemFree(data);
       return Value::from_string(result);
@@ -281,7 +281,7 @@ functions:
     category: file
     description: "Compute CRC32 hash code"
     custom_body: |
-      return Value::from_int(::ComputeCRC32((unsigned char*)args[0].as_string().c_str(), args[0].as_string().length()));
+      return Value::from_int(::ComputeCRC32((unsigned char*)STR(0).c_str(), STR(0).length()));
   
   - name: COMPUTEMD5
     raylib_name: ComputeMD5
@@ -290,7 +290,7 @@ functions:
     category: file
     description: "Compute MD5 hash code"
     custom_body: |
-      unsigned int* hash = ::ComputeMD5((unsigned char*)args[0].as_string().c_str(), args[0].as_string().length());
+      unsigned int* hash = ::ComputeMD5((unsigned char*)STR(0).c_str(), STR(0).length());
       std::string result = std::to_string(hash[0]) + "," + std::to_string(hash[1]) + "," + std::to_string(hash[2]) + "," + std::to_string(hash[3]);
       return Value::from_string(result);
   
@@ -301,7 +301,7 @@ functions:
     category: file
     description: "Compute SHA1 hash code"
     custom_body: |
-      unsigned int* hash = ::ComputeSHA1((unsigned char*)args[0].as_string().c_str(), args[0].as_string().length());
+      unsigned int* hash = ::ComputeSHA1((unsigned char*)STR(0).c_str(), STR(0).length());
       std::string result = std::to_string(hash[0]) + "," + std::to_string(hash[1]) + "," + std::to_string(hash[2]) + "," + std::to_string(hash[3]) + "," + std::to_string(hash[4]);
       return Value::from_string(result);
   

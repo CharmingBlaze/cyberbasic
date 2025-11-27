@@ -13,10 +13,10 @@ functions:
     working: true
     custom_body: |
       Camera3D camera;
-      camera.position = Vector3{(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()};
-      camera.target = Vector3{(float)args[3].as_int(), (float)args[4].as_int(), (float)args[5].as_int()};
-      camera.up = Vector3{(float)args[6].as_int(), (float)args[7].as_int(), (float)args[8].as_int()};
-      camera.fovy = (float)args[9].as_int();
+      camera.position = Vector3{(float)INT(0), (float)INT(1), (float)INT(2)};
+      camera.target = Vector3{(float)INT(3), (float)INT(4), (float)INT(5)};
+      camera.up = Vector3{(float)INT(6), (float)INT(7), (float)INT(8)};
+      camera.fovy = (float)INT(9);
       camera.projection = CAMERA_PERSPECTIVE;
       // Note: SetCameraMode and SetCamera3D are not available in this raylib version
       // This is a placeholder implementation
@@ -30,10 +30,10 @@ functions:
     working: true
     custom_body: |
       Camera3D camera = {
-        .position = {(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()},
-        .target = {(float)args[3].as_int(), (float)args[4].as_int(), (float)args[5].as_int()},
+        .position = {(float)INT(0), (float)INT(1), (float)INT(2)},
+        .target = {(float)INT(3), (float)INT(4), (float)INT(5)},
         .up = {0.0f, 1.0f, 0.0f},
-        .fovy = (float)args[6].as_int(),
+        .fovy = (float)INT(6),
         .projection = CAMERA_PERSPECTIVE
       };
       SetCameraMode(camera, CAMERA_FIRST_PERSON);
@@ -48,10 +48,10 @@ functions:
     working: true
     custom_body: |
       Camera3D camera = {
-        .position = {(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()},
-        .target = {(float)args[3].as_int(), (float)args[4].as_int(), (float)args[5].as_int()},
+        .position = {(float)INT(0), (float)INT(1), (float)INT(2)},
+        .target = {(float)INT(3), (float)INT(4), (float)INT(5)},
         .up = {0.0f, 1.0f, 0.0f},
-        .fovy = (float)args[7].as_int(),
+        .fovy = (float)INT(7),
         .projection = CAMERA_PERSPECTIVE
       };
       SetCameraMode(camera, CAMERA_THIRD_PERSON);
@@ -76,7 +76,7 @@ functions:
     working: true
     custom_body: |
       Camera3D camera = GetCamera3D();
-      camera.position = {(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()};
+      camera.position = {(float)INT(0), (float)INT(1), (float)INT(2)};
       SetCamera3D(camera);
 
   - name: SETCAMERA3DTARGET
@@ -88,7 +88,7 @@ functions:
     working: true
     custom_body: |
       Camera3D camera = GetCamera3D();
-      camera.target = {(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()};
+      camera.target = {(float)INT(0), (float)INT(1), (float)INT(2)};
       SetCamera3D(camera);
 
   - name: SETCAMERA3DUP
@@ -100,7 +100,7 @@ functions:
     working: true
     custom_body: |
       Camera3D camera = GetCamera3D();
-      camera.up = {(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()};
+      camera.up = {(float)INT(0), (float)INT(1), (float)INT(2)};
       SetCamera3D(camera);
 
   - name: SETCAMERA3DFOVY
@@ -112,7 +112,7 @@ functions:
     working: true
     custom_body: |
       Camera3D camera = GetCamera3D();
-      camera.fovy = (float)args[0].as_int();
+      camera.fovy = (float)INT(0);
       SetCamera3D(camera);
 
   # === CAMERA MODES ===
@@ -125,7 +125,7 @@ functions:
     working: true
     custom_body: |
       Camera3D camera = GetCamera3D();
-      int mode = args[0].as_int();
+      int mode = INT(0);
       CameraMode cameraMode = CAMERA_FREE;
       if (mode == 1) cameraMode = CAMERA_ORBITAL;
       else if (mode == 2) cameraMode = CAMERA_FIRST_PERSON;
@@ -189,7 +189,7 @@ functions:
       Camera3D camera = GetCamera3D();
       Vector3 forward = Vector3Subtract(camera.target, camera.position);
       forward = Vector3Normalize(forward);
-      forward = Vector3Scale(forward, args[0].as_number());
+      forward = Vector3Scale(forward, FLOAT(0));
       camera.position = Vector3Add(camera.position, forward);
       camera.target = Vector3Add(camera.target, forward);
       SetCamera3D(camera);
@@ -205,7 +205,7 @@ functions:
       Camera3D camera = GetCamera3D();
       Vector3 forward = Vector3Subtract(camera.target, camera.position);
       forward = Vector3Normalize(forward);
-      forward = Vector3Scale(forward, -args[0].as_number());
+      forward = Vector3Scale(forward, -FLOAT(0));
       camera.position = Vector3Add(camera.position, forward);
       camera.target = Vector3Add(camera.target, forward);
       SetCamera3D(camera);
@@ -219,7 +219,7 @@ functions:
     working: true
     custom_body: |
       Camera3D camera = GetCamera3D();
-      Vector3 up = Vector3Scale(camera.up, args[0].as_number());
+      Vector3 up = Vector3Scale(camera.up, FLOAT(0));
       camera.position = Vector3Add(camera.position, up);
       camera.target = Vector3Add(camera.target, up);
       SetCamera3D(camera);
@@ -233,7 +233,7 @@ functions:
     working: true
     custom_body: |
       Camera3D camera = GetCamera3D();
-      Vector3 up = Vector3Scale(camera.up, -args[0].as_number());
+      Vector3 up = Vector3Scale(camera.up, -FLOAT(0));
       camera.position = Vector3Add(camera.position, up);
       camera.target = Vector3Add(camera.target, up);
       SetCamera3D(camera);
@@ -247,8 +247,8 @@ functions:
     working: true
     custom_body: |
       Camera3D camera = GetCamera3D();
-      float yaw = args[0].as_number() * DEG2RAD;
-      float pitch = args[1].as_number() * DEG2RAD;
+      float yaw = FLOAT(0) * DEG2RAD;
+      float pitch = FLOAT(1) * DEG2RAD;
       
       Vector3 forward = Vector3Subtract(camera.target, camera.position);
       float distance = Vector3Length(forward);

@@ -1,0 +1,104 @@
+# VR and Shader Management Functions
+# Advanced rendering features for VR and custom shaders
+
+functions:
+  # === VR STEREO CONFIG ===
+  - name: LOADVRSTEREOCONFIG
+    raylib_name: LoadVrStereoConfig
+    args: [int]
+    ret: int
+    description: "Load VR stereo config for VR simulator device parameters"
+    custom_body: |
+      // VR not fully implemented yet - return placeholder ID
+      return Value::from_int(1);
+    
+  - name: UNLOADVRSTEREOCONFIG
+    raylib_name: UnloadVrStereoConfig
+    args: [int]
+    ret: void
+    description: "Unload VR stereo config"
+    custom_body: |
+      // VR not fully implemented yet - placeholder
+      (void)args[0]; // Suppress unused parameter warning
+    
+  # === SHADER MANAGEMENT ===
+  - name: LOADSHADER
+    raylib_name: LoadShader
+    args: [string, string]
+    ret: int
+    description: "Load shader from files and bind default locations"
+    custom_body: |
+      ::Shader shader = ::LoadShader(STR(0).c_str(), STR(1).c_str());
+      // Store shader in registry and return ID (simplified for now)
+      return Value::from_int(shader.id);
+    
+  - name: LOADSHADERFROMEMORY
+    raylib_name: LoadShaderFromMemory
+    args: [string, string]
+    ret: int
+    description: "Load shader from code strings and bind default locations"
+    custom_body: |
+      ::Shader shader = ::LoadShaderFromMemory(STR(0).c_str(), STR(1).c_str());
+      return Value::from_int(shader.id);
+    
+  - name: ISSHADERVALID
+    raylib_name: IsShaderValid
+    args: [int]
+    ret: bool
+    description: "Check if a shader is valid (loaded on GPU)"
+    custom_body: |
+      ::Shader shader = {};
+      shader.id = INT(0);
+      return Value::from_bool(::IsShaderValid(shader));
+    
+  - name: GETSHADERLOCATION
+    raylib_name: GetShaderLocation
+    args: [int, string]
+    ret: int
+    description: "Get shader uniform location"
+    custom_body: |
+      ::Shader shader = {};
+      shader.id = INT(0);
+      return Value::from_int(::GetShaderLocation(shader, STR(1).c_str()));
+    
+  - name: GETSHADERLOCATIONATTRIB
+    raylib_name: GetShaderLocationAttrib
+    args: [int, string]
+    ret: int
+    description: "Get shader attribute location"
+    custom_body: |
+      ::Shader shader = {};
+      shader.id = INT(0);
+      return Value::from_int(::GetShaderLocationAttrib(shader, STR(1).c_str()));
+    
+  - name: SETSHADERVALUEFLOAT
+    raylib_name: SetShaderValue
+    args: [int, int, float]
+    ret: void
+    description: "Set shader uniform value (float)"
+    custom_body: |
+      ::Shader shader = {};
+      shader.id = INT(0);
+      float value = FLOAT(2);
+      ::SetShaderValue(shader, INT(1), &value, SHADER_UNIFORM_FLOAT);
+    
+  - name: SETSHADERVALUEINT
+    raylib_name: SetShaderValue
+    args: [int, int, int]
+    ret: void
+    description: "Set shader uniform value (int)"
+    custom_body: |
+      ::Shader shader = {};
+      shader.id = INT(0);
+      int value = INT(2);
+      ::SetShaderValue(shader, INT(1), &value, SHADER_UNIFORM_INT);
+    
+  - name: UNLOADSHADER
+    raylib_name: UnloadShader
+    args: [int]
+    ret: void
+    description: "Unload shader from GPU memory (VRAM)"
+    custom_body: |
+      ::Shader shader = {};
+      shader.id = INT(0);
+      ::UnloadShader(shader);

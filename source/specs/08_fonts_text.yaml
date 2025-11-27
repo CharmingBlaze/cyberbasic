@@ -11,7 +11,7 @@ functions:
     category: fonts
     description: "Load font from file"
     working: true
-    custom_body: "LoadFont(args[0].as_string().c_str())"
+    custom_body: "LoadFont(STR(0).c_str())"
 
 
 
@@ -22,7 +22,7 @@ functions:
     category: fonts
     description: "Unload font from memory (pass font ID)"
     working: true
-    custom_body: "UnloadFont(*(Font*)args[0].as_int())"
+    custom_body: "UnloadFont(*(Font*)INT(0))"
 
   - name: GETFONTDEFAULT
     raylib_name: GetFontDefault
@@ -41,7 +41,7 @@ functions:
     category: fonts
     description: "Draw text at x,y with fontSize and RGB color (text, x, y, fontSize, R, G, B)"
     working: true
-    custom_body: "DrawText(args[0].as_string().c_str(), args[1].as_int(), args[2].as_int(), args[3].as_int(), Color{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), 255})"
+    custom_body: "DrawText(STR(0).c_str(), INT(1), INT(2), INT(3), Color{(unsigned char)INT(4), (unsigned char)INT(5), (unsigned char)INT(6), 255})"
 
   - name: DRAWTEXTEX
     raylib_name: DrawTextEx
@@ -50,7 +50,7 @@ functions:
     category: fonts
     description: "Draw text with font at x,y with fontSize, spacing and RGB color (pass font ID, text, x, y, fontSize, spacing, R, G, B)"
     working: true
-    custom_body: "DrawTextEx(*(Font*)args[0].as_int(), args[1].as_string().c_str(), Vector2{(float)args[2].as_int(), (float)args[3].as_int()}, args[4].as_number(), args[5].as_number(), Color{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255})"
+    custom_body: "DrawTextEx(*(Font*)INT(0), STR(1).c_str(), Vector2{(float)INT(2), (float)INT(3)}, FLOAT(4), FLOAT(5), Color{(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255})"
 
   - name: DRAWTEXTPRO
     raylib_name: DrawTextPro
@@ -59,7 +59,7 @@ functions:
     category: fonts
     description: "Draw text with font, rotation and RGB color (pass font ID, text, x, y, originX, originY, rotation, fontSize, spacing, R, G, B)"
     working: true
-    custom_body: "DrawTextPro(*(Font*)args[0].as_int(), args[1].as_string().c_str(), Vector2{(float)args[2].as_int(), (float)args[3].as_int()}, Vector2{(float)args[4].as_number(), (float)args[5].as_number()}, args[6].as_number(), args[7].as_number(), args[8].as_number(), Color{(unsigned char)args[9].as_int(), (unsigned char)args[10].as_int(), (unsigned char)args[11].as_int(), 255})"
+    custom_body: "DrawTextPro(*(Font*)INT(0), STR(1).c_str(), Vector2{(float)INT(2), (float)INT(3)}, Vector2{(float)FLOAT(4), (float)FLOAT(5)}, FLOAT(6), FLOAT(7), FLOAT(8), Color{(unsigned char)INT(9), (unsigned char)INT(10), (unsigned char)INT(11), 255})"
 
   - name: DRAWTEXTCODEPOINT
     raylib_name: DrawTextCodepoint
@@ -68,7 +68,7 @@ functions:
     category: fonts
     description: "Draw one character (codepoint) with font at x,y with fontSize and RGB color (pass font ID, codepoint, x, y, fontSize, R, G, B)"
     working: true
-    custom_body: "DrawTextCodepoint(*(Font*)args[0].as_int(), args[1].as_int(), Vector2{(float)args[2].as_int(), (float)args[3].as_int()}, args[4].as_number(), Color{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255})"
+    custom_body: "DrawTextCodepoint(*(Font*)INT(0), INT(1), Vector2{(float)INT(2), (float)INT(3)}, FLOAT(4), Color{(unsigned char)INT(5), (unsigned char)INT(6), (unsigned char)INT(7), 255})"
 
   # === TEXT MEASUREMENT ===
   - name: MEASURETEXT
@@ -78,7 +78,7 @@ functions:
     category: fonts
     description: "Measure string width for default font (text, fontSize)"
     working: true
-    custom_body: "MeasureText(args[0].as_string().c_str(), args[1].as_int())"
+    custom_body: "MeasureText(STR(0).c_str(), INT(1))"
 
   - name: MEASURETEXTEX
     raylib_name: MeasureTextEx
@@ -87,7 +87,7 @@ functions:
     category: fonts
     description: "Measure string size for font (pass font ID, text, fontSize, spacing)"
     working: true
-    custom_body: "MeasureTextEx(*(Font*)args[0].as_int(), args[1].as_string().c_str(), args[2].as_number(), args[3].as_number())"
+    custom_body: "MeasureTextEx(*(Font*)INT(0), STR(1).c_str(), FLOAT(2), FLOAT(3))"
 
 
 
@@ -99,7 +99,7 @@ functions:
     category: fonts
     description: "Check if two text strings are equal"
     working: true
-    custom_body: "TextIsEqual(args[0].as_string().c_str(), args[1].as_string().c_str())"
+    custom_body: "TextIsEqual(STR(0).c_str(), STR(1).c_str())"
 
   - name: TEXTLENGTH
     raylib_name: TextLength
@@ -108,7 +108,7 @@ functions:
     category: fonts
     description: "Get text length, checks for '\0' ending"
     working: true
-    custom_body: "TextLength(args[0].as_string().c_str())"
+    custom_body: "TextLength(STR(0).c_str())"
 
   - name: TEXTSUB
     raylib_name: TextSubtext
@@ -117,7 +117,7 @@ functions:
     category: fonts
     description: "Get a piece of a text string (text, position, length)"
     working: true
-    custom_body: "TextSubtext(args[0].as_string().c_str(), args[1].as_int(), args[2].as_int())"
+    custom_body: "TextSubtext(STR(0).c_str(), INT(1), INT(2))"
 
 
 
@@ -128,7 +128,7 @@ functions:
     category: fonts
     description: "Find first text occurrence within a string (text, find)"
     working: true
-    custom_body: "TextFindIndex(args[0].as_string().c_str(), args[1].as_string().c_str())"
+    custom_body: "TextFindIndex(STR(0).c_str(), STR(1).c_str())"
 
   - name: TEXTTOLOWER
     raylib_name: TextToLower
@@ -137,7 +137,7 @@ functions:
     category: fonts
     description: "Get uppercase version of provided string"
     working: true
-    custom_body: "TextToLower(args[0].as_string().c_str())"
+    custom_body: "TextToLower(STR(0).c_str())"
 
   - name: TEXTTOUPPER
     raylib_name: TextToUpper
@@ -146,7 +146,7 @@ functions:
     category: fonts
     description: "Get uppercase version of provided string"
     working: true
-    custom_body: "TextToUpper(args[0].as_string().c_str())"
+    custom_body: "TextToUpper(STR(0).c_str())"
 
   - name: TEXTTOPASCAL
     raylib_name: TextToPascal
@@ -155,7 +155,7 @@ functions:
     category: fonts
     description: "Get Pascal case notation version of provided string"
     working: true
-    custom_body: "TextToPascal(args[0].as_string().c_str())"
+    custom_body: "TextToPascal(STR(0).c_str())"
 
   - name: TEXTTOINTEGER
     raylib_name: TextToInteger
@@ -164,4 +164,4 @@ functions:
     category: fonts
     description: "Get integer value from text (negative values not supported)"
     working: true
-    custom_body: "TextToInteger(args[0].as_string().c_str())"
+    custom_body: "TextToInteger(STR(0).c_str())"

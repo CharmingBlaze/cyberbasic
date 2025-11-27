@@ -156,7 +156,7 @@ WHILE running AND NOT WINDOWSHOULDCLOSE()
     DRAWTEXT("To Target: " + STR(INT(dist_to_target)), 10, 310, 16, 255, 255, 255)
     
     REM Draw instructions
-    DRAWTEXT("Avoid red obstacle, collect green targets", 10, 350, 16, 200, 200)
+    DRAWTEXT("Avoid red obstacle, collect green targets", 10, 350, 16, 200, 200, 200)
     DRAWTEXT("Press ESC to exit", 10, 550, 18, 200, 200, 200)
     
     ENDDRAWING()

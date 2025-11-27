@@ -10,8 +10,8 @@ functions:
     category: drawing
     description: "Set texture and rectangle to be used on shapes drawing"
     custom_body: |
-      ::Rectangle source{(float)args[1].as_number(), (float)args[2].as_number(), (float)args[3].as_number(), (float)args[4].as_number()};
-      ::SetShapesTexture(rlreg::textures.at(args[0].as_int()), source);
+      ::Rectangle source{(float)FLOAT(1), (float)FLOAT(2), (float)FLOAT(3), (float)FLOAT(4)};
+      ::SetShapesTexture(rlreg::textures.at(INT(0)), source);
   
   - name: GETSHAPESTEXTURE
     raylib_name: GetShapesTexture
@@ -52,9 +52,9 @@ functions:
     category: drawing
     description: "Draw circle outline (Vector version)"
     custom_body: |
-      ::Vector2 center{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Color c{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), 255};
-      ::DrawCircleLinesV(center, (float)args[2].as_number(), c);
+      ::Vector2 center{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Color c{(unsigned char)INT(3), (unsigned char)INT(4), (unsigned char)INT(5), 255};
+      ::DrawCircleLinesV(center, (float)FLOAT(2), c);
   
   - name: DRAWRECTANGLEPRO
     raylib_name: DrawRectanglePro
@@ -63,10 +63,10 @@ functions:
     category: drawing
     description: "Draw a color-filled rectangle with pro parameters"
     custom_body: |
-      ::Rectangle rec{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number(), (float)args[3].as_number()};
-      ::Vector2 origin{(float)args[4].as_number(), (float)args[5].as_number()};
-      ::Color c{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), 255};
-      ::DrawRectanglePro(rec, origin, (float)args[6].as_number(), c);
+      ::Rectangle rec{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2), (float)FLOAT(3)};
+      ::Vector2 origin{(float)FLOAT(4), (float)FLOAT(5)};
+      ::Color c{(unsigned char)INT(7), (unsigned char)INT(8), (unsigned char)INT(9), 255};
+      ::DrawRectanglePro(rec, origin, (float)FLOAT(6), c);
   
   - name: DRAWRECTANGLEGRADIENTV
     raylib_name: DrawRectangleGradientV
@@ -75,9 +75,9 @@ functions:
     category: drawing
     description: "Draw a vertical-gradient-filled rectangle"
     custom_body: |
-      ::Color top{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), 255};
-      ::Color bottom{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), 255};
-      ::DrawRectangleGradientV(args[0].as_int(), args[1].as_int(), args[2].as_int(), args[3].as_int(), top, bottom);
+      ::Color top{(unsigned char)INT(4), (unsigned char)INT(5), (unsigned char)INT(6), 255};
+      ::Color bottom{(unsigned char)INT(7), (unsigned char)INT(8), (unsigned char)INT(9), 255};
+      ::DrawRectangleGradientV(INT(0), INT(1), INT(2), INT(3), top, bottom);
   
   - name: DRAWRECTANGLEGRADIENTH
     raylib_name: DrawRectangleGradientH
@@ -86,9 +86,9 @@ functions:
     category: drawing
     description: "Draw a horizontal-gradient-filled rectangle"
     custom_body: |
-      ::Color left{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), 255};
-      ::Color right{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), 255};
-      ::DrawRectangleGradientH(args[0].as_int(), args[1].as_int(), args[2].as_int(), args[3].as_int(), left, right);
+      ::Color left{(unsigned char)INT(4), (unsigned char)INT(5), (unsigned char)INT(6), 255};
+      ::Color right{(unsigned char)INT(7), (unsigned char)INT(8), (unsigned char)INT(9), 255};
+      ::DrawRectangleGradientH(INT(0), INT(1), INT(2), INT(3), left, right);
   
   - name: DRAWRECTANGLEGRADIENTEX
     raylib_name: DrawRectangleGradientEx
@@ -97,11 +97,11 @@ functions:
     category: drawing
     description: "Draw a gradient-filled rectangle with custom vertex colors"
     custom_body: |
-      ::Rectangle rec{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number(), (float)args[3].as_number()};
-      ::Color topLeft{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), 255};
-      ::Color bottomLeft{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), 255};
-      ::Color topRight{(unsigned char)args[10].as_int(), (unsigned char)args[11].as_int(), (unsigned char)args[12].as_int(), 255};
-      ::Color bottomRight{(unsigned char)args[13].as_int(), (unsigned char)args[14].as_int(), (unsigned char)args[15].as_int(), 255};
+      ::Rectangle rec{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2), (float)FLOAT(3)};
+      ::Color topLeft{(unsigned char)INT(4), (unsigned char)INT(5), (unsigned char)INT(6), 255};
+      ::Color bottomLeft{(unsigned char)INT(7), (unsigned char)INT(8), (unsigned char)INT(9), 255};
+      ::Color topRight{(unsigned char)INT(10), (unsigned char)INT(11), (unsigned char)INT(12), 255};
+      ::Color bottomRight{(unsigned char)INT(13), (unsigned char)INT(14), (unsigned char)INT(15), 255};
       ::DrawRectangleGradientEx(rec, topLeft, bottomLeft, topRight, bottomRight);
   
   - name: DRAWRECTANGLEROUNDEDLINESEX
@@ -111,9 +111,9 @@ functions:
     category: drawing
     description: "Draw rectangle with rounded edges outline"
     custom_body: |
-      ::Rectangle rec{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number(), (float)args[3].as_number()};
-      ::Color c{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), 255};
-      ::DrawRectangleRoundedLinesEx(rec, (float)args[4].as_number(), args[5].as_int(), (float)args[6].as_number(), c);
+      ::Rectangle rec{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2), (float)FLOAT(3)};
+      ::Color c{(unsigned char)INT(7), (unsigned char)INT(8), (unsigned char)INT(9), 255};
+      ::DrawRectangleRoundedLinesEx(rec, (float)FLOAT(4), INT(5), (float)FLOAT(6), c);
   
   # === SPLINE FUNCTIONS ===
   - name: DRAWSPLINELINEAR
@@ -168,10 +168,10 @@ functions:
     category: drawing
     description: "Draw spline segment: Linear, 2 points"
     custom_body: |
-      ::Vector2 p1{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Vector2 p2{(float)args[2].as_number(), (float)args[3].as_number()};
-      ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255};
-      ::DrawSplineSegmentLinear(p1, p2, (float)args[4].as_number(), c);
+      ::Vector2 p1{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Vector2 p2{(float)FLOAT(2), (float)FLOAT(3)};
+      ::Color c{(unsigned char)INT(5), (unsigned char)INT(6), (unsigned char)INT(7), 255};
+      ::DrawSplineSegmentLinear(p1, p2, (float)FLOAT(4), c);
   
   - name: DRAWSPLINESEGMENTBASIS
     raylib_name: DrawSplineSegmentBasis
@@ -180,12 +180,12 @@ functions:
     category: drawing
     description: "Draw spline segment: B-Spline, 4 points"
     custom_body: |
-      ::Vector2 p1{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Vector2 p2{(float)args[2].as_number(), (float)args[3].as_number()};
-      ::Vector2 p3{(float)args[4].as_number(), (float)args[5].as_number()};
-      ::Vector2 p4{(float)args[6].as_number(), (float)args[7].as_number()};
-      ::Color c{(unsigned char)args[9].as_int(), (unsigned char)args[10].as_int(), (unsigned char)args[11].as_int(), 255};
-      ::DrawSplineSegmentBasis(p1, p2, p3, p4, (float)args[8].as_number(), c);
+      ::Vector2 p1{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Vector2 p2{(float)FLOAT(2), (float)FLOAT(3)};
+      ::Vector2 p3{(float)FLOAT(4), (float)FLOAT(5)};
+      ::Vector2 p4{(float)FLOAT(6), (float)FLOAT(7)};
+      ::Color c{(unsigned char)INT(9), (unsigned char)INT(10), (unsigned char)INT(11), 255};
+      ::DrawSplineSegmentBasis(p1, p2, p3, p4, (float)FLOAT(8), c);
   
   - name: DRAWSPLINESEGMENTCATMULLROM
     raylib_name: DrawSplineSegmentCatmullRom
@@ -194,12 +194,12 @@ functions:
     category: drawing
     description: "Draw spline segment: Catmull-Rom, 4 points"
     custom_body: |
-      ::Vector2 p1{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Vector2 p2{(float)args[2].as_number(), (float)args[3].as_number()};
-      ::Vector2 p3{(float)args[4].as_number(), (float)args[5].as_number()};
-      ::Vector2 p4{(float)args[6].as_number(), (float)args[7].as_number()};
-      ::Color c{(unsigned char)args[9].as_int(), (unsigned char)args[10].as_int(), (unsigned char)args[11].as_int(), 255};
-      ::DrawSplineSegmentCatmullRom(p1, p2, p3, p4, (float)args[8].as_number(), c);
+      ::Vector2 p1{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Vector2 p2{(float)FLOAT(2), (float)FLOAT(3)};
+      ::Vector2 p3{(float)FLOAT(4), (float)FLOAT(5)};
+      ::Vector2 p4{(float)FLOAT(6), (float)FLOAT(7)};
+      ::Color c{(unsigned char)INT(9), (unsigned char)INT(10), (unsigned char)INT(11), 255};
+      ::DrawSplineSegmentCatmullRom(p1, p2, p3, p4, (float)FLOAT(8), c);
   
   - name: DRAWSPLINESEGMENTBEZIERQUADRATIC
     raylib_name: DrawSplineSegmentBezierQuadratic
@@ -208,11 +208,11 @@ functions:
     category: drawing
     description: "Draw spline segment: Quadratic Bezier, 2 points, 1 control point"
     custom_body: |
-      ::Vector2 p1{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Vector2 c2{(float)args[2].as_number(), (float)args[3].as_number()};
-      ::Vector2 p3{(float)args[4].as_number(), (float)args[5].as_number()};
-      ::Color c{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), 255};
-      ::DrawSplineSegmentBezierQuadratic(p1, c2, p3, (float)args[6].as_number(), c);
+      ::Vector2 p1{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Vector2 c2{(float)FLOAT(2), (float)FLOAT(3)};
+      ::Vector2 p3{(float)FLOAT(4), (float)FLOAT(5)};
+      ::Color c{(unsigned char)INT(7), (unsigned char)INT(8), (unsigned char)INT(9), 255};
+      ::DrawSplineSegmentBezierQuadratic(p1, c2, p3, (float)FLOAT(6), c);
   
   - name: DRAWSPLINESEGMENTBEZIERCUBIC
     raylib_name: DrawSplineSegmentBezierCubic
@@ -221,12 +221,12 @@ functions:
     category: drawing
     description: "Draw spline segment: Cubic Bezier, 2 points, 2 control points"
     custom_body: |
-      ::Vector2 p1{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Vector2 c2{(float)args[2].as_number(), (float)args[3].as_number()};
-      ::Vector2 c3{(float)args[4].as_number(), (float)args[5].as_number()};
-      ::Vector2 p4{(float)args[6].as_number(), (float)args[7].as_number()};
-      ::Color c{(unsigned char)args[9].as_int(), (unsigned char)args[10].as_int(), (unsigned char)args[11].as_int(), 255};
-      ::DrawSplineSegmentBezierCubic(p1, c2, c3, p4, (float)args[8].as_number(), c);
+      ::Vector2 p1{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Vector2 c2{(float)FLOAT(2), (float)FLOAT(3)};
+      ::Vector2 c3{(float)FLOAT(4), (float)FLOAT(5)};
+      ::Vector2 p4{(float)FLOAT(6), (float)FLOAT(7)};
+      ::Color c{(unsigned char)INT(9), (unsigned char)INT(10), (unsigned char)INT(11), 255};
+      ::DrawSplineSegmentBezierCubic(p1, c2, c3, p4, (float)FLOAT(8), c);
   
   # === SPLINE POINT EVALUATION ===
   - name: GETSPLINEPOINTLINEAR
@@ -236,9 +236,9 @@ functions:
     category: drawing
     description: "Get (evaluate) spline point: Linear"
     custom_body: |
-      ::Vector2 start{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Vector2 end{(float)args[2].as_number(), (float)args[3].as_number()};
-      ::Vector2 point = ::GetSplinePointLinear(start, end, (float)args[4].as_number());
+      ::Vector2 start{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Vector2 end{(float)FLOAT(2), (float)FLOAT(3)};
+      ::Vector2 point = ::GetSplinePointLinear(start, end, (float)FLOAT(4));
       return Value::from_string(std::to_string(point.x) + "," + std::to_string(point.y));
   
   - name: GETSPLINEPOINTBASIS
@@ -248,11 +248,11 @@ functions:
     category: drawing
     description: "Get (evaluate) spline point: B-Spline"
     custom_body: |
-      ::Vector2 p1{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Vector2 p2{(float)args[2].as_number(), (float)args[3].as_number()};
-      ::Vector2 p3{(float)args[4].as_number(), (float)args[5].as_number()};
-      ::Vector2 p4{(float)args[6].as_number(), (float)args[7].as_number()};
-      ::Vector2 point = ::GetSplinePointBasis(p1, p2, p3, p4, (float)args[8].as_number());
+      ::Vector2 p1{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Vector2 p2{(float)FLOAT(2), (float)FLOAT(3)};
+      ::Vector2 p3{(float)FLOAT(4), (float)FLOAT(5)};
+      ::Vector2 p4{(float)FLOAT(6), (float)FLOAT(7)};
+      ::Vector2 point = ::GetSplinePointBasis(p1, p2, p3, p4, (float)FLOAT(8));
       return Value::from_string(std::to_string(point.x) + "," + std::to_string(point.y));
   
   - name: GETSPLINEPOINTCATMULLROM
@@ -262,11 +262,11 @@ functions:
     category: drawing
     description: "Get (evaluate) spline point: Catmull-Rom"
     custom_body: |
-      ::Vector2 p1{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Vector2 p2{(float)args[2].as_number(), (float)args[3].as_number()};
-      ::Vector2 p3{(float)args[4].as_number(), (float)args[5].as_number()};
-      ::Vector2 p4{(float)args[6].as_number(), (float)args[7].as_number()};
-      ::Vector2 point = ::GetSplinePointCatmullRom(p1, p2, p3, p4, (float)args[8].as_number());
+      ::Vector2 p1{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Vector2 p2{(float)FLOAT(2), (float)FLOAT(3)};
+      ::Vector2 p3{(float)FLOAT(4), (float)FLOAT(5)};
+      ::Vector2 p4{(float)FLOAT(6), (float)FLOAT(7)};
+      ::Vector2 point = ::GetSplinePointCatmullRom(p1, p2, p3, p4, (float)FLOAT(8));
       return Value::from_string(std::to_string(point.x) + "," + std::to_string(point.y));
   
   - name: GETSPLINEPOINTBEZIERQUAD
@@ -276,10 +276,10 @@ functions:
     category: drawing
     description: "Get (evaluate) spline point: Quadratic Bezier"
     custom_body: |
-      ::Vector2 p1{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Vector2 c2{(float)args[2].as_number(), (float)args[3].as_number()};
-      ::Vector2 p3{(float)args[4].as_number(), (float)args[5].as_number()};
-      ::Vector2 point = ::GetSplinePointBezierQuad(p1, c2, p3, (float)args[6].as_number());
+      ::Vector2 p1{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Vector2 c2{(float)FLOAT(2), (float)FLOAT(3)};
+      ::Vector2 p3{(float)FLOAT(4), (float)FLOAT(5)};
+      ::Vector2 point = ::GetSplinePointBezierQuad(p1, c2, p3, (float)FLOAT(6));
       return Value::from_string(std::to_string(point.x) + "," + std::to_string(point.y));
   
   - name: GETSPLINEPOINTBEZIERCUBIC
@@ -289,11 +289,11 @@ functions:
     category: drawing
     description: "Get (evaluate) spline point: Cubic Bezier"
     custom_body: |
-      ::Vector2 p1{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Vector2 c2{(float)args[2].as_number(), (float)args[3].as_number()};
-      ::Vector2 c3{(float)args[4].as_number(), (float)args[5].as_number()};
-      ::Vector2 p4{(float)args[6].as_number(), (float)args[7].as_number()};
-      ::Vector2 point = ::GetSplinePointBezierCubic(p1, c2, c3, p4, (float)args[8].as_number());
+      ::Vector2 p1{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Vector2 c2{(float)FLOAT(2), (float)FLOAT(3)};
+      ::Vector2 c3{(float)FLOAT(4), (float)FLOAT(5)};
+      ::Vector2 p4{(float)FLOAT(6), (float)FLOAT(7)};
+      ::Vector2 point = ::GetSplinePointBezierCubic(p1, c2, c3, p4, (float)FLOAT(8));
       return Value::from_string(std::to_string(point.x) + "," + std::to_string(point.y));
   
   # === COLLISION FUNCTIONS ===
@@ -304,10 +304,10 @@ functions:
     category: collision
     description: "Check if circle collides with a line created between two points"
     custom_body: |
-      ::Vector2 center{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Vector2 p1{(float)args[3].as_number(), (float)args[4].as_number()};
-      ::Vector2 p2{(float)args[5].as_number(), (float)args[6].as_number()};
-      return Value::from_bool(::CheckCollisionCircleLine(center, (float)args[2].as_number(), p1, p2));
+      ::Vector2 center{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Vector2 p1{(float)FLOAT(3), (float)FLOAT(4)};
+      ::Vector2 p2{(float)FLOAT(5), (float)FLOAT(6)};
+      return Value::from_bool(::CheckCollisionCircleLine(center, (float)FLOAT(2), p1, p2));
   
   - name: CHECKCOLLISIONPOINTTRIANGLE
     raylib_name: CheckCollisionPointTriangle
@@ -316,10 +316,10 @@ functions:
     category: collision
     description: "Check if point is inside a triangle"
     custom_body: |
-      ::Vector2 point{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Vector2 p1{(float)args[2].as_number(), (float)args[3].as_number()};
-      ::Vector2 p2{(float)args[4].as_number(), (float)args[5].as_number()};
-      ::Vector2 p3{(float)args[6].as_number(), (float)args[7].as_number()};
+      ::Vector2 point{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Vector2 p1{(float)FLOAT(2), (float)FLOAT(3)};
+      ::Vector2 p2{(float)FLOAT(4), (float)FLOAT(5)};
+      ::Vector2 p3{(float)FLOAT(6), (float)FLOAT(7)};
       return Value::from_bool(::CheckCollisionPointTriangle(point, p1, p2, p3));
   
   - name: CHECKCOLLISIONPOINTLINE
@@ -329,10 +329,10 @@ functions:
     category: collision
     description: "Check if point belongs to line created between two points with defined margin in pixels"
     custom_body: |
-      ::Vector2 point{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Vector2 p1{(float)args[2].as_number(), (float)args[3].as_number()};
-      ::Vector2 p2{(float)args[4].as_number(), (float)args[5].as_number()};
-      return Value::from_bool(::CheckCollisionPointLine(point, p1, p2, args[6].as_int()));
+      ::Vector2 point{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Vector2 p1{(float)FLOAT(2), (float)FLOAT(3)};
+      ::Vector2 p2{(float)FLOAT(4), (float)FLOAT(5)};
+      return Value::from_bool(::CheckCollisionPointLine(point, p1, p2, INT(6)));
   
   - name: CHECKCOLLISIONPOINTPOLY
     raylib_name: CheckCollisionPointPoly
@@ -351,10 +351,10 @@ functions:
     category: collision
     description: "Check the collision between two lines defined by two points each, returns collision point by reference"
     custom_body: |
-      ::Vector2 start1{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Vector2 end1{(float)args[2].as_number(), (float)args[3].as_number()};
-      ::Vector2 start2{(float)args[4].as_number(), (float)args[5].as_number()};
-      ::Vector2 end2{(float)args[6].as_number(), (float)args[7].as_number()};
+      ::Vector2 start1{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Vector2 end1{(float)FLOAT(2), (float)FLOAT(3)};
+      ::Vector2 start2{(float)FLOAT(4), (float)FLOAT(5)};
+      ::Vector2 end2{(float)FLOAT(6), (float)FLOAT(7)};
       ::Vector2 collisionPoint;
       bool result = ::CheckCollisionLines(start1, end1, start2, end2, &collisionPoint);
       if (result) {
@@ -369,8 +369,8 @@ functions:
     category: collision
     description: "Get collision rectangle for two rectangles collision"
     custom_body: |
-      ::Rectangle rec1{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number(), (float)args[3].as_number()};
-      ::Rectangle rec2{(float)args[4].as_number(), (float)args[5].as_number(), (float)args[6].as_number(), (float)args[7].as_number()};
+      ::Rectangle rec1{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2), (float)FLOAT(3)};
+      ::Rectangle rec2{(float)FLOAT(4), (float)FLOAT(5), (float)FLOAT(6), (float)FLOAT(7)};
       ::Rectangle collision = ::GetCollisionRec(rec1, rec2);
       return Value::from_string(std::to_string(collision.x) + "," + std::to_string(collision.y) + "," + std::to_string(collision.width) + "," + std::to_string(collision.height));
 

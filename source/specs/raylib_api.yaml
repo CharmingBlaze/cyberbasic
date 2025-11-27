@@ -1,3 +1,26 @@
+# Import modular API specifications
+imports:
+  - "01_window_management.yaml"
+  - "02_cursor_management.yaml" 
+  - "03_drawing_core.yaml"
+  - "04_vr_and_shaders.yaml"
+  - "05_screen_space_camera.yaml"
+  - "06_timing_and_control.yaml"
+  - "07_file_management.yaml"
+  - "08_input_system.yaml"
+  - "09_camera_system_advanced.yaml"
+  - "10_shapes_texture_setup.yaml"
+  - "11_basic_shapes.yaml"
+  - "12_rectangles_triangles.yaml"
+  - "13_splines_curves.yaml"
+  - "14_collision_detection.yaml"
+  - "15_image_loading.yaml"
+  - "16_font_text_system.yaml"
+  - "17_3d_shapes_models.yaml"
+  - "18_audio_system.yaml"
+  - "19_math_utilities.yaml"
+  - "20_color_constants.yaml"
+
 functions:
 - name: INITWINDOW
   map_to: InitWindow
@@ -149,7 +172,7 @@ functions:
   args:
   - int
   ret: string
-  custom_body: '::Vector2 pos = ::GetMonitorPosition(args[0].as_int());
+  custom_body: '::Vector2 pos = ::GetMonitorPosition(INT(0));
 
     return Value::from_string(std::to_string(pos.x) + "," + std::to_string(pos.y));
 
@@ -244,10 +267,14 @@ functions:
   args:
   - int
   ret: void
-  custom_body: '// Note: This requires a Camera3D object, simplified for BASIC
-
-    ::BeginMode3D(::Camera3D{});
-
+  custom_body: '// Fixed: Use proper Camera3D setup for 3D rendering
+    ::Camera3D camera = {};
+    camera.position = ::Vector3{ 0.0f, 10.0f, 10.0f };    // Camera position
+    camera.target = ::Vector3{ 0.0f, 0.0f, 0.0f };        // Camera looking at point
+    camera.up = ::Vector3{ 0.0f, 1.0f, 0.0f };            // Camera up vector
+    camera.fovy = 45.0f;                                     // Camera field-of-view Y
+    camera.projection = CAMERA_PERSPECTIVE;                  // Camera projection type
+    ::BeginMode3D(camera);
     '
 - name: ENDMODE3D
   map_to: EndMode3D
@@ -311,8 +338,8 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Color c{(unsigned char)args[0].as_int(), (unsigned char)args[1].as_int(),
-    (unsigned char)args[2].as_int(), 255};
+  custom_body: '::Color c{(unsigned char)INT(0), (unsigned char)INT(1),
+    (unsigned char)INT(2), 255};
 
     ::ClearBackground(c);
 
@@ -328,10 +355,10 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Color c{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(),
-    (unsigned char)args[6].as_int(), 255};
+  custom_body: '::Color c{(unsigned char)INT(4), (unsigned char)INT(5),
+    (unsigned char)INT(6), 255};
 
-    ::DrawText(args[0].as_string().c_str(), args[1].as_int(), args[2].as_int(), args[3].as_int(),
+    ::DrawText(STR(0).c_str(), INT(1), INT(2), INT(3),
     c);
 
     '
@@ -348,15 +375,15 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Font font = rlreg::fonts.at(args[0].as_int());
+  custom_body: '::Font font = rlreg::fonts.at(INT(0));
 
-    ::Vector2 pos{(float)args[1].as_int(), (float)args[2].as_int()};
+    ::Vector2 pos{(float)INT(1), (float)INT(2)};
 
-    ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned
-    char)args[7].as_int(), 255};
+    ::Color c{(unsigned char)INT(5), (unsigned char)INT(6), (unsigned
+    char)INT(7), 255};
 
-    ::DrawTextEx(font, args[1].as_string().c_str(), pos, (float)args[3].as_number(),
-    (float)args[4].as_number(), c);
+    ::DrawTextEx(font, STR(1).c_str(), pos, (float)FLOAT(3),
+    (float)FLOAT(4), c);
 
     '
 - name: DRAWTEXTPRO
@@ -375,17 +402,17 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Font font = rlreg::fonts.at(args[0].as_int());
+  custom_body: '::Font font = rlreg::fonts.at(INT(0));
 
-    ::Vector2 pos{(float)args[1].as_int(), (float)args[2].as_int()};
+    ::Vector2 pos{(float)INT(1), (float)INT(2)};
 
-    ::Vector2 origin{(float)args[3].as_int(), (float)args[4].as_int()};
+    ::Vector2 origin{(float)INT(3), (float)INT(4)};
 
-    ::Color c{(unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), (unsigned
-    char)args[10].as_int(), 255};
+    ::Color c{(unsigned char)INT(8), (unsigned char)INT(9), (unsigned
+    char)INT(10), 255};
 
-    ::DrawTextPro(font, args[1].as_string().c_str(), pos, origin, (float)args[5].as_number(),
-    (float)args[6].as_number(), (float)args[7].as_number(), c);
+    ::DrawTextPro(font, STR(1).c_str(), pos, origin, (float)FLOAT(5),
+    (float)FLOAT(6), (float)FLOAT(7), c);
 
     '
 - name: DRAWRECTANGLE
@@ -399,10 +426,10 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Color c{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(),
-    (unsigned char)args[6].as_int(), 255};
+  custom_body: '::Color c{(unsigned char)INT(4), (unsigned char)INT(5),
+    (unsigned char)INT(6), 255};
 
-    ::DrawRectangle(args[0].as_int(), args[1].as_int(), args[2].as_int(), args[3].as_int(),
+    ::DrawRectangle(INT(0), INT(1), INT(2), INT(3),
     c);
 
     '
@@ -417,12 +444,12 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector2 pos{(float)args[0].as_int(), (float)args[1].as_int()};
+  custom_body: '::Vector2 pos{(float)INT(0), (float)INT(1)};
 
-    ::Vector2 size{(float)args[2].as_int(), (float)args[3].as_int()};
+    ::Vector2 size{(float)INT(2), (float)INT(3)};
 
-    ::Color c{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned
-    char)args[6].as_int(), 255};
+    ::Color c{(unsigned char)INT(4), (unsigned char)INT(5), (unsigned
+    char)INT(6), 255};
 
     ::DrawRectangleV(pos, size, c);
 
@@ -438,11 +465,11 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Rectangle rec{(float)args[0].as_int(), (float)args[1].as_int(),
-    (float)args[2].as_int(), (float)args[3].as_int()};
+  custom_body: '::Rectangle rec{(float)INT(0), (float)INT(1),
+    (float)INT(2), (float)INT(3)};
 
-    ::Color c{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned
-    char)args[6].as_int(), 255};
+    ::Color c{(unsigned char)INT(4), (unsigned char)INT(5), (unsigned
+    char)INT(6), 255};
 
     ::DrawRectangleRec(rec, c);
 
@@ -462,15 +489,15 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Rectangle rec{(float)args[0].as_int(), (float)args[1].as_int(),
-    (float)args[2].as_int(), (float)args[3].as_int()};
+  custom_body: '::Rectangle rec{(float)INT(0), (float)INT(1),
+    (float)INT(2), (float)INT(3)};
 
-    ::Vector2 origin{(float)args[4].as_int(), (float)args[5].as_int()};
+    ::Vector2 origin{(float)INT(4), (float)INT(5)};
 
-    ::Color c{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned
-    char)args[9].as_int(), 255};
+    ::Color c{(unsigned char)INT(7), (unsigned char)INT(8), (unsigned
+    char)INT(9), 255};
 
-    ::DrawRectanglePro(rec, origin, (float)args[6].as_number(), c);
+    ::DrawRectanglePro(rec, origin, (float)FLOAT(6), c);
 
     '
 - name: DRAWRECTANGLEGRADIENTV
@@ -492,14 +519,14 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Color top{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(),
-    (unsigned char)args[6].as_int(), 255};
+  custom_body: '::Color top{(unsigned char)INT(4), (unsigned char)INT(5),
+    (unsigned char)INT(6), 255};
 
-    ::Color bottom{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(),
-    (unsigned char)args[9].as_int(), 255};
+    ::Color bottom{(unsigned char)INT(7), (unsigned char)INT(8),
+    (unsigned char)INT(9), 255};
 
-    ::DrawRectangleGradientV(args[0].as_int(), args[1].as_int(), args[2].as_int(),
-    args[3].as_int(), top, bottom);
+    ::DrawRectangleGradientV(INT(0), INT(1), INT(2),
+    INT(3), top, bottom);
 
     '
 - name: DRAWRECTANGLEGRADIENTH
@@ -521,14 +548,14 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Color left{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(),
-    (unsigned char)args[6].as_int(), 255};
+  custom_body: '::Color left{(unsigned char)INT(4), (unsigned char)INT(5),
+    (unsigned char)INT(6), 255};
 
-    ::Color right{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(),
-    (unsigned char)args[9].as_int(), 255};
+    ::Color right{(unsigned char)INT(7), (unsigned char)INT(8),
+    (unsigned char)INT(9), 255};
 
-    ::DrawRectangleGradientH(args[0].as_int(), args[1].as_int(), args[2].as_int(),
-    args[3].as_int(), left, right);
+    ::DrawRectangleGradientH(INT(0), INT(1), INT(2),
+    INT(3), left, right);
 
     '
 - name: DRAWRECTANGLEROUNDED
@@ -544,13 +571,13 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Rectangle rec{(float)args[0].as_int(), (float)args[1].as_int(),
-    (float)args[2].as_int(), (float)args[3].as_int()};
+  custom_body: '::Rectangle rec{(float)INT(0), (float)INT(1),
+    (float)INT(2), (float)INT(3)};
 
-    ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned
-    char)args[8].as_int(), 255};
+    ::Color c{(unsigned char)INT(6), (unsigned char)INT(7), (unsigned
+    char)INT(8), 255};
 
-    ::DrawRectangleRounded(rec, (float)args[4].as_number(), args[5].as_int(), c);
+    ::DrawRectangleRounded(rec, (float)FLOAT(4), INT(5), c);
 
     '
 - name: DRAWRECTANGLELINES
@@ -564,10 +591,10 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Color c{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(),
-    (unsigned char)args[6].as_int(), 255};
+  custom_body: '::Color c{(unsigned char)INT(4), (unsigned char)INT(5),
+    (unsigned char)INT(6), 255};
 
-    ::DrawRectangleLines(args[0].as_int(), args[1].as_int(), args[2].as_int(), args[3].as_int(),
+    ::DrawRectangleLines(INT(0), INT(1), INT(2), INT(3),
     c);
 
     '
@@ -583,13 +610,13 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Rectangle rec{(float)args[0].as_int(), (float)args[1].as_int(),
-    (float)args[2].as_int(), (float)args[3].as_int()};
+  custom_body: '::Rectangle rec{(float)INT(0), (float)INT(1),
+    (float)INT(2), (float)INT(3)};
 
-    ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned
-    char)args[8].as_int(), 255};
+    ::Color c{(unsigned char)INT(6), (unsigned char)INT(7), (unsigned
+    char)INT(8), 255};
 
-    ::DrawRectangleLinesEx(rec, (float)args[4].as_number(), c);
+    ::DrawRectangleLinesEx(rec, (float)FLOAT(4), c);
 
     '
 - name: DRAWCIRCLE
@@ -602,10 +629,10 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Color c{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(),
-    (unsigned char)args[5].as_int(), 255};
+  custom_body: '::Color c{(unsigned char)INT(3), (unsigned char)INT(4),
+    (unsigned char)INT(5), 255};
 
-    ::DrawCircle(args[0].as_int(), args[1].as_int(), (float)args[2].as_int(), c);
+    ::DrawCircle(INT(0), INT(1), (float)INT(2), c);
 
     '
 - name: DRAWCIRCLEV
@@ -618,12 +645,12 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector2 center{(float)args[0].as_int(), (float)args[1].as_int()};
+  custom_body: '::Vector2 center{(float)INT(0), (float)INT(1)};
 
-    ::Color c{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned
-    char)args[5].as_int(), 255};
+    ::Color c{(unsigned char)INT(3), (unsigned char)INT(4), (unsigned
+    char)INT(5), 255};
 
-    ::DrawCircleV(center, (float)args[2].as_int(), c);
+    ::DrawCircleV(center, (float)INT(2), c);
 
     '
 - name: DRAWCIRCLELINES
@@ -636,10 +663,10 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Color c{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(),
-    (unsigned char)args[5].as_int(), 255};
+  custom_body: '::Color c{(unsigned char)INT(3), (unsigned char)INT(4),
+    (unsigned char)INT(5), 255};
 
-    ::DrawCircleLines(args[0].as_int(), args[1].as_int(), (float)args[2].as_int(),
+    ::DrawCircleLines(INT(0), INT(1), (float)INT(2),
     c);
 
     '
@@ -653,12 +680,12 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector2 center{(float)args[0].as_int(), (float)args[1].as_int()};
+  custom_body: '::Vector2 center{(float)INT(0), (float)INT(1)};
 
-    ::Color c{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned
-    char)args[5].as_int(), 255};
+    ::Color c{(unsigned char)INT(3), (unsigned char)INT(4), (unsigned
+    char)INT(5), 255};
 
-    ::DrawCircleLinesV(center, (float)args[2].as_int(), c);
+    ::DrawCircleLinesV(center, (float)INT(2), c);
 
     '
 - name: DRAWCIRCLESECTOR
@@ -674,13 +701,13 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector2 center{(float)args[0].as_int(), (float)args[1].as_int()};
+  custom_body: '::Vector2 center{(float)INT(0), (float)INT(1)};
 
-    ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned
-    char)args[8].as_int(), 255};
+    ::Color c{(unsigned char)INT(6), (unsigned char)INT(7), (unsigned
+    char)INT(8), 255};
 
-    ::DrawCircleSector(center, (float)args[2].as_int(), (float)args[3].as_number(),
-    (float)args[4].as_number(), args[5].as_int(), c);
+    ::DrawCircleSector(center, (float)INT(2), (float)FLOAT(3),
+    (float)FLOAT(4), INT(5), c);
 
     '
 - name: DRAWCIRCLESECTORLINES
@@ -696,13 +723,13 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector2 center{(float)args[0].as_int(), (float)args[1].as_int()};
+  custom_body: '::Vector2 center{(float)INT(0), (float)INT(1)};
 
-    ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned
-    char)args[8].as_int(), 255};
+    ::Color c{(unsigned char)INT(6), (unsigned char)INT(7), (unsigned
+    char)INT(8), 255};
 
-    ::DrawCircleSectorLines(center, (float)args[2].as_int(), (float)args[3].as_number(),
-    (float)args[4].as_number(), args[5].as_int(), c);
+    ::DrawCircleSectorLines(center, (float)INT(2), (float)FLOAT(3),
+    (float)FLOAT(4), INT(5), c);
 
     '
 - name: DRAWCIRCLEGRADIENT
@@ -721,13 +748,13 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Color inner{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(),
-    (unsigned char)args[5].as_int(), 255};
+  custom_body: '::Color inner{(unsigned char)INT(3), (unsigned char)INT(4),
+    (unsigned char)INT(5), 255};
 
-    ::Color outer{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(),
-    (unsigned char)args[8].as_int(), 255};
+    ::Color outer{(unsigned char)INT(6), (unsigned char)INT(7),
+    (unsigned char)INT(8), 255};
 
-    ::DrawCircleGradient(args[0].as_int(), args[1].as_int(), (float)args[2].as_int(),
+    ::DrawCircleGradient(INT(0), INT(1), (float)INT(2),
     inner, outer);
 
     '
@@ -742,10 +769,10 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Color c{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(),
-    (unsigned char)args[6].as_int(), 255};
+  custom_body: '::Color c{(unsigned char)INT(4), (unsigned char)INT(5),
+    (unsigned char)INT(6), 255};
 
-    ::DrawEllipse(args[0].as_int(), args[1].as_int(), (float)args[2].as_int(), (float)args[3].as_int(),
+    ::DrawEllipse(INT(0), INT(1), (float)INT(2), (float)INT(3),
     c);
 
     '
@@ -760,11 +787,11 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Color c{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(),
-    (unsigned char)args[6].as_int(), 255};
+  custom_body: '::Color c{(unsigned char)INT(4), (unsigned char)INT(5),
+    (unsigned char)INT(6), 255};
 
-    ::DrawEllipseLines(args[0].as_int(), args[1].as_int(), (float)args[2].as_int(),
-    (float)args[3].as_int(), c);
+    ::DrawEllipseLines(INT(0), INT(1), (float)INT(2),
+    (float)INT(3), c);
 
     '
 - name: DRAWRING
@@ -781,13 +808,13 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector2 center{(float)args[0].as_int(), (float)args[1].as_int()};
+  custom_body: '::Vector2 center{(float)INT(0), (float)INT(1)};
 
-    ::Color c{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned
-    char)args[9].as_int(), 255};
+    ::Color c{(unsigned char)INT(7), (unsigned char)INT(8), (unsigned
+    char)INT(9), 255};
 
-    ::DrawRing(center, (float)args[2].as_int(), (float)args[3].as_int(), (float)args[4].as_number(),
-    (float)args[5].as_number(), args[6].as_int(), c);
+    ::DrawRing(center, (float)INT(2), (float)INT(3), (float)FLOAT(4),
+    (float)FLOAT(5), INT(6), c);
 
     '
 - name: DRAWRINGLINES
@@ -804,13 +831,13 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector2 center{(float)args[0].as_int(), (float)args[1].as_int()};
+  custom_body: '::Vector2 center{(float)INT(0), (float)INT(1)};
 
-    ::Color c{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned
-    char)args[9].as_int(), 255};
+    ::Color c{(unsigned char)INT(7), (unsigned char)INT(8), (unsigned
+    char)INT(9), 255};
 
-    ::DrawRingLines(center, (float)args[2].as_int(), (float)args[3].as_int(), (float)args[4].as_number(),
-    (float)args[5].as_number(), args[6].as_int(), c);
+    ::DrawRingLines(center, (float)INT(2), (float)INT(3), (float)FLOAT(4),
+    (float)FLOAT(5), INT(6), c);
 
     '
 - name: DRAWLINE
@@ -824,10 +851,10 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Color c{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(),
-    (unsigned char)args[6].as_int(), 255};
+  custom_body: '::Color c{(unsigned char)INT(4), (unsigned char)INT(5),
+    (unsigned char)INT(6), 255};
 
-    ::DrawLine(args[0].as_int(), args[1].as_int(), args[2].as_int(), args[3].as_int(),
+    ::DrawLine(INT(0), INT(1), INT(2), INT(3),
     c);
 
     '
@@ -842,12 +869,12 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector2 start{(float)args[0].as_int(), (float)args[1].as_int()};
+  custom_body: '::Vector2 start{(float)INT(0), (float)INT(1)};
 
-    ::Vector2 end{(float)args[2].as_int(), (float)args[3].as_int()};
+    ::Vector2 end{(float)INT(2), (float)INT(3)};
 
-    ::Color c{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned
-    char)args[6].as_int(), 255};
+    ::Color c{(unsigned char)INT(4), (unsigned char)INT(5), (unsigned
+    char)INT(6), 255};
 
     ::DrawLineV(start, end, c);
 
@@ -864,14 +891,14 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector2 start{(float)args[0].as_int(), (float)args[1].as_int()};
+  custom_body: '::Vector2 start{(float)INT(0), (float)INT(1)};
 
-    ::Vector2 end{(float)args[2].as_int(), (float)args[3].as_int()};
+    ::Vector2 end{(float)INT(2), (float)INT(3)};
 
-    ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned
-    char)args[7].as_int(), 255};
+    ::Color c{(unsigned char)INT(5), (unsigned char)INT(6), (unsigned
+    char)INT(7), 255};
 
-    ::DrawLineEx(start, end, (float)args[4].as_number(), c);
+    ::DrawLineEx(start, end, (float)FLOAT(4), c);
 
     '
 - name: DRAWTRIANGLE
@@ -887,14 +914,14 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector2 v1{(float)args[0].as_int(), (float)args[1].as_int()};
+  custom_body: '::Vector2 v1{(float)INT(0), (float)INT(1)};
 
-    ::Vector2 v2{(float)args[2].as_int(), (float)args[3].as_int()};
+    ::Vector2 v2{(float)INT(2), (float)INT(3)};
 
-    ::Vector2 v3{(float)args[4].as_int(), (float)args[5].as_int()};
+    ::Vector2 v3{(float)INT(4), (float)INT(5)};
 
-    ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned
-    char)args[8].as_int(), 255};
+    ::Color c{(unsigned char)INT(6), (unsigned char)INT(7), (unsigned
+    char)INT(8), 255};
 
     ::DrawTriangle(v1, v2, v3, c);
 
@@ -912,14 +939,14 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector2 v1{(float)args[0].as_int(), (float)args[1].as_int()};
+  custom_body: '::Vector2 v1{(float)INT(0), (float)INT(1)};
 
-    ::Vector2 v2{(float)args[2].as_int(), (float)args[3].as_int()};
+    ::Vector2 v2{(float)INT(2), (float)INT(3)};
 
-    ::Vector2 v3{(float)args[4].as_int(), (float)args[5].as_int()};
+    ::Vector2 v3{(float)INT(4), (float)INT(5)};
 
-    ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned
-    char)args[8].as_int(), 255};
+    ::Color c{(unsigned char)INT(6), (unsigned char)INT(7), (unsigned
+    char)INT(8), 255};
 
     ::DrawTriangleLines(v1, v2, v3, c);
 
@@ -936,12 +963,12 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector2 center{(float)args[0].as_int(), (float)args[1].as_int()};
+  custom_body: '::Vector2 center{(float)INT(0), (float)INT(1)};
 
-    ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned
-    char)args[7].as_int(), 255};
+    ::Color c{(unsigned char)INT(5), (unsigned char)INT(6), (unsigned
+    char)INT(7), 255};
 
-    ::DrawPoly(center, args[2].as_int(), (float)args[3].as_int(), (float)args[4].as_number(),
+    ::DrawPoly(center, INT(2), (float)INT(3), (float)FLOAT(4),
     c);
 
     '
@@ -957,12 +984,12 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector2 center{(float)args[0].as_int(), (float)args[1].as_int()};
+  custom_body: '::Vector2 center{(float)INT(0), (float)INT(1)};
 
-    ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned
-    char)args[7].as_int(), 255};
+    ::Color c{(unsigned char)INT(5), (unsigned char)INT(6), (unsigned
+    char)INT(7), 255};
 
-    ::DrawPolyLines(center, args[2].as_int(), (float)args[3].as_int(), (float)args[4].as_number(),
+    ::DrawPolyLines(center, INT(2), (float)INT(3), (float)FLOAT(4),
     c);
 
     '
@@ -975,10 +1002,10 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Color c{(unsigned char)args[2].as_int(), (unsigned char)args[3].as_int(),
-    (unsigned char)args[4].as_int(), 255};
+  custom_body: '::Color c{(unsigned char)INT(2), (unsigned char)INT(3),
+    (unsigned char)INT(4), 255};
 
-    ::DrawPixel(args[0].as_int(), args[1].as_int(), c);
+    ::DrawPixel(INT(0), INT(1), c);
 
     '
 - name: DRAWPIXELV
@@ -990,10 +1017,10 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector2 pos{(float)args[0].as_int(), (float)args[1].as_int()};
+  custom_body: '::Vector2 pos{(float)INT(0), (float)INT(1)};
 
-    ::Color c{(unsigned char)args[2].as_int(), (unsigned char)args[3].as_int(), (unsigned
-    char)args[4].as_int(), 255};
+    ::Color c{(unsigned char)INT(2), (unsigned char)INT(3), (unsigned
+    char)INT(4), 255};
 
     ::DrawPixelV(pos, c);
 
@@ -1098,7 +1125,7 @@ functions:
   args:
   - int
   ret: string
-  custom_body: '::Vector2 pos = ::GetTouchPosition(args[0].as_int());
+  custom_body: '::Vector2 pos = ::GetTouchPosition(INT(0));
 
     return Value::from_string(std::to_string(pos.x) + "," + std::to_string(pos.y));
 
@@ -1117,7 +1144,7 @@ functions:
   args:
   - int
   ret: bool
-  custom_body: 'return Value::from_bool(::IsGamepadAvailable(args[0].as_int()));
+  custom_body: 'return Value::from_bool(::IsGamepadAvailable(INT(0)));
 
     '
 - name: GETGAMEPADNAME
@@ -1125,7 +1152,7 @@ functions:
   args:
   - int
   ret: string
-  custom_body: 'return Value::from_string(::GetGamepadName(args[0].as_int()));
+  custom_body: 'return Value::from_string(::GetGamepadName(INT(0)));
 
     '
 - name: ISGAMEPADBUTTONPRESSED
@@ -1134,8 +1161,8 @@ functions:
   - int
   - int
   ret: bool
-  custom_body: 'return Value::from_bool(::IsGamepadButtonPressed(args[0].as_int(),
-    args[1].as_int()));
+  custom_body: 'return Value::from_bool(::IsGamepadButtonPressed(INT(0),
+    INT(1)));
 
     '
 - name: ISGAMEPADBUTTONDOWN
@@ -1144,7 +1171,7 @@ functions:
   - int
   - int
   ret: bool
-  custom_body: 'return Value::from_bool(::IsGamepadButtonDown(args[0].as_int(), args[1].as_int()));
+  custom_body: 'return Value::from_bool(::IsGamepadButtonDown(INT(0), INT(1)));
 
     '
 - name: ISGAMEPADBUTTONRELEASED
@@ -1153,8 +1180,8 @@ functions:
   - int
   - int
   ret: bool
-  custom_body: 'return Value::from_bool(::IsGamepadButtonReleased(args[0].as_int(),
-    args[1].as_int()));
+  custom_body: 'return Value::from_bool(::IsGamepadButtonReleased(INT(0),
+    INT(1)));
 
     '
 - name: ISGAMEPADBUTTONUP
@@ -1163,7 +1190,7 @@ functions:
   - int
   - int
   ret: bool
-  custom_body: 'return Value::from_bool(::IsGamepadButtonUp(args[0].as_int(), args[1].as_int()));
+  custom_body: 'return Value::from_bool(::IsGamepadButtonUp(INT(0), INT(1)));
 
     '
 - name: GETGAMEPADBUTTONPRESSED
@@ -1178,7 +1205,7 @@ functions:
   args:
   - int
   ret: int
-  custom_body: 'return Value::from_int(::GetGamepadAxisCount(args[0].as_int()));
+  custom_body: 'return Value::from_int(::GetGamepadAxisCount(INT(0)));
 
     '
 - name: GETGAMEPADAXISMOVEMENT
@@ -1187,8 +1214,8 @@ functions:
   - int
   - int
   ret: double
-  custom_body: 'return Value::from_number(::GetGamepadAxisMovement(args[0].as_int(),
-    args[1].as_int()));
+  custom_body: 'return Value::from_number(::GetGamepadAxisMovement(INT(0),
+    INT(1)));
 
     '
 - name: SETGAMEPADMAPPINGS
@@ -1196,7 +1223,7 @@ functions:
   args:
   - string
   ret: int
-  custom_body: 'return Value::from_int(::SetGamepadMappings(args[0].as_string().c_str()));
+  custom_body: 'return Value::from_int(::SetGamepadMappings(STR(0).c_str()));
 
     '
 - name: SETGAMEPADVIBRATION
@@ -1220,7 +1247,7 @@ functions:
   args:
   - string
   ret: int
-  custom_body: '::Texture2D tex = ::LoadTexture(args[0].as_string().c_str());
+  custom_body: '::Texture2D tex = ::LoadTexture(STR(0).c_str());
 
     int id = rlreg::next_tex_id++;
 
@@ -1234,7 +1261,7 @@ functions:
   args:
   - int
   ret: int
-  custom_body: '::Texture2D tex = ::LoadTextureFromImage(rlreg::images.at(args[0].as_int()));
+  custom_body: '::Texture2D tex = ::LoadTextureFromImage(rlreg::images.at(INT(0)));
 
     int id = rlreg::next_tex_id++;
 
@@ -1249,8 +1276,8 @@ functions:
   - int
   - int
   ret: int
-  custom_body: '::TextureCubemap tex = ::LoadTextureCubemap(rlreg::images.at(args[0].as_int()),
-    args[1].as_int());
+  custom_body: '::TextureCubemap tex = ::LoadTextureCubemap(rlreg::images.at(INT(0)),
+    INT(1));
 
     int id = rlreg::next_cubemap_id++;
 
@@ -1265,7 +1292,7 @@ functions:
   - int
   - int
   ret: int
-  custom_body: '::RenderTexture2D tex = ::LoadRenderTexture(args[0].as_int(), args[1].as_int());
+  custom_body: '::RenderTexture2D tex = ::LoadRenderTexture(INT(0), INT(1));
 
     int id = rlreg::next_rendertex_id++;
 
@@ -1279,7 +1306,7 @@ functions:
   args:
   - int
   ret: bool
-  custom_body: 'return Value::from_bool(::IsTextureValid(rlreg::textures.at(args[0].as_int())));
+  custom_body: 'return Value::from_bool(::IsTextureValid(rlreg::textures.at(INT(0))));
 
     '
 - name: ISRENDERTEXTUREVALID
@@ -1287,7 +1314,7 @@ functions:
   args:
   - int
   ret: bool
-  custom_body: 'return Value::from_bool(::IsRenderTextureValid(rlreg::rendertextures.at(args[0].as_int())));
+  custom_body: 'return Value::from_bool(::IsRenderTextureValid(rlreg::rendertextures.at(INT(0))));
 
     '
 - name: UPDATETEXTURE
@@ -1298,7 +1325,7 @@ functions:
   ret: void
   custom_body: '// Note: This is simplified - would need proper pixel data handling
 
-    ::UpdateTexture(rlreg::textures.at(args[0].as_int()), nullptr);
+    ::UpdateTexture(rlreg::textures.at(INT(0)), nullptr);
 
     '
 - name: UPDATETEXTUREREC
@@ -1311,12 +1338,12 @@ functions:
   - int
   - string
   ret: void
-  custom_body: '::Rectangle rec{(float)args[1].as_int(), (float)args[2].as_int(),
-    (float)args[3].as_int(), (float)args[4].as_int()};
+  custom_body: '::Rectangle rec{(float)INT(1), (float)INT(2),
+    (float)INT(3), (float)INT(4)};
 
     // Note: This is simplified - would need proper pixel data handling
 
-    ::UpdateTextureRec(rlreg::textures.at(args[0].as_int()), rec, nullptr);
+    ::UpdateTextureRec(rlreg::textures.at(INT(0)), rec, nullptr);
 
     '
 - name: GENTEXTUREMIPMAPS
@@ -1324,7 +1351,7 @@ functions:
   args:
   - int
   ret: void
-  custom_body: '::GenTextureMipmaps(&rlreg::textures[args[0].as_int()]);
+  custom_body: '::GenTextureMipmaps(&rlreg::textures[INT(0)]);
 
     '
 - name: SETTEXTUREFILTER
@@ -1333,7 +1360,7 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::SetTextureFilter(rlreg::textures.at(args[0].as_int()), args[1].as_int());
+  custom_body: '::SetTextureFilter(rlreg::textures.at(INT(0)), INT(1));
 
     '
 - name: SETTEXTUREWRAP
@@ -1342,7 +1369,7 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::SetTextureWrap(rlreg::textures.at(args[0].as_int()), args[1].as_int());
+  custom_body: '::SetTextureWrap(rlreg::textures.at(INT(0)), INT(1));
 
     '
 - name: DRAWTEXTURE
@@ -1355,10 +1382,10 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Color c{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(),
-    (unsigned char)args[5].as_int(), 255};
+  custom_body: '::Color c{(unsigned char)INT(3), (unsigned char)INT(4),
+    (unsigned char)INT(5), 255};
 
-    ::DrawTexture(rlreg::textures.at(args[0].as_int()), args[1].as_int(), args[2].as_int(),
+    ::DrawTexture(rlreg::textures.at(INT(0)), INT(1), INT(2),
     c);
 
     '
@@ -1372,12 +1399,12 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector2 pos{(float)args[1].as_int(), (float)args[2].as_int()};
+  custom_body: '::Vector2 pos{(float)INT(1), (float)INT(2)};
 
-    ::Color c{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned
-    char)args[5].as_int(), 255};
+    ::Color c{(unsigned char)INT(3), (unsigned char)INT(4), (unsigned
+    char)INT(5), 255};
 
-    ::DrawTextureV(rlreg::textures.at(args[0].as_int()), pos, c);
+    ::DrawTextureV(rlreg::textures.at(INT(0)), pos, c);
 
     '
 - name: DRAWTEXTUREEX
@@ -1392,13 +1419,13 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector2 pos{(float)args[1].as_int(), (float)args[2].as_int()};
+  custom_body: '::Vector2 pos{(float)INT(1), (float)INT(2)};
 
-    ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned
-    char)args[7].as_int(), 255};
+    ::Color c{(unsigned char)INT(5), (unsigned char)INT(6), (unsigned
+    char)INT(7), 255};
 
-    ::DrawTextureEx(rlreg::textures.at(args[0].as_int()), pos, (float)args[3].as_number(),
-    (float)args[4].as_number(), c);
+    ::DrawTextureEx(rlreg::textures.at(INT(0)), pos, (float)FLOAT(3),
+    (float)FLOAT(4), c);
 
     '
 - name: DRAWTEXTUREREC
@@ -1414,15 +1441,15 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Rectangle src{(float)args[1].as_int(), (float)args[2].as_int(),
-    (float)args[3].as_int(), (float)args[4].as_int()};
+  custom_body: '::Rectangle src{(float)INT(1), (float)INT(2),
+    (float)INT(3), (float)INT(4)};
 
-    ::Vector2 pos{(float)args[5].as_int(), (float)args[6].as_int()};
+    ::Vector2 pos{(float)INT(5), (float)INT(6)};
 
-    ::Color c{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned
-    char)args[9].as_int(), 255};
+    ::Color c{(unsigned char)INT(7), (unsigned char)INT(8), (unsigned
+    char)INT(9), 255};
 
-    ::DrawTextureRec(rlreg::textures.at(args[0].as_int()), src, pos, c);
+    ::DrawTextureRec(rlreg::textures.at(INT(0)), src, pos, c);
 
     '
 - name: DRAWTEXTUREPRO
@@ -1441,18 +1468,18 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Rectangle src{(float)args[1].as_int(), (float)args[2].as_int(),
-    (float)args[3].as_int(), (float)args[4].as_int()};
+  custom_body: '::Rectangle src{(float)INT(1), (float)INT(2),
+    (float)INT(3), (float)INT(4)};
 
-    ::Rectangle dest{(float)args[5].as_int(), (float)args[6].as_int(), (float)args[7].as_int(),
-    (float)args[8].as_int()};
+    ::Rectangle dest{(float)INT(5), (float)INT(6), (float)INT(7),
+    (float)INT(8)};
 
-    ::Vector2 origin{(float)args[9].as_int(), (float)args[10].as_int()};
+    ::Vector2 origin{(float)INT(9), (float)INT(10)};
 
-    ::Color c{(unsigned char)args[11].as_int(), (unsigned char)args[12].as_int(),
-    (unsigned char)args[13].as_int(), 255};
+    ::Color c{(unsigned char)INT(11), (unsigned char)INT(12),
+    (unsigned char)INT(13), 255};
 
-    ::DrawTexturePro(rlreg::textures.at(args[0].as_int()), src, dest, origin, 0.0f,
+    ::DrawTexturePro(rlreg::textures.at(INT(0)), src, dest, origin, 0.0f,
     c);
 
     '
@@ -1478,29 +1505,29 @@ functions:
   ret: void
   custom_body: '::NPatchInfo nPatchInfo;
 
-    nPatchInfo.source = {(float)args[1].as_int(), (float)args[2].as_int(), (float)args[3].as_int(),
-    (float)args[4].as_int()};
+    nPatchInfo.source = {(float)INT(1), (float)INT(2), (float)INT(3),
+    (float)INT(4)};
 
-    nPatchInfo.left = args[5].as_int();
+    nPatchInfo.left = INT(5);
 
-    nPatchInfo.top = args[6].as_int();
+    nPatchInfo.top = INT(6);
 
-    nPatchInfo.right = args[7].as_int();
+    nPatchInfo.right = INT(7);
 
-    nPatchInfo.bottom = args[8].as_int();
+    nPatchInfo.bottom = INT(8);
 
-    nPatchInfo.layout = args[9].as_int();
+    nPatchInfo.layout = INT(9);
 
-    ::Rectangle dest{(float)args[10].as_int(), (float)args[11].as_int(), (float)args[12].as_int(),
-    (float)args[13].as_int()};
+    ::Rectangle dest{(float)INT(10), (float)INT(11), (float)INT(12),
+    (float)INT(13)};
 
-    ::Vector2 origin{(float)args[14].as_int(), (float)args[15].as_int()};
+    ::Vector2 origin{(float)INT(14), (float)INT(15)};
 
-    ::Color c{(unsigned char)args[16].as_int(), (unsigned char)args[17].as_int(),
-    (unsigned char)args[18].as_int(), 255};
+    ::Color c{(unsigned char)INT(16), (unsigned char)INT(17),
+    (unsigned char)INT(18), 255};
 
-    ::DrawTextureNPatch(rlreg::textures.at(args[0].as_int()), nPatchInfo, dest, origin,
-    (float)args[14].as_number(), c);
+    ::DrawTextureNPatch(rlreg::textures.at(INT(0)), nPatchInfo, dest, origin,
+    (float)FLOAT(14), c);
 
     '
 - name: UNLOADTEXTURE
@@ -1508,7 +1535,7 @@ functions:
   args:
   - int
   ret: void
-  custom_body: "int id = args[0].as_int();\nauto it = rlreg::textures.find(id);\n\
+  custom_body: "int id = INT(0);\nauto it = rlreg::textures.find(id);\n\
     if (it != rlreg::textures.end()) {\n  ::UnloadTexture(it->second);\n  rlreg::textures.erase(it);\n\
     }\n"
 - name: UNLOADRENDERTEXTURE
@@ -1516,7 +1543,7 @@ functions:
   args:
   - int
   ret: void
-  custom_body: "int id = args[0].as_int();\nauto it = rlreg::rendertextures.find(id);\n\
+  custom_body: "int id = INT(0);\nauto it = rlreg::rendertextures.find(id);\n\
     if (it != rlreg::rendertextures.end()) {\n  ::UnloadRenderTexture(it->second);\n\
     \  rlreg::rendertextures.erase(it);\n}\n"
 - name: INITAUDIODEVICE
@@ -1545,7 +1572,7 @@ functions:
   args:
   - string
   ret: int
-  custom_body: '::Wave wave = ::LoadWave(args[0].as_string().c_str());
+  custom_body: '::Wave wave = ::LoadWave(STR(0).c_str());
 
     int id = rlreg::next_wave_id++;
 
@@ -1560,8 +1587,8 @@ functions:
   - string
   - string
   ret: int
-  custom_body: '::Wave wave = ::LoadWaveFromMemory(args[0].as_string().c_str(), (const
-    unsigned char*)args[1].as_string().c_str(), args[1].as_string().length());
+  custom_body: '::Wave wave = ::LoadWaveFromMemory(STR(0).c_str(), (const
+    unsigned char*)STR(1).c_str(), STR(1).length());
 
     int id = rlreg::next_wave_id++;
 
@@ -1575,7 +1602,7 @@ functions:
   args:
   - int
   ret: bool
-  custom_body: 'return Value::from_bool(::IsWaveValid(rlreg::waves.at(args[0].as_int())));
+  custom_body: 'return Value::from_bool(::IsWaveValid(rlreg::waves.at(INT(0))));
 
     '
 - name: LOADSOUNDFROMWAVE
@@ -1583,7 +1610,7 @@ functions:
   args:
   - int
   ret: int
-  custom_body: '::Sound sound = ::LoadSoundFromWave(rlreg::waves.at(args[0].as_int()));
+  custom_body: '::Sound sound = ::LoadSoundFromWave(rlreg::waves.at(INT(0)));
 
     int id = rlreg::next_sound_id++;
 
@@ -1597,7 +1624,7 @@ functions:
   args:
   - int
   ret: int
-  custom_body: '::Sound sound = ::LoadSoundAlias(rlreg::sounds.at(args[0].as_int()));
+  custom_body: '::Sound sound = ::LoadSoundAlias(rlreg::sounds.at(INT(0)));
 
     int id = rlreg::next_sound_id++;
 
@@ -1611,7 +1638,7 @@ functions:
   args:
   - int
   ret: bool
-  custom_body: 'return Value::from_bool(::IsSoundValid(rlreg::sounds.at(args[0].as_int())));
+  custom_body: 'return Value::from_bool(::IsSoundValid(rlreg::sounds.at(INT(0))));
 
     '
 - name: UPDATESOUND
@@ -1622,7 +1649,7 @@ functions:
   ret: void
   custom_body: '// Note: This is simplified - would need proper audio data handling
 
-    ::UpdateSound(rlreg::sounds.at(args[0].as_int()), nullptr, 0);
+    ::UpdateSound(rlreg::sounds.at(INT(0)), nullptr, 0);
 
     '
 - name: PAUSESOUND
@@ -1630,7 +1657,7 @@ functions:
   args:
   - int
   ret: void
-  custom_body: '::PauseSound(rlreg::sounds.at(args[0].as_int()));
+  custom_body: '::PauseSound(rlreg::sounds.at(INT(0)));
 
     '
 - name: RESUMESOUND
@@ -1638,7 +1665,7 @@ functions:
   args:
   - int
   ret: void
-  custom_body: '::ResumeSound(rlreg::sounds.at(args[0].as_int()));
+  custom_body: '::ResumeSound(rlreg::sounds.at(INT(0)));
 
     '
 - name: ISSOUNDPLAYING
@@ -1646,7 +1673,7 @@ functions:
   args:
   - int
   ret: bool
-  custom_body: 'return Value::from_bool(::IsSoundPlaying(rlreg::sounds.at(args[0].as_int())));
+  custom_body: 'return Value::from_bool(::IsSoundPlaying(rlreg::sounds.at(INT(0))));
 
     '
 - name: SETSOUNDVOLUME
@@ -1655,7 +1682,7 @@ functions:
   - int
   - double
   ret: void
-  custom_body: '::SetSoundVolume(rlreg::sounds.at(args[0].as_int()), (float)args[1].as_number());
+  custom_body: '::SetSoundVolume(rlreg::sounds.at(INT(0)), (float)FLOAT(1));
 
     '
 - name: SETSOUNDPITCH
@@ -1664,7 +1691,7 @@ functions:
   - int
   - double
   ret: void
-  custom_body: '::SetSoundPitch(rlreg::sounds.at(args[0].as_int()), (float)args[1].as_number());
+  custom_body: '::SetSoundPitch(rlreg::sounds.at(INT(0)), (float)FLOAT(1));
 
     '
 - name: SETSOUNDPAN
@@ -1673,7 +1700,7 @@ functions:
   - int
   - double
   ret: void
-  custom_body: '::SetSoundPan(rlreg::sounds.at(args[0].as_int()), (float)args[1].as_number());
+  custom_body: '::SetSoundPan(rlreg::sounds.at(INT(0)), (float)FLOAT(1));
 
     '
 - name: WAVECOPY
@@ -1681,7 +1708,7 @@ functions:
   args:
   - int
   ret: int
-  custom_body: '::Wave wave = ::WaveCopy(rlreg::waves.at(args[0].as_int()));
+  custom_body: '::Wave wave = ::WaveCopy(rlreg::waves.at(INT(0)));
 
     int id = rlreg::next_wave_id++;
 
@@ -1697,7 +1724,7 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::WaveCrop(&rlreg::waves[args[0].as_int()], args[1].as_int(), args[2].as_int());
+  custom_body: '::WaveCrop(&rlreg::waves[INT(0)], INT(1), INT(2));
 
     '
 - name: WAVEFORMAT
@@ -1708,8 +1735,8 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::WaveFormat(&rlreg::waves[args[0].as_int()], args[1].as_int(), args[2].as_int(),
-    args[3].as_int());
+  custom_body: '::WaveFormat(&rlreg::waves[INT(0)], INT(1), INT(2),
+    INT(3));
 
     '
 - name: LOADWAVESAMPLES
@@ -1717,7 +1744,7 @@ functions:
   args:
   - int
   ret: string
-  custom_body: 'float* samples = ::LoadWaveSamples(rlreg::waves.at(args[0].as_int()));
+  custom_body: 'float* samples = ::LoadWaveSamples(rlreg::waves.at(INT(0)));
 
     (void)samples; // Suppress unused variable warning
 
@@ -1741,7 +1768,7 @@ functions:
   args:
   - string
   ret: int
-  custom_body: '::Music music = ::LoadMusicStream(args[0].as_string().c_str());
+  custom_body: '::Music music = ::LoadMusicStream(STR(0).c_str());
 
     int id = rlreg::next_music_id++;
 
@@ -1756,8 +1783,8 @@ functions:
   - string
   - string
   ret: int
-  custom_body: '::Music music = ::LoadMusicStreamFromMemory(args[0].as_string().c_str(),
-    (const unsigned char*)args[1].as_string().c_str(), args[1].as_string().length());
+  custom_body: '::Music music = ::LoadMusicStreamFromMemory(STR(0).c_str(),
+    (const unsigned char*)STR(1).c_str(), STR(1).length());
 
     int id = rlreg::next_music_id++;
 
@@ -1771,7 +1798,7 @@ functions:
   args:
   - int
   ret: bool
-  custom_body: 'return Value::from_bool(::IsMusicStreamPlaying(rlreg::musics.at(args[0].as_int())));
+  custom_body: 'return Value::from_bool(::IsMusicStreamPlaying(rlreg::musics.at(INT(0))));
 
     '
 - name: UNLOADMUSICSTREAM
@@ -1779,7 +1806,7 @@ functions:
   args:
   - int
   ret: void
-  custom_body: "int id = args[0].as_int();\nauto it = rlreg::musics.find(id);\nif\
+  custom_body: "int id = INT(0);\nauto it = rlreg::musics.find(id);\nif\
     \ (it != rlreg::musics.end()) {\n  ::UnloadMusicStream(it->second);\n  rlreg::musics.erase(it);\n\
     }\n"
 - name: PLAYMUSICSTREAM
@@ -1787,7 +1814,7 @@ functions:
   args:
   - int
   ret: void
-  custom_body: '::PlayMusicStream(rlreg::musics.at(args[0].as_int()));
+  custom_body: '::PlayMusicStream(rlreg::musics.at(INT(0)));
 
     '
 - name: ISMUSICSTREAMPLAYING
@@ -1795,7 +1822,7 @@ functions:
   args:
   - int
   ret: bool
-  custom_body: 'return Value::from_bool(::IsMusicStreamPlaying(rlreg::musics.at(args[0].as_int())));
+  custom_body: 'return Value::from_bool(::IsMusicStreamPlaying(rlreg::musics.at(INT(0))));
 
     '
 - name: UPDATEMUSICSTREAM
@@ -1803,7 +1830,7 @@ functions:
   args:
   - int
   ret: void
-  custom_body: '::UpdateMusicStream(rlreg::musics.at(args[0].as_int()));
+  custom_body: '::UpdateMusicStream(rlreg::musics.at(INT(0)));
 
     '
 - name: STOPMUSICSTREAM
@@ -1811,7 +1838,7 @@ functions:
   args:
   - int
   ret: void
-  custom_body: '::StopMusicStream(rlreg::musics.at(args[0].as_int()));
+  custom_body: '::StopMusicStream(rlreg::musics.at(INT(0)));
 
     '
 - name: PAUSEMUSICSTREAM
@@ -1819,7 +1846,7 @@ functions:
   args:
   - int
   ret: void
-  custom_body: '::PauseMusicStream(rlreg::musics.at(args[0].as_int()));
+  custom_body: '::PauseMusicStream(rlreg::musics.at(INT(0)));
 
     '
 - name: RESUMEMUSICSTREAM
@@ -1827,7 +1854,7 @@ functions:
   args:
   - int
   ret: void
-  custom_body: '::ResumeMusicStream(rlreg::musics.at(args[0].as_int()));
+  custom_body: '::ResumeMusicStream(rlreg::musics.at(INT(0)));
 
     '
 - name: SEEKMUSICSTREAM
@@ -1836,7 +1863,7 @@ functions:
   - int
   - double
   ret: void
-  custom_body: '::SeekMusicStream(rlreg::musics.at(args[0].as_int()), (float)args[1].as_number());
+  custom_body: '::SeekMusicStream(rlreg::musics.at(INT(0)), (float)FLOAT(1));
 
     '
 - name: SETMUSICVOLUME
@@ -1845,7 +1872,7 @@ functions:
   - int
   - double
   ret: void
-  custom_body: '::SetMusicVolume(rlreg::musics.at(args[0].as_int()), (float)args[1].as_number());
+  custom_body: '::SetMusicVolume(rlreg::musics.at(INT(0)), (float)FLOAT(1));
 
     '
 - name: SETMUSICPITCH
@@ -1854,7 +1881,7 @@ functions:
   - int
   - double
   ret: void
-  custom_body: '::SetMusicPitch(rlreg::musics.at(args[0].as_int()), (float)args[1].as_number());
+  custom_body: '::SetMusicPitch(rlreg::musics.at(INT(0)), (float)FLOAT(1));
 
     '
 - name: SETMUSICPAN
@@ -1863,7 +1890,7 @@ functions:
   - int
   - double
   ret: void
-  custom_body: '::SetMusicPan(rlreg::musics.at(args[0].as_int()), (float)args[1].as_number());
+  custom_body: '::SetMusicPan(rlreg::musics.at(INT(0)), (float)FLOAT(1));
 
     '
 - name: GETMUSICTIMELENGTH
@@ -1871,7 +1898,7 @@ functions:
   args:
   - int
   ret: double
-  custom_body: 'return Value::from_number(::GetMusicTimeLength(rlreg::musics.at(args[0].as_int())));
+  custom_body: 'return Value::from_number(::GetMusicTimeLength(rlreg::musics.at(INT(0))));
 
     '
 - name: GETMUSICTIMEPLAYED
@@ -1879,7 +1906,7 @@ functions:
   args:
   - int
   ret: double
-  custom_body: 'return Value::from_number(::GetMusicTimePlayed(rlreg::musics.at(args[0].as_int())));
+  custom_body: 'return Value::from_number(::GetMusicTimePlayed(rlreg::musics.at(INT(0))));
 
     '
 - name: LOADAUDIOSTREAM
@@ -1889,8 +1916,8 @@ functions:
   - int
   - int
   ret: int
-  custom_body: '::AudioStream stream = ::LoadAudioStream(args[0].as_int(), args[1].as_int(),
-    args[2].as_int());
+  custom_body: '::AudioStream stream = ::LoadAudioStream(INT(0), INT(1),
+    INT(2));
 
     int id = rlreg::next_audiostream_id++;
 
@@ -1904,7 +1931,7 @@ functions:
   args:
   - int
   ret: bool
-  custom_body: 'return Value::from_bool(::IsAudioStreamValid(rlreg::audiostreams.at(args[0].as_int())));
+  custom_body: 'return Value::from_bool(::IsAudioStreamValid(rlreg::audiostreams.at(INT(0))));
 
     '
 - name: UNLOADAUDIOSTREAM
@@ -1912,7 +1939,7 @@ functions:
   args:
   - int
   ret: void
-  custom_body: "int id = args[0].as_int();\nauto it = rlreg::audiostreams.find(id);\n\
+  custom_body: "int id = INT(0);\nauto it = rlreg::audiostreams.find(id);\n\
     if (it != rlreg::audiostreams.end()) {\n  ::UnloadAudioStream(it->second);\n \
     \ rlreg::audiostreams.erase(it);\n}\n"
 - name: UPDATEAUDIOSTREAM
@@ -1923,7 +1950,7 @@ functions:
   ret: void
   custom_body: '// Note: This is simplified - would need proper audio data handling
 
-    ::UpdateAudioStream(rlreg::audiostreams.at(args[0].as_int()), nullptr, 0);
+    ::UpdateAudioStream(rlreg::audiostreams.at(INT(0)), nullptr, 0);
 
     '
 - name: ISAUDIOSTREAMPROCESSED
@@ -1931,7 +1958,7 @@ functions:
   args:
   - int
   ret: bool
-  custom_body: 'return Value::from_bool(::IsAudioStreamProcessed(rlreg::audiostreams.at(args[0].as_int())));
+  custom_body: 'return Value::from_bool(::IsAudioStreamProcessed(rlreg::audiostreams.at(INT(0))));
 
     '
 - name: PLAYAUDIOSTREAM
@@ -1939,7 +1966,7 @@ functions:
   args:
   - int
   ret: void
-  custom_body: '::PlayAudioStream(rlreg::audiostreams.at(args[0].as_int()));
+  custom_body: '::PlayAudioStream(rlreg::audiostreams.at(INT(0)));
 
     '
 - name: PAUSEAUDIOSTREAM
@@ -1947,7 +1974,7 @@ functions:
   args:
   - int
   ret: void
-  custom_body: '::PauseAudioStream(rlreg::audiostreams.at(args[0].as_int()));
+  custom_body: '::PauseAudioStream(rlreg::audiostreams.at(INT(0)));
 
     '
 - name: RESUMEAUDIOSTREAM
@@ -1955,7 +1982,7 @@ functions:
   args:
   - int
   ret: void
-  custom_body: '::ResumeAudioStream(rlreg::audiostreams.at(args[0].as_int()));
+  custom_body: '::ResumeAudioStream(rlreg::audiostreams.at(INT(0)));
 
     '
 - name: ISAUDIOSTREAMPLAYING
@@ -1963,7 +1990,7 @@ functions:
   args:
   - int
   ret: bool
-  custom_body: 'return Value::from_bool(::IsAudioStreamPlaying(rlreg::audiostreams.at(args[0].as_int())));
+  custom_body: 'return Value::from_bool(::IsAudioStreamPlaying(rlreg::audiostreams.at(INT(0))));
 
     '
 - name: STOPAUDIOSTREAM
@@ -1971,7 +1998,7 @@ functions:
   args:
   - int
   ret: void
-  custom_body: '::StopAudioStream(rlreg::audiostreams.at(args[0].as_int()));
+  custom_body: '::StopAudioStream(rlreg::audiostreams.at(INT(0)));
 
     '
 - name: SETAUDIOSTREAMVOLUME
@@ -1980,7 +2007,7 @@ functions:
   - int
   - double
   ret: void
-  custom_body: '::SetAudioStreamVolume(rlreg::audiostreams.at(args[0].as_int()), (float)args[1].as_number());
+  custom_body: '::SetAudioStreamVolume(rlreg::audiostreams.at(INT(0)), (float)FLOAT(1));
 
     '
 - name: SETAUDIOSTREAMPITCH
@@ -1989,7 +2016,7 @@ functions:
   - int
   - double
   ret: void
-  custom_body: '::SetAudioStreamPitch(rlreg::audiostreams.at(args[0].as_int()), (float)args[1].as_number());
+  custom_body: '::SetAudioStreamPitch(rlreg::audiostreams.at(INT(0)), (float)FLOAT(1));
 
     '
 - name: SETAUDIOSTREAMPAN
@@ -1998,7 +2025,7 @@ functions:
   - int
   - double
   ret: void
-  custom_body: '::SetAudioStreamPan(rlreg::audiostreams.at(args[0].as_int()), (float)args[1].as_number());
+  custom_body: '::SetAudioStreamPan(rlreg::audiostreams.at(INT(0)), (float)FLOAT(1));
 
     '
 - name: SETAUDIOSTREAMBUFFERSIZEDEFAULT
@@ -2014,7 +2041,7 @@ functions:
   ret: void
   custom_body: '// Note: This is simplified - would need proper callback handling
 
-    ::SetAudioStreamCallback(rlreg::audiostreams.at(args[0].as_int()), nullptr);
+    ::SetAudioStreamCallback(rlreg::audiostreams.at(INT(0)), nullptr);
 
     '
 - name: ATTACHAUDIOSTREAMPROCESSOR
@@ -2025,7 +2052,7 @@ functions:
   ret: void
   custom_body: '// Note: This is simplified - would need proper processor handling
 
-    ::AttachAudioStreamProcessor(rlreg::audiostreams.at(args[0].as_int()), nullptr);
+    ::AttachAudioStreamProcessor(rlreg::audiostreams.at(INT(0)), nullptr);
 
     '
 - name: DETACHAUDIOSTREAMPROCESSOR
@@ -2036,7 +2063,7 @@ functions:
   ret: void
   custom_body: '// Note: This is simplified - would need proper processor handling
 
-    ::DetachAudioStreamProcessor(rlreg::audiostreams.at(args[0].as_int()), nullptr);
+    ::DetachAudioStreamProcessor(rlreg::audiostreams.at(INT(0)), nullptr);
 
     '
 - name: ATTACHAUDIOMIXEDPROCESSOR
@@ -2064,7 +2091,7 @@ functions:
   args:
   - int
   ret: void
-  custom_body: "int id = args[0].as_int();\nauto it = rlreg::waves.find(id);\nif (it\
+  custom_body: "int id = INT(0);\nauto it = rlreg::waves.find(id);\nif (it\
     \ != rlreg::waves.end()) {\n  ::UnloadWave(it->second);\n  rlreg::waves.erase(it);\n\
     }\n"
 - name: UNLOADSOUNDALIAS
@@ -2072,7 +2099,7 @@ functions:
   args:
   - int
   ret: void
-  custom_body: "int id = args[0].as_int();\nauto it = rlreg::sounds.find(id);\nif\
+  custom_body: "int id = INT(0);\nauto it = rlreg::sounds.find(id);\nif\
     \ (it != rlreg::sounds.end()) {\n  ::UnloadSoundAlias(it->second);\n  rlreg::sounds.erase(it);\n\
     }\n"
 - name: EXPORTWAVE
@@ -2081,8 +2108,8 @@ functions:
   - int
   - string
   ret: bool
-  custom_body: 'return Value::from_bool(::ExportWave(rlreg::waves.at(args[0].as_int()),
-    args[1].as_string().c_str()));
+  custom_body: 'return Value::from_bool(::ExportWave(rlreg::waves.at(INT(0)),
+    STR(1).c_str()));
 
     '
 - name: EXPORTWAVEASCODE
@@ -2091,8 +2118,8 @@ functions:
   - int
   - string
   ret: bool
-  custom_body: 'return Value::from_bool(::ExportWaveAsCode(rlreg::waves.at(args[0].as_int()),
-    args[1].as_string().c_str()));
+  custom_body: 'return Value::from_bool(::ExportWaveAsCode(rlreg::waves.at(INT(0)),
+    STR(1).c_str()));
 
     '
 - name: LOADMODEL
@@ -2100,7 +2127,7 @@ functions:
   args:
   - string
   ret: int
-  custom_body: '::Model model = ::LoadModel(args[0].as_string().c_str());
+  custom_body: '::Model model = ::LoadModel(STR(0).c_str());
 
     int id = rlreg::next_model_id++;
 
@@ -2114,7 +2141,7 @@ functions:
   args:
   - int
   ret: int
-  custom_body: '::Model model = ::LoadModelFromMesh(rlreg::meshes.at(args[0].as_int()));
+  custom_body: '::Model model = ::LoadModelFromMesh(rlreg::meshes.at(INT(0)));
 
     int id = rlreg::next_model_id++;
 
@@ -2128,7 +2155,7 @@ functions:
   args:
   - int
   ret: bool
-  custom_body: 'return Value::from_bool(::IsModelValid(rlreg::models.at(args[0].as_int())));
+  custom_body: 'return Value::from_bool(::IsModelValid(rlreg::models.at(INT(0))));
 
     '
 - name: GETMODELBOUNDINGBOX
@@ -2136,7 +2163,7 @@ functions:
   args:
   - int
   ret: string
-  custom_body: "::BoundingBox box = ::GetModelBoundingBox(rlreg::models.at(args[0].as_int()));\n\
+  custom_body: "::BoundingBox box = ::GetModelBoundingBox(rlreg::models.at(INT(0)));\n\
     return Value::from_string(std::to_string(box.min.x) + \",\" + std::to_string(box.min.y)\
     \ + \",\" + std::to_string(box.min.z) + \",\" + \n                         std::to_string(box.max.x)\
     \ + \",\" + std::to_string(box.max.y) + \",\" + std::to_string(box.max.z));\n"
@@ -2152,15 +2179,15 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector3 position{(float)args[1].as_number(), (float)args[2].as_number(),
-    (float)args[3].as_number()};
+  custom_body: '::Vector3 position{(float)FLOAT(1), (float)FLOAT(2),
+    (float)FLOAT(3)};
 
-    float scale = (float)args[4].as_number();
+    float scale = (float)FLOAT(4);
 
-    ::Color tint{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(),
-    (unsigned char)args[7].as_int(), 255};
+    ::Color tint{(unsigned char)INT(5), (unsigned char)INT(6),
+    (unsigned char)INT(7), 255};
 
-    ::DrawModel(rlreg::models.at(args[0].as_int()), position, scale, tint);
+    ::DrawModel(rlreg::models.at(INT(0)), position, scale, tint);
 
     '
 - name: DRAWMODELEX
@@ -2178,18 +2205,18 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector3 position{(float)args[1].as_number(), (float)args[2].as_number(),
-    (float)args[3].as_number()};
+  custom_body: '::Vector3 position{(float)FLOAT(1), (float)FLOAT(2),
+    (float)FLOAT(3)};
 
-    ::Vector3 rotationAxis{(float)args[4].as_number(), (float)args[5].as_number(),
-    (float)args[6].as_number()};
+    ::Vector3 rotationAxis{(float)FLOAT(4), (float)FLOAT(5),
+    (float)FLOAT(6)};
 
-    ::Vector3 scale{(float)args[7].as_number(), (float)args[7].as_number(), (float)args[7].as_number()};
+    ::Vector3 scale{(float)FLOAT(7), (float)FLOAT(7), (float)FLOAT(7)};
 
-    ::Color tint{(unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(),
-    (unsigned char)args[10].as_int(), 255};
+    ::Color tint{(unsigned char)INT(8), (unsigned char)INT(9),
+    (unsigned char)INT(10), 255};
 
-    ::DrawModelEx(rlreg::models.at(args[0].as_int()), position, rotationAxis, 0.0f,
+    ::DrawModelEx(rlreg::models.at(INT(0)), position, rotationAxis, 0.0f,
     scale, tint);
 
     '
@@ -2205,15 +2232,15 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector3 position{(float)args[1].as_number(), (float)args[2].as_number(),
-    (float)args[3].as_number()};
+  custom_body: '::Vector3 position{(float)FLOAT(1), (float)FLOAT(2),
+    (float)FLOAT(3)};
 
-    float scale = (float)args[4].as_number();
+    float scale = (float)FLOAT(4);
 
-    ::Color tint{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(),
-    (unsigned char)args[7].as_int(), 255};
+    ::Color tint{(unsigned char)INT(5), (unsigned char)INT(6),
+    (unsigned char)INT(7), 255};
 
-    ::DrawModelWires(rlreg::models.at(args[0].as_int()), position, scale, tint);
+    ::DrawModelWires(rlreg::models.at(INT(0)), position, scale, tint);
 
     '
 - name: DRAWMODELWIRESEX
@@ -2231,18 +2258,18 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector3 position{(float)args[1].as_number(), (float)args[2].as_number(),
-    (float)args[3].as_number()};
+  custom_body: '::Vector3 position{(float)FLOAT(1), (float)FLOAT(2),
+    (float)FLOAT(3)};
 
-    ::Vector3 rotationAxis{(float)args[4].as_number(), (float)args[5].as_number(),
-    (float)args[6].as_number()};
+    ::Vector3 rotationAxis{(float)FLOAT(4), (float)FLOAT(5),
+    (float)FLOAT(6)};
 
-    ::Vector3 scale{(float)args[7].as_number(), (float)args[7].as_number(), (float)args[7].as_number()};
+    ::Vector3 scale{(float)FLOAT(7), (float)FLOAT(7), (float)FLOAT(7)};
 
-    ::Color tint{(unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(),
-    (unsigned char)args[10].as_int(), 255};
+    ::Color tint{(unsigned char)INT(8), (unsigned char)INT(9),
+    (unsigned char)INT(10), 255};
 
-    ::DrawModelWiresEx(rlreg::models.at(args[0].as_int()), position, rotationAxis,
+    ::DrawModelWiresEx(rlreg::models.at(INT(0)), position, rotationAxis,
     0.0f, scale, tint);
 
     '
@@ -2255,12 +2282,12 @@ functions:
   - int
   ret: void
   custom_body: "// Parse bounding box string format: \"minX,minY,minZ,maxX,maxY,maxZ\"\
-    \nstd::string boxStr = args[0].as_string();\nsize_t pos = 0;\nstd::vector<float>\
+    \nstd::string boxStr = STR(0);\nsize_t pos = 0;\nstd::vector<float>\
     \ coords;\nwhile ((pos = boxStr.find(\",\")) != std::string::npos) {\n  coords.push_back(std::stof(boxStr.substr(0,\
     \ pos)));\n  boxStr.erase(0, pos + 1);\n}\ncoords.push_back(std::stof(boxStr));\n\
     if (coords.size() >= 6) {\n  ::BoundingBox box{{coords[0], coords[1], coords[2]},\
-    \ {coords[3], coords[4], coords[5]}};\n  ::Color c{(unsigned char)args[1].as_int(),\
-    \ (unsigned char)args[2].as_int(), (unsigned char)args[3].as_int(), 255};\n  ::DrawBoundingBox(box,\
+    \ {coords[3], coords[4], coords[5]}};\n  ::Color c{(unsigned char)INT(1),\
+    \ (unsigned char)INT(2), (unsigned char)INT(3), 255};\n  ::DrawBoundingBox(box,\
     \ c);\n}\n"
 - name: DRAWBILLBOARD
   map_to: DrawBillboard
@@ -2279,12 +2306,12 @@ functions:
 
     ::Camera camera = ::Camera{};
 
-    ::Vector3 position{(float)args[2].as_number(), (float)args[3].as_number(), (float)args[4].as_number()};
+    ::Vector3 position{(float)FLOAT(2), (float)FLOAT(3), (float)FLOAT(4)};
 
-    ::Color tint{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(),
-    (unsigned char)args[8].as_int(), 255};
+    ::Color tint{(unsigned char)INT(6), (unsigned char)INT(7),
+    (unsigned char)INT(8), 255};
 
-    ::DrawBillboard(camera, rlreg::textures.at(args[1].as_int()), position, (float)args[5].as_number(),
+    ::DrawBillboard(camera, rlreg::textures.at(INT(1)), position, (float)FLOAT(5),
     tint);
 
     '
@@ -2310,17 +2337,17 @@ functions:
 
     ::Camera camera = ::Camera{};
 
-    ::Rectangle source{(float)args[2].as_int(), (float)args[3].as_int(), (float)args[4].as_int(),
-    (float)args[5].as_int()};
+    ::Rectangle source{(float)INT(2), (float)INT(3), (float)INT(4),
+    (float)INT(5)};
 
-    ::Vector3 position{(float)args[6].as_number(), (float)args[7].as_number(), (float)args[8].as_number()};
+    ::Vector3 position{(float)FLOAT(6), (float)FLOAT(7), (float)FLOAT(8)};
 
-    ::Vector2 size{(float)args[9].as_number(), (float)args[10].as_number()};
+    ::Vector2 size{(float)FLOAT(9), (float)FLOAT(10)};
 
-    ::Color tint{(unsigned char)args[11].as_int(), (unsigned char)args[12].as_int(),
-    (unsigned char)args[13].as_int(), 255};
+    ::Color tint{(unsigned char)INT(11), (unsigned char)INT(12),
+    (unsigned char)INT(13), 255};
 
-    ::DrawBillboardRec(camera, rlreg::textures.at(args[1].as_int()), source, position,
+    ::DrawBillboardRec(camera, rlreg::textures.at(INT(1)), source, position,
     size, tint);
 
     '
@@ -2350,21 +2377,21 @@ functions:
 
     ::Camera camera = ::Camera{};
 
-    ::Rectangle source{(float)args[2].as_int(), (float)args[3].as_int(), (float)args[4].as_int(),
-    (float)args[5].as_int()};
+    ::Rectangle source{(float)INT(2), (float)INT(3), (float)INT(4),
+    (float)INT(5)};
 
-    ::Vector3 position{(float)args[6].as_number(), (float)args[7].as_number(), (float)args[8].as_number()};
+    ::Vector3 position{(float)FLOAT(6), (float)FLOAT(7), (float)FLOAT(8)};
 
-    ::Vector3 up{(float)args[9].as_number(), (float)args[10].as_number(), (float)args[11].as_number()};
+    ::Vector3 up{(float)FLOAT(9), (float)FLOAT(10), (float)FLOAT(11)};
 
-    ::Vector2 size{(float)args[12].as_number(), (float)args[13].as_number()};
+    ::Vector2 size{(float)FLOAT(12), (float)FLOAT(13)};
 
-    ::Vector2 origin{(float)args[14].as_number(), (float)args[15].as_number()};
+    ::Vector2 origin{(float)FLOAT(14), (float)FLOAT(15)};
 
-    ::Color tint{(unsigned char)args[16].as_int(), (unsigned char)args[17].as_int(),
-    (unsigned char)args[18].as_int(), 255};
+    ::Color tint{(unsigned char)INT(16), (unsigned char)INT(17),
+    (unsigned char)INT(18), 255};
 
-    ::DrawBillboardPro(camera, rlreg::textures.at(args[1].as_int()), source, position,
+    ::DrawBillboardPro(camera, rlreg::textures.at(INT(1)), source, position,
     up, size, origin, 0.0f, tint);
 
     '
@@ -2374,7 +2401,7 @@ functions:
   - int
   - bool
   ret: void
-  custom_body: '::UploadMesh(&rlreg::meshes[args[0].as_int()], args[1].as_bool());
+  custom_body: '::UploadMesh(&rlreg::meshes[INT(0)], BOOL(1));
 
     '
 - name: UPDATEMESHBUFFER
@@ -2388,8 +2415,8 @@ functions:
   ret: void
   custom_body: '// Note: This is simplified - would need proper buffer data handling
 
-    ::UpdateMeshBuffer(rlreg::meshes.at(args[0].as_int()), args[1].as_int(), nullptr,
-    args[3].as_int(), args[4].as_int());
+    ::UpdateMeshBuffer(rlreg::meshes.at(INT(0)), INT(1), nullptr,
+    INT(3), INT(4));
 
     '
 - name: UNLOADMESH
@@ -2397,7 +2424,7 @@ functions:
   args:
   - int
   ret: void
-  custom_body: "int id = args[0].as_int();\nauto it = rlreg::meshes.find(id);\nif\
+  custom_body: "int id = INT(0);\nauto it = rlreg::meshes.find(id);\nif\
     \ (it != rlreg::meshes.end()) {\n  ::UnloadMesh(it->second);\n  rlreg::meshes.erase(it);\n\
     }\n"
 - name: DRAWMESH
@@ -2414,7 +2441,7 @@ functions:
 
     ::Matrix transform = MatrixIdentity();
 
-    ::DrawMesh(rlreg::meshes.at(args[0].as_int()), material, transform);
+    ::DrawMesh(rlreg::meshes.at(INT(0)), material, transform);
 
     '
 - name: DRAWMESHINSTANCED
@@ -2431,7 +2458,7 @@ functions:
 
     ::Matrix transform = MatrixIdentity();
 
-    ::DrawMeshInstanced(rlreg::meshes.at(args[0].as_int()), material, &transform,
+    ::DrawMeshInstanced(rlreg::meshes.at(INT(0)), material, &transform,
     1);
 
     '
@@ -2440,7 +2467,7 @@ functions:
   args:
   - int
   ret: string
-  custom_body: "::BoundingBox box = ::GetMeshBoundingBox(rlreg::meshes.at(args[0].as_int()));\n\
+  custom_body: "::BoundingBox box = ::GetMeshBoundingBox(rlreg::meshes.at(INT(0)));\n\
     return Value::from_string(std::to_string(box.min.x) + \",\" + std::to_string(box.min.y)\
     \ + \",\" + std::to_string(box.min.z) + \",\" + \n                         std::to_string(box.max.x)\
     \ + \",\" + std::to_string(box.max.y) + \",\" + std::to_string(box.max.z));\n"
@@ -2449,7 +2476,7 @@ functions:
   args:
   - int
   ret: void
-  custom_body: '::GenMeshTangents(&rlreg::meshes[args[0].as_int()]);
+  custom_body: '::GenMeshTangents(&rlreg::meshes[INT(0)]);
 
     '
 - name: EXPORTMESH
@@ -2458,8 +2485,8 @@ functions:
   - int
   - string
   ret: bool
-  custom_body: 'return Value::from_bool(::ExportMesh(rlreg::meshes.at(args[0].as_int()),
-    args[1].as_string().c_str()));
+  custom_body: 'return Value::from_bool(::ExportMesh(rlreg::meshes.at(INT(0)),
+    STR(1).c_str()));
 
     '
 - name: GENMESHPOLY
@@ -2468,7 +2495,7 @@ functions:
   - int
   - double
   ret: int
-  custom_body: '::Mesh mesh = ::GenMeshPoly(args[0].as_int(), (float)args[1].as_number());
+  custom_body: '::Mesh mesh = ::GenMeshPoly(INT(0), (float)FLOAT(1));
 
     int id = rlreg::next_mesh_id++;
 
@@ -2485,8 +2512,8 @@ functions:
   - int
   - int
   ret: int
-  custom_body: '::Mesh mesh = ::GenMeshPlane((float)args[0].as_number(), (float)args[1].as_number(),
-    args[2].as_int(), args[3].as_int());
+  custom_body: '::Mesh mesh = ::GenMeshPlane((float)FLOAT(0), (float)FLOAT(1),
+    INT(2), INT(3));
 
     int id = rlreg::next_mesh_id++;
 
@@ -2502,8 +2529,8 @@ functions:
   - double
   - double
   ret: int
-  custom_body: '::Mesh mesh = ::GenMeshCube((float)args[0].as_number(), (float)args[1].as_number(),
-    (float)args[2].as_number());
+  custom_body: '::Mesh mesh = ::GenMeshCube((float)FLOAT(0), (float)FLOAT(1),
+    (float)FLOAT(2));
 
     int id = rlreg::next_mesh_id++;
 
@@ -2519,8 +2546,8 @@ functions:
   - int
   - int
   ret: int
-  custom_body: '::Mesh mesh = ::GenMeshSphere((float)args[0].as_number(), args[1].as_int(),
-    args[2].as_int());
+  custom_body: '::Mesh mesh = ::GenMeshSphere((float)FLOAT(0), INT(1),
+    INT(2));
 
     int id = rlreg::next_mesh_id++;
 
@@ -2536,8 +2563,8 @@ functions:
   - int
   - int
   ret: int
-  custom_body: '::Mesh mesh = ::GenMeshHemiSphere((float)args[0].as_number(), args[1].as_int(),
-    args[2].as_int());
+  custom_body: '::Mesh mesh = ::GenMeshHemiSphere((float)FLOAT(0), INT(1),
+    INT(2));
 
     int id = rlreg::next_mesh_id++;
 
@@ -2553,8 +2580,8 @@ functions:
   - double
   - int
   ret: int
-  custom_body: '::Mesh mesh = ::GenMeshCylinder((float)args[0].as_number(), (float)args[1].as_number(),
-    args[2].as_int());
+  custom_body: '::Mesh mesh = ::GenMeshCylinder((float)FLOAT(0), (float)FLOAT(1),
+    INT(2));
 
     int id = rlreg::next_mesh_id++;
 
@@ -2570,8 +2597,8 @@ functions:
   - double
   - int
   ret: int
-  custom_body: '::Mesh mesh = ::GenMeshCone((float)args[0].as_number(), (float)args[1].as_number(),
-    args[2].as_int());
+  custom_body: '::Mesh mesh = ::GenMeshCone((float)FLOAT(0), (float)FLOAT(1),
+    INT(2));
 
     int id = rlreg::next_mesh_id++;
 
@@ -2588,8 +2615,8 @@ functions:
   - int
   - int
   ret: int
-  custom_body: '::Mesh mesh = ::GenMeshTorus((float)args[0].as_number(), (float)args[1].as_number(),
-    args[2].as_int(), args[3].as_int());
+  custom_body: '::Mesh mesh = ::GenMeshTorus((float)FLOAT(0), (float)FLOAT(1),
+    INT(2), INT(3));
 
     int id = rlreg::next_mesh_id++;
 
@@ -2606,8 +2633,8 @@ functions:
   - int
   - int
   ret: int
-  custom_body: '::Mesh mesh = ::GenMeshKnot((float)args[0].as_number(), (float)args[1].as_number(),
-    args[2].as_int(), args[3].as_int());
+  custom_body: '::Mesh mesh = ::GenMeshKnot((float)FLOAT(0), (float)FLOAT(1),
+    INT(2), INT(3));
 
     int id = rlreg::next_mesh_id++;
 
@@ -2624,10 +2651,10 @@ functions:
   - double
   - double
   ret: int
-  custom_body: '::Vector3 size{(float)args[1].as_number(), (float)args[2].as_number(),
-    (float)args[3].as_number()};
+  custom_body: '::Vector3 size{(float)FLOAT(1), (float)FLOAT(2),
+    (float)FLOAT(3)};
 
-    ::Mesh mesh = ::GenMeshHeightmap(rlreg::images.at(args[0].as_int()), size);
+    ::Mesh mesh = ::GenMeshHeightmap(rlreg::images.at(INT(0)), size);
 
     int id = rlreg::next_mesh_id++;
 
@@ -2644,10 +2671,10 @@ functions:
   - double
   - double
   ret: int
-  custom_body: '::Vector3 cubeSize{(float)args[1].as_number(), (float)args[2].as_number(),
-    (float)args[3].as_number()};
+  custom_body: '::Vector3 cubeSize{(float)FLOAT(1), (float)FLOAT(2),
+    (float)FLOAT(3)};
 
-    ::Mesh mesh = ::GenMeshCubicmap(rlreg::images.at(args[0].as_int()), cubeSize);
+    ::Mesh mesh = ::GenMeshCubicmap(rlreg::images.at(INT(0)), cubeSize);
 
     int id = rlreg::next_mesh_id++;
 
@@ -2663,7 +2690,7 @@ functions:
   ret: string
   custom_body: 'int materialCount;
 
-    ::Material* materials = ::LoadMaterials(args[0].as_string().c_str(), &materialCount);
+    ::Material* materials = ::LoadMaterials(STR(0).c_str(), &materialCount);
 
     (void)materials; // Suppress unused variable warning
 
@@ -2690,7 +2717,7 @@ functions:
   args:
   - int
   ret: bool
-  custom_body: 'return Value::from_bool(::IsMaterialValid(rlreg::materials.at(args[0].as_int())));
+  custom_body: 'return Value::from_bool(::IsMaterialValid(rlreg::materials.at(INT(0))));
 
     '
 - name: UNLOADMATERIAL
@@ -2698,7 +2725,7 @@ functions:
   args:
   - int
   ret: void
-  custom_body: "int id = args[0].as_int();\nauto it = rlreg::materials.find(id);\n\
+  custom_body: "int id = INT(0);\nauto it = rlreg::materials.find(id);\n\
     if (it != rlreg::materials.end()) {\n  ::UnloadMaterial(it->second);\n  rlreg::materials.erase(it);\n\
     }\n"
 - name: SETMATERIALTEXTURE
@@ -2708,8 +2735,8 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::SetMaterialTexture(&rlreg::materials[args[0].as_int()], args[1].as_int(),
-    rlreg::textures.at(args[2].as_int()));
+  custom_body: '::SetMaterialTexture(&rlreg::materials[INT(0)], INT(1),
+    rlreg::textures.at(INT(2)));
 
     '
 - name: SETMODELMESHMATERIAL
@@ -2719,8 +2746,8 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::SetModelMeshMaterial(&rlreg::models[args[0].as_int()], args[1].as_int(),
-    args[2].as_int());
+  custom_body: '::SetModelMeshMaterial(&rlreg::models[INT(0)], INT(1),
+    INT(2));
 
     '
 - name: LOADMODELANIMATIONS
@@ -2730,7 +2757,7 @@ functions:
   ret: string
   custom_body: 'int animCount;
 
-    ::ModelAnimation* animations = ::LoadModelAnimations(args[0].as_string().c_str(),
+    ::ModelAnimation* animations = ::LoadModelAnimations(STR(0).c_str(),
     &animCount);
 
     (void)animations; // Suppress unused variable warning
@@ -2751,7 +2778,7 @@ functions:
 
     ::ModelAnimation anim = ::ModelAnimation{};
 
-    ::UpdateModelAnimation(rlreg::models.at(args[0].as_int()), anim, args[2].as_int());
+    ::UpdateModelAnimation(rlreg::models.at(INT(0)), anim, INT(2));
 
     '
 - name: UNLOADMODELANIMATION
@@ -2786,7 +2813,7 @@ functions:
 
     ::ModelAnimation anim = ::ModelAnimation{};
 
-    return Value::from_bool(::IsModelAnimationValid(rlreg::models.at(args[0].as_int()),
+    return Value::from_bool(::IsModelAnimationValid(rlreg::models.at(INT(0)),
     anim));
 
     '
@@ -2802,14 +2829,14 @@ functions:
   - double
   - double
   ret: bool
-  custom_body: '::Vector3 center1{(float)args[0].as_number(), (float)args[1].as_number(),
-    (float)args[2].as_number()};
+  custom_body: '::Vector3 center1{(float)FLOAT(0), (float)FLOAT(1),
+    (float)FLOAT(2)};
 
-    float radius1 = (float)args[3].as_number();
+    float radius1 = (float)FLOAT(3);
 
-    ::Vector3 center2{(float)args[4].as_number(), (float)args[5].as_number(), (float)args[6].as_number()};
+    ::Vector3 center2{(float)FLOAT(4), (float)FLOAT(5), (float)FLOAT(6)};
 
-    float radius2 = (float)args[7].as_number();
+    float radius2 = (float)FLOAT(7);
 
     return Value::from_bool(::CheckCollisionSpheres(center1, radius1, center2, radius2));
 
@@ -2822,9 +2849,9 @@ functions:
   ret: bool
   custom_body: '// Parse bounding box strings
 
-    std::string box1Str = args[0].as_string();
+    std::string box1Str = STR(0);
 
-    std::string box2Str = args[1].as_string();
+    std::string box2Str = STR(1);
 
     // Note: This is simplified - would need proper parsing
 
@@ -2846,15 +2873,15 @@ functions:
   ret: bool
   custom_body: '// Parse bounding box string
 
-    std::string boxStr = args[0].as_string();
+    std::string boxStr = STR(0);
 
     // Note: This is simplified - would need proper parsing
 
     ::BoundingBox box = ::BoundingBox{{0,0,0}, {1,1,1}};
 
-    ::Vector3 center{(float)args[1].as_number(), (float)args[2].as_number(), (float)args[3].as_number()};
+    ::Vector3 center{(float)FLOAT(1), (float)FLOAT(2), (float)FLOAT(3)};
 
-    float radius = (float)args[4].as_number();
+    float radius = (float)FLOAT(4);
 
     return Value::from_bool(::CheckCollisionBoxSphere(box, center, radius));
 
@@ -2869,12 +2896,12 @@ functions:
   - double
   ret: string
   custom_body: "// Parse ray string format: \"posX,posY,posZ,dirX,dirY,dirZ\"\nstd::string\
-    \ rayStr = args[0].as_string();\nsize_t pos = 0;\nstd::vector<float> coords;\n\
+    \ rayStr = STR(0);\nsize_t pos = 0;\nstd::vector<float> coords;\n\
     while ((pos = rayStr.find(\",\")) != std::string::npos) {\n  coords.push_back(std::stof(rayStr.substr(0,\
     \ pos)));\n  rayStr.erase(0, pos + 1);\n}\ncoords.push_back(std::stof(rayStr));\n\
     if (coords.size() >= 6) {\n  ::Ray ray{{coords[0], coords[1], coords[2]}, {coords[3],\
-    \ coords[4], coords[5]}};\n  ::Vector3 center{(float)args[1].as_number(), (float)args[2].as_number(),\
-    \ (float)args[3].as_number()};\n  float radius = (float)args[4].as_number();\n\
+    \ coords[4], coords[5]}};\n  ::Vector3 center{(float)FLOAT(1), (float)FLOAT(2),\
+    \ (float)FLOAT(3)};\n  float radius = (float)FLOAT(4);\n\
     \  ::RayCollision collision = ::GetRayCollisionSphere(ray, center, radius);\n\
     \  return Value::from_string(std::to_string(collision.hit) + \",\" + std::to_string(collision.distance)\
     \ + \",\" + \n                           std::to_string(collision.point.x) + \"\
@@ -2886,8 +2913,8 @@ functions:
   - string
   - string
   ret: string
-  custom_body: "// Parse ray and bounding box strings\nstd::string rayStr = args[0].as_string();\n\
-    std::string boxStr = args[1].as_string();\n// Note: This is simplified - would\
+  custom_body: "// Parse ray and bounding box strings\nstd::string rayStr = STR(0);\n\
+    std::string boxStr = STR(1);\n// Note: This is simplified - would\
     \ need proper parsing\n::Ray ray = ::Ray{{0,0,0}, {0,0,1}};\n::BoundingBox box\
     \ = ::BoundingBox{{0,0,0}, {1,1,1}};\n::RayCollision collision = ::GetRayCollisionBox(ray,\
     \ box);\nreturn Value::from_string(std::to_string(collision.hit) + \",\" + std::to_string(collision.distance)\
@@ -2900,10 +2927,10 @@ functions:
   - int
   - string
   ret: string
-  custom_body: "// Parse ray and matrix strings\nstd::string rayStr = args[0].as_string();\n\
-    std::string matrixStr = args[2].as_string();\n// Note: This is simplified - would\
+  custom_body: "// Parse ray and matrix strings\nstd::string rayStr = STR(0);\n\
+    std::string matrixStr = STR(2);\n// Note: This is simplified - would\
     \ need proper parsing\n::Ray ray = ::Ray{{0,0,0}, {0,0,1}};\n::Matrix transform\
-    \ = MatrixIdentity();\n::RayCollision collision = ::GetRayCollisionMesh(ray, rlreg::meshes.at(args[1].as_int()),\
+    \ = MatrixIdentity();\n::RayCollision collision = ::GetRayCollisionMesh(ray, rlreg::meshes.at(INT(1)),\
     \ transform);\nreturn Value::from_string(std::to_string(collision.hit) + \",\"\
     \ + std::to_string(collision.distance) + \",\" + \n                         std::to_string(collision.point.x)\
     \ + \",\" + std::to_string(collision.point.y) + \",\" + std::to_string(collision.point.z));\n"
@@ -2922,14 +2949,14 @@ functions:
   - double
   ret: string
   custom_body: "// Parse ray string format: \"posX,posY,posZ,dirX,dirY,dirZ\"\nstd::string\
-    \ rayStr = args[0].as_string();\nsize_t pos = 0;\nstd::vector<float> coords;\n\
+    \ rayStr = STR(0);\nsize_t pos = 0;\nstd::vector<float> coords;\n\
     while ((pos = rayStr.find(\",\")) != std::string::npos) {\n  coords.push_back(std::stof(rayStr.substr(0,\
     \ pos)));\n  rayStr.erase(0, pos + 1);\n}\ncoords.push_back(std::stof(rayStr));\n\
     if (coords.size() >= 6) {\n  ::Ray ray{{coords[0], coords[1], coords[2]}, {coords[3],\
-    \ coords[4], coords[5]}};\n  ::Vector3 p1{(float)args[1].as_number(), (float)args[2].as_number(),\
-    \ (float)args[3].as_number()};\n  ::Vector3 p2{(float)args[4].as_number(), (float)args[5].as_number(),\
-    \ (float)args[6].as_number()};\n  ::Vector3 p3{(float)args[7].as_number(), (float)args[8].as_number(),\
-    \ (float)args[9].as_number()};\n  ::RayCollision collision = ::GetRayCollisionTriangle(ray,\
+    \ coords[4], coords[5]}};\n  ::Vector3 p1{(float)FLOAT(1), (float)FLOAT(2),\
+    \ (float)FLOAT(3)};\n  ::Vector3 p2{(float)FLOAT(4), (float)FLOAT(5),\
+    \ (float)FLOAT(6)};\n  ::Vector3 p3{(float)FLOAT(7), (float)FLOAT(8),\
+    \ (float)FLOAT(9)};\n  ::RayCollision collision = ::GetRayCollisionTriangle(ray,\
     \ p1, p2, p3);\n  return Value::from_string(std::to_string(collision.hit) + \"\
     ,\" + std::to_string(collision.distance) + \",\" + \n                        \
     \   std::to_string(collision.point.x) + \",\" + std::to_string(collision.point.y)\
@@ -2953,15 +2980,15 @@ functions:
   - double
   ret: string
   custom_body: "// Parse ray string format: \"posX,posY,posZ,dirX,dirY,dirZ\"\nstd::string\
-    \ rayStr = args[0].as_string();\nsize_t pos = 0;\nstd::vector<float> coords;\n\
+    \ rayStr = STR(0);\nsize_t pos = 0;\nstd::vector<float> coords;\n\
     while ((pos = rayStr.find(\",\")) != std::string::npos) {\n  coords.push_back(std::stof(rayStr.substr(0,\
     \ pos)));\n  rayStr.erase(0, pos + 1);\n}\ncoords.push_back(std::stof(rayStr));\n\
     if (coords.size() >= 6) {\n  ::Ray ray{{coords[0], coords[1], coords[2]}, {coords[3],\
-    \ coords[4], coords[5]}};\n  ::Vector3 p1{(float)args[1].as_number(), (float)args[2].as_number(),\
-    \ (float)args[3].as_number()};\n  ::Vector3 p2{(float)args[4].as_number(), (float)args[5].as_number(),\
-    \ (float)args[6].as_number()};\n  ::Vector3 p3{(float)args[7].as_number(), (float)args[8].as_number(),\
-    \ (float)args[9].as_number()};\n  ::Vector3 p4{(float)args[10].as_number(), (float)args[11].as_number(),\
-    \ (float)args[12].as_number()};\n  ::RayCollision collision = ::GetRayCollisionQuad(ray,\
+    \ coords[4], coords[5]}};\n  ::Vector3 p1{(float)FLOAT(1), (float)FLOAT(2),\
+    \ (float)FLOAT(3)};\n  ::Vector3 p2{(float)FLOAT(4), (float)FLOAT(5),\
+    \ (float)FLOAT(6)};\n  ::Vector3 p3{(float)FLOAT(7), (float)FLOAT(8),\
+    \ (float)FLOAT(9)};\n  ::Vector3 p4{(float)FLOAT(10), (float)FLOAT(11),\
+    \ (float)FLOAT(12)};\n  ::RayCollision collision = ::GetRayCollisionQuad(ray,\
     \ p1, p2, p3, p4);\n  return Value::from_string(std::to_string(collision.hit)\
     \ + \",\" + std::to_string(collision.distance) + \",\" + \n                  \
     \         std::to_string(collision.point.x) + \",\" + std::to_string(collision.point.y)\
@@ -2972,7 +2999,7 @@ functions:
   args:
   - int
   ret: void
-  custom_body: "int id = args[0].as_int();\nauto it = rlreg::models.find(id);\nif\
+  custom_body: "int id = INT(0);\nauto it = rlreg::models.find(id);\nif\
     \ (it != rlreg::models.end()) {\n  ::UnloadModel(it->second);\n  rlreg::models.erase(it);\n\
     }\n"
 - name: DRAWLINE3D
@@ -2988,13 +3015,13 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector3 start{(float)args[0].as_number(), (float)args[1].as_number(),
-    (float)args[2].as_number()};
+  custom_body: '::Vector3 start{(float)FLOAT(0), (float)FLOAT(1),
+    (float)FLOAT(2)};
 
-    ::Vector3 end{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+    ::Vector3 end{(float)FLOAT(3), (float)FLOAT(4), (float)FLOAT(5)};
 
-    ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned
-    char)args[8].as_int(), 255};
+    ::Color c{(unsigned char)INT(6), (unsigned char)INT(7), (unsigned
+    char)INT(8), 255};
 
     ::DrawLine3D(start, end, c);
 
@@ -3009,11 +3036,11 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(),
-    (float)args[2].as_number()};
+  custom_body: '::Vector3 position{(float)FLOAT(0), (float)FLOAT(1),
+    (float)FLOAT(2)};
 
-    ::Color c{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned
-    char)args[5].as_int(), 255};
+    ::Color c{(unsigned char)INT(3), (unsigned char)INT(4), (unsigned
+    char)INT(5), 255};
 
     ::DrawPoint3D(position, c);
 
@@ -3033,16 +3060,16 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector3 center{(float)args[0].as_number(), (float)args[1].as_number(),
-    (float)args[2].as_number()};
+  custom_body: '::Vector3 center{(float)FLOAT(0), (float)FLOAT(1),
+    (float)FLOAT(2)};
 
-    ::Vector3 rotationAxis{(float)args[4].as_number(), (float)args[5].as_number(),
-    (float)args[6].as_number()};
+    ::Vector3 rotationAxis{(float)FLOAT(4), (float)FLOAT(5),
+    (float)FLOAT(6)};
 
-    ::Color c{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned
-    char)args[9].as_int(), 255};
+    ::Color c{(unsigned char)INT(7), (unsigned char)INT(8), (unsigned
+    char)INT(9), 255};
 
-    ::DrawCircle3D(center, (float)args[3].as_number(), rotationAxis, 0.0f, c);
+    ::DrawCircle3D(center, (float)FLOAT(3), rotationAxis, 0.0f, c);
 
     '
 - name: DRAWTRIANGLE3D
@@ -3061,15 +3088,15 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector3 v1{(float)args[0].as_number(), (float)args[1].as_number(),
-    (float)args[2].as_number()};
+  custom_body: '::Vector3 v1{(float)FLOAT(0), (float)FLOAT(1),
+    (float)FLOAT(2)};
 
-    ::Vector3 v2{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+    ::Vector3 v2{(float)FLOAT(3), (float)FLOAT(4), (float)FLOAT(5)};
 
-    ::Vector3 v3{(float)args[6].as_number(), (float)args[7].as_number(), (float)args[8].as_number()};
+    ::Vector3 v3{(float)FLOAT(6), (float)FLOAT(7), (float)FLOAT(8)};
 
-    ::Color c{(unsigned char)args[9].as_int(), (unsigned char)args[10].as_int(), (unsigned
-    char)args[11].as_int(), 255};
+    ::Color c{(unsigned char)INT(9), (unsigned char)INT(10), (unsigned
+    char)INT(11), 255};
 
     ::DrawTriangle3D(v1, v2, v3, c);
 
@@ -3086,8 +3113,8 @@ functions:
 
     ::Vector3 points[4] = {{0,0,0}, {1,0,0}, {0,1,0}, {1,1,0}};
 
-    ::Color c{(unsigned char)args[1].as_int(), (unsigned char)args[2].as_int(), (unsigned
-    char)args[3].as_int(), 255};
+    ::Color c{(unsigned char)INT(1), (unsigned char)INT(2), (unsigned
+    char)INT(3), 255};
 
     ::DrawTriangleStrip3D(points, 4, c);
 
@@ -3105,13 +3132,13 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(),
-    (float)args[2].as_number()};
+  custom_body: '::Vector3 position{(float)FLOAT(0), (float)FLOAT(1),
+    (float)FLOAT(2)};
 
-    ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned
-    char)args[8].as_int(), 255};
+    ::Color c{(unsigned char)INT(6), (unsigned char)INT(7), (unsigned
+    char)INT(8), 255};
 
-    ::DrawCube(position, (float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number(),
+    ::DrawCube(position, (float)FLOAT(3), (float)FLOAT(4), (float)FLOAT(5),
     c);
 
     '
@@ -3128,13 +3155,13 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(),
-    (float)args[2].as_number()};
+  custom_body: '::Vector3 position{(float)FLOAT(0), (float)FLOAT(1),
+    (float)FLOAT(2)};
 
-    ::Vector3 size{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+    ::Vector3 size{(float)FLOAT(3), (float)FLOAT(4), (float)FLOAT(5)};
 
-    ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned
-    char)args[8].as_int(), 255};
+    ::Color c{(unsigned char)INT(6), (unsigned char)INT(7), (unsigned
+    char)INT(8), 255};
 
     ::DrawCubeV(position, size, c);
 
@@ -3152,14 +3179,14 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(),
-    (float)args[2].as_number()};
+  custom_body: '::Vector3 position{(float)FLOAT(0), (float)FLOAT(1),
+    (float)FLOAT(2)};
 
-    ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned
-    char)args[8].as_int(), 255};
+    ::Color c{(unsigned char)INT(6), (unsigned char)INT(7), (unsigned
+    char)INT(8), 255};
 
-    ::DrawCubeWires(position, (float)args[3].as_number(), (float)args[4].as_number(),
-    (float)args[5].as_number(), c);
+    ::DrawCubeWires(position, (float)FLOAT(3), (float)FLOAT(4),
+    (float)FLOAT(5), c);
 
     '
 - name: DRAWCUBEWIRESV
@@ -3175,13 +3202,13 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(),
-    (float)args[2].as_number()};
+  custom_body: '::Vector3 position{(float)FLOAT(0), (float)FLOAT(1),
+    (float)FLOAT(2)};
 
-    ::Vector3 size{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+    ::Vector3 size{(float)FLOAT(3), (float)FLOAT(4), (float)FLOAT(5)};
 
-    ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned
-    char)args[8].as_int(), 255};
+    ::Color c{(unsigned char)INT(6), (unsigned char)INT(7), (unsigned
+    char)INT(8), 255};
 
     ::DrawCubeWiresV(position, size, c);
 
@@ -3197,13 +3224,13 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector3 center{(float)args[0].as_number(), (float)args[1].as_number(),
-    (float)args[2].as_number()};
+  custom_body: '::Vector3 center{(float)FLOAT(0), (float)FLOAT(1),
+    (float)FLOAT(2)};
 
-    ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned
-    char)args[7].as_int(), 255};
+    ::Color c{(unsigned char)INT(5), (unsigned char)INT(6), (unsigned
+    char)INT(7), 255};
 
-    ::DrawSphere(center, (float)args[3].as_number(), c);
+    ::DrawSphere(center, (float)FLOAT(3), c);
 
     '
 - name: DRAWSPHEREEX
@@ -3219,13 +3246,13 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector3 center{(float)args[0].as_number(), (float)args[1].as_number(),
-    (float)args[2].as_number()};
+  custom_body: '::Vector3 center{(float)FLOAT(0), (float)FLOAT(1),
+    (float)FLOAT(2)};
 
-    ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned
-    char)args[8].as_int(), 255};
+    ::Color c{(unsigned char)INT(6), (unsigned char)INT(7), (unsigned
+    char)INT(8), 255};
 
-    ::DrawSphereEx(center, (float)args[3].as_number(), args[4].as_int(), args[5].as_int(),
+    ::DrawSphereEx(center, (float)FLOAT(3), INT(4), INT(5),
     c);
 
     '
@@ -3242,13 +3269,13 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector3 center{(float)args[0].as_number(), (float)args[1].as_number(),
-    (float)args[2].as_number()};
+  custom_body: '::Vector3 center{(float)FLOAT(0), (float)FLOAT(1),
+    (float)FLOAT(2)};
 
-    ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned
-    char)args[8].as_int(), 255};
+    ::Color c{(unsigned char)INT(6), (unsigned char)INT(7), (unsigned
+    char)INT(8), 255};
 
-    ::DrawSphereWires(center, (float)args[3].as_number(), args[4].as_int(), args[5].as_int(),
+    ::DrawSphereWires(center, (float)FLOAT(3), INT(4), INT(5),
     c);
 
     '
@@ -3266,14 +3293,14 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(),
-    (float)args[2].as_number()};
+  custom_body: '::Vector3 position{(float)FLOAT(0), (float)FLOAT(1),
+    (float)FLOAT(2)};
 
-    ::Color c{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned
-    char)args[9].as_int(), 255};
+    ::Color c{(unsigned char)INT(7), (unsigned char)INT(8), (unsigned
+    char)INT(9), 255};
 
-    ::DrawCylinder(position, (float)args[3].as_number(), (float)args[4].as_number(),
-    (float)args[5].as_number(), args[6].as_int(), c);
+    ::DrawCylinder(position, (float)FLOAT(3), (float)FLOAT(4),
+    (float)FLOAT(5), INT(6), c);
 
     '
 - name: DRAWCYLINDEREX
@@ -3292,16 +3319,16 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector3 start{(float)args[0].as_number(), (float)args[1].as_number(),
-    (float)args[2].as_number()};
+  custom_body: '::Vector3 start{(float)FLOAT(0), (float)FLOAT(1),
+    (float)FLOAT(2)};
 
-    ::Vector3 end{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+    ::Vector3 end{(float)FLOAT(3), (float)FLOAT(4), (float)FLOAT(5)};
 
-    ::Color c{(unsigned char)args[10].as_int(), (unsigned char)args[11].as_int(),
-    (unsigned char)args[12].as_int(), 255};
+    ::Color c{(unsigned char)INT(10), (unsigned char)INT(11),
+    (unsigned char)INT(12), 255};
 
-    ::DrawCylinderEx(start, end, (float)args[6].as_number(), (float)args[7].as_number(),
-    args[8].as_int(), c);
+    ::DrawCylinderEx(start, end, (float)FLOAT(6), (float)FLOAT(7),
+    INT(8), c);
 
     '
 - name: DRAWCYLINDERWIRES
@@ -3318,14 +3345,14 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(),
-    (float)args[2].as_number()};
+  custom_body: '::Vector3 position{(float)FLOAT(0), (float)FLOAT(1),
+    (float)FLOAT(2)};
 
-    ::Color c{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned
-    char)args[9].as_int(), 255};
+    ::Color c{(unsigned char)INT(7), (unsigned char)INT(8), (unsigned
+    char)INT(9), 255};
 
-    ::DrawCylinderWires(position, (float)args[3].as_number(), (float)args[4].as_number(),
-    (float)args[5].as_number(), args[6].as_int(), c);
+    ::DrawCylinderWires(position, (float)FLOAT(3), (float)FLOAT(4),
+    (float)FLOAT(5), INT(6), c);
 
     '
 - name: DRAWCYLINDERWIRESEX
@@ -3344,16 +3371,16 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector3 start{(float)args[0].as_number(), (float)args[1].as_number(),
-    (float)args[2].as_number()};
+  custom_body: '::Vector3 start{(float)FLOAT(0), (float)FLOAT(1),
+    (float)FLOAT(2)};
 
-    ::Vector3 end{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+    ::Vector3 end{(float)FLOAT(3), (float)FLOAT(4), (float)FLOAT(5)};
 
-    ::Color c{(unsigned char)args[10].as_int(), (unsigned char)args[11].as_int(),
-    (unsigned char)args[12].as_int(), 255};
+    ::Color c{(unsigned char)INT(10), (unsigned char)INT(11),
+    (unsigned char)INT(12), 255};
 
-    ::DrawCylinderWiresEx(start, end, (float)args[6].as_number(), (float)args[7].as_number(),
-    args[8].as_int(), c);
+    ::DrawCylinderWiresEx(start, end, (float)FLOAT(6), (float)FLOAT(7),
+    INT(8), c);
 
     '
 - name: DRAWCAPSULE
@@ -3371,15 +3398,15 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector3 start{(float)args[0].as_number(), (float)args[1].as_number(),
-    (float)args[2].as_number()};
+  custom_body: '::Vector3 start{(float)FLOAT(0), (float)FLOAT(1),
+    (float)FLOAT(2)};
 
-    ::Vector3 end{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+    ::Vector3 end{(float)FLOAT(3), (float)FLOAT(4), (float)FLOAT(5)};
 
-    ::Color c{(unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), (unsigned
-    char)args[10].as_int(), 255};
+    ::Color c{(unsigned char)INT(8), (unsigned char)INT(9), (unsigned
+    char)INT(10), 255};
 
-    ::DrawCapsule(start, end, (float)args[6].as_number(), args[7].as_int(), args[8].as_int(),
+    ::DrawCapsule(start, end, (float)FLOAT(6), INT(7), INT(8),
     c);
 
     '
@@ -3398,15 +3425,15 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector3 start{(float)args[0].as_number(), (float)args[1].as_number(),
-    (float)args[2].as_number()};
+  custom_body: '::Vector3 start{(float)FLOAT(0), (float)FLOAT(1),
+    (float)FLOAT(2)};
 
-    ::Vector3 end{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+    ::Vector3 end{(float)FLOAT(3), (float)FLOAT(4), (float)FLOAT(5)};
 
-    ::Color c{(unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), (unsigned
-    char)args[10].as_int(), 255};
+    ::Color c{(unsigned char)INT(8), (unsigned char)INT(9), (unsigned
+    char)INT(10), 255};
 
-    ::DrawCapsuleWires(start, end, (float)args[6].as_number(), args[7].as_int(), args[8].as_int(),
+    ::DrawCapsuleWires(start, end, (float)FLOAT(6), INT(7), INT(8),
     c);
 
     '
@@ -3422,13 +3449,13 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector3 center{(float)args[0].as_number(), (float)args[1].as_number(),
-    (float)args[2].as_number()};
+  custom_body: '::Vector3 center{(float)FLOAT(0), (float)FLOAT(1),
+    (float)FLOAT(2)};
 
-    ::Vector2 size{(float)args[3].as_number(), (float)args[4].as_number()};
+    ::Vector2 size{(float)FLOAT(3), (float)FLOAT(4)};
 
-    ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned
-    char)args[7].as_int(), 255};
+    ::Color c{(unsigned char)INT(5), (unsigned char)INT(6), (unsigned
+    char)INT(7), 255};
 
     ::DrawPlane(center, size, c);
 
@@ -3442,12 +3469,12 @@ functions:
   - int
   ret: void
   custom_body: "// Parse ray string format: \"posX,posY,posZ,dirX,dirY,dirZ\"\nstd::string\
-    \ rayStr = args[0].as_string();\nsize_t pos = 0;\nstd::vector<float> coords;\n\
+    \ rayStr = STR(0);\nsize_t pos = 0;\nstd::vector<float> coords;\n\
     while ((pos = rayStr.find(\",\")) != std::string::npos) {\n  coords.push_back(std::stof(rayStr.substr(0,\
     \ pos)));\n  rayStr.erase(0, pos + 1);\n}\ncoords.push_back(std::stof(rayStr));\n\
     if (coords.size() >= 6) {\n  ::Ray ray{{coords[0], coords[1], coords[2]}, {coords[3],\
-    \ coords[4], coords[5]}};\n  ::Color c{(unsigned char)args[1].as_int(), (unsigned\
-    \ char)args[2].as_int(), (unsigned char)args[3].as_int(), 255};\n  ::DrawRay(ray,\
+    \ coords[4], coords[5]}};\n  ::Color c{(unsigned char)INT(1), (unsigned\
+    \ char)INT(2), (unsigned char)INT(3), 255};\n  ::DrawRay(ray,\
     \ c);\n}\n"
 - name: DRAWGRID
   map_to: DrawGrid
@@ -3455,7 +3482,7 @@ functions:
   - int
   - double
   ret: void
-  custom_body: '::DrawGrid(args[0].as_int(), (float)args[1].as_number());
+  custom_body: '::DrawGrid(INT(0), (float)FLOAT(1));
 
     '
 - name: CHECKCOLLISIONRECS
@@ -3470,11 +3497,11 @@ functions:
   - int
   - int
   ret: bool
-  custom_body: '::Rectangle rec1{(float)args[0].as_int(), (float)args[1].as_int(),
-    (float)args[2].as_int(), (float)args[3].as_int()};
+  custom_body: '::Rectangle rec1{(float)INT(0), (float)INT(1),
+    (float)INT(2), (float)INT(3)};
 
-    ::Rectangle rec2{(float)args[4].as_int(), (float)args[5].as_int(), (float)args[6].as_int(),
-    (float)args[7].as_int()};
+    ::Rectangle rec2{(float)INT(4), (float)INT(5), (float)INT(6),
+    (float)INT(7)};
 
     return Value::from_bool(::CheckCollisionRecs(rec1, rec2));
 
@@ -3489,13 +3516,13 @@ functions:
   - int
   - int
   ret: bool
-  custom_body: '::Vector2 center1{(float)args[0].as_int(), (float)args[1].as_int()};
+  custom_body: '::Vector2 center1{(float)INT(0), (float)INT(1)};
 
-    float radius1 = (float)args[2].as_int();
+    float radius1 = (float)INT(2);
 
-    ::Vector2 center2{(float)args[3].as_int(), (float)args[4].as_int()};
+    ::Vector2 center2{(float)INT(3), (float)INT(4)};
 
-    float radius2 = (float)args[5].as_int();
+    float radius2 = (float)INT(5);
 
     return Value::from_bool(::CheckCollisionCircles(center1, radius1, center2, radius2));
 
@@ -3511,12 +3538,12 @@ functions:
   - int
   - int
   ret: bool
-  custom_body: '::Vector2 center{(float)args[0].as_int(), (float)args[1].as_int()};
+  custom_body: '::Vector2 center{(float)INT(0), (float)INT(1)};
 
-    float radius = (float)args[2].as_int();
+    float radius = (float)INT(2);
 
-    ::Rectangle rec{(float)args[3].as_int(), (float)args[4].as_int(), (float)args[5].as_int(),
-    (float)args[6].as_int()};
+    ::Rectangle rec{(float)INT(3), (float)INT(4), (float)INT(5),
+    (float)INT(6)};
 
     return Value::from_bool(::CheckCollisionCircleRec(center, radius, rec));
 
@@ -3531,10 +3558,10 @@ functions:
   - int
   - int
   ret: bool
-  custom_body: '::Vector2 point{(float)args[0].as_int(), (float)args[1].as_int()};
+  custom_body: '::Vector2 point{(float)INT(0), (float)INT(1)};
 
-    ::Rectangle rec{(float)args[2].as_int(), (float)args[3].as_int(), (float)args[4].as_int(),
-    (float)args[5].as_int()};
+    ::Rectangle rec{(float)INT(2), (float)INT(3), (float)INT(4),
+    (float)INT(5)};
 
     return Value::from_bool(::CheckCollisionPointRec(point, rec));
 
@@ -3548,11 +3575,11 @@ functions:
   - int
   - int
   ret: bool
-  custom_body: '::Vector2 point{(float)args[0].as_int(), (float)args[1].as_int()};
+  custom_body: '::Vector2 point{(float)INT(0), (float)INT(1)};
 
-    ::Vector2 center{(float)args[2].as_int(), (float)args[3].as_int()};
+    ::Vector2 center{(float)INT(2), (float)INT(3)};
 
-    float radius = (float)args[4].as_int();
+    float radius = (float)INT(4);
 
     return Value::from_bool(::CheckCollisionPointCircle(point, center, radius));
 
@@ -3570,13 +3597,13 @@ functions:
   - int
   - int
   ret: bool
-  custom_body: '::Vector2 point{(float)args[0].as_int(), (float)args[1].as_int()};
+  custom_body: '::Vector2 point{(float)INT(0), (float)INT(1)};
 
-    ::Vector2 p1{(float)args[2].as_int(), (float)args[3].as_int()};
+    ::Vector2 p1{(float)INT(2), (float)INT(3)};
 
-    ::Vector2 p2{(float)args[4].as_int(), (float)args[5].as_int()};
+    ::Vector2 p2{(float)INT(4), (float)INT(5)};
 
-    ::Vector2 p3{(float)args[6].as_int(), (float)args[7].as_int()};
+    ::Vector2 p3{(float)INT(6), (float)INT(7)};
 
     return Value::from_bool(::CheckCollisionPointTriangle(point, p1, p2, p3));
 
@@ -3592,13 +3619,13 @@ functions:
   - int
   - int
   ret: bool
-  custom_body: '::Vector2 point{(float)args[0].as_int(), (float)args[1].as_int()};
+  custom_body: '::Vector2 point{(float)INT(0), (float)INT(1)};
 
-    ::Vector2 p1{(float)args[2].as_int(), (float)args[3].as_int()};
+    ::Vector2 p1{(float)INT(2), (float)INT(3)};
 
-    ::Vector2 p2{(float)args[4].as_int(), (float)args[5].as_int()};
+    ::Vector2 p2{(float)INT(4), (float)INT(5)};
 
-    return Value::from_bool(::CheckCollisionPointLine(point, p1, p2, args[6].as_int()));
+    return Value::from_bool(::CheckCollisionPointLine(point, p1, p2, INT(6)));
 
     '
 - name: CHECKCOLLISIONPOINTPOLY
@@ -3608,7 +3635,7 @@ functions:
   - int
   - string
   ret: bool
-  custom_body: '::Vector2 point{(float)args[0].as_int(), (float)args[1].as_int()};
+  custom_body: '::Vector2 point{(float)INT(0), (float)INT(1)};
 
     // Note: This is simplified - would need proper polygon parsing
 
@@ -3630,13 +3657,13 @@ functions:
   - int
   - string
   ret: bool
-  custom_body: '::Vector2 startPos1{(float)args[0].as_int(), (float)args[1].as_int()};
+  custom_body: '::Vector2 startPos1{(float)INT(0), (float)INT(1)};
 
-    ::Vector2 endPos1{(float)args[2].as_int(), (float)args[3].as_int()};
+    ::Vector2 endPos1{(float)INT(2), (float)INT(3)};
 
-    ::Vector2 startPos2{(float)args[4].as_int(), (float)args[5].as_int()};
+    ::Vector2 startPos2{(float)INT(4), (float)INT(5)};
 
-    ::Vector2 endPos2{(float)args[6].as_int(), (float)args[7].as_int()};
+    ::Vector2 endPos2{(float)INT(6), (float)INT(7)};
 
     ::Vector2 collisionPoint;
 
@@ -3659,9 +3686,9 @@ functions:
   - int
   - int
   ret: string
-  custom_body: "::Rectangle rec1{(float)args[0].as_int(), (float)args[1].as_int(),\
-    \ (float)args[2].as_int(), (float)args[3].as_int()};\n::Rectangle rec2{(float)args[4].as_int(),\
-    \ (float)args[5].as_int(), (float)args[6].as_int(), (float)args[7].as_int()};\n\
+  custom_body: "::Rectangle rec1{(float)INT(0), (float)INT(1),\
+    \ (float)INT(2), (float)INT(3)};\n::Rectangle rec2{(float)INT(4),\
+    \ (float)INT(5), (float)INT(6), (float)INT(7)};\n\
     ::Rectangle collision = ::GetCollisionRec(rec1, rec2);\nreturn Value::from_string(std::to_string(collision.x)\
     \ + \",\" + std::to_string(collision.y) + \",\" + \n                         std::to_string(collision.width)\
     \ + \",\" + std::to_string(collision.height));\n"
@@ -3671,7 +3698,7 @@ functions:
   - string
   - string
   ret: int
-  custom_body: '::Shader shader = ::LoadShader(args[0].as_string().c_str(), args[1].as_string().c_str());
+  custom_body: '::Shader shader = ::LoadShader(STR(0).c_str(), STR(1).c_str());
 
     int id = rlreg::next_shader_id++;
 
@@ -3686,8 +3713,8 @@ functions:
   - string
   - string
   ret: int
-  custom_body: '::Shader shader = ::LoadShaderFromMemory(args[0].as_string().c_str(),
-    args[1].as_string().c_str());
+  custom_body: '::Shader shader = ::LoadShaderFromMemory(STR(0).c_str(),
+    STR(1).c_str());
 
     int id = rlreg::next_shader_id++;
 
@@ -3701,7 +3728,7 @@ functions:
   args:
   - int
   ret: bool
-  custom_body: 'return Value::from_bool(::IsShaderValid(rlreg::shaders.at(args[0].as_int())));
+  custom_body: 'return Value::from_bool(::IsShaderValid(rlreg::shaders.at(INT(0))));
 
     '
 - name: GETSHADERLOCATION
@@ -3710,8 +3737,8 @@ functions:
   - int
   - string
   ret: int
-  custom_body: 'return Value::from_int(::GetShaderLocation(rlreg::shaders.at(args[0].as_int()),
-    args[1].as_string().c_str()));
+  custom_body: 'return Value::from_int(::GetShaderLocation(rlreg::shaders.at(INT(0)),
+    STR(1).c_str()));
 
     '
 - name: GETSHADERLOCATIONATTRIB
@@ -3720,8 +3747,8 @@ functions:
   - int
   - string
   ret: int
-  custom_body: 'return Value::from_int(::GetShaderLocationAttrib(rlreg::shaders.at(args[0].as_int()),
-    args[1].as_string().c_str()));
+  custom_body: 'return Value::from_int(::GetShaderLocationAttrib(rlreg::shaders.at(INT(0)),
+    STR(1).c_str()));
 
     '
 - name: SETSHADERVALUE
@@ -3734,8 +3761,8 @@ functions:
   ret: void
   custom_body: '// Note: This is simplified - would need proper value handling
 
-    ::SetShaderValue(rlreg::shaders.at(args[0].as_int()), args[1].as_int(), nullptr,
-    args[3].as_int());
+    ::SetShaderValue(rlreg::shaders.at(INT(0)), INT(1), nullptr,
+    INT(3));
 
     '
 - name: SETSHADERVALUEV
@@ -3749,8 +3776,8 @@ functions:
   ret: void
   custom_body: '// Note: This is simplified - would need proper value handling
 
-    ::SetShaderValueV(rlreg::shaders.at(args[0].as_int()), args[1].as_int(), nullptr,
-    args[3].as_int(), args[4].as_int());
+    ::SetShaderValueV(rlreg::shaders.at(INT(0)), INT(1), nullptr,
+    INT(3), INT(4));
 
     '
 - name: SETSHADERVALUEMATRIX
@@ -3764,7 +3791,7 @@ functions:
 
     ::Matrix matrix = MatrixIdentity();
 
-    ::SetShaderValueMatrix(rlreg::shaders.at(args[0].as_int()), args[1].as_int(),
+    ::SetShaderValueMatrix(rlreg::shaders.at(INT(0)), INT(1),
     matrix);
 
     '
@@ -3775,8 +3802,8 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::SetShaderValueTexture(rlreg::shaders.at(args[0].as_int()), args[1].as_int(),
-    rlreg::textures.at(args[2].as_int()));
+  custom_body: '::SetShaderValueTexture(rlreg::shaders.at(INT(0)), INT(1),
+    rlreg::textures.at(INT(2)));
 
     '
 - name: BEGINSHADERMODE
@@ -3784,7 +3811,7 @@ functions:
   args:
   - int
   ret: void
-  custom_body: '::BeginShaderMode(rlreg::shaders.at(args[0].as_int()));
+  custom_body: '::BeginShaderMode(rlreg::shaders.at(INT(0)));
 
     '
 - name: ENDSHADERMODE
@@ -3796,7 +3823,7 @@ functions:
   args:
   - int
   ret: void
-  custom_body: "int id = args[0].as_int();\nauto it = rlreg::shaders.find(id);\nif\
+  custom_body: "int id = INT(0);\nauto it = rlreg::shaders.find(id);\nif\
     \ (it != rlreg::shaders.end()) {\n  ::UnloadShader(it->second);\n  rlreg::shaders.erase(it);\n\
     }\n"
 - name: GETRANDOMVALUE
@@ -3895,7 +3922,7 @@ functions:
   args:
   - int
   ret: int
-  custom_body: 'void* ptr = ::MemAlloc(args[0].as_int());
+  custom_body: 'void* ptr = ::MemAlloc(INT(0));
 
     return Value::from_int((intptr_t)ptr);
 
@@ -3906,7 +3933,7 @@ functions:
   - int
   - int
   ret: int
-  custom_body: 'void* ptr = ::MemRealloc((void*)(intptr_t)args[0].as_int(), args[1].as_int());
+  custom_body: 'void* ptr = ::MemRealloc((void*)(intptr_t)INT(0), INT(1));
 
     return Value::from_int((intptr_t)ptr);
 
@@ -3916,7 +3943,7 @@ functions:
   args:
   - int
   ret: void
-  custom_body: '::MemFree((void*)(intptr_t)args[0].as_int());
+  custom_body: '::MemFree((void*)(intptr_t)INT(0));
 
     '
 - name: LOADFILEDATA
@@ -3926,7 +3953,7 @@ functions:
   ret: string
   custom_body: 'int dataSize;
 
-    unsigned char* data = ::LoadFileData(args[0].as_string().c_str(), &dataSize);
+    unsigned char* data = ::LoadFileData(STR(0).c_str(), &dataSize);
 
     (void)data; // Suppress unused variable warning
 
@@ -3953,7 +3980,7 @@ functions:
   ret: bool
   custom_body: '// Note: This is simplified - would need proper data handling
 
-    return Value::from_bool(::SaveFileData(args[0].as_string().c_str(), nullptr, 0));
+    return Value::from_bool(::SaveFileData(STR(0).c_str(), nullptr, 0));
 
     '
 - name: EXPORTDATAASCODE
@@ -3964,7 +3991,7 @@ functions:
   ret: bool
   custom_body: '// Note: This is simplified - would need proper data handling
 
-    return Value::from_bool(::ExportDataAsCode(nullptr, 0, args[1].as_string().c_str()));
+    return Value::from_bool(::ExportDataAsCode(nullptr, 0, STR(1).c_str()));
 
     '
 - name: LOADFILETEXT
@@ -3972,7 +3999,7 @@ functions:
   args:
   - string
   ret: string
-  custom_body: 'char* text = ::LoadFileText(args[0].as_string().c_str());
+  custom_body: 'char* text = ::LoadFileText(STR(0).c_str());
 
     std::string result(text);
 
@@ -4055,7 +4082,7 @@ functions:
   args:
   - string
   ret: string
-  custom_body: '::FilePathList files = ::LoadDirectoryFiles(args[0].as_string().c_str());
+  custom_body: '::FilePathList files = ::LoadDirectoryFiles(STR(0).c_str());
 
     // Note: This returns a FilePathList struct, simplified for BASIC
 
@@ -4069,8 +4096,8 @@ functions:
   - string
   - bool
   ret: string
-  custom_body: '::FilePathList files = ::LoadDirectoryFilesEx(args[0].as_string().c_str(),
-    args[1].as_string().c_str(), args[2].as_bool());
+  custom_body: '::FilePathList files = ::LoadDirectoryFilesEx(STR(0).c_str(),
+    STR(1).c_str(), BOOL(2));
 
     // Note: This returns a FilePathList struct, simplified for BASIC
 
@@ -4180,8 +4207,8 @@ functions:
   - int
   - int
   ret: int
-  custom_body: '::Image image = ::LoadImageRaw(args[0].as_string().c_str(), args[1].as_int(),
-    args[2].as_int(), args[3].as_int(), args[4].as_int());
+  custom_body: '::Image image = ::LoadImageRaw(STR(0).c_str(), INT(1),
+    INT(2), INT(3), INT(4));
 
     int id = rlreg::next_image_id++;
 
@@ -4197,7 +4224,7 @@ functions:
   ret: string
   custom_body: 'int frames;
 
-    ::Image image = ::LoadImageAnim(args[0].as_string().c_str(), &frames);
+    ::Image image = ::LoadImageAnim(STR(0).c_str(), &frames);
 
     int id = rlreg::next_image_id++;
 
@@ -4212,8 +4239,8 @@ functions:
   - string
   - string
   ret: int
-  custom_body: '::Image image = ::LoadImageFromMemory(args[0].as_string().c_str(),
-    (const unsigned char*)args[1].as_string().c_str(), args[1].as_string().length());
+  custom_body: '::Image image = ::LoadImageFromMemory(STR(0).c_str(),
+    (const unsigned char*)STR(1).c_str(), STR(1).length());
 
     int id = rlreg::next_image_id++;
 
@@ -4227,7 +4254,7 @@ functions:
   args:
   - int
   ret: int
-  custom_body: '::Image image = ::LoadImageFromTexture(rlreg::textures.at(args[0].as_int()));
+  custom_body: '::Image image = ::LoadImageFromTexture(rlreg::textures.at(INT(0)));
 
     int id = rlreg::next_image_id++;
 
@@ -4254,7 +4281,7 @@ functions:
   args:
   - int
   ret: bool
-  custom_body: 'return Value::from_bool(::IsImageValid(rlreg::images.at(args[0].as_int())));
+  custom_body: 'return Value::from_bool(::IsImageValid(rlreg::images.at(INT(0))));
 
     '
 - name: EXPORTIMAGE
@@ -4263,8 +4290,8 @@ functions:
   - int
   - string
   ret: bool
-  custom_body: 'return Value::from_bool(::ExportImage(rlreg::images.at(args[0].as_int()),
-    args[1].as_string().c_str()));
+  custom_body: 'return Value::from_bool(::ExportImage(rlreg::images.at(INT(0)),
+    STR(1).c_str()));
 
     '
 - name: EXPORTIMAGETOMEMORY
@@ -4275,8 +4302,8 @@ functions:
   ret: string
   custom_body: 'int fileSize;
 
-    unsigned char* data = ::ExportImageToMemory(rlreg::images.at(args[0].as_int()),
-    args[1].as_string().c_str(), &fileSize);
+    unsigned char* data = ::ExportImageToMemory(rlreg::images.at(INT(0)),
+    STR(1).c_str(), &fileSize);
 
     (void)data; // Suppress unused variable warning
 
@@ -4291,8 +4318,8 @@ functions:
   - int
   - string
   ret: bool
-  custom_body: 'return Value::from_bool(::ExportImageAsCode(rlreg::images.at(args[0].as_int()),
-    args[1].as_string().c_str()));
+  custom_body: 'return Value::from_bool(::ExportImageAsCode(rlreg::images.at(INT(0)),
+    STR(1).c_str()));
 
     '
 - name: GENIMAGECOLOR
@@ -4304,10 +4331,10 @@ functions:
   - int
   - int
   ret: int
-  custom_body: '::Color color{(unsigned char)args[2].as_int(), (unsigned char)args[3].as_int(),
-    (unsigned char)args[4].as_int(), 255};
+  custom_body: '::Color color{(unsigned char)INT(2), (unsigned char)INT(3),
+    (unsigned char)INT(4), 255};
 
-    ::Image image = ::GenImageColor(args[0].as_int(), args[1].as_int(), color);
+    ::Image image = ::GenImageColor(INT(0), INT(1), color);
 
     int id = rlreg::next_image_id++;
 
@@ -4332,13 +4359,13 @@ functions:
   - int
   - int
   ret: int
-  custom_body: '::Color start{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(),
-    (unsigned char)args[6].as_int(), 255};
+  custom_body: '::Color start{(unsigned char)INT(4), (unsigned char)INT(5),
+    (unsigned char)INT(6), 255};
 
-    ::Color end{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(),
-    (unsigned char)args[9].as_int(), 255};
+    ::Color end{(unsigned char)INT(7), (unsigned char)INT(8),
+    (unsigned char)INT(9), 255};
 
-    ::Image image = ::GenImageGradientLinear(args[0].as_int(), args[1].as_int(), args[2].as_int(),
+    ::Image image = ::GenImageGradientLinear(INT(0), INT(1), INT(2),
     start, end);
 
     int id = rlreg::next_image_id++;
@@ -4361,13 +4388,13 @@ functions:
   - int
   - int
   ret: int
-  custom_body: '::Color inner{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(),
-    (unsigned char)args[5].as_int(), 255};
+  custom_body: '::Color inner{(unsigned char)INT(3), (unsigned char)INT(4),
+    (unsigned char)INT(5), 255};
 
-    ::Color outer{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(),
-    (unsigned char)args[8].as_int(), 255};
+    ::Color outer{(unsigned char)INT(6), (unsigned char)INT(7),
+    (unsigned char)INT(8), 255};
 
-    ::Image image = ::GenImageGradientRadial(args[0].as_int(), args[1].as_int(), (float)args[2].as_number(),
+    ::Image image = ::GenImageGradientRadial(INT(0), INT(1), (float)FLOAT(2),
     inner, outer);
 
     int id = rlreg::next_image_id++;
@@ -4390,13 +4417,13 @@ functions:
   - int
   - int
   ret: int
-  custom_body: '::Color inner{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(),
-    (unsigned char)args[5].as_int(), 255};
+  custom_body: '::Color inner{(unsigned char)INT(3), (unsigned char)INT(4),
+    (unsigned char)INT(5), 255};
 
-    ::Color outer{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(),
-    (unsigned char)args[8].as_int(), 255};
+    ::Color outer{(unsigned char)INT(6), (unsigned char)INT(7),
+    (unsigned char)INT(8), 255};
 
-    ::Image image = ::GenImageGradientSquare(args[0].as_int(), args[1].as_int(), (float)args[2].as_number(),
+    ::Image image = ::GenImageGradientSquare(INT(0), INT(1), (float)FLOAT(2),
     inner, outer);
 
     int id = rlreg::next_image_id++;
@@ -4425,14 +4452,14 @@ functions:
   - int
   - int
   ret: int
-  custom_body: '::Color col1{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(),
-    (unsigned char)args[6].as_int(), 255};
+  custom_body: '::Color col1{(unsigned char)INT(4), (unsigned char)INT(5),
+    (unsigned char)INT(6), 255};
 
-    ::Color col2{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(),
-    (unsigned char)args[9].as_int(), 255};
+    ::Color col2{(unsigned char)INT(7), (unsigned char)INT(8),
+    (unsigned char)INT(9), 255};
 
-    ::Image image = ::GenImageChecked(args[0].as_int(), args[1].as_int(), args[2].as_int(),
-    args[3].as_int(), col1, col2);
+    ::Image image = ::GenImageChecked(INT(0), INT(1), INT(2),
+    INT(3), col1, col2);
 
     int id = rlreg::next_image_id++;
 
@@ -4448,8 +4475,8 @@ functions:
   - int
   - double
   ret: int
-  custom_body: '::Image image = ::GenImageWhiteNoise(args[0].as_int(), args[1].as_int(),
-    (float)args[2].as_number());
+  custom_body: '::Image image = ::GenImageWhiteNoise(INT(0), INT(1),
+    (float)FLOAT(2));
 
     int id = rlreg::next_image_id++;
 
@@ -4467,8 +4494,8 @@ functions:
   - int
   - double
   ret: int
-  custom_body: '::Image image = ::GenImagePerlinNoise(args[0].as_int(), args[1].as_int(),
-    args[2].as_int(), args[3].as_int(), (float)args[4].as_number());
+  custom_body: '::Image image = ::GenImagePerlinNoise(INT(0), INT(1),
+    INT(2), INT(3), (float)FLOAT(4));
 
     int id = rlreg::next_image_id++;
 
@@ -4484,8 +4511,8 @@ functions:
   - int
   - int
   ret: int
-  custom_body: '::Image image = ::GenImageCellular(args[0].as_int(), args[1].as_int(),
-    args[2].as_int());
+  custom_body: '::Image image = ::GenImageCellular(INT(0), INT(1),
+    INT(2));
 
     int id = rlreg::next_image_id++;
 
@@ -4501,8 +4528,8 @@ functions:
   - int
   - string
   ret: int
-  custom_body: '::Image image = ::GenImageText(args[0].as_int(), args[1].as_int(),
-    args[2].as_string().c_str());
+  custom_body: '::Image image = ::GenImageText(INT(0), INT(1),
+    STR(2).c_str());
 
     int id = rlreg::next_image_id++;
 
@@ -4529,7 +4556,7 @@ functions:
   args:
   - string
   ret: int
-  custom_body: '::Font font = ::LoadFont(args[0].as_string().c_str());
+  custom_body: '::Font font = ::LoadFont(STR(0).c_str());
 
     int id = rlreg::next_font_id++;
 
@@ -4547,7 +4574,7 @@ functions:
   ret: int
   custom_body: '// Note: This is simplified - would need proper codepoints array handling
 
-    ::Font font = ::LoadFontEx(args[0].as_string().c_str(), args[1].as_int(), nullptr,
+    ::Font font = ::LoadFontEx(STR(0).c_str(), INT(1), nullptr,
     0);
 
     int id = rlreg::next_font_id++;
@@ -4566,10 +4593,10 @@ functions:
   - int
   - int
   ret: int
-  custom_body: '::Color key{(unsigned char)args[1].as_int(), (unsigned char)args[2].as_int(),
-    (unsigned char)args[3].as_int(), 255};
+  custom_body: '::Color key{(unsigned char)INT(1), (unsigned char)INT(2),
+    (unsigned char)INT(3), 255};
 
-    ::Font font = ::LoadFontFromImage(rlreg::images.at(args[0].as_int()), key, args[4].as_int());
+    ::Font font = ::LoadFontFromImage(rlreg::images.at(INT(0)), key, INT(4));
 
     int id = rlreg::next_font_id++;
 
@@ -4588,8 +4615,8 @@ functions:
   ret: int
   custom_body: '// Note: This is simplified - would need proper codepoints array handling
 
-    ::Font font = ::LoadFontFromMemory(args[0].as_string().c_str(), (const unsigned
-    char*)args[1].as_string().c_str(), args[1].as_string().length(), args[2].as_int(),
+    ::Font font = ::LoadFontFromMemory(STR(0).c_str(), (const unsigned
+    char*)STR(1).c_str(), STR(1).length(), INT(2),
     nullptr, 0);
 
     int id = rlreg::next_font_id++;
@@ -4604,7 +4631,7 @@ functions:
   args:
   - int
   ret: bool
-  custom_body: 'return Value::from_bool(::IsFontValid(rlreg::fonts.at(args[0].as_int())));
+  custom_body: 'return Value::from_bool(::IsFontValid(rlreg::fonts.at(INT(0))));
 
     '
 - name: LOADFONTDATA
@@ -4619,8 +4646,8 @@ functions:
 
     int glyphCount = 0;
 
-    ::GlyphInfo* glyphs = ::LoadFontData((const unsigned char*)args[0].as_string().c_str(),
-    args[0].as_string().length(), args[1].as_int(), nullptr, 0, args[3].as_int());
+    ::GlyphInfo* glyphs = ::LoadFontData((const unsigned char*)STR(0).c_str(),
+    STR(0).length(), INT(1), nullptr, 0, INT(3));
 
     (void)glyphs; // Suppress unused variable warning
 
@@ -4644,8 +4671,8 @@ functions:
 
     ::Rectangle* glyphRecs = nullptr;
 
-    ::Image image = ::GenImageFontAtlas(glyphs, &glyphRecs, 1, args[2].as_int(), args[3].as_int(),
-    args[4].as_int());
+    ::Image image = ::GenImageFontAtlas(glyphs, &glyphRecs, 1, INT(2), INT(3),
+    INT(4));
 
     int id = rlreg::next_image_id++;
 
@@ -4669,7 +4696,7 @@ functions:
   args:
   - int
   ret: void
-  custom_body: "int id = args[0].as_int();\nauto it = rlreg::fonts.find(id);\nif (it\
+  custom_body: "int id = INT(0);\nauto it = rlreg::fonts.find(id);\nif (it\
     \ != rlreg::fonts.end()) {\n  ::UnloadFont(it->second);\n  rlreg::fonts.erase(it);\n\
     }\n"
 - name: EXPORTFONTASCODE
@@ -4678,8 +4705,8 @@ functions:
   - int
   - string
   ret: bool
-  custom_body: 'return Value::from_bool(::ExportFontAsCode(rlreg::fonts.at(args[0].as_int()),
-    args[1].as_string().c_str()));
+  custom_body: 'return Value::from_bool(::ExportFontAsCode(rlreg::fonts.at(INT(0)),
+    STR(1).c_str()));
 
     '
 - name: SETTEXTLINESPACING
@@ -4701,8 +4728,8 @@ functions:
   - double
   - double
   ret: string
-  custom_body: '::Vector2 size = ::MeasureTextEx(rlreg::fonts.at(args[0].as_int()),
-    args[1].as_string().c_str(), (float)args[2].as_number(), (float)args[3].as_number());
+  custom_body: '::Vector2 size = ::MeasureTextEx(rlreg::fonts.at(INT(0)),
+    STR(1).c_str(), (float)FLOAT(2), (float)FLOAT(3));
 
     return Value::from_string(std::to_string(size.x) + "," + std::to_string(size.y));
 
@@ -4713,8 +4740,8 @@ functions:
   - int
   - int
   ret: int
-  custom_body: 'return Value::from_int(::GetGlyphIndex(rlreg::fonts.at(args[0].as_int()),
-    args[1].as_int()));
+  custom_body: 'return Value::from_int(::GetGlyphIndex(rlreg::fonts.at(INT(0)),
+    INT(1)));
 
     '
 - name: GETGLYPHINFO
@@ -4723,8 +4750,8 @@ functions:
   - int
   - int
   ret: string
-  custom_body: '::GlyphInfo info = ::GetGlyphInfo(rlreg::fonts.at(args[0].as_int()),
-    args[1].as_int());
+  custom_body: '::GlyphInfo info = ::GetGlyphInfo(rlreg::fonts.at(INT(0)),
+    INT(1));
 
     return Value::from_string(std::to_string(info.value) + "," + std::to_string(info.offsetX)
     + "," + std::to_string(info.offsetY) + "," + std::to_string(info.advanceX));
@@ -4736,8 +4763,8 @@ functions:
   - int
   - int
   ret: string
-  custom_body: '::Rectangle rec = ::GetGlyphAtlasRec(rlreg::fonts.at(args[0].as_int()),
-    args[1].as_int());
+  custom_body: '::Rectangle rec = ::GetGlyphAtlasRec(rlreg::fonts.at(INT(0)),
+    INT(1));
 
     return Value::from_string(std::to_string(rec.x) + "," + std::to_string(rec.y)
     + "," + std::to_string(rec.width) + "," + std::to_string(rec.height));
@@ -4778,7 +4805,7 @@ functions:
 
     int count;
 
-    int* codepoints = ::LoadCodepoints(args[0].as_string().c_str(), &count);
+    int* codepoints = ::LoadCodepoints(STR(0).c_str(), &count);
 
     (void)codepoints; // Suppress unused variable warning
 
@@ -4809,7 +4836,7 @@ functions:
 
     int codepointSize;
 
-    int codepoint = ::GetCodepoint(args[0].as_string().c_str(), &codepointSize);
+    int codepoint = ::GetCodepoint(STR(0).c_str(), &codepointSize);
 
     return Value::from_string(std::to_string(codepoint) + "," + std::to_string(codepointSize));
 
@@ -4823,7 +4850,7 @@ functions:
 
     int codepointSize;
 
-    int codepoint = ::GetCodepointNext(args[0].as_string().c_str(), &codepointSize);
+    int codepoint = ::GetCodepointNext(STR(0).c_str(), &codepointSize);
 
     return Value::from_string(std::to_string(codepoint) + "," + std::to_string(codepointSize));
 
@@ -4837,7 +4864,7 @@ functions:
 
     int codepointSize;
 
-    int codepoint = ::GetCodepointPrevious(args[0].as_string().c_str(), &codepointSize);
+    int codepoint = ::GetCodepointPrevious(STR(0).c_str(), &codepointSize);
 
     return Value::from_string(std::to_string(codepoint) + "," + std::to_string(codepointSize));
 
@@ -4849,7 +4876,7 @@ functions:
   ret: string
   custom_body: 'int utf8Size;
 
-    const char* text = ::CodepointToUTF8(args[0].as_int(), &utf8Size);
+    const char* text = ::CodepointToUTF8(INT(0), &utf8Size);
 
     std::string result(text);
 
@@ -4864,7 +4891,7 @@ functions:
   ret: int
   custom_body: '// Note: This is simplified - would need proper text handling
 
-    return Value::from_int(::TextCopy(nullptr, args[1].as_string().c_str()));
+    return Value::from_int(::TextCopy(nullptr, STR(1).c_str()));
 
     '
 - name: TEXTISEQUAL
@@ -4885,7 +4912,7 @@ functions:
   ret: string
   custom_body: '// Note: This is simplified - would need proper formatting handling
 
-    return Value::from_string(::TextFormat(args[0].as_string().c_str()));
+    return Value::from_string(::TextFormat(STR(0).c_str()));
 
     '
 - name: TEXTSUBTEXT
@@ -4902,8 +4929,8 @@ functions:
   - string
   - int
   ret: string
-  custom_body: 'char* result = ::TextInsert(args[0].as_string().c_str(), args[1].as_string().c_str(),
-    args[2].as_int());
+  custom_body: 'char* result = ::TextInsert(STR(0).c_str(), STR(1).c_str(),
+    INT(2));
 
     std::string text(result);
 
@@ -4929,13 +4956,13 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Vector2 position{(float)args[2].as_number(), (float)args[3].as_number()};
+  custom_body: '::Vector2 position{(float)FLOAT(2), (float)FLOAT(3)};
 
-    ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned
-    char)args[7].as_int(), 255};
+    ::Color c{(unsigned char)INT(5), (unsigned char)INT(6), (unsigned
+    char)INT(7), 255};
 
-    ::DrawTextCodepoint(rlreg::fonts.at(args[0].as_int()), args[1].as_int(), position,
-    (float)args[4].as_number(), c);
+    ::DrawTextCodepoint(rlreg::fonts.at(INT(0)), INT(1), position,
+    (float)FLOAT(4), c);
 
     '
 - name: DRAWLINES
@@ -4949,10 +4976,10 @@ functions:
   - int
   - int
   ret: void
-  custom_body: '::Color c{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(),
-    (unsigned char)args[6].as_int(), 255};
+  custom_body: '::Color c{(unsigned char)INT(4), (unsigned char)INT(5),
+    (unsigned char)INT(6), 255};
 
-    ::DrawLine(args[0].as_int(), args[1].as_int(), args[2].as_int(), args[3].as_int(),
+    ::DrawLine(INT(0), INT(1), INT(2), INT(3),
     c);
 
     '
@@ -4962,7 +4989,7 @@ functions:
   - double
   - double
   ret: double
-  custom_body: 'return Value::from_number(std::min(args[0].as_number(), args[1].as_number()));
+  custom_body: 'return Value::from_number(std::min(FLOAT(0), FLOAT(1)));
 
     '
 - name: MAX
@@ -4971,7 +4998,7 @@ functions:
   - double
   - double
   ret: double
-  custom_body: 'return Value::from_number(std::max(args[0].as_number(), args[1].as_number()));
+  custom_body: 'return Value::from_number(std::max(FLOAT(0), FLOAT(1)));
 
     '
 - name: CLAMP
@@ -4981,11 +5008,11 @@ functions:
   - double
   - double
   ret: double
-  custom_body: 'double value = args[0].as_number();
+  custom_body: 'double value = FLOAT(0);
 
-    double min_val = args[1].as_number();
+    double min_val = FLOAT(1);
 
-    double max_val = args[2].as_number();
+    double max_val = FLOAT(2);
 
     if (value < min_val) value = min_val;
 
@@ -5008,21 +5035,21 @@ functions:
   ret: bool
   custom_body: '// Check if two rectangles overlap
 
-    int x1 = args[0].as_int();
+    int x1 = INT(0);
 
-    int y1 = args[1].as_int();
+    int y1 = INT(1);
 
-    int w1 = args[2].as_int();
+    int w1 = INT(2);
 
-    int h1 = args[3].as_int();
+    int h1 = INT(3);
 
-    int x2 = args[4].as_int();
+    int x2 = INT(4);
 
-    int y2 = args[5].as_int();
+    int y2 = INT(5);
 
-    int w2 = args[6].as_int();
+    int w2 = INT(6);
 
-    int h2 = args[7].as_int();
+    int h2 = INT(7);
 
 
     bool collision = !(x1 + w1 < x2 || x2 + w2 < x1 || y1 + h1 < y2 || y2 + h2 < y1);
@@ -5042,17 +5069,17 @@ functions:
   ret: bool
   custom_body: '// Check if a point is inside a rectangle
 
-    int px = args[0].as_int();
+    int px = INT(0);
 
-    int py = args[1].as_int();
+    int py = INT(1);
 
-    int rx = args[2].as_int();
+    int rx = INT(2);
 
-    int ry = args[3].as_int();
+    int ry = INT(3);
 
-    int rw = args[4].as_int();
+    int rw = INT(4);
 
-    int rh = args[5].as_int();
+    int rh = INT(5);
 
 
     bool inside = (px >= rx && px <= rx + rw && py >= ry && py <= ry + rh);
@@ -5070,13 +5097,13 @@ functions:
   ret: double
   custom_body: '// Calculate distance between two points (squared to avoid sqrt)
 
-    int x1 = args[0].as_int();
+    int x1 = INT(0);
 
-    int y1 = args[1].as_int();
+    int y1 = INT(1);
 
-    int x2 = args[2].as_int();
+    int x2 = INT(2);
 
-    int y2 = args[3].as_int();
+    int y2 = INT(3);
 
 
     double dx = (double)(x2 - x1);
@@ -5095,7 +5122,7 @@ functions:
   - string
   ret: int
   custom_body: "// Simple split function - returns array index of first occurrence\n\
-    std::string text = args[0].as_string();\nstd::string delimiter = args[1].as_string();\n\
+    std::string text = STR(0);\nstd::string delimiter = STR(1);\n\
     size_t pos = text.find(delimiter);\nif (pos == std::string::npos) {\n  return\
     \ Value::from_int(-1); // Not found\n}\nreturn Value::from_int((int)pos);\n"
 - name: LOADMUSIC
@@ -5103,7 +5130,7 @@ functions:
   args:
   - string
   ret: int
-  custom_body: '::Music music = ::LoadMusicStream(args[0].as_string().c_str());
+  custom_body: '::Music music = ::LoadMusicStream(STR(0).c_str());
 
     int id = rlreg::next_music_id++;
 
@@ -5117,7 +5144,7 @@ functions:
   args:
   - int
   ret: void
-  custom_body: "int id = args[0].as_int();\nauto it = rlreg::musics.find(id);\nif\
+  custom_body: "int id = INT(0);\nauto it = rlreg::musics.find(id);\nif\
     \ (it != rlreg::musics.end()) {\n  ::UnloadMusicStream(it->second);\n  rlreg::musics.erase(it);\n\
     }\nreturn Value::nil();\n"
 - name: PLAYMUSIC
@@ -5125,21 +5152,21 @@ functions:
   args:
   - int
   ret: void
-  custom_body: "int id = args[0].as_int();\nauto it = rlreg::musics.find(id);\nif\
+  custom_body: "int id = INT(0);\nauto it = rlreg::musics.find(id);\nif\
     \ (it != rlreg::musics.end()) {\n  ::PlayMusicStream(it->second);\n}\nreturn Value::nil();\n"
 - name: STOPMUSIC
   map_to: StopMusicStream
   args:
   - int
   ret: void
-  custom_body: "int id = args[0].as_int();\nauto it = rlreg::musics.find(id);\nif\
+  custom_body: "int id = INT(0);\nauto it = rlreg::musics.find(id);\nif\
     \ (it != rlreg::musics.end()) {\n  ::StopMusicStream(it->second);\n}\nreturn Value::nil();\n"
 - name: PAUSEMUSIC
   map_to: PauseMusicStream
   args:
   - int
   ret: void
-  custom_body: "int id = args[0].as_int();\nauto it = rlreg::musics.find(id);\nif\
+  custom_body: "int id = INT(0);\nauto it = rlreg::musics.find(id);\nif\
     \ (it != rlreg::musics.end()) {\n  ::PauseMusicStream(it->second);\n}\nreturn\
     \ Value::nil();\n"
 - name: RESUMEMUSIC
@@ -5147,7 +5174,7 @@ functions:
   args:
   - int
   ret: void
-  custom_body: "int id = args[0].as_int();\nauto it = rlreg::musics.find(id);\nif\
+  custom_body: "int id = INT(0);\nauto it = rlreg::musics.find(id);\nif\
     \ (it != rlreg::musics.end()) {\n  ::ResumeMusicStream(it->second);\n}\nreturn\
     \ Value::nil();\n"
 - name: UPDATEMUSIC
@@ -5155,7 +5182,7 @@ functions:
   args:
   - int
   ret: void
-  custom_body: "int id = args[0].as_int();\nauto it = rlreg::musics.find(id);\nif\
+  custom_body: "int id = INT(0);\nauto it = rlreg::musics.find(id);\nif\
     \ (it != rlreg::musics.end()) {\n  ::UpdateMusicStream(it->second);\n}\nreturn\
     \ Value::nil();\n"
 - name: ISMUSICPLAYING
@@ -5163,7 +5190,7 @@ functions:
   args:
   - int
   ret: bool
-  custom_body: "int id = args[0].as_int();\nauto it = rlreg::musics.find(id);\nif\
+  custom_body: "int id = INT(0);\nauto it = rlreg::musics.find(id);\nif\
     \ (it != rlreg::musics.end()) {\n  return Value::from_bool(::IsMusicStreamPlaying(it->second));\n\
     }\nreturn Value::from_bool(false);\n"
 - name: GETTEXTUREWIDTH
@@ -5171,7 +5198,7 @@ functions:
   args:
   - int
   ret: int
-  custom_body: "int id = args[0].as_int();\nauto it = rlreg::textures.find(id);\n\
+  custom_body: "int id = INT(0);\nauto it = rlreg::textures.find(id);\n\
     if (it != rlreg::textures.end()) {\n  return Value::from_int(it->second.width);\n\
     }\nreturn Value::from_int(0);\n"
 - name: GETTEXTUREHEIGHT
@@ -5179,7 +5206,7 @@ functions:
   args:
   - int
   ret: int
-  custom_body: "int id = args[0].as_int();\nauto it = rlreg::textures.find(id);\n\
+  custom_body: "int id = INT(0);\nauto it = rlreg::textures.find(id);\n\
     if (it != rlreg::textures.end()) {\n  return Value::from_int(it->second.height);\n\
     }\nreturn Value::from_int(0);\n"
 - name: IMAGEFROMTEXTURE
@@ -5199,7 +5226,7 @@ functions:
   args:
   - int
   ret: int
-  custom_body: "int id = args[0].as_int();\nauto it = rlreg::images.find(id);\nif\
+  custom_body: "int id = INT(0);\nauto it = rlreg::images.find(id);\nif\
     \ (it != rlreg::images.end()) {\n  ::Texture2D texture = ::LoadTextureFromImage(it->second);\n\
     \  int texture_id = rlreg::next_tex_id++;\n  rlreg::textures[texture_id] = texture;\n\
     \  return Value::from_int(texture_id);\n}\nreturn Value::from_int(-1);\n"
@@ -5210,8 +5237,8 @@ functions:
   - int
   - int
   ret: void
-  custom_body: "int id = args[0].as_int();\nint new_width = args[1].as_int();\nint\
-    \ new_height = args[2].as_int();\nauto it = rlreg::images.find(id);\nif (it !=\
+  custom_body: "int id = INT(0);\nint new_width = INT(1);\nint\
+    \ new_height = INT(2);\nauto it = rlreg::images.find(id);\nif (it !=\
     \ rlreg::images.end()) {\n  ::ImageResize(&it->second, new_width, new_height);\n\
     }\nreturn Value::nil();\n"
 - name: CROPIMAGE
@@ -5223,8 +5250,8 @@ functions:
   - int
   - int
   ret: void
-  custom_body: "int id = args[0].as_int();\nint x = args[1].as_int();\nint y = args[2].as_int();\n\
-    int width = args[3].as_int();\nint height = args[4].as_int();\nauto it = rlreg::images.find(id);\n\
+  custom_body: "int id = INT(0);\nint x = INT(1);\nint y = INT(2);\n\
+    int width = INT(3);\nint height = INT(4);\nauto it = rlreg::images.find(id);\n\
     if (it != rlreg::images.end()) {\n  ::Rectangle crop{(float)x, (float)y, (float)width,\
     \ (float)height};\n  ::ImageCrop(&it->second, crop);\n}\nreturn Value::nil();\n"
 - name: FLIPIMAGE
@@ -5232,7 +5259,7 @@ functions:
   args:
   - int
   ret: void
-  custom_body: "int id = args[0].as_int();\nauto it = rlreg::images.find(id);\nif\
+  custom_body: "int id = INT(0);\nauto it = rlreg::images.find(id);\nif\
     \ (it != rlreg::images.end()) {\n  ::ImageFlipVertical(&it->second);\n}\nreturn\
     \ Value::nil();\n"
 - name: ROTATEIMAGE
@@ -5241,7 +5268,7 @@ functions:
   - int
   - int
   ret: void
-  custom_body: "int id = args[0].as_int();\nint degrees = args[1].as_int();\nauto\
+  custom_body: "int id = INT(0);\nint degrees = INT(1);\nauto\
     \ it = rlreg::images.find(id);\nif (it != rlreg::images.end()) {\n  ::ImageRotate(&it->second,\
     \ degrees);\n}\nreturn Value::nil();\n"
 - name: REPLACE
@@ -5251,8 +5278,8 @@ functions:
   - string
   - string
   ret: string
-  custom_body: "std::string text = args[0].as_string();\nstd::string search = args[1].as_string();\n\
-    std::string replace = args[2].as_string();\nsize_t pos = 0;\nwhile ((pos = text.find(search,\
+  custom_body: "std::string text = STR(0);\nstd::string search = STR(1);\n\
+    std::string replace = STR(2);\nsize_t pos = 0;\nwhile ((pos = text.find(search,\
     \ pos)) != std::string::npos) {\n  text.replace(pos, search.length(), replace);\n\
     \  pos += replace.length();\n}\nreturn Value::from_string(text);\n"
 - name: INSTRREV
@@ -5261,9 +5288,9 @@ functions:
   - string
   - string
   ret: int
-  custom_body: 'std::string text = args[0].as_string();
+  custom_body: 'std::string text = STR(0);
 
-    std::string search = args[1].as_string();
+    std::string search = STR(1);
 
     size_t pos = text.rfind(search);
 
@@ -5278,7 +5305,7 @@ functions:
   - string
   - int
   ret: string
-  custom_body: "std::string text = args[0].as_string();\nint count = args[1].as_int();\n\
+  custom_body: "std::string text = STR(0);\nint count = INT(1);\n\
     std::string result;\nfor (int i = 0; i < count; i++) {\n  result += text;\n}\n\
     return Value::from_string(result);\n"
 - name: STRREVERSE
@@ -5286,7 +5313,7 @@ functions:
   args:
   - string
   ret: string
-  custom_body: 'std::string text = args[0].as_string();
+  custom_body: 'std::string text = STR(0);
 
     std::reverse(text.begin(), text.end());
 
@@ -5298,7 +5325,7 @@ functions:
   args:
   - int
   ret: void
-  custom_body: '::SetGesturesEnabled(args[0].as_int());
+  custom_body: '::SetGesturesEnabled(INT(0));
 
     return Value::nil();
 
@@ -5308,7 +5335,7 @@ functions:
   args:
   - int
   ret: bool
-  custom_body: 'return Value::from_bool(::IsGestureDetected(args[0].as_int()));
+  custom_body: 'return Value::from_bool(::IsGestureDetected(INT(0)));
 
     '
 - name: GETGESTUREDETECTED
@@ -5412,7 +5439,7 @@ functions:
   args:
   - string
   ret: bool
-  custom_body: "std::string text = args[0].as_string();\nif (text.empty()) return\
+  custom_body: "std::string text = STR(0);\nif (text.empty()) return\
     \ Value::from_bool(false);\nsize_t pos = 0;\nif (text[0] == '+' || text[0] ==\
     \ '-') pos = 1;\nif (pos >= text.length()) return Value::from_bool(false);\nbool\
     \ has_digit = false;\nbool has_dot = false;\nfor (size_t i = pos; i < text.length();\
@@ -5726,12 +5753,12 @@ functions:
 
     // Using DrawCylinder as alternative
 
-    ::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+    ::Vector3 position{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2)};
 
-    ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned
-    char)args[7].as_int(), 255};
+    ::Color c{(unsigned char)INT(5), (unsigned char)INT(6), (unsigned
+    char)INT(7), 255};
 
-    ::DrawCylinder(position, (float)args[3].as_number(), 0.0f, (float)args[4].as_number(),
+    ::DrawCylinder(position, (float)FLOAT(3), 0.0f, (float)FLOAT(4),
     8, c);
 
     '
@@ -5751,12 +5778,12 @@ functions:
 
     // Using DrawCylinderWires as alternative
 
-    ::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+    ::Vector3 position{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2)};
 
-    ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned
-    char)args[7].as_int(), 255};
+    ::Color c{(unsigned char)INT(5), (unsigned char)INT(6), (unsigned
+    char)INT(7), 255};
 
-    ::DrawCylinderWires(position, (float)args[3].as_number(), 0.0f, (float)args[4].as_number(),
+    ::DrawCylinderWires(position, (float)FLOAT(3), 0.0f, (float)FLOAT(4),
     8, c);
 
     '
@@ -5776,13 +5803,13 @@ functions:
 
     // Using DrawCylinder as alternative
 
-    ::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+    ::Vector3 position{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2)};
 
-    ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned
-    char)args[7].as_int(), 255};
+    ::Color c{(unsigned char)INT(5), (unsigned char)INT(6), (unsigned
+    char)INT(7), 255};
 
-    ::DrawCylinder(position, (float)args[3].as_number(), (float)args[3].as_number(),
-    (float)args[4].as_number(), 8, c);
+    ::DrawCylinder(position, (float)FLOAT(3), (float)FLOAT(3),
+    (float)FLOAT(4), 8, c);
 
     '
 - name: DRAWTORUSWIRES
@@ -5801,13 +5828,13 @@ functions:
 
     // Using DrawCylinderWires as alternative
 
-    ::Vector3 position{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+    ::Vector3 position{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2)};
 
-    ::Color c{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned
-    char)args[7].as_int(), 255};
+    ::Color c{(unsigned char)INT(5), (unsigned char)INT(6), (unsigned
+    char)INT(7), 255};
 
-    ::DrawCylinderWires(position, (float)args[3].as_number(), (float)args[3].as_number(),
-    (float)args[4].as_number(), 8, c);
+    ::DrawCylinderWires(position, (float)FLOAT(3), (float)FLOAT(3),
+    (float)FLOAT(4), 8, c);
 
     '
 - name: DRAWPOLYWIRES
@@ -5826,11 +5853,11 @@ functions:
 
     // Using DrawPoly as alternative
 
-    ::Vector2 center{(float)args[0].as_number(), (float)args[1].as_number()};
+    ::Vector2 center{(float)FLOAT(0), (float)FLOAT(1)};
 
-    ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned
-    char)args[8].as_int(), 255};
+    ::Color c{(unsigned char)INT(6), (unsigned char)INT(7), (unsigned
+    char)INT(8), 255};
 
-    ::DrawPoly(center, args[3].as_int(), (float)args[4].as_number(), 0.0f, c);
+    ::DrawPoly(center, INT(3), (float)FLOAT(4), 0.0f, c);
 
     '

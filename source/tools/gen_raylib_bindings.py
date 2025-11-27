@@ -18,13 +18,24 @@ HEADER = """// Auto-generated from specs/raylib_api.yaml
 #pragma GCC diagnostic pop
 #include "bas/runtime.hpp"
 #include "bas/value.hpp"
+#include "bas/camera3d.hpp"
+#include "bas/vector3d.hpp"
 #include <vector>
 #include <string>
 #include <unordered_map>
 #include <algorithm>
+#include <sstream>
+#include <cmath>
+#include <memory>
 
 using bas::Value;
 using Fn = bas::NativeFn;
+
+// Helper macros to avoid narrowing conversion warnings
+#define FLOAT(i) static_cast<float>(args[i].as_number())
+#define INT(i) args[i].as_int()
+#define STR(i) args[i].as_string()
+#define BOOL(i) args[i].as_bool()
 
 namespace bas {
 namespace rlreg {
@@ -160,6 +171,76 @@ def emit_fn(f):
 {arity_check}{call}
     }}}}, true);'''
 
+def emit_constant(c):
+    """Generate C++ constant binding."""
+    name = c["name"]
+    value = c["value"]
+    description = c.get("description", "")
+    
+    # Parse color values (r,g,b,a format)
+    if "," in value:
+        parts = value.split(",")
+        if len(parts) == 4:  # RGBA color
+            r, g, b, a = parts
+            return f'''    R.add_with_policy("{name}", Fn{{"{name}", 0, [] (const std::vector<Value>& args) -> Value {{
+        return Value::from_string("{r},{g},{b},{a}");
+    }}}}, true);'''
+    
+    # Simple string/number constants
+    return f'''    R.add_with_policy("{name}", Fn{{"{name}", 0, [] (const std::vector<Value>& args) -> Value {{
+        return Value::from_string("{value}");
+    }}}}, true);'''
+
+def process_spec_file(spec_path, specs_dir, processed_files, available_symbols):
+    """Process a single spec file and return functions/constants."""
+    if spec_path in processed_files:
+        return [], 0, 0
+    
+    processed_files.add(spec_path)
+    
+    if not spec_path.exists():
+        print(f"Warning: {spec_path} not found", file=sys.stderr)
+        return [], 0, 0
+    
+    print(f"Processing {spec_path.name}...")
+    spec = yaml.safe_load(spec_path.read_text())
+    
+    out = []
+    total_functions = 0
+    skipped_functions = 0
+    
+    # Process imports first
+    if "imports" in spec:
+        for import_file in spec["imports"]:
+            import_path = specs_dir / import_file
+            import_out, import_total, import_skipped = process_spec_file(
+                import_path, specs_dir, processed_files, available_symbols
+            )
+            out.extend(import_out)
+            total_functions += import_total
+            skipped_functions += import_skipped
+    
+    # Process functions
+    if "functions" in spec:
+        for f in spec["functions"]:
+            target = f.get("map_to", f.get("raylib_name"))
+            if f.get("raylib_name") and not is_supported_function(target, available_symbols):
+                skipped_functions += 1
+                print(f"Skipping unsupported function {f['name']} -> {target}")
+                continue
+            out.append(emit_fn(f))
+            out.append("")
+            total_functions += 1
+    
+    # Process constants
+    if "constants" in spec:
+        for c in spec["constants"]:
+            out.append(emit_constant(c))
+            out.append("")
+            total_functions += 1
+    
+    return out, total_functions, skipped_functions
+
 def main():
     """Main generation function."""
     try:
@@ -168,10 +249,10 @@ def main():
         source_dir = script_dir.parent
         specs_dir = source_dir / "specs"
         
-        # List of spec files to process
-        spec_files = [
+        # Main spec files to process (these will handle imports)
+        main_spec_files = [
+            "raylib_api.yaml",  # Main API file that imports all modular specs
             "01_core_window.yaml",
-            "raylib_api.yaml",
             "24_simple_game_apis.yaml",
             "25_core_missing_functions.yaml",
             "26_input_missing_functions.yaml",
@@ -187,25 +268,16 @@ def main():
         total_functions = 0
         skipped_functions = 0
         available_symbols = load_available_symbols()
+        processed_files = set()
         
-        for spec_file in spec_files:
+        for spec_file in main_spec_files:
             spec_path = specs_dir / spec_file
-            if spec_path.exists():
-                print(f"Processing {spec_file}...")
-                spec = yaml.safe_load(spec_path.read_text())
-                
-                if "functions" in spec:
-                    for f in spec["functions"]:
-                        target = f.get("map_to", f.get("raylib_name"))
-                        if f.get("raylib_name") and not is_supported_function(target, available_symbols):
-                            skipped_functions += 1
-                            print(f"Skipping unsupported function {f['name']} -> {target}")
-                            continue
-                        out.append(emit_fn(f))
-                        out.append("")
-                        total_functions += 1
-            else:
-                print(f"Warning: {spec_path} not found", file=sys.stderr)
+            file_out, file_total, file_skipped = process_spec_file(
+                spec_path, specs_dir, processed_files, available_symbols
+            )
+            out.extend(file_out)
+            total_functions += file_total
+            skipped_functions += file_skipped
         
         out.append(FOOTER)
         print(f"Generated {total_functions} functions (skipped {skipped_functions})")

@@ -30,8 +30,8 @@ functions:
     category: math
     description: "Add two vectors (v1x, v1y, v2x, v2y)"
     custom_body: |
-      ::Vector2 v1{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Vector2 v2{(float)args[2].as_number(), (float)args[3].as_number()};
+      ::Vector2 v1{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Vector2 v2{(float)FLOAT(2), (float)FLOAT(3)};
       ::Vector2 result = ::Vector2Add(v1, v2);
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y));
 
@@ -42,8 +42,8 @@ functions:
     category: math
     description: "Add vector and float value (vx, vy, add)"
     custom_body: |
-      ::Vector2 v{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Vector2 result = ::Vector2AddValue(v, (float)args[2].as_number());
+      ::Vector2 v{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Vector2 result = ::Vector2AddValue(v, (float)FLOAT(2));
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y));
 
   - name: VECTOR2SUBTRACT
@@ -53,8 +53,8 @@ functions:
     category: math
     description: "Subtract two vectors (v1x, v1y, v2x, v2y)"
     custom_body: |
-      ::Vector2 v1{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Vector2 v2{(float)args[2].as_number(), (float)args[3].as_number()};
+      ::Vector2 v1{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Vector2 v2{(float)FLOAT(2), (float)FLOAT(3)};
       ::Vector2 result = ::Vector2Subtract(v1, v2);
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y));
 
@@ -65,8 +65,8 @@ functions:
     category: math
     description: "Subtract vector by float value (vx, vy, sub)"
     custom_body: |
-      ::Vector2 v{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Vector2 result = ::Vector2SubtractValue(v, (float)args[2].as_number());
+      ::Vector2 v{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Vector2 result = ::Vector2SubtractValue(v, (float)FLOAT(2));
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y));
 
   - name: VECTOR2LENGTH
@@ -76,7 +76,7 @@ functions:
     category: math
     description: "Calculate vector length (vx, vy)"
     custom_body: |
-      ::Vector2 v{(float)args[0].as_number(), (float)args[1].as_number()};
+      ::Vector2 v{(float)FLOAT(0), (float)FLOAT(1)};
       return Value::from_number(::Vector2Length(v));
 
   - name: VECTOR2LENGTHSQR
@@ -86,7 +86,7 @@ functions:
     category: math
     description: "Calculate vector square length (vx, vy)"
     custom_body: |
-      ::Vector2 v{(float)args[0].as_number(), (float)args[1].as_number()};
+      ::Vector2 v{(float)FLOAT(0), (float)FLOAT(1)};
       return Value::from_number(::Vector2LengthSqr(v));
 
   - name: VECTOR2DOTPRODUCT
@@ -96,8 +96,8 @@ functions:
     category: math
     description: "Calculate two vectors dot product (v1x, v1y, v2x, v2y)"
     custom_body: |
-      ::Vector2 v1{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Vector2 v2{(float)args[2].as_number(), (float)args[3].as_number()};
+      ::Vector2 v1{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Vector2 v2{(float)FLOAT(2), (float)FLOAT(3)};
       return Value::from_number(::Vector2DotProduct(v1, v2));
 
   - name: VECTOR2DISTANCE
@@ -107,8 +107,8 @@ functions:
     category: math
     description: "Calculate distance between two vectors (v1x, v1y, v2x, v2y)"
     custom_body: |
-      ::Vector2 v1{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Vector2 v2{(float)args[2].as_number(), (float)args[3].as_number()};
+      ::Vector2 v1{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Vector2 v2{(float)FLOAT(2), (float)FLOAT(3)};
       return Value::from_number(::Vector2Distance(v1, v2));
 
   - name: VECTOR2DISTANCESQR
@@ -118,8 +118,8 @@ functions:
     category: math
     description: "Calculate square distance between two vectors (v1x, v1y, v2x, v2y)"
     custom_body: |
-      ::Vector2 v1{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Vector2 v2{(float)args[2].as_number(), (float)args[3].as_number()};
+      ::Vector2 v1{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Vector2 v2{(float)FLOAT(2), (float)FLOAT(3)};
       return Value::from_number(::Vector2DistanceSqr(v1, v2));
 
   - name: VECTOR2ANGLE
@@ -129,8 +129,8 @@ functions:
     category: math
     description: "Calculate angle from two vectors (v1x, v1y, v2x, v2y)"
     custom_body: |
-      ::Vector2 v1{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Vector2 v2{(float)args[2].as_number(), (float)args[3].as_number()};
+      ::Vector2 v1{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Vector2 v2{(float)FLOAT(2), (float)FLOAT(3)};
       return Value::from_number(::Vector2Angle(v1, v2));
 
   - name: VECTOR2SCALE
@@ -140,8 +140,8 @@ functions:
     category: math
     description: "Scale vector (multiply by value) (vx, vy, scale)"
     custom_body: |
-      ::Vector2 v{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Vector2 result = ::Vector2Scale(v, (float)args[2].as_number());
+      ::Vector2 v{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Vector2 result = ::Vector2Scale(v, (float)FLOAT(2));
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y));
 
   - name: VECTOR2MULTIPLY
@@ -151,8 +151,8 @@ functions:
     category: math
     description: "Multiply vector by vector (v1x, v1y, v2x, v2y)"
     custom_body: |
-      ::Vector2 v1{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Vector2 v2{(float)args[2].as_number(), (float)args[3].as_number()};
+      ::Vector2 v1{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Vector2 v2{(float)FLOAT(2), (float)FLOAT(3)};
       ::Vector2 result = ::Vector2Multiply(v1, v2);
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y));
 
@@ -163,7 +163,7 @@ functions:
     category: math
     description: "Negate vector (vx, vy)"
     custom_body: |
-      ::Vector2 v{(float)args[0].as_number(), (float)args[1].as_number()};
+      ::Vector2 v{(float)FLOAT(0), (float)FLOAT(1)};
       ::Vector2 result = ::Vector2Negate(v);
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y));
 
@@ -174,8 +174,8 @@ functions:
     category: math
     description: "Divide vector by vector (v1x, v1y, v2x, v2y)"
     custom_body: |
-      ::Vector2 v1{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Vector2 v2{(float)args[2].as_number(), (float)args[3].as_number()};
+      ::Vector2 v1{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Vector2 v2{(float)FLOAT(2), (float)FLOAT(3)};
       ::Vector2 result = ::Vector2Divide(v1, v2);
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y));
 
@@ -186,7 +186,7 @@ functions:
     category: math
     description: "Normalize provided vector (vx, vy)"
     custom_body: |
-      ::Vector2 v{(float)args[0].as_number(), (float)args[1].as_number()};
+      ::Vector2 v{(float)FLOAT(0), (float)FLOAT(1)};
       ::Vector2 result = ::Vector2Normalize(v);
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y));
 
@@ -197,9 +197,9 @@ functions:
     category: math
     description: "Calculate linear interpolation between two vectors (v1x, v1y, v2x, v2y, amount)"
     custom_body: |
-      ::Vector2 v1{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Vector2 v2{(float)args[2].as_number(), (float)args[3].as_number()};
-      ::Vector2 result = ::Vector2Lerp(v1, v2, (float)args[4].as_number());
+      ::Vector2 v1{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Vector2 v2{(float)FLOAT(2), (float)FLOAT(3)};
+      ::Vector2 result = ::Vector2Lerp(v1, v2, (float)FLOAT(4));
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y));
 
   - name: VECTOR2REFLECT
@@ -209,8 +209,8 @@ functions:
     category: math
     description: "Calculate reflected vector to normal (vx, vy, normalX, normalY)"
     custom_body: |
-      ::Vector2 v{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Vector2 normal{(float)args[2].as_number(), (float)args[3].as_number()};
+      ::Vector2 v{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Vector2 normal{(float)FLOAT(2), (float)FLOAT(3)};
       ::Vector2 result = ::Vector2Reflect(v, normal);
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y));
 
@@ -221,8 +221,8 @@ functions:
     category: math
     description: "Rotate vector by angle (vx, vy, angle)"
     custom_body: |
-      ::Vector2 v{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Vector2 result = ::Vector2Rotate(v, (float)args[2].as_number());
+      ::Vector2 v{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Vector2 result = ::Vector2Rotate(v, (float)FLOAT(2));
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y));
 
   - name: VECTOR2MOVETOWARDS
@@ -232,9 +232,9 @@ functions:
     category: math
     description: "Move Vector towards target (vx, vy, targetX, targetY, maxDistance)"
     custom_body: |
-      ::Vector2 v{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Vector2 target{(float)args[2].as_number(), (float)args[3].as_number()};
-      ::Vector2 result = ::Vector2MoveTowards(v, target, (float)args[4].as_number());
+      ::Vector2 v{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Vector2 target{(float)FLOAT(2), (float)FLOAT(3)};
+      ::Vector2 result = ::Vector2MoveTowards(v, target, (float)FLOAT(4));
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y));
 
   - name: VECTOR2INVERT
@@ -244,7 +244,7 @@ functions:
     category: math
     description: "Invert the given vector (vx, vy)"
     custom_body: |
-      ::Vector2 v{(float)args[0].as_number(), (float)args[1].as_number()};
+      ::Vector2 v{(float)FLOAT(0), (float)FLOAT(1)};
       ::Vector2 result = ::Vector2Invert(v);
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y));
 
@@ -255,9 +255,9 @@ functions:
     category: math
     description: "Clamp components between min and max (vx, vy, minX, minY, maxX, maxY)"
     custom_body: |
-      ::Vector2 v{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Vector2 min{(float)args[2].as_number(), (float)args[3].as_number()};
-      ::Vector2 max{(float)args[4].as_number(), (float)args[5].as_number()};
+      ::Vector2 v{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Vector2 min{(float)FLOAT(2), (float)FLOAT(3)};
+      ::Vector2 max{(float)FLOAT(4), (float)FLOAT(5)};
       ::Vector2 result = ::Vector2Clamp(v, min, max);
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y));
 
@@ -268,8 +268,8 @@ functions:
     category: math
     description: "Clamp magnitude between two values (vx, vy, min, max)"
     custom_body: |
-      ::Vector2 v{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Vector2 result = ::Vector2ClampValue(v, (float)args[2].as_number(), (float)args[3].as_number());
+      ::Vector2 v{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Vector2 result = ::Vector2ClampValue(v, (float)FLOAT(2), (float)FLOAT(3));
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y));
 
   - name: VECTOR2EQUALS
@@ -279,8 +279,8 @@ functions:
     category: math
     description: "Check whether two vectors are almost equal (pX, pY, qX, qY)"
     custom_body: |
-      ::Vector2 p{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Vector2 q{(float)args[2].as_number(), (float)args[3].as_number()};
+      ::Vector2 p{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Vector2 q{(float)FLOAT(2), (float)FLOAT(3)};
       return Value::from_bool(::Vector2Equals(p, q));
 
   # === VECTOR3 FUNCTIONS ===
@@ -311,8 +311,8 @@ functions:
     category: math
     description: "Add two vectors (v1x, v1y, v1z, v2x, v2y, v2z)"
     custom_body: |
-      ::Vector3 v1{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
-      ::Vector3 v2{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+      ::Vector3 v1{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2)};
+      ::Vector3 v2{(float)FLOAT(3), (float)FLOAT(4), (float)FLOAT(5)};
       ::Vector3 result = ::Vector3Add(v1, v2);
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y) + "," + std::to_string(result.z));
 
@@ -323,8 +323,8 @@ functions:
     category: math
     description: "Add vector and float value (vx, vy, vz, add)"
     custom_body: |
-      ::Vector3 v{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
-      ::Vector3 result = ::Vector3AddValue(v, (float)args[3].as_number());
+      ::Vector3 v{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2)};
+      ::Vector3 result = ::Vector3AddValue(v, (float)FLOAT(3));
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y) + "," + std::to_string(result.z));
 
   - name: VECTOR3SUBTRACT
@@ -334,8 +334,8 @@ functions:
     category: math
     description: "Subtract two vectors (v1x, v1y, v1z, v2x, v2y, v2z)"
     custom_body: |
-      ::Vector3 v1{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
-      ::Vector3 v2{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+      ::Vector3 v1{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2)};
+      ::Vector3 v2{(float)FLOAT(3), (float)FLOAT(4), (float)FLOAT(5)};
       ::Vector3 result = ::Vector3Subtract(v1, v2);
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y) + "," + std::to_string(result.z));
 
@@ -346,8 +346,8 @@ functions:
     category: math
     description: "Subtract vector by float value (vx, vy, vz, sub)"
     custom_body: |
-      ::Vector3 v{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
-      ::Vector3 result = ::Vector3SubtractValue(v, (float)args[3].as_number());
+      ::Vector3 v{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2)};
+      ::Vector3 result = ::Vector3SubtractValue(v, (float)FLOAT(3));
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y) + "," + std::to_string(result.z));
 
   - name: VECTOR3SCALE
@@ -357,8 +357,8 @@ functions:
     category: math
     description: "Multiply vector by scalar (vx, vy, vz, scalar)"
     custom_body: |
-      ::Vector3 v{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
-      ::Vector3 result = ::Vector3Scale(v, (float)args[3].as_number());
+      ::Vector3 v{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2)};
+      ::Vector3 result = ::Vector3Scale(v, (float)FLOAT(3));
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y) + "," + std::to_string(result.z));
 
   - name: VECTOR3MULTIPLY
@@ -368,8 +368,8 @@ functions:
     category: math
     description: "Multiply vector by vector (v1x, v1y, v1z, v2x, v2y, v2z)"
     custom_body: |
-      ::Vector3 v1{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
-      ::Vector3 v2{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+      ::Vector3 v1{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2)};
+      ::Vector3 v2{(float)FLOAT(3), (float)FLOAT(4), (float)FLOAT(5)};
       ::Vector3 result = ::Vector3Multiply(v1, v2);
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y) + "," + std::to_string(result.z));
 
@@ -380,8 +380,8 @@ functions:
     category: math
     description: "Calculate two vectors cross product (v1x, v1y, v1z, v2x, v2y, v2z)"
     custom_body: |
-      ::Vector3 v1{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
-      ::Vector3 v2{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+      ::Vector3 v1{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2)};
+      ::Vector3 v2{(float)FLOAT(3), (float)FLOAT(4), (float)FLOAT(5)};
       ::Vector3 result = ::Vector3CrossProduct(v1, v2);
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y) + "," + std::to_string(result.z));
 
@@ -392,7 +392,7 @@ functions:
     category: math
     description: "Calculate vector length (vx, vy, vz)"
     custom_body: |
-      ::Vector3 v{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+      ::Vector3 v{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2)};
       return Value::from_number(::Vector3Length(v));
 
   - name: VECTOR3LENGTHSQR
@@ -402,7 +402,7 @@ functions:
     category: math
     description: "Calculate vector square length (vx, vy, vz)"
     custom_body: |
-      ::Vector3 v{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+      ::Vector3 v{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2)};
       return Value::from_number(::Vector3LengthSqr(v));
 
   - name: VECTOR3DOTPRODUCT
@@ -412,8 +412,8 @@ functions:
     category: math
     description: "Calculate two vectors dot product (v1x, v1y, v1z, v2x, v2y, v2z)"
     custom_body: |
-      ::Vector3 v1{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
-      ::Vector3 v2{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+      ::Vector3 v1{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2)};
+      ::Vector3 v2{(float)FLOAT(3), (float)FLOAT(4), (float)FLOAT(5)};
       return Value::from_number(::Vector3DotProduct(v1, v2));
 
   - name: VECTOR3DISTANCE
@@ -423,8 +423,8 @@ functions:
     category: math
     description: "Calculate distance between two vectors (v1x, v1y, v1z, v2x, v2y, v2z)"
     custom_body: |
-      ::Vector3 v1{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
-      ::Vector3 v2{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+      ::Vector3 v1{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2)};
+      ::Vector3 v2{(float)FLOAT(3), (float)FLOAT(4), (float)FLOAT(5)};
       return Value::from_number(::Vector3Distance(v1, v2));
 
   - name: VECTOR3DISTANCESQR
@@ -434,8 +434,8 @@ functions:
     category: math
     description: "Calculate square distance between two vectors (v1x, v1y, v1z, v2x, v2y, v2z)"
     custom_body: |
-      ::Vector3 v1{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
-      ::Vector3 v2{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+      ::Vector3 v1{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2)};
+      ::Vector3 v2{(float)FLOAT(3), (float)FLOAT(4), (float)FLOAT(5)};
       return Value::from_number(::Vector3DistanceSqr(v1, v2));
 
   - name: VECTOR3ANGLE
@@ -445,8 +445,8 @@ functions:
     category: math
     description: "Calculate angle between two vectors (v1x, v1y, v1z, v2x, v2y, v2z)"
     custom_body: |
-      ::Vector3 v1{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
-      ::Vector3 v2{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+      ::Vector3 v1{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2)};
+      ::Vector3 v2{(float)FLOAT(3), (float)FLOAT(4), (float)FLOAT(5)};
       return Value::from_number(::Vector3Angle(v1, v2));
 
   - name: VECTOR3NEGATE
@@ -456,7 +456,7 @@ functions:
     category: math
     description: "Negate provided vector (vx, vy, vz)"
     custom_body: |
-      ::Vector3 v{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+      ::Vector3 v{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2)};
       ::Vector3 result = ::Vector3Negate(v);
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y) + "," + std::to_string(result.z));
 
@@ -467,8 +467,8 @@ functions:
     category: math
     description: "Divide vector by vector (v1x, v1y, v1z, v2x, v2y, v2z)"
     custom_body: |
-      ::Vector3 v1{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
-      ::Vector3 v2{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+      ::Vector3 v1{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2)};
+      ::Vector3 v2{(float)FLOAT(3), (float)FLOAT(4), (float)FLOAT(5)};
       ::Vector3 result = ::Vector3Divide(v1, v2);
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y) + "," + std::to_string(result.z));
 
@@ -479,7 +479,7 @@ functions:
     category: math
     description: "Normalize provided vector (vx, vy, vz)"
     custom_body: |
-      ::Vector3 v{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+      ::Vector3 v{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2)};
       ::Vector3 result = ::Vector3Normalize(v);
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y) + "," + std::to_string(result.z));
 
@@ -490,9 +490,9 @@ functions:
     category: math
     description: "Calculate linear interpolation between two vectors (v1x, v1y, v1z, v2x, v2y, v2z, amount)"
     custom_body: |
-      ::Vector3 v1{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
-      ::Vector3 v2{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
-      ::Vector3 result = ::Vector3Lerp(v1, v2, (float)args[6].as_number());
+      ::Vector3 v1{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2)};
+      ::Vector3 v2{(float)FLOAT(3), (float)FLOAT(4), (float)FLOAT(5)};
+      ::Vector3 result = ::Vector3Lerp(v1, v2, (float)FLOAT(6));
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y) + "," + std::to_string(result.z));
 
   - name: VECTOR3REFLECT
@@ -502,8 +502,8 @@ functions:
     category: math
     description: "Calculate reflected vector to normal (vx, vy, vz, normalX, normalY, normalZ)"
     custom_body: |
-      ::Vector3 v{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
-      ::Vector3 normal{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+      ::Vector3 v{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2)};
+      ::Vector3 normal{(float)FLOAT(3), (float)FLOAT(4), (float)FLOAT(5)};
       ::Vector3 result = ::Vector3Reflect(v, normal);
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y) + "," + std::to_string(result.z));
 
@@ -514,8 +514,8 @@ functions:
     category: math
     description: "Get min value for each pair of components (v1x, v1y, v1z, v2x, v2y, v2z)"
     custom_body: |
-      ::Vector3 v1{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
-      ::Vector3 v2{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+      ::Vector3 v1{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2)};
+      ::Vector3 v2{(float)FLOAT(3), (float)FLOAT(4), (float)FLOAT(5)};
       ::Vector3 result = ::Vector3Min(v1, v2);
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y) + "," + std::to_string(result.z));
 
@@ -526,8 +526,8 @@ functions:
     category: math
     description: "Get max value for each pair of components (v1x, v1y, v1z, v2x, v2y, v2z)"
     custom_body: |
-      ::Vector3 v1{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
-      ::Vector3 v2{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+      ::Vector3 v1{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2)};
+      ::Vector3 v2{(float)FLOAT(3), (float)FLOAT(4), (float)FLOAT(5)};
       ::Vector3 result = ::Vector3Max(v1, v2);
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y) + "," + std::to_string(result.z));
 
@@ -538,7 +538,7 @@ functions:
     category: math
     description: "Invert the given vector (vx, vy, vz)"
     custom_body: |
-      ::Vector3 v{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
+      ::Vector3 v{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2)};
       ::Vector3 result = ::Vector3Invert(v);
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y) + "," + std::to_string(result.z));
 
@@ -549,9 +549,9 @@ functions:
     category: math
     description: "Clamp components between min and max (vx, vy, vz, minX, minY, minZ, maxX, maxY, maxZ)"
     custom_body: |
-      ::Vector3 v{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
-      ::Vector3 min{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
-      ::Vector3 max{(float)args[6].as_number(), (float)args[7].as_number(), (float)args[8].as_number()};
+      ::Vector3 v{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2)};
+      ::Vector3 min{(float)FLOAT(3), (float)FLOAT(4), (float)FLOAT(5)};
+      ::Vector3 max{(float)FLOAT(6), (float)FLOAT(7), (float)FLOAT(8)};
       ::Vector3 result = ::Vector3Clamp(v, min, max);
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y) + "," + std::to_string(result.z));
 
@@ -562,8 +562,8 @@ functions:
     category: math
     description: "Clamp magnitude between two values (vx, vy, vz, min, max)"
     custom_body: |
-      ::Vector3 v{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
-      ::Vector3 result = ::Vector3ClampValue(v, (float)args[3].as_number(), (float)args[4].as_number());
+      ::Vector3 v{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2)};
+      ::Vector3 result = ::Vector3ClampValue(v, (float)FLOAT(3), (float)FLOAT(4));
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y) + "," + std::to_string(result.z));
 
   - name: VECTOR3EQUALS
@@ -573,8 +573,8 @@ functions:
     category: math
     description: "Check whether two vectors are almost equal (pX, pY, pZ, qX, qY, qZ)"
     custom_body: |
-      ::Vector3 p{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
-      ::Vector3 q{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
+      ::Vector3 p{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2)};
+      ::Vector3 q{(float)FLOAT(3), (float)FLOAT(4), (float)FLOAT(5)};
       return Value::from_bool(::Vector3Equals(p, q));
 
   - name: VECTOR3REFRACT
@@ -584,9 +584,9 @@ functions:
     category: math
     description: "Compute direction of refracted ray (vx, vy, vz, nX, nY, nZ, r)"
     custom_body: |
-      ::Vector3 v{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number()};
-      ::Vector3 n{(float)args[3].as_number(), (float)args[4].as_number(), (float)args[5].as_number()};
-      ::Vector3 result = ::Vector3Refract(v, n, (float)args[6].as_number());
+      ::Vector3 v{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2)};
+      ::Vector3 n{(float)FLOAT(3), (float)FLOAT(4), (float)FLOAT(5)};
+      ::Vector3 result = ::Vector3Refract(v, n, (float)FLOAT(6));
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y) + "," + std::to_string(result.z));
 
   # === MATRIX FUNCTIONS ===
@@ -608,7 +608,7 @@ functions:
     category: math
     description: "Get translation matrix (x, y, z)"
     custom_body: |
-      ::Matrix mat = ::MatrixTranslate((float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number());
+      ::Matrix mat = ::MatrixTranslate((float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2));
       return Value::from_string(std::to_string(mat.m0) + "," + std::to_string(mat.m1) + "," + std::to_string(mat.m2) + "," + std::to_string(mat.m3) + "," + std::to_string(mat.m4) + "," + std::to_string(mat.m5) + "," + std::to_string(mat.m6) + "," + std::to_string(mat.m7) + "," + std::to_string(mat.m8) + "," + std::to_string(mat.m9) + "," + std::to_string(mat.m10) + "," + std::to_string(mat.m11) + "," + std::to_string(mat.m12) + "," + std::to_string(mat.m13) + "," + std::to_string(mat.m14) + "," + std::to_string(mat.m15));
 
   - name: MATRIXROTATEX
@@ -618,7 +618,7 @@ functions:
     category: math
     description: "Get x-rotation matrix (angle)"
     custom_body: |
-      ::Matrix mat = ::MatrixRotateX((float)args[0].as_number());
+      ::Matrix mat = ::MatrixRotateX((float)FLOAT(0));
       return Value::from_string(std::to_string(mat.m0) + "," + std::to_string(mat.m1) + "," + std::to_string(mat.m2) + "," + std::to_string(mat.m3) + "," + std::to_string(mat.m4) + "," + std::to_string(mat.m5) + "," + std::to_string(mat.m6) + "," + std::to_string(mat.m7) + "," + std::to_string(mat.m8) + "," + std::to_string(mat.m9) + "," + std::to_string(mat.m10) + "," + std::to_string(mat.m11) + "," + std::to_string(mat.m12) + "," + std::to_string(mat.m13) + "," + std::to_string(mat.m14) + "," + std::to_string(mat.m15));
 
   - name: MATRIXROTATEY
@@ -628,7 +628,7 @@ functions:
     category: math
     description: "Get y-rotation matrix (angle)"
     custom_body: |
-      ::Matrix mat = ::MatrixRotateY((float)args[0].as_number());
+      ::Matrix mat = ::MatrixRotateY((float)FLOAT(0));
       return Value::from_string(std::to_string(mat.m0) + "," + std::to_string(mat.m1) + "," + std::to_string(mat.m2) + "," + std::to_string(mat.m3) + "," + std::to_string(mat.m4) + "," + std::to_string(mat.m5) + "," + std::to_string(mat.m6) + "," + std::to_string(mat.m7) + "," + std::to_string(mat.m8) + "," + std::to_string(mat.m9) + "," + std::to_string(mat.m10) + "," + std::to_string(mat.m11) + "," + std::to_string(mat.m12) + "," + std::to_string(mat.m13) + "," + std::to_string(mat.m14) + "," + std::to_string(mat.m15));
 
   - name: MATRIXROTATEZ
@@ -638,7 +638,7 @@ functions:
     category: math
     description: "Get z-rotation matrix (angle)"
     custom_body: |
-      ::Matrix mat = ::MatrixRotateZ((float)args[0].as_number());
+      ::Matrix mat = ::MatrixRotateZ((float)FLOAT(0));
       return Value::from_string(std::to_string(mat.m0) + "," + std::to_string(mat.m1) + "," + std::to_string(mat.m2) + "," + std::to_string(mat.m3) + "," + std::to_string(mat.m4) + "," + std::to_string(mat.m5) + "," + std::to_string(mat.m6) + "," + std::to_string(mat.m7) + "," + std::to_string(mat.m8) + "," + std::to_string(mat.m9) + "," + std::to_string(mat.m10) + "," + std::to_string(mat.m11) + "," + std::to_string(mat.m12) + "," + std::to_string(mat.m13) + "," + std::to_string(mat.m14) + "," + std::to_string(mat.m15));
 
   - name: MATRIXSCALE
@@ -648,7 +648,7 @@ functions:
     category: math
     description: "Get scaling matrix (x, y, z)"
     custom_body: |
-      ::Matrix mat = ::MatrixScale((float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number());
+      ::Matrix mat = ::MatrixScale((float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2));
       return Value::from_string(std::to_string(mat.m0) + "," + std::to_string(mat.m1) + "," + std::to_string(mat.m2) + "," + std::to_string(mat.m3) + "," + std::to_string(mat.m4) + "," + std::to_string(mat.m5) + "," + std::to_string(mat.m6) + "," + std::to_string(mat.m7) + "," + std::to_string(mat.m8) + "," + std::to_string(mat.m9) + "," + std::to_string(mat.m10) + "," + std::to_string(mat.m11) + "," + std::to_string(mat.m12) + "," + std::to_string(mat.m13) + "," + std::to_string(mat.m14) + "," + std::to_string(mat.m15));
 
   # === QUATERNION FUNCTIONS ===
@@ -669,7 +669,7 @@ functions:
     category: math
     description: "Compute length of quaternion (qx, qy, qz, qw)"
     custom_body: |
-      ::Quaternion q{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number(), (float)args[3].as_number()};
+      ::Quaternion q{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2), (float)FLOAT(3)};
       return Value::from_number(::QuaternionLength(q));
 
   - name: QUATERNIONNORMALIZE
@@ -679,7 +679,7 @@ functions:
     category: math
     description: "Normalize provided quaternion (qx, qy, qz, qw)"
     custom_body: |
-      ::Quaternion q{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number(), (float)args[3].as_number()};
+      ::Quaternion q{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2), (float)FLOAT(3)};
       ::Quaternion result = ::QuaternionNormalize(q);
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y) + "," + std::to_string(result.z) + "," + std::to_string(result.w));
 
@@ -690,9 +690,9 @@ functions:
     category: math
     description: "Calculate linear interpolation (q1x, q1y, q1z, q1w, q2x, q2y, q2z, q2w, amount)"
     custom_body: |
-      ::Quaternion q1{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number(), (float)args[3].as_number()};
-      ::Quaternion q2{(float)args[4].as_number(), (float)args[5].as_number(), (float)args[6].as_number(), (float)args[7].as_number()};
-      ::Quaternion result = ::QuaternionLerp(q1, q2, (float)args[8].as_number());
+      ::Quaternion q1{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2), (float)FLOAT(3)};
+      ::Quaternion q2{(float)FLOAT(4), (float)FLOAT(5), (float)FLOAT(6), (float)FLOAT(7)};
+      ::Quaternion result = ::QuaternionLerp(q1, q2, (float)FLOAT(8));
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y) + "," + std::to_string(result.z) + "," + std::to_string(result.w));
 
   - name: QUATERNIONSLERP
@@ -702,9 +702,9 @@ functions:
     category: math
     description: "Calculate spherical linear interpolation (q1x, q1y, q1z, q1w, q2x, q2y, q2z, q2w, amount)"
     custom_body: |
-      ::Quaternion q1{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number(), (float)args[3].as_number()};
-      ::Quaternion q2{(float)args[4].as_number(), (float)args[5].as_number(), (float)args[6].as_number(), (float)args[7].as_number()};
-      ::Quaternion result = ::QuaternionSlerp(q1, q2, (float)args[8].as_number());
+      ::Quaternion q1{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2), (float)FLOAT(3)};
+      ::Quaternion q2{(float)FLOAT(4), (float)FLOAT(5), (float)FLOAT(6), (float)FLOAT(7)};
+      ::Quaternion result = ::QuaternionSlerp(q1, q2, (float)FLOAT(8));
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y) + "," + std::to_string(result.z) + "," + std::to_string(result.w));
 
   - name: QUATERNIONFROMEULER
@@ -714,7 +714,7 @@ functions:
     category: math
     description: "Get quaternion equivalent to Euler angles (pitch, yaw, roll)"
     custom_body: |
-      ::Quaternion q = ::QuaternionFromEuler((float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number());
+      ::Quaternion q = ::QuaternionFromEuler((float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2));
       return Value::from_string(std::to_string(q.x) + "," + std::to_string(q.y) + "," + std::to_string(q.z) + "," + std::to_string(q.w));
 
   - name: QUATERNIONTOEULER
@@ -724,6 +724,6 @@ functions:
     category: math
     description: "Get Euler angles equivalent to quaternion (qx, qy, qz, qw)"
     custom_body: |
-      ::Quaternion q{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number(), (float)args[3].as_number()};
+      ::Quaternion q{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2), (float)FLOAT(3)};
       ::Vector3 euler = ::QuaternionToEuler(q);
       return Value::from_string(std::to_string(euler.x) + "," + std::to_string(euler.y) + "," + std::to_string(euler.z));

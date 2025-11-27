@@ -10,8 +10,8 @@ functions:
     category: fonts
     description: "Load font from Image (XNA style) (pass image ID, R, G, B for key, firstChar)"
     custom_body: |
-      ::Color key{(unsigned char)args[1].as_int(), (unsigned char)args[2].as_int(), (unsigned char)args[3].as_int(), 255};
-      ::Font font = ::LoadFontFromImage(rlreg::images.at(args[0].as_int()), key, args[4].as_int());
+      ::Color key{(unsigned char)INT(1), (unsigned char)INT(2), (unsigned char)INT(3), 255};
+      ::Font font = ::LoadFontFromImage(rlreg::images.at(INT(0)), key, INT(4));
       int id = rlreg::next_font_id++;
       rlreg::fonts[id] = font;
       return Value::from_int(id);
@@ -24,7 +24,7 @@ functions:
     description: "Load font from memory buffer (fileType, data, dataSize, fontSize)"
     custom_body: |
       // TODO: Proper codepoints handling
-      ::Font font = ::LoadFontFromMemory(args[0].as_string().c_str(), (const unsigned char*)args[1].as_string().c_str(), args[2].as_int(), args[3].as_int(), nullptr, 0);
+      ::Font font = ::LoadFontFromMemory(STR(0).c_str(), (const unsigned char*)STR(1).c_str(), INT(2), INT(3), nullptr, 0);
       int id = rlreg::next_font_id++;
       rlreg::fonts[id] = font;
       return Value::from_int(id);
@@ -36,7 +36,7 @@ functions:
     category: fonts
     description: "Check if font is valid (pass font ID)"
     custom_body: |
-      return Value::from_bool(::IsFontValid(rlreg::fonts.at(args[0].as_int())));
+      return Value::from_bool(::IsFontValid(rlreg::fonts.at(INT(0))));
 
   - name: EXPORTFONTASCODE
     raylib_name: ExportFontAsCode
@@ -45,7 +45,7 @@ functions:
     category: fonts
     description: "Export font as code file (pass font ID, fileName)"
     custom_body: |
-      return Value::from_bool(::ExportFontAsCode(rlreg::fonts.at(args[0].as_int()), args[1].as_string().c_str()));
+      return Value::from_bool(::ExportFontAsCode(rlreg::fonts.at(INT(0)), STR(1).c_str()));
 
   # === TEXT DRAWING ===
   - name: DRAWTEXTCODEPOINTS
@@ -72,7 +72,7 @@ functions:
     category: fonts
     description: "Get glyph index position in font (pass font ID, codepoint)"
     custom_body: |
-      return Value::from_int(::GetGlyphIndex(rlreg::fonts.at(args[0].as_int()), args[1].as_int()));
+      return Value::from_int(::GetGlyphIndex(rlreg::fonts.at(INT(0)), INT(1)));
 
   - name: GETGLYPHINFO
     raylib_name: GetGlyphInfo
@@ -81,7 +81,7 @@ functions:
     category: fonts
     description: "Get glyph font info data (pass font ID, codepoint)"
     custom_body: |
-      ::GlyphInfo info = ::GetGlyphInfo(rlreg::fonts.at(args[0].as_int()), args[1].as_int());
+      ::GlyphInfo info = ::GetGlyphInfo(rlreg::fonts.at(INT(0)), INT(1));
       return Value::from_string(std::to_string(info.value) + "," + std::to_string(info.offsetX) + "," + std::to_string(info.offsetY) + "," + std::to_string(info.advanceX) + "," + std::to_string(info.image.width) + "," + std::to_string(info.image.height));
 
   - name: GETGLYPHATLASREC
@@ -91,7 +91,7 @@ functions:
     category: fonts
     description: "Get glyph rectangle in font atlas (pass font ID, codepoint)"
     custom_body: |
-      ::Rectangle rec = ::GetGlyphAtlasRec(rlreg::fonts.at(args[0].as_int()), args[1].as_int());
+      ::Rectangle rec = ::GetGlyphAtlasRec(rlreg::fonts.at(INT(0)), INT(1));
       return Value::from_string(std::to_string(rec.x) + "," + std::to_string(rec.y) + "," + std::to_string(rec.width) + "," + std::to_string(rec.height));
 
   # === TEXT CODEPOINTS ===
@@ -110,7 +110,7 @@ functions:
     description: "Get next codepoint in UTF-8 encoded string"
     custom_body: |
       int codepointSize;
-      int codepoint = ::GetCodepoint(args[0].as_string().c_str(), &codepointSize);
+      int codepoint = ::GetCodepoint(STR(0).c_str(), &codepointSize);
       return Value::from_int(codepoint);
 
   - name: GETCODEPOINTNEXT
@@ -121,7 +121,7 @@ functions:
     description: "Get next codepoint in UTF-8 encoded string"
     custom_body: |
       int codepointSize;
-      int codepoint = ::GetCodepointNext(args[0].as_string().c_str(), &codepointSize);
+      int codepoint = ::GetCodepointNext(STR(0).c_str(), &codepointSize);
       return Value::from_int(codepoint);
 
   - name: GETCODEPOINTPREVIOUS
@@ -132,7 +132,7 @@ functions:
     description: "Get previous codepoint in UTF-8 encoded string"
     custom_body: |
       int codepointSize;
-      int codepoint = ::GetCodepointPrevious(args[0].as_string().c_str(), &codepointSize);
+      int codepoint = ::GetCodepointPrevious(STR(0).c_str(), &codepointSize);
       return Value::from_int(codepoint);
 
   - name: CODEPOINTTOUTF8
@@ -143,7 +143,7 @@ functions:
     description: "Encode one codepoint into UTF-8 byte array"
     custom_body: |
       int utf8Size;
-      const char* utf8 = ::CodepointToUTF8(args[0].as_int(), &utf8Size);
+      const char* utf8 = ::CodepointToUTF8(INT(0), &utf8Size);
       return Value::from_string(std::string(utf8, utf8Size));
 
   # === TEXT STRING FUNCTIONS ===
@@ -179,7 +179,7 @@ functions:
     description: "Text formatting with variables (sprintf style) - simplified, single string"
     custom_body: |
       // Note: TextFormat supports variadic args, simplified for BASIC
-      return Value::from_string(args[0].as_string());
+      return Value::from_string(STR(0));
 
   - name: TEXTSUBTEXT
     raylib_name: TextSubtext
@@ -196,7 +196,7 @@ functions:
     description: "Replace text string (WARNING: must be enough room)"
     custom_body: |
       // Note: TextReplace modifies text, simplified for BASIC
-      return Value::from_string(args[0].as_string());
+      return Value::from_string(STR(0));
 
   - name: TEXTINSERT
     raylib_name: TextInsert
@@ -206,7 +206,7 @@ functions:
     description: "Insert text in a position (WARNING: must be enough room)"
     custom_body: |
       // Note: TextInsert modifies text, simplified for BASIC
-      return Value::from_string(args[0].as_string());
+      return Value::from_string(STR(0));
 
   - name: TEXTJOIN
     raylib_name: TextJoin
@@ -226,7 +226,7 @@ functions:
     description: "Split text into multiple strings (text, delimiter as single char string)"
     custom_body: |
       int count;
-      const char** result = ::TextSplit(args[0].as_string().c_str(), args[1].as_string()[0], &count);
+      const char** result = ::TextSplit(STR(0).c_str(), STR(1)[0], &count);
       (void)result; // Suppress unused variable warning
       // TODO: Return array of strings
       return Value::from_string("");

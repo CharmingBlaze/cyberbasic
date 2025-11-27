@@ -11,7 +11,7 @@ functions:
     category: colors
     description: "Create a color from RGB values (0-255)"
     working: true
-    custom_body: "Color{(unsigned char)args[0].as_int(), (unsigned char)args[1].as_int(), (unsigned char)args[2].as_int(), 255}"
+    custom_body: "Color{(unsigned char)INT(0), (unsigned char)INT(1), (unsigned char)INT(2), 255}"
 
   - name: MAKECOLORALPHA
     raylib_name: Color
@@ -20,7 +20,7 @@ functions:
     category: colors
     description: "Create a color from RGBA values (0-255)"
     working: true
-    custom_body: "Color{(unsigned char)args[0].as_int(), (unsigned char)args[1].as_int(), (unsigned char)args[2].as_int(), (unsigned char)args[3].as_int()}"
+    custom_body: "Color{(unsigned char)INT(0), (unsigned char)INT(1), (unsigned char)INT(2), (unsigned char)INT(3)}"
 
   # === COLOR CONSTANTS ===
   - name: COLORWHITE

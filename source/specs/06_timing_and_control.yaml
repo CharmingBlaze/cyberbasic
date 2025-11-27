@@ -1,0 +1,117 @@
+# Timing and Frame Control Functions
+# FPS, timing, frame control, and random number generation
+
+functions:
+  # === TIMING FUNCTIONS ===
+  - name: SETTARGETFPS
+    raylib_name: SetTargetFPS
+    args: [int]
+    ret: void
+    description: "Set target FPS (maximum)"
+    
+  - name: GETFRAMETIME
+    raylib_name: GetFrameTime
+    args: []
+    ret: float
+    description: "Get time in seconds for last frame drawn (delta time)"
+    
+  - name: GETTIME
+    raylib_name: GetTime
+    args: []
+    ret: float
+    description: "Get elapsed time in seconds since InitWindow()"
+    
+  - name: GETFPS
+    raylib_name: GetFPS
+    args: []
+    ret: int
+    description: "Get current FPS"
+    
+  # === CUSTOM FRAME CONTROL ===
+  - name: SWAPSCREENBUFFER
+    raylib_name: SwapScreenBuffer
+    args: []
+    ret: void
+    description: "Swap back buffer with front buffer (screen drawing)"
+    
+  - name: POLLINPUTEVENTS
+    raylib_name: PollInputEvents
+    args: []
+    ret: void
+    description: "Register all input events"
+    
+  - name: WAITTIME
+    raylib_name: WaitTime
+    args: [float]
+    ret: void
+    description: "Wait for some time (halt program execution)"
+    
+  # === RANDOM VALUES GENERATION ===
+  - name: SETRANDOMSEED
+    raylib_name: SetRandomSeed
+    args: [int]
+    ret: void
+    description: "Set the seed for the random number generator"
+    
+  - name: GETRANDOMVALUE
+    raylib_name: GetRandomValue
+    args: [int, int]
+    ret: int
+    description: "Get a random value between min and max (both included)"
+    
+  - name: LOADRANDOMSEQUENCE
+    raylib_name: LoadRandomSequence
+    args: [int, int, int]
+    ret: string
+    description: "Load random values sequence, no values repeated"
+    custom_body: |
+      int count = INT(0);
+      int min = INT(1);
+      int max = INT(2);
+      int *sequence = ::LoadRandomSequence(count, min, max);
+      
+      // Convert to comma-separated string
+      std::string result = "";
+      for (int i = 0; i < count; i++) {
+          if (i > 0) result += ",";
+          result += std::to_string(sequence[i]);
+      }
+      
+      ::UnloadRandomSequence(sequence);
+      return Value::from_string(result);
+    
+  # === MISC FUNCTIONS ===
+  - name: TAKESCREENSHOT
+    raylib_name: TakeScreenshot
+    args: [string]
+    ret: void
+    description: "Takes a screenshot of current screen (filename extension defines format)"
+    
+  - name: SETCONFIGFLAGS
+    raylib_name: SetConfigFlags
+    args: [int]
+    ret: void
+    description: "Setup init configuration flags (view FLAGS)"
+    
+  - name: OPENURL
+    raylib_name: OpenURL
+    args: [string]
+    ret: void
+    description: "Open URL with default system browser (if available)"
+    
+  # === LOGGING AND DEBUGGING ===
+  - name: TRACELOG
+    raylib_name: TraceLog
+    args: [int, string]
+    ret: void
+    description: "Show trace log messages (LOG_DEBUG, LOG_INFO, LOG_WARNING, LOG_ERROR...)"
+    custom_body: |
+      int logLevel = INT(0);
+      std::string text = STR(1);
+      ::TraceLog(logLevel, "%s", text.c_str());
+    
+  - name: SETTRACELOGLEVEL
+    raylib_name: SetTraceLogLevel
+    args: [int]
+    ret: void
+    description: "Set the current threshold (minimum) log level"

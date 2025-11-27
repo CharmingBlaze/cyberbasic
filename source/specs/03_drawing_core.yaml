@@ -1,0 +1,148 @@
+# Core Drawing Functions
+# Essential drawing setup, modes, and canvas management
+
+functions:
+  # === BASIC DRAWING ===
+  - name: BEGINDRAWING
+    raylib_name: BeginDrawing
+    args: []
+    ret: void
+    description: "Setup canvas (framebuffer) to start drawing"
+    
+  - name: ENDDRAWING
+    raylib_name: EndDrawing
+    args: []
+    ret: void
+    description: "End canvas drawing and swap buffers (double buffering)"
+    
+  - name: CLEARBACKGROUND
+    raylib_name: ClearBackground
+    args: [int, int, int]
+    ret: void
+    description: "Set background color (framebuffer clear color)"
+    custom_body: |
+      ::Color c{(unsigned char)INT(0), (unsigned char)INT(1), (unsigned char)INT(2), 255};
+      ::ClearBackground(c);
+    
+  # === 2D MODE ===
+  - name: BEGINMODE2D
+    raylib_name: BeginMode2D
+    args: [int]
+    ret: void
+    description: "Begin 2D mode with custom camera (2D)"
+    custom_body: |
+      // Create default 2D camera for now
+      ::Camera2D camera = {};
+      camera.offset = ::Vector2{ 0.0f, 0.0f };
+      camera.target = ::Vector2{ 0.0f, 0.0f };
+      camera.rotation = 0.0f;
+      camera.zoom = 1.0f;
+      ::BeginMode2D(camera);
+    
+  - name: ENDMODE2D
+    raylib_name: EndMode2D
+    args: []
+    ret: void
+    description: "Ends 2D mode with custom camera"
+    
+  # === 3D MODE (FIXED) ===
+  - name: BEGINMODE3D
+    raylib_name: BeginMode3D
+    args: [int]
+    ret: void
+    description: "Begin 3D mode with proper camera setup"
+    custom_body: |
+      // Create proper 3D camera with good default values
+      ::Camera3D camera = {};
+      camera.position = ::Vector3{ 0.0f, 10.0f, 10.0f };    // Camera position
+      camera.target = ::Vector3{ 0.0f, 0.0f, 0.0f };        // Camera looking at point
+      camera.up = ::Vector3{ 0.0f, 1.0f, 0.0f };            // Camera up vector (rotation towards target)
+      camera.fovy = 45.0f;                                     // Camera field-of-view Y
+      camera.projection = CAMERA_PERSPECTIVE;                  // Camera projection type
+      ::BeginMode3D(camera);
+    
+  - name: ENDMODE3D
+    raylib_name: EndMode3D
+    args: []
+    ret: void
+    description: "Ends 3D mode and returns to default 2D orthographic mode"
+    
+  # === TEXTURE MODE ===
+  - name: BEGINTEXTUREMODE
+    raylib_name: BeginTextureMode
+    args: [int]
+    ret: void
+    description: "Begin drawing to render texture"
+    custom_body: |
+      // Create default render texture for now
+      ::RenderTexture2D target = {};
+      ::BeginTextureMode(target);
+    
+  - name: ENDTEXTUREMODE
+    raylib_name: EndTextureMode
+    args: []
+    ret: void
+    description: "Ends drawing to render texture"
+    
+  # === SHADER MODE ===
+  - name: BEGINSHADERMODE
+    raylib_name: BeginShaderMode
+    args: [int]
+    ret: void
+    description: "Begin custom shader drawing"
+    custom_body: |
+      // Create default shader for now
+      ::Shader shader = {};
+      ::BeginShaderMode(shader);
+    
+  - name: ENDSHADERMODE
+    raylib_name: EndShaderMode
+    args: []
+    ret: void
+    description: "End custom shader drawing (use default shader)"
+    
+  # === BLEND MODE ===
+  - name: BEGINBLENDMODE
+    raylib_name: BeginBlendMode
+    args: [int]
+    ret: void
+    description: "Begin blending mode (alpha, additive, multiplied, subtract, custom)"
+    
+  - name: ENDBLENDMODE
+    raylib_name: EndBlendMode
+    args: []
+    ret: void
+    description: "End blending mode (reset to default: alpha blending)"
+    
+  # === SCISSOR MODE ===
+  - name: BEGINSCISSORMODE
+    raylib_name: BeginScissorMode
+    args: [int, int, int, int]
+    ret: void
+    description: "Begin scissor mode (define screen area for following drawing)"
+    
+  - name: ENDSCISSORMODE
+    raylib_name: EndScissorMode
+    args: []
+    ret: void
+    description: "End scissor mode"
+    
+  # === VR MODE (PLACEHOLDER) ===
+  - name: BEGINVRSTEREOMODE
+    raylib_name: BeginVrStereoMode
+    args: [int]
+    ret: void
+    description: "Begin stereo rendering (requires VR simulator)"
+    custom_body: |
+      // VR not implemented yet - placeholder
+      // ::VrStereoConfig config = {};
+      // ::BeginVrStereoMode(config);
+    
+  - name: ENDVRSTEREOMODE
+    raylib_name: EndVrStereoMode
+    args: []
+    ret: void
+    description: "End stereo rendering (requires VR simulator)"
+    custom_body: |
+      // VR not implemented yet - placeholder
+      // ::EndVrStereoMode();

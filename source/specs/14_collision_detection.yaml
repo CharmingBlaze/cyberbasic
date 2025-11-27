@@ -1,0 +1,146 @@
+# Collision Detection Functions
+# Comprehensive 2D collision detection for rectangles, circles, points, lines, and polygons
+
+functions:
+  # === BASIC SHAPE COLLISION DETECTION ===
+  - name: CHECKCOLLISIONRECS
+    raylib_name: CheckCollisionRecs
+    args: [float, float, float, float, float, float, float, float]
+    ret: int
+    description: "Check collision between two rectangles (rec1x, rec1y, rec1w, rec1h, rec2x, rec2y, rec2w, rec2h)"
+    custom_body: |
+      ::Rectangle rec1 = {FLOAT(0), FLOAT(1), FLOAT(2), FLOAT(3)};
+      ::Rectangle rec2 = {FLOAT(4), FLOAT(5), FLOAT(6), FLOAT(7)};
+      return Value::from_int(::CheckCollisionRecs(rec1, rec2) ? 1 : 0);
+    
+  - name: CHECKCOLLISIONCIRCLES
+    raylib_name: CheckCollisionCircles
+    args: [float, float, float, float, float, float]
+    ret: int
+    description: "Check collision between two circles (center1x, center1y, radius1, center2x, center2y, radius2)"
+    custom_body: |
+      ::Vector2 center1 = {FLOAT(0), FLOAT(1)};
+      ::Vector2 center2 = {FLOAT(3), FLOAT(4)};
+      return Value::from_int(::CheckCollisionCircles(center1, FLOAT(2), center2, FLOAT(5)) ? 1 : 0);
+    
+  - name: CHECKCOLLISIONCIRCLEREC
+    raylib_name: CheckCollisionCircleRec
+    args: [float, float, float, float, float, float, float]
+    ret: int
+    description: "Check collision between circle and rectangle (centerx, centery, radius, recx, recy, recw, rech)"
+    custom_body: |
+      ::Vector2 center = {FLOAT(0), FLOAT(1)};
+      ::Rectangle rec = {FLOAT(3), FLOAT(4), FLOAT(5), FLOAT(6)};
+      return Value::from_int(::CheckCollisionCircleRec(center, FLOAT(2), rec) ? 1 : 0);
+    
+  - name: CHECKCOLLISIONCIRCLELINE
+    raylib_name: CheckCollisionCircleLine
+    args: [float, float, float, float, float, float, float]
+    ret: int
+    description: "Check if circle collides with a line created between two points (centerx, centery, radius, p1x, p1y, p2x, p2y)"
+    custom_body: |
+      ::Vector2 center = {FLOAT(0), FLOAT(1)};
+      ::Vector2 p1 = {FLOAT(3), FLOAT(4)};
+      ::Vector2 p2 = {FLOAT(5), FLOAT(6)};
+      return Value::from_int(::CheckCollisionCircleLine(center, FLOAT(2), p1, p2) ? 1 : 0);
+    
+  # === POINT COLLISION DETECTION ===
+  - name: CHECKCOLLISIONPOINTREC
+    raylib_name: CheckCollisionPointRec
+    args: [float, float, float, float, float, float]
+    ret: int
+    description: "Check if point is inside rectangle (pointx, pointy, recx, recy, recw, rech)"
+    custom_body: |
+      ::Vector2 point = {FLOAT(0), FLOAT(1)};
+      ::Rectangle rec = {FLOAT(2), FLOAT(3), FLOAT(4), FLOAT(5)};
+      return Value::from_int(::CheckCollisionPointRec(point, rec) ? 1 : 0);
+    
+  - name: CHECKCOLLISIONPOINTCIRCLE
+    raylib_name: CheckCollisionPointCircle
+    args: [float, float, float, float, float]
+    ret: int
+    description: "Check if point is inside circle (pointx, pointy, centerx, centery, radius)"
+    custom_body: |
+      ::Vector2 point = {FLOAT(0), FLOAT(1)};
+      ::Vector2 center = {FLOAT(2), FLOAT(3)};
+      return Value::from_int(::CheckCollisionPointCircle(point, center, FLOAT(4)) ? 1 : 0);
+    
+  - name: CHECKCOLLISIONPOINTTRIANGLE
+    raylib_name: CheckCollisionPointTriangle
+    args: [float, float, float, float, float, float, float, float]
+    ret: int
+    description: "Check if point is inside a triangle (pointx, pointy, p1x, p1y, p2x, p2y, p3x, p3y)"
+    custom_body: |
+      ::Vector2 point = {FLOAT(0), FLOAT(1)};
+      ::Vector2 p1 = {FLOAT(2), FLOAT(3)};
+      ::Vector2 p2 = {FLOAT(4), FLOAT(5)};
+      ::Vector2 p3 = {FLOAT(6), FLOAT(7)};
+      return Value::from_int(::CheckCollisionPointTriangle(point, p1, p2, p3) ? 1 : 0);
+    
+  - name: CHECKCOLLISIONPOINTLINE
+    raylib_name: CheckCollisionPointLine
+    args: [float, float, float, float, float, float, int]
+    ret: int
+    description: "Check if point belongs to line created between two points with defined margin in pixels (pointx, pointy, p1x, p1y, p2x, p2y, threshold)"
+    custom_body: |
+      ::Vector2 point = {FLOAT(0), FLOAT(1)};
+      ::Vector2 p1 = {FLOAT(2), FLOAT(3)};
+      ::Vector2 p2 = {FLOAT(4), FLOAT(5)};
+      return Value::from_int(::CheckCollisionPointLine(point, p1, p2, INT(6)) ? 1 : 0);
+    
+  - name: CHECKCOLLISIONPOINTPOLY
+    raylib_name: CheckCollisionPointPoly
+    args: [float, float, string]
+    ret: int
+    description: "Check if point is within a polygon described by array of vertices (pointx, pointy, points as 'x1,y1;x2,y2;...')"
+    custom_body: |
+      ::Vector2 point = {FLOAT(0), FLOAT(1)};
+      std::string points_str = STR(2);
+      std::vector<::Vector2> points;
+      std::stringstream ss(points_str);
+      std::string point_str;
+      while (std::getline(ss, point_str, ';')) {
+          std::stringstream point_ss(point_str);
+          std::string x_str, y_str;
+          if (std::getline(point_ss, x_str, ',') && std::getline(point_ss, y_str, ',')) {
+              points.push_back({std::stof(x_str), std::stof(y_str)});
+          }
+      }
+      if (points.size() >= 3) {
+          return Value::from_int(::CheckCollisionPointPoly(point, points.data(), points.size()) ? 1 : 0);
+      }
+      return Value::from_int(0);
+    
+  # === LINE COLLISION DETECTION ===
+  - name: CHECKCOLLISIONLINES
+    raylib_name: CheckCollisionLines
+    args: [float, float, float, float, float, float, float, float]
+    ret: string
+    description: "Check the collision between two lines defined by two points each, returns collision point as 'x,y' or empty string if no collision (start1x, start1y, end1x, end1y, start2x, start2y, end2x, end2y)"
+    custom_body: |
+      ::Vector2 startPos1 = {FLOAT(0), FLOAT(1)};
+      ::Vector2 endPos1 = {FLOAT(2), FLOAT(3)};
+      ::Vector2 startPos2 = {FLOAT(4), FLOAT(5)};
+      ::Vector2 endPos2 = {FLOAT(6), FLOAT(7)};
+      ::Vector2 collisionPoint;
+      bool collision = ::CheckCollisionLines(startPos1, endPos1, startPos2, endPos2, &collisionPoint);
+      if (collision) {
+          return Value::from_string(std::to_string(collisionPoint.x) + "," + std::to_string(collisionPoint.y));
+      } else {
+          return Value::from_string("");
+      }
+    
+  # === COLLISION RECTANGLE CALCULATION ===
+  - name: GETCOLLISIONREC
+    raylib_name: GetCollisionRec
+    args: [float, float, float, float, float, float, float, float]
+    ret: string
+    description: "Get collision rectangle for two rectangles collision (rec1x, rec1y, rec1w, rec1h, rec2x, rec2y, rec2w, rec2h) returns 'x,y,width,height'"
+    custom_body: |
+      ::Rectangle rec1 = {FLOAT(0), FLOAT(1), FLOAT(2), FLOAT(3)};
+      ::Rectangle rec2 = {FLOAT(4), FLOAT(5), FLOAT(6), FLOAT(7)};
+      ::Rectangle collision = ::GetCollisionRec(rec1, rec2);
+      return Value::from_string(std::to_string(collision.x) + "," + 
+                               std::to_string(collision.y) + "," + 
+                               std::to_string(collision.width) + "," + 
+                               std::to_string(collision.height));

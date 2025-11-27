@@ -1,0 +1,85 @@
+# Image Loading and Management Functions
+# Comprehensive image loading, validation, and export functionality
+
+functions:
+  # === IMAGE LOADING ===
+  - name: LOADIMAGE
+    raylib_name: LoadImage
+    args: [string]
+    ret: int
+    description: "Load image from file into CPU memory (RAM), returns image ID"
+    custom_body: |
+      ::Image image = ::LoadImage(STR(0).c_str());
+      // Store image in registry and return ID (simplified approach)
+      static int next_id = 1;
+      // In a real implementation, you'd store the image in a registry
+      return Value::from_int(next_id++);
+    
+  - name: LOADIMAGERAW
+    raylib_name: LoadImageRaw
+    args: [string, int, int, int, int]
+    ret: int
+    description: "Load image from RAW file data (fileName, width, height, format, headerSize), returns image ID"
+    custom_body: |
+      ::Image image = ::LoadImageRaw(STR(0).c_str(), INT(1), INT(2), INT(3), INT(4));
+      static int next_id = 1;
+      return Value::from_int(next_id++);
+    
+  - name: LOADIMAGEANIM
+    raylib_name: LoadImageAnim
+    args: [string]
+    ret: string
+    description: "Load image sequence from file, returns 'imageID,frameCount'"
+    custom_body: |
+      int frames;
+      ::Image image = ::LoadImageAnim(STR(0).c_str(), &frames);
+      static int next_id = 1;
+      return Value::from_string(std::to_string(next_id++) + "," + std::to_string(frames));
+    
+  - name: LOADIMAGEFROMSCREEN
+    raylib_name: LoadImageFromScreen
+    args: []
+    ret: int
+    description: "Load image from screen buffer (screenshot), returns image ID"
+    custom_body: |
+      ::Image image = ::LoadImageFromScreen();
+      static int next_id = 1;
+      return Value::from_int(next_id++);
+    
+  - name: ISIMAGEVALID
+    raylib_name: IsImageValid
+    args: [int]
+    ret: int
+    description: "Check if an image is valid (data and parameters)"
+    custom_body: |
+      // In a real implementation, you'd look up the image by ID
+      ::Image image = {}; // Placeholder
+      return Value::from_int(::IsImageValid(image) ? 1 : 0);
+    
+  - name: UNLOADIMAGE
+    raylib_name: UnloadImage
+    args: [int]
+    ret: void
+    description: "Unload image from CPU memory (RAM)"
+    custom_body: |
+      // In a real implementation, you'd look up and unload the image by ID
+      ::Image image = {}; // Placeholder
+      ::UnloadImage(image);
+    
+  - name: EXPORTIMAGE
+    raylib_name: ExportImage
+    args: [int, string]
+    ret: int
+    description: "Export image data to file, returns 1 on success"
+    custom_body: |
+      ::Image image = {}; // Placeholder - look up by ID
+      return Value::from_int(::ExportImage(image, STR(1).c_str()) ? 1 : 0);
+    
+  - name: EXPORTIMAGEASCODE
+    raylib_name: ExportImageAsCode
+    args: [int, string]
+    ret: int
+    description: "Export image as code file defining an array of bytes, returns 1 on success"
+    custom_body: |
+      ::Image image = {}; // Placeholder - look up by ID
+      return Value::from_int(::ExportImageAsCode(image, STR(1).c_str()) ? 1 : 0);

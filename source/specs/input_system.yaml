@@ -103,42 +103,42 @@ functions:
     args: [int]
     ret: bool
     custom_body: |
-      return Value::from_bool(::IsGamepadAvailable(args[0].as_int()));
+      return Value::from_bool(::IsGamepadAvailable(INT(0)));
   
   - name: GETGAMEPADNAME
     map_to: GetGamepadName
     args: [int]
     ret: string
     custom_body: |
-      return Value::from_string(::GetGamepadName(args[0].as_int()));
+      return Value::from_string(::GetGamepadName(INT(0)));
   
   - name: ISGAMEPADBUTTONPRESSED
     map_to: IsGamepadButtonPressed
     args: [int, int]
     ret: bool
     custom_body: |
-      return Value::from_bool(::IsGamepadButtonPressed(args[0].as_int(), args[1].as_int()));
+      return Value::from_bool(::IsGamepadButtonPressed(INT(0), INT(1)));
   
   - name: ISGAMEPADBUTTONDOWN
     map_to: IsGamepadButtonDown
     args: [int, int]
     ret: bool
     custom_body: |
-      return Value::from_bool(::IsGamepadButtonDown(args[0].as_int(), args[1].as_int()));
+      return Value::from_bool(::IsGamepadButtonDown(INT(0), INT(1)));
   
   - name: ISGAMEPADBUTTONRELEASED
     map_to: IsGamepadButtonReleased
     args: [int, int]
     ret: bool
     custom_body: |
-      return Value::from_bool(::IsGamepadButtonReleased(args[0].as_int(), args[1].as_int()));
+      return Value::from_bool(::IsGamepadButtonReleased(INT(0), INT(1)));
   
   - name: ISGAMEPADBUTTONUP
     map_to: IsGamepadButtonUp
     args: [int, int]
     ret: bool
     custom_body: |
-      return Value::from_bool(::IsGamepadButtonUp(args[0].as_int(), args[1].as_int()));
+      return Value::from_bool(::IsGamepadButtonUp(INT(0), INT(1)));
   
   - name: GETGAMEPADBUTTONPRESSED
     map_to: GetGamepadButtonPressed
@@ -152,21 +152,21 @@ functions:
     args: [int]
     ret: int
     custom_body: |
-      return Value::from_int(::GetGamepadAxisCount(args[0].as_int()));
+      return Value::from_int(::GetGamepadAxisCount(INT(0)));
   
   - name: GETGAMEPADAXISMOVEMENT
     map_to: GetGamepadAxisMovement
     args: [int, int]
     ret: double
     custom_body: |
-      return Value::from_number(::GetGamepadAxisMovement(args[0].as_int(), args[1].as_int()));
+      return Value::from_number(::GetGamepadAxisMovement(INT(0), INT(1)));
   
   - name: SETGAMEPADMAPPINGS
     map_to: SetGamepadMappings
     args: [string]
     ret: int
     custom_body: |
-      return Value::from_int(::SetGamepadMappings(args[0].as_string().c_str()));
+      return Value::from_int(::SetGamepadMappings(STR(0).c_str()));
   
   - name: SETGAMEPADVIBRATION
     map_to: SetGamepadVibration

@@ -1,0 +1,183 @@
+# Rectangle and Triangle Drawing Functions
+# Comprehensive rectangle and triangle rendering with gradients and advanced features
+
+functions:
+  # === RECTANGLE DRAWING ===
+  - name: DRAWRECTANGLE
+    raylib_name: DrawRectangle
+    args: [int, int, int, int, int, int, int]
+    ret: void
+    description: "Draw a color-filled rectangle (posX, posY, width, height, r, g, b)"
+    custom_body: |
+      ::Color color = {(unsigned char)INT(4), (unsigned char)INT(5), (unsigned char)INT(6), 255};
+      ::DrawRectangle(INT(0), INT(1), INT(2), INT(3), color);
+    
+  - name: DRAWRECTANGLEV
+    raylib_name: DrawRectangleV
+    args: [float, float, float, float, int, int, int]
+    ret: void
+    description: "Draw a color-filled rectangle (Vector version) (posX, posY, width, height, r, g, b)"
+    custom_body: |
+      ::Vector2 position = {FLOAT(0), FLOAT(1)};
+      ::Vector2 size = {FLOAT(2), FLOAT(3)};
+      ::Color color = {(unsigned char)INT(4), (unsigned char)INT(5), (unsigned char)INT(6), 255};
+      ::DrawRectangleV(position, size, color);
+    
+  - name: DRAWRECTANGLEREC
+    raylib_name: DrawRectangleRec
+    args: [float, float, float, float, int, int, int]
+    ret: void
+    description: "Draw a color-filled rectangle (x, y, width, height, r, g, b)"
+    custom_body: |
+      ::Rectangle rec = {FLOAT(0), FLOAT(1), FLOAT(2), FLOAT(3)};
+      ::Color color = {(unsigned char)INT(4), (unsigned char)INT(5), (unsigned char)INT(6), 255};
+      ::DrawRectangleRec(rec, color);
+    
+  - name: DRAWRECTANGLEPRO
+    raylib_name: DrawRectanglePro
+    args: [float, float, float, float, float, float, float, int, int, int]
+    ret: void
+    description: "Draw a color-filled rectangle with pro parameters (x, y, width, height, originX, originY, rotation, r, g, b)"
+    custom_body: |
+      ::Rectangle rec = {FLOAT(0), FLOAT(1), FLOAT(2), FLOAT(3)};
+      ::Vector2 origin = {FLOAT(4), FLOAT(5)};
+      ::Color color = {(unsigned char)INT(7), (unsigned char)INT(8), (unsigned char)INT(9), 255};
+      ::DrawRectanglePro(rec, origin, FLOAT(6), color);
+    
+  - name: DRAWRECTANGLEGRADIENTV
+    raylib_name: DrawRectangleGradientV
+    args: [int, int, int, int, int, int, int, int, int, int]
+    ret: void
+    description: "Draw a vertical-gradient-filled rectangle (posX, posY, width, height, topR, topG, topB, bottomR, bottomG, bottomB)"
+    custom_body: |
+      ::Color top = {(unsigned char)INT(4), (unsigned char)INT(5), (unsigned char)INT(6), 255};
+      ::Color bottom = {(unsigned char)INT(7), (unsigned char)INT(8), (unsigned char)INT(9), 255};
+      ::DrawRectangleGradientV(INT(0), INT(1), INT(2), INT(3), top, bottom);
+    
+  - name: DRAWRECTANGLEGRADIENTH
+    raylib_name: DrawRectangleGradientH
+    args: [int, int, int, int, int, int, int, int, int, int]
+    ret: void
+    description: "Draw a horizontal-gradient-filled rectangle (posX, posY, width, height, leftR, leftG, leftB, rightR, rightG, rightB)"
+    custom_body: |
+      ::Color left = {(unsigned char)INT(4), (unsigned char)INT(5), (unsigned char)INT(6), 255};
+      ::Color right = {(unsigned char)INT(7), (unsigned char)INT(8), (unsigned char)INT(9), 255};
+      ::DrawRectangleGradientH(INT(0), INT(1), INT(2), INT(3), left, right);
+    
+  - name: DRAWRECTANGLEGRADIENTEX
+    raylib_name: DrawRectangleGradientEx
+    args: [float, float, float, float, int, int, int, int, int, int, int, int, int, int, int, int]
+    ret: void
+    description: "Draw a gradient-filled rectangle with custom vertex colors (x, y, width, height, tlR, tlG, tlB, blR, blG, blB, trR, trG, trB, brR, brG, brB)"
+    custom_body: |
+      ::Rectangle rec = {FLOAT(0), FLOAT(1), FLOAT(2), FLOAT(3)};
+      ::Color topLeft = {(unsigned char)INT(4), (unsigned char)INT(5), (unsigned char)INT(6), 255};
+      ::Color bottomLeft = {(unsigned char)INT(7), (unsigned char)INT(8), (unsigned char)INT(9), 255};
+      ::Color topRight = {(unsigned char)INT(10), (unsigned char)INT(11), (unsigned char)INT(12), 255};
+      ::Color bottomRight = {(unsigned char)INT(13), (unsigned char)INT(14), (unsigned char)INT(15), 255};
+      ::DrawRectangleGradientEx(rec, topLeft, bottomLeft, topRight, bottomRight);
+    
+  - name: DRAWRECTANGLELINES
+    raylib_name: DrawRectangleLines
+    args: [int, int, int, int, int, int, int]
+    ret: void
+    description: "Draw rectangle outline (posX, posY, width, height, r, g, b)"
+    custom_body: |
+      ::Color color = {(unsigned char)INT(4), (unsigned char)INT(5), (unsigned char)INT(6), 255};
+      ::DrawRectangleLines(INT(0), INT(1), INT(2), INT(3), color);
+    
+  - name: DRAWRECTANGLELINESEX
+    raylib_name: DrawRectangleLinesEx
+    args: [float, float, float, float, float, int, int, int]
+    ret: void
+    description: "Draw rectangle outline with extended parameters (x, y, width, height, lineThick, r, g, b)"
+    custom_body: |
+      ::Rectangle rec = {FLOAT(0), FLOAT(1), FLOAT(2), FLOAT(3)};
+      ::Color color = {(unsigned char)INT(5), (unsigned char)INT(6), (unsigned char)INT(7), 255};
+      ::DrawRectangleLinesEx(rec, FLOAT(4), color);
+    
+  - name: DRAWRECTANGLEROUNDED
+    raylib_name: DrawRectangleRounded
+    args: [float, float, float, float, float, int, int, int, int]
+    ret: void
+    description: "Draw rectangle with rounded edges (x, y, width, height, roundness, segments, r, g, b)"
+    custom_body: |
+      ::Rectangle rec = {FLOAT(0), FLOAT(1), FLOAT(2), FLOAT(3)};
+      ::Color color = {(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255};
+      ::DrawRectangleRounded(rec, FLOAT(4), INT(5), color);
+    
+  - name: DRAWRECTANGLEROUNDEDLINES
+    raylib_name: DrawRectangleRoundedLines
+    args: [float, float, float, float, float, int, int, int, int]
+    ret: void
+    description: "Draw rectangle lines with rounded edges (x, y, width, height, roundness, segments, r, g, b)"
+    custom_body: |
+      ::Rectangle rec = {FLOAT(0), FLOAT(1), FLOAT(2), FLOAT(3)};
+      ::Color color = {(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255};
+      ::DrawRectangleRoundedLines(rec, FLOAT(4), INT(5), color);
+    
+  - name: DRAWRECTANGLEROUNDEDLINESEX
+    raylib_name: DrawRectangleRoundedLinesEx
+    args: [float, float, float, float, float, int, float, int, int, int]
+    ret: void
+    description: "Draw rectangle with rounded edges outline (x, y, width, height, roundness, segments, lineThick, r, g, b)"
+    custom_body: |
+      ::Rectangle rec = {FLOAT(0), FLOAT(1), FLOAT(2), FLOAT(3)};
+      ::Color color = {(unsigned char)INT(7), (unsigned char)INT(8), (unsigned char)INT(9), 255};
+      ::DrawRectangleRoundedLinesEx(rec, FLOAT(4), INT(5), FLOAT(6), color);
+    
+  # === TRIANGLE DRAWING ===
+  - name: DRAWTRIANGLE
+    raylib_name: DrawTriangle
+    args: [float, float, float, float, float, float, int, int, int]
+    ret: void
+    description: "Draw a color-filled triangle (vertex in counter-clockwise order!) (v1x, v1y, v2x, v2y, v3x, v3y, r, g, b)"
+    custom_body: |
+      ::Vector2 v1 = {FLOAT(0), FLOAT(1)};
+      ::Vector2 v2 = {FLOAT(2), FLOAT(3)};
+      ::Vector2 v3 = {FLOAT(4), FLOAT(5)};
+      ::Color color = {(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255};
+      ::DrawTriangle(v1, v2, v3, color);
+    
+  - name: DRAWTRIANGLELINES
+    raylib_name: DrawTriangleLines
+    args: [float, float, float, float, float, float, int, int, int]
+    ret: void
+    description: "Draw triangle outline (vertex in counter-clockwise order!) (v1x, v1y, v2x, v2y, v3x, v3y, r, g, b)"
+    custom_body: |
+      ::Vector2 v1 = {FLOAT(0), FLOAT(1)};
+      ::Vector2 v2 = {FLOAT(2), FLOAT(3)};
+      ::Vector2 v3 = {FLOAT(4), FLOAT(5)};
+      ::Color color = {(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255};
+      ::DrawTriangleLines(v1, v2, v3, color);
+    
+  # === POLYGON DRAWING ===
+  - name: DRAWPOLY
+    raylib_name: DrawPoly
+    args: [float, float, int, float, float, int, int, int]
+    ret: void
+    description: "Draw a regular polygon (centerX, centerY, sides, radius, rotation, r, g, b)"
+    custom_body: |
+      ::Vector2 center = {FLOAT(0), FLOAT(1)};
+      ::Color color = {(unsigned char)INT(5), (unsigned char)INT(6), (unsigned char)INT(7), 255};
+      ::DrawPoly(center, INT(2), FLOAT(3), FLOAT(4), color);
+    
+  - name: DRAWPOLYLINES
+    raylib_name: DrawPolyLines
+    args: [float, float, int, float, float, int, int, int]
+    ret: void
+    description: "Draw a polygon outline of n sides (centerX, centerY, sides, radius, rotation, r, g, b)"
+    custom_body: |
+      ::Vector2 center = {FLOAT(0), FLOAT(1)};
+      ::Color color = {(unsigned char)INT(5), (unsigned char)INT(6), (unsigned char)INT(7), 255};
+      ::DrawPolyLines(center, INT(2), FLOAT(3), FLOAT(4), color);
+    
+  - name: DRAWPOLYLINESEX
+    raylib_name: DrawPolyLinesEx
+    args: [float, float, int, float, float, float, int, int, int]
+    ret: void
+    description: "Draw a polygon outline of n sides with extended parameters (centerX, centerY, sides, radius, rotation, lineThick, r, g, b)"
+    custom_body: |
+      ::Vector2 center = {FLOAT(0), FLOAT(1)};
+      ::Color color = {(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255};
+      ::DrawPolyLinesEx(center, INT(2), FLOAT(3), FLOAT(4), FLOAT(5), color);

@@ -5,12 +5,12 @@ functions:
     args: [int, int, int, double, double, int, int, int]
     ret: void
     custom_body: |
-      int id = args[0].as_int();
-      int x = args[1].as_int();
-      int y = args[2].as_int();
-      float rotation = (float)args[3].as_number();
-      float scale = (float)args[4].as_number();
-      ::Color tint{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255};
+      int id = INT(0);
+      int x = INT(1);
+      int y = INT(2);
+      float rotation = (float)FLOAT(3);
+      float scale = (float)FLOAT(4);
+      ::Color tint{(unsigned char)INT(5), (unsigned char)INT(6), (unsigned char)INT(7), 255};
       auto it = rlreg::textures.find(id);
       if (it != rlreg::textures.end()) {
         ::Vector2 position{(float)x, (float)y};
@@ -23,14 +23,14 @@ functions:
     args: [int, int, int, int, int, int, int, int, int]
     ret: void
     custom_body: |
-      int id = args[0].as_int();
-      int src_x = args[1].as_int();
-      int src_y = args[2].as_int();
-      int src_w = args[3].as_int();
-      int src_h = args[4].as_int();
-      int dest_x = args[5].as_int();
-      int dest_y = args[6].as_int();
-      ::Color tint{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255, 255};
+      int id = INT(0);
+      int src_x = INT(1);
+      int src_y = INT(2);
+      int src_w = INT(3);
+      int src_h = INT(4);
+      int dest_x = INT(5);
+      int dest_y = INT(6);
+      ::Color tint{(unsigned char)INT(7), (unsigned char)INT(8), 255, 255};
       auto it = rlreg::textures.find(id);
       if (it != rlreg::textures.end()) {
         ::Rectangle source{(float)src_x, (float)src_y, (float)src_w, (float)src_h};
@@ -43,16 +43,16 @@ functions:
     args: [int, int, int, int, int, int, int, int, int, int, int]
     ret: void
     custom_body: |
-      int id = args[0].as_int();
-      int src_x = args[1].as_int();
-      int src_y = args[2].as_int();
-      int src_w = args[3].as_int();
-      int src_h = args[4].as_int();
-      int dest_x = args[5].as_int();
-      int dest_y = args[6].as_int();
-      int dest_w = args[7].as_int();
-      int dest_h = args[8].as_int();
-      ::Color tint{(unsigned char)args[9].as_int(), (unsigned char)args[10].as_int(), 255, 255};
+      int id = INT(0);
+      int src_x = INT(1);
+      int src_y = INT(2);
+      int src_w = INT(3);
+      int src_h = INT(4);
+      int dest_x = INT(5);
+      int dest_y = INT(6);
+      int dest_w = INT(7);
+      int dest_h = INT(8);
+      ::Color tint{(unsigned char)INT(9), (unsigned char)INT(10), 255, 255};
       auto it = rlreg::textures.find(id);
       if (it != rlreg::textures.end()) {
         ::Rectangle source{(float)src_x, (float)src_y, (float)src_w, (float)src_h};
@@ -66,16 +66,16 @@ functions:
     args: [int, int, int, int, int, int, int, int, int, int, int, int, int]
     ret: void
     custom_body: |
-      int id = args[0].as_int();
-      int src_x = args[1].as_int();
-      int src_y = args[2].as_int();
-      int src_w = args[3].as_int();
-      int src_h = args[4].as_int();
-      int dest_x = args[5].as_int();
-      int dest_y = args[6].as_int();
-      int dest_w = args[7].as_int();
-      int dest_h = args[8].as_int();
-      ::Color tint{(unsigned char)args[9].as_int(), (unsigned char)args[10].as_int(), (unsigned char)args[11].as_int(), 255};
+      int id = INT(0);
+      int src_x = INT(1);
+      int src_y = INT(2);
+      int src_w = INT(3);
+      int src_h = INT(4);
+      int dest_x = INT(5);
+      int dest_y = INT(6);
+      int dest_w = INT(7);
+      int dest_h = INT(8);
+      ::Color tint{(unsigned char)INT(9), (unsigned char)INT(10), (unsigned char)INT(11), 255};
       auto it = rlreg::textures.find(id);
       if (it != rlreg::textures.end()) {
         ::Rectangle source{(float)src_x, (float)src_y, (float)src_w, (float)src_h};
@@ -184,9 +184,9 @@ functions:
     args: [double, double, double, int, double, int, int, int]
     ret: void
     custom_body: |
-      ::Vector2 center{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
-      ::DrawPoly(center, args[3].as_int(), (float)args[4].as_number(), 0.0f, c);
+      ::Vector2 center{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Color c{(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255};
+      ::DrawPoly(center, INT(3), (float)FLOAT(4), 0.0f, c);
       return Value::nil();
   
   - name: DRAWPOLYLINES
@@ -194,9 +194,9 @@ functions:
     args: [double, double, double, int, double, int, int, int]
     ret: void
     custom_body: |
-      ::Vector2 center{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Color c{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
-      ::DrawPolyLines(center, args[3].as_int(), (float)args[4].as_number(), 0.0f, c);
+      ::Vector2 center{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Color c{(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255};
+      ::DrawPolyLines(center, INT(3), (float)FLOAT(4), 0.0f, c);
       return Value::nil();
   
   - name: DRAWPOLYLINESEX
@@ -204,7 +204,7 @@ functions:
     args: [double, double, double, int, double, double, int, int, int]
     ret: void
     custom_body: |
-      ::Vector2 center{(float)args[0].as_number(), (float)args[1].as_number()};
-      ::Color c{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), 255};
-      ::DrawPolyLinesEx(center, args[3].as_int(), (float)args[4].as_number(), (float)args[5].as_number(), (float)args[6].as_number(), c);
+      ::Vector2 center{(float)FLOAT(0), (float)FLOAT(1)};
+      ::Color c{(unsigned char)INT(7), (unsigned char)INT(8), (unsigned char)INT(9), 255};
+      ::DrawPolyLinesEx(center, INT(3), (float)FLOAT(4), (float)FLOAT(5), (float)FLOAT(6), c);
       return Value::nil();

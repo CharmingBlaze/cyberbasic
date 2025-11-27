@@ -1,0 +1,155 @@
+# Basic Shapes Drawing Functions
+# Comprehensive 2D shape rendering with pixels, lines, circles, rectangles, triangles, and polygons
+
+functions:
+  # === PIXEL DRAWING ===
+  - name: DRAWPIXEL
+    raylib_name: DrawPixel
+    args: [int, int, int, int, int]
+    ret: void
+    description: "Draw a pixel using geometry (posX, posY, r, g, b) [Can be slow, use with care]"
+    custom_body: |
+      ::Color color = {(unsigned char)INT(2), (unsigned char)INT(3), (unsigned char)INT(4), 255};
+      ::DrawPixel(INT(0), INT(1), color);
+    
+  - name: DRAWPIXELV
+    raylib_name: DrawPixelV
+    args: [float, float, int, int, int]
+    ret: void
+    description: "Draw a pixel using geometry (Vector version) [Can be slow, use with care]"
+    custom_body: |
+      ::Vector2 position = {FLOAT(0), FLOAT(1)};
+      ::Color color = {(unsigned char)INT(2), (unsigned char)INT(3), (unsigned char)INT(4), 255};
+      ::DrawPixelV(position, color);
+    
+  # === LINE DRAWING ===
+  - name: DRAWLINE
+    raylib_name: DrawLine
+    args: [int, int, int, int, int, int, int]
+    ret: void
+    description: "Draw a line (startPosX, startPosY, endPosX, endPosY, r, g, b)"
+    custom_body: |
+      ::Color color = {(unsigned char)INT(4), (unsigned char)INT(5), (unsigned char)INT(6), 255};
+      ::DrawLine(INT(0), INT(1), INT(2), INT(3), color);
+    
+  - name: DRAWLINEV
+    raylib_name: DrawLineV
+    args: [float, float, float, float, int, int, int]
+    ret: void
+    description: "Draw a line (using gl lines) (startX, startY, endX, endY, r, g, b)"
+    custom_body: |
+      ::Vector2 startPos = {FLOAT(0), FLOAT(1)};
+      ::Vector2 endPos = {FLOAT(2), FLOAT(3)};
+      ::Color color = {(unsigned char)INT(4), (unsigned char)INT(5), (unsigned char)INT(6), 255};
+      ::DrawLineV(startPos, endPos, color);
+    
+  - name: DRAWLINEEX
+    raylib_name: DrawLineEx
+    args: [float, float, float, float, float, int, int, int]
+    ret: void
+    description: "Draw a line (using triangles/quads) (startX, startY, endX, endY, thick, r, g, b)"
+    custom_body: |
+      ::Vector2 startPos = {FLOAT(0), FLOAT(1)};
+      ::Vector2 endPos = {FLOAT(2), FLOAT(3)};
+      ::Color color = {(unsigned char)INT(5), (unsigned char)INT(6), (unsigned char)INT(7), 255};
+      ::DrawLineEx(startPos, endPos, FLOAT(4), color);
+    
+  - name: DRAWLINEBEZIER
+    raylib_name: DrawLineBezier
+    args: [float, float, float, float, float, int, int, int]
+    ret: void
+    description: "Draw line segment cubic-bezier in-out interpolation (startX, startY, endX, endY, thick, r, g, b)"
+    custom_body: |
+      ::Vector2 startPos = {FLOAT(0), FLOAT(1)};
+      ::Vector2 endPos = {FLOAT(2), FLOAT(3)};
+      ::Color color = {(unsigned char)INT(5), (unsigned char)INT(6), (unsigned char)INT(7), 255};
+      ::DrawLineBezier(startPos, endPos, FLOAT(4), color);
+    
+  # === CIRCLE DRAWING ===
+  - name: DRAWCIRCLE
+    raylib_name: DrawCircle
+    args: [int, int, float, int, int, int]
+    ret: void
+    description: "Draw a color-filled circle (centerX, centerY, radius, r, g, b)"
+    custom_body: |
+      ::Color color = {(unsigned char)INT(3), (unsigned char)INT(4), (unsigned char)INT(5), 255};
+      ::DrawCircle(INT(0), INT(1), FLOAT(2), color);
+    
+  - name: DRAWCIRCLESECTOR
+    raylib_name: DrawCircleSector
+    args: [float, float, float, float, float, int, int, int, int]
+    ret: void
+    description: "Draw a piece of a circle (centerX, centerY, radius, startAngle, endAngle, segments, r, g, b)"
+    custom_body: |
+      ::Vector2 center = {FLOAT(0), FLOAT(1)};
+      ::Color color = {(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255};
+      ::DrawCircleSector(center, FLOAT(2), FLOAT(3), FLOAT(4), INT(5), color);
+    
+  - name: DRAWCIRCLEGRADIENT
+    raylib_name: DrawCircleGradient
+    args: [int, int, float, int, int, int, int, int, int]
+    ret: void
+    description: "Draw a gradient-filled circle (centerX, centerY, radius, innerR, innerG, innerB, outerR, outerG, outerB)"
+    custom_body: |
+      ::Color inner = {(unsigned char)INT(3), (unsigned char)INT(4), (unsigned char)INT(5), 255};
+      ::Color outer = {(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255};
+      ::DrawCircleGradient(INT(0), INT(1), FLOAT(2), inner, outer);
+    
+  - name: DRAWCIRCLEV
+    raylib_name: DrawCircleV
+    args: [float, float, float, int, int, int]
+    ret: void
+    description: "Draw a color-filled circle (Vector version) (centerX, centerY, radius, r, g, b)"
+    custom_body: |
+      ::Vector2 center = {FLOAT(0), FLOAT(1)};
+      ::Color color = {(unsigned char)INT(3), (unsigned char)INT(4), (unsigned char)INT(5), 255};
+      ::DrawCircleV(center, FLOAT(2), color);
+    
+  - name: DRAWCIRCLELINES
+    raylib_name: DrawCircleLines
+    args: [int, int, float, int, int, int]
+    ret: void
+    description: "Draw circle outline (centerX, centerY, radius, r, g, b)"
+    custom_body: |
+      ::Color color = {(unsigned char)INT(3), (unsigned char)INT(4), (unsigned char)INT(5), 255};
+      ::DrawCircleLines(INT(0), INT(1), FLOAT(2), color);
+    
+  # === ELLIPSE DRAWING ===
+  - name: DRAWELLIPSE
+    raylib_name: DrawEllipse
+    args: [int, int, float, float, int, int, int]
+    ret: void
+    description: "Draw ellipse (centerX, centerY, radiusH, radiusV, r, g, b)"
+    custom_body: |
+      ::Color color = {(unsigned char)INT(4), (unsigned char)INT(5), (unsigned char)INT(6), 255};
+      ::DrawEllipse(INT(0), INT(1), FLOAT(2), FLOAT(3), color);
+    
+  - name: DRAWELLIPSELINES
+    raylib_name: DrawEllipseLines
+    args: [int, int, float, float, int, int, int]
+    ret: void
+    description: "Draw ellipse outline (centerX, centerY, radiusH, radiusV, r, g, b)"
+    custom_body: |
+      ::Color color = {(unsigned char)INT(4), (unsigned char)INT(5), (unsigned char)INT(6), 255};
+      ::DrawEllipseLines(INT(0), INT(1), FLOAT(2), FLOAT(3), color);
+    
+  # === RING DRAWING ===
+  - name: DRAWRING
+    raylib_name: DrawRing
+    args: [float, float, float, float, float, float, int, int, int, int]
+    ret: void
+    description: "Draw ring (centerX, centerY, innerRadius, outerRadius, startAngle, endAngle, segments, r, g, b)"
+    custom_body: |
+      ::Vector2 center = {FLOAT(0), FLOAT(1)};
+      ::Color color = {(unsigned char)INT(7), (unsigned char)INT(8), (unsigned char)INT(9), 255};
+      ::DrawRing(center, FLOAT(2), FLOAT(3), FLOAT(4), FLOAT(5), INT(6), color);
+    
+  - name: DRAWRINGLINES
+    raylib_name: DrawRingLines
+    args: [float, float, float, float, float, float, int, int, int, int]
+    ret: void
+    description: "Draw ring outline (centerX, centerY, innerRadius, outerRadius, startAngle, endAngle, segments, r, g, b)"
+    custom_body: |
+      ::Vector2 center = {FLOAT(0), FLOAT(1)};
+      ::Color color = {(unsigned char)INT(7), (unsigned char)INT(8), (unsigned char)INT(9), 255};
+      ::DrawRingLines(center, FLOAT(2), FLOAT(3), FLOAT(4), FLOAT(5), INT(6), color);

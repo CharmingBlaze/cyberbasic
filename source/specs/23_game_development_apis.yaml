@@ -12,7 +12,7 @@ functions:
     description: "Initialize game (width, height, title)"
     working: true
     custom_body: |
-      InitWindow(args[0].as_int(), args[1].as_int(), args[2].as_string().c_str());
+      InitWindow(INT(0), INT(1), STR(2).c_str());
       SetTargetFPS(60);
 
   - name: CLOSEGAME
@@ -80,7 +80,7 @@ functions:
     category: game_dev
     description: "Load sprite from file, returns sprite ID"
     working: true
-    custom_body: "LoadTexture(args[0].as_string().c_str())"
+    custom_body: "LoadTexture(STR(0).c_str())"
 
   - name: DRAWSPRITE
     raylib_name: DrawSprite
@@ -90,12 +90,12 @@ functions:
     description: "Draw sprite (spriteID, x, y, width, height, rotation, R, G, B)"
     working: true
     custom_body: |
-      Texture2D texture = *(Texture2D*)args[0].as_int();
+      Texture2D texture = *(Texture2D*)INT(0);
       Rectangle source = {0, 0, (float)texture.width, (float)texture.height};
-      Rectangle dest = {(float)args[1].as_int(), (float)args[2].as_int(), (float)args[3].as_int(), (float)args[4].as_int()};
-      Vector2 origin = {(float)args[3].as_int()/2, (float)args[4].as_int()/2};
-      Color tint = {(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
-      DrawTexturePro(texture, source, dest, origin, (float)args[5].as_int(), tint);
+      Rectangle dest = {(float)INT(1), (float)INT(2), (float)INT(3), (float)INT(4)};
+      Vector2 origin = {(float)INT(3)/2, (float)INT(4)/2};
+      Color tint = {(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255};
+      DrawTexturePro(texture, source, dest, origin, (float)INT(5), tint);
 
   - name: DRAWSPRITEANIMATED
     raylib_name: DrawSpriteAnimated
@@ -105,15 +105,15 @@ functions:
     description: "Draw animated sprite (spriteID, x, y, width, height, frame, totalFrames, rotation, R, G, B)"
     working: true
     custom_body: |
-      Texture2D texture = *(Texture2D*)args[0].as_int();
-      int frame = args[5].as_int();
-      int totalFrames = args[6].as_int();
+      Texture2D texture = *(Texture2D*)INT(0);
+      int frame = INT(5);
+      int totalFrames = INT(6);
       float frameWidth = (float)texture.width / totalFrames;
       Rectangle source = {(float)frame * frameWidth, 0, frameWidth, (float)texture.height};
-      Rectangle dest = {(float)args[1].as_int(), (float)args[2].as_int(), (float)args[3].as_int(), (float)args[4].as_int()};
-      Vector2 origin = {(float)args[3].as_int()/2, (float)args[4].as_int()/2};
-      Color tint = {(unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), (unsigned char)args[10].as_int(), 255};
-      DrawTexturePro(texture, source, dest, origin, (float)args[7].as_int(), tint);
+      Rectangle dest = {(float)INT(1), (float)INT(2), (float)INT(3), (float)INT(4)};
+      Vector2 origin = {(float)INT(3)/2, (float)INT(4)/2};
+      Color tint = {(unsigned char)INT(8), (unsigned char)INT(9), (unsigned char)INT(10), 255};
+      DrawTexturePro(texture, source, dest, origin, (float)INT(7), tint);
 
   # === COLLISION SYSTEM ===
   - name: CHECKCOLLISIONRECTS
@@ -124,8 +124,8 @@ functions:
     description: "Check collision between two rectangles (x1, y1, w1, h1, x2, y2, w2, h2)"
     working: true
     custom_body: |
-      Rectangle rect1 = {(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int(), (float)args[3].as_int()};
-      Rectangle rect2 = {(float)args[4].as_int(), (float)args[5].as_int(), (float)args[6].as_int(), (float)args[7].as_int()};
+      Rectangle rect1 = {(float)INT(0), (float)INT(1), (float)INT(2), (float)INT(3)};
+      Rectangle rect2 = {(float)INT(4), (float)INT(5), (float)INT(6), (float)INT(7)};
       return Value::from_bool(CheckCollisionRecs(rect1, rect2));
 
   - name: CHECKCOLLISIONCIRCLES
@@ -136,9 +136,9 @@ functions:
     description: "Check collision between two circles (x1, y1, r1, x2, y2, r2)"
     working: true
     custom_body: |
-      Vector2 center1 = {(float)args[0].as_int(), (float)args[1].as_int()};
-      Vector2 center2 = {(float)args[3].as_int(), (float)args[4].as_int()};
-      return Value::from_bool(CheckCollisionCircles(center1, (float)args[2].as_int(), center2, (float)args[5].as_int()));
+      Vector2 center1 = {(float)INT(0), (float)INT(1)};
+      Vector2 center2 = {(float)INT(3), (float)INT(4)};
+      return Value::from_bool(CheckCollisionCircles(center1, (float)INT(2), center2, (float)INT(5)));
 
   - name: CHECKCOLLISIONCIRCLERECT
     raylib_name: CheckCollisionCircleRect
@@ -148,9 +148,9 @@ functions:
     description: "Check collision between circle and rectangle (cx, cy, radius, rx, ry, rw, rh)"
     working: true
     custom_body: |
-      Vector2 center = {(float)args[0].as_int(), (float)args[1].as_int()};
-      Rectangle rect = {(float)args[3].as_int(), (float)args[4].as_int(), (float)args[5].as_int(), (float)args[6].as_int()};
-      return Value::from_bool(CheckCollisionCircleRec(center, (float)args[2].as_int(), rect));
+      Vector2 center = {(float)INT(0), (float)INT(1)};
+      Rectangle rect = {(float)INT(3), (float)INT(4), (float)INT(5), (float)INT(6)};
+      return Value::from_bool(CheckCollisionCircleRec(center, (float)INT(2), rect));
 
   # === INPUT HELPERS ===
   - name: ISKEYHELD
@@ -160,7 +160,7 @@ functions:
     category: game_dev
     description: "Check if key is held down (keyCode)"
     working: true
-    custom_body: "IsKeyDown(args[0].as_int())"
+    custom_body: "IsKeyDown(INT(0))"
 
   - name: ISKEYPRESSED
     raylib_name: IsKeyPressed
@@ -169,7 +169,7 @@ functions:
     category: game_dev
     description: "Check if key was just pressed (keyCode)"
     working: true
-    custom_body: "IsKeyPressed(args[0].as_int())"
+    custom_body: "IsKeyPressed(INT(0))"
 
   - name: ISKEYRELEASED
     raylib_name: IsKeyReleased
@@ -178,7 +178,7 @@ functions:
     category: game_dev
     description: "Check if key was just released (keyCode)"
     working: true
-    custom_body: "IsKeyReleased(args[0].as_int())"
+    custom_body: "IsKeyReleased(INT(0))"
 
   - name: ISMOUSEHELD
     raylib_name: IsMouseHeld
@@ -187,7 +187,7 @@ functions:
     category: game_dev
     description: "Check if mouse button is held down (button)"
     working: true
-    custom_body: "IsMouseButtonDown(args[0].as_int())"
+    custom_body: "IsMouseButtonDown(INT(0))"
 
   - name: ISMOUSEPRESSED
     raylib_name: IsMousePressed
@@ -196,7 +196,7 @@ functions:
     category: game_dev
     description: "Check if mouse button was just pressed (button)"
     working: true
-    custom_body: "IsMouseButtonPressed(args[0].as_int())"
+    custom_body: "IsMouseButtonPressed(INT(0))"
 
   - name: ISMOUSERELEASED
     raylib_name: IsMouseReleased
@@ -205,7 +205,7 @@ functions:
     category: game_dev
     description: "Check if mouse button was just released (button)"
     working: true
-    custom_body: "IsMouseButtonReleased(args[0].as_int())"
+    custom_body: "IsMouseButtonReleased(INT(0))"
 
   - name: GETMOUSEPOSITION
     raylib_name: GetMousePosition
@@ -226,7 +226,7 @@ functions:
     category: game_dev
     description: "Load game sound, returns sound ID"
     working: true
-    custom_body: "LoadSound(args[0].as_string().c_str())"
+    custom_body: "LoadSound(STR(0).c_str())"
 
   - name: PLAYGAMESOUND
     raylib_name: PlayGameSound
@@ -236,7 +236,7 @@ functions:
     description: "Play game sound (soundID)"
     working: true
     custom_body: |
-      Sound sound = *(Sound*)args[0].as_int();
+      Sound sound = *(Sound*)INT(0);
       PlaySound(sound);
 
   - name: STOPGAMESOUND
@@ -247,7 +247,7 @@ functions:
     description: "Stop game sound (soundID)"
     working: true
     custom_body: |
-      Sound sound = *(Sound*)args[0].as_int();
+      Sound sound = *(Sound*)INT(0);
       StopSound(sound);
 
   - name: LOADGAMEMUSIC
@@ -257,7 +257,7 @@ functions:
     category: game_dev
     description: "Load game music, returns music ID"
     working: true
-    custom_body: "LoadMusicStream(args[0].as_string().c_str())"
+    custom_body: "LoadMusicStream(STR(0).c_str())"
 
   - name: PLAYGAMEMUSIC
     raylib_name: PlayGameMusic
@@ -267,7 +267,7 @@ functions:
     description: "Play game music (musicID)"
     working: true
     custom_body: |
-      Music music = *(Music*)args[0].as_int();
+      Music music = *(Music*)INT(0);
       PlayMusicStream(music);
 
   - name: STOPGAMEMUSIC
@@ -278,7 +278,7 @@ functions:
     description: "Stop game music (musicID)"
     working: true
     custom_body: |
-      Music music = *(Music*)args[0].as_int();
+      Music music = *(Music*)INT(0);
       StopMusicStream(music);
 
   # === UTILITY FUNCTIONS ===
@@ -289,7 +289,7 @@ functions:
     category: game_dev
     description: "Get random integer between min and max (inclusive)"
     working: true
-    custom_body: "GetRandomValue(args[0].as_int(), args[1].as_int())"
+    custom_body: "GetRandomValue(INT(0), INT(1))"
 
   - name: RANDOMFLOAT
     raylib_name: RandomFloat
@@ -299,8 +299,8 @@ functions:
     description: "Get random float between min and max"
     working: true
     custom_body: |
-      float min = args[0].as_number();
-      float max = args[1].as_number();
+      float min = FLOAT(0);
+      float max = FLOAT(1);
       return Value::from_number(min + (max - min) * ((float)GetRandomValue(0, 1000) / 1000.0f));
 
   - name: LERP
@@ -311,9 +311,9 @@ functions:
     description: "Linear interpolation between two values (start, end, t)"
     working: true
     custom_body: |
-      float start = args[0].as_number();
-      float end = args[1].as_number();
-      float t = args[2].as_number();
+      float start = FLOAT(0);
+      float end = FLOAT(1);
+      float t = FLOAT(2);
       return Value::from_number(start + (end - start) * t);
 
   - name: DISTANCE2D
@@ -324,8 +324,8 @@ functions:
     description: "Calculate distance between two 2D points (x1, y1, x2, y2)"
     working: true
     custom_body: |
-      Vector2 p1 = {(float)args[0].as_int(), (float)args[1].as_int()};
-      Vector2 p2 = {(float)args[2].as_int(), (float)args[3].as_int()};
+      Vector2 p1 = {(float)INT(0), (float)INT(1)};
+      Vector2 p2 = {(float)INT(2), (float)INT(3)};
       return Value::from_number(Vector2Distance(p1, p2));
 
   - name: DISTANCE3D
@@ -336,6 +336,6 @@ functions:
     description: "Calculate distance between two 3D points (x1, y1, z1, x2, y2, z2)"
     working: true
     custom_body: |
-      Vector3 p1 = {(float)args[0].as_int(), (float)args[1].as_int(), (float)args[2].as_int()};
-      Vector3 p2 = {(float)args[3].as_int(), (float)args[4].as_int(), (float)args[5].as_int()};
+      Vector3 p1 = {(float)INT(0), (float)INT(1), (float)INT(2)};
+      Vector3 p2 = {(float)INT(3), (float)INT(4), (float)INT(5)};
       return Value::from_number(Vector3Distance(p1, p2));

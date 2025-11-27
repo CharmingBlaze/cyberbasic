@@ -11,7 +11,7 @@ functions:
     category: custom_cyberbasic
     description: "Create sprite from texture with x,y,width,height (texture ID, x, y, width, height)"
     working: true
-    custom_body: "CreateSprite(args[0].as_int(), args[1].as_int(), args[2].as_int(), args[3].as_int(), args[4].as_int())"
+    custom_body: "CreateSprite(INT(0), INT(1), INT(2), INT(3), INT(4))"
 
   - name: DRAWSPRITE
     raylib_name: DrawSprite
@@ -20,7 +20,7 @@ functions:
     category: custom_cyberbasic
     description: "Draw sprite at x,y (sprite ID, x, y)"
     working: true
-    custom_body: "DrawSprite(args[0].as_int(), args[1].as_int(), args[2].as_int())"
+    custom_body: "DrawSprite(INT(0), INT(1), INT(2))"
 
   - name: MOVESPRITE
     raylib_name: MoveSprite
@@ -29,7 +29,7 @@ functions:
     category: custom_cyberbasic
     description: "Move sprite by dx,dy (sprite ID, dx, dy)"
     working: true
-    custom_body: "MoveSprite(args[0].as_int(), args[1].as_int(), args[2].as_int())"
+    custom_body: "MoveSprite(INT(0), INT(1), INT(2))"
 
   - name: SETSPRITEPOSITION
     raylib_name: SetSpritePosition
@@ -38,7 +38,7 @@ functions:
     category: custom_cyberbasic
     description: "Set sprite position to x,y (sprite ID, x, y)"
     working: true
-    custom_body: "SetSpritePosition(args[0].as_int(), args[1].as_int(), args[2].as_int())"
+    custom_body: "SetSpritePosition(INT(0), INT(1), INT(2))"
 
   - name: GETSPRITEX
     raylib_name: GetSpriteX
@@ -47,7 +47,7 @@ functions:
     category: custom_cyberbasic
     description: "Get sprite X position (sprite ID)"
     working: true
-    custom_body: "GetSpriteX(args[0].as_int())"
+    custom_body: "GetSpriteX(INT(0))"
 
   - name: GETSPRITEY
     raylib_name: GetSpriteY
@@ -56,7 +56,7 @@ functions:
     category: custom_cyberbasic
     description: "Get sprite Y position (sprite ID)"
     working: true
-    custom_body: "GetSpriteY(args[0].as_int())"
+    custom_body: "GetSpriteY(INT(0))"
 
   - name: SETSPRITESPEED
     raylib_name: SetSpriteSpeed
@@ -65,7 +65,7 @@ functions:
     category: custom_cyberbasic
     description: "Set sprite movement speed (sprite ID, speed)"
     working: true
-    custom_body: "SetSpriteSpeed(args[0].as_int(), args[1].as_number())"
+    custom_body: "SetSpriteSpeed(INT(0), FLOAT(1))"
 
   - name: GETSPRITESPEED
     raylib_name: GetSpriteSpeed
@@ -74,7 +74,7 @@ functions:
     category: custom_cyberbasic
     description: "Get sprite movement speed (sprite ID)"
     working: true
-    custom_body: "GetSpriteSpeed(args[0].as_int())"
+    custom_body: "GetSpriteSpeed(INT(0))"
 
   # === COLLISION SYSTEM ===
   - name: CHECKSPRITECOLLISION
@@ -84,7 +84,7 @@ functions:
     category: custom_cyberbasic
     description: "Check collision between two sprites (sprite1 ID, sprite2 ID)"
     working: true
-    custom_body: "CheckSpriteCollision(args[0].as_int(), args[1].as_int())"
+    custom_body: "CheckSpriteCollision(INT(0), INT(1))"
 
   - name: CHECKSPRITEPOINTCOLLISION
     raylib_name: CheckSpritePointCollision
@@ -93,7 +93,7 @@ functions:
     category: custom_cyberbasic
     description: "Check if point x,y collides with sprite (sprite ID, x, y)"
     working: true
-    custom_body: "CheckSpritePointCollision(args[0].as_int(), args[1].as_int(), args[2].as_int())"
+    custom_body: "CheckSpritePointCollision(INT(0), INT(1), INT(2))"
 
   - name: CHECKSPRITERECTCOLLISION
     raylib_name: CheckSpriteRectCollision
@@ -102,7 +102,7 @@ functions:
     category: custom_cyberbasic
     description: "Check if rectangle x,y,width,height collides with sprite (sprite ID, x, y, width, height)"
     working: true
-    custom_body: "CheckSpriteRectCollision(args[0].as_int(), args[1].as_int(), args[2].as_int(), args[3].as_int(), args[4].as_int())"
+    custom_body: "CheckSpriteRectCollision(INT(0), INT(1), INT(2), INT(3), INT(4))"
 
   # === ANIMATION SYSTEM ===
   - name: CREATESPRITEANIMATION
@@ -112,7 +112,7 @@ functions:
     category: custom_cyberbasic
     description: "Create sprite animation from texture with frames (texture ID, frameWidth, frameHeight, totalFrames, frameDelay)"
     working: true
-    custom_body: "CreateSpriteAnimation(args[0].as_int(), args[1].as_int(), args[2].as_int(), args[3].as_int(), args[4].as_int())"
+    custom_body: "CreateSpriteAnimation(INT(0), INT(1), INT(2), INT(3), INT(4))"
 
   - name: PLAYSPRITEANIMATION
     raylib_name: PlaySpriteAnimation
@@ -121,7 +121,7 @@ functions:
     category: custom_cyberbasic
     description: "Play sprite animation (animation ID)"
     working: true
-    custom_body: "PlaySpriteAnimation(args[0].as_int())"
+    custom_body: "PlaySpriteAnimation(INT(0))"
 
   - name: PAUSESPRITEANIMATION
     raylib_name: PauseSpriteAnimation
@@ -130,7 +130,7 @@ functions:
     category: custom_cyberbasic
     description: "Pause sprite animation (animation ID)"
     working: true
-    custom_body: "PauseSpriteAnimation(args[0].as_int())"
+    custom_body: "PauseSpriteAnimation(INT(0))"
 
   - name: STOPSPRITEANIMATION
     raylib_name: StopSpriteAnimation
@@ -139,7 +139,7 @@ functions:
     category: custom_cyberbasic
     description: "Stop sprite animation (animation ID)"
     working: true
-    custom_body: "StopSpriteAnimation(args[0].as_int())"
+    custom_body: "StopSpriteAnimation(INT(0))"
 
   - name: SETSPRITEANIMATIONFRAME
     raylib_name: SetSpriteAnimationFrame
@@ -148,7 +148,7 @@ functions:
     category: custom_cyberbasic
     description: "Set sprite animation frame (animation ID, frame)"
     working: true
-    custom_body: "SetSpriteAnimationFrame(args[0].as_int(), args[1].as_int())"
+    custom_body: "SetSpriteAnimationFrame(INT(0), INT(1))"
 
   - name: GETSPRITEANIMATIONFRAME
     raylib_name: GetSpriteAnimationFrame
@@ -157,7 +157,7 @@ functions:
     category: custom_cyberbasic
     description: "Get current sprite animation frame (animation ID)"
     working: true
-    custom_body: "GetSpriteAnimationFrame(args[0].as_int())"
+    custom_body: "GetSpriteAnimationFrame(INT(0))"
 
   # === PARTICLE SYSTEM ===
   - name: CREATEPARTICLESYSTEM
@@ -167,7 +167,7 @@ functions:
     category: custom_cyberbasic
     description: "Create particle system at x,y with count, speed, life, R, G, B (x, y, count, speed, life, R, G, B)"
     working: true
-    custom_body: "CreateParticleSystem(args[0].as_int(), args[1].as_int(), args[2].as_int(), args[3].as_int(), args[4].as_int(), args[5].as_int(), args[6].as_int(), args[7].as_int())"
+    custom_body: "CreateParticleSystem(INT(0), INT(1), INT(2), INT(3), INT(4), INT(5), INT(6), INT(7))"
 
   - name: UPDATEPARTICLESYSTEM
     raylib_name: UpdateParticleSystem
@@ -176,7 +176,7 @@ functions:
     category: custom_cyberbasic
     description: "Update particle system (particle system ID)"
     working: true
-    custom_body: "UpdateParticleSystem(args[0].as_int())"
+    custom_body: "UpdateParticleSystem(INT(0))"
 
   - name: DRAWPARTICLESYSTEM
     raylib_name: DrawParticleSystem
@@ -185,7 +185,7 @@ functions:
     category: custom_cyberbasic
     description: "Draw particle system (particle system ID)"
     working: true
-    custom_body: "DrawParticleSystem(args[0].as_int())"
+    custom_body: "DrawParticleSystem(INT(0))"
 
   - name: SETPARTICLESYSTEMPOSITION
     raylib_name: SetParticleSystemPosition
@@ -194,7 +194,7 @@ functions:
     category: custom_cyberbasic
     description: "Set particle system position (particle system ID, x, y)"
     working: true
-    custom_body: "SetParticleSystemPosition(args[0].as_int(), args[1].as_int(), args[2].as_int())"
+    custom_body: "SetParticleSystemPosition(INT(0), INT(1), INT(2))"
 
   # === SOUND SYSTEM ===
   - name: PLAYSOUNDLOOP
@@ -204,7 +204,7 @@ functions:
     category: custom_cyberbasic
     description: "Play sound in loop (sound ID)"
     working: true
-    custom_body: "PlaySoundLoop(args[0].as_int())"
+    custom_body: "PlaySoundLoop(INT(0))"
 
   - name: STOPSOUNDLOOP
     raylib_name: StopSoundLoop
@@ -213,7 +213,7 @@ functions:
     category: custom_cyberbasic
     description: "Stop sound loop (sound ID)"
     working: true
-    custom_body: "StopSoundLoop(args[0].as_int())"
+    custom_body: "StopSoundLoop(INT(0))"
 
   - name: SETSOUNDVOLUME
     raylib_name: SetSoundVolume
@@ -222,7 +222,7 @@ functions:
     category: custom_cyberbasic
     description: "Set sound volume (sound ID, volume 0.0-1.0)"
     working: true
-    custom_body: "SetSoundVolume(args[0].as_int(), args[1].as_number())"
+    custom_body: "SetSoundVolume(INT(0), FLOAT(1))"
 
   - name: GETSOUNDVOLUME
     raylib_name: GetSoundVolume
@@ -231,7 +231,7 @@ functions:
     category: custom_cyberbasic
     description: "Get sound volume (sound ID)"
     working: true
-    custom_body: "GetSoundVolume(args[0].as_int())"
+    custom_body: "GetSoundVolume(INT(0))"
 
   - name: SETSOUNDPITCH
     raylib_name: SetSoundPitch
@@ -240,7 +240,7 @@ functions:
     category: custom_cyberbasic
     description: "Set sound pitch (sound ID, pitch 0.5-2.0)"
     working: true
-    custom_body: "SetSoundPitch(args[0].as_int(), args[1].as_number())"
+    custom_body: "SetSoundPitch(INT(0), FLOAT(1))"
 
   - name: GETSOUNDPITCH
     raylib_name: GetSoundPitch
@@ -249,7 +249,7 @@ functions:
     category: custom_cyberbasic
     description: "Get sound pitch (sound ID)"
     working: true
-    custom_body: "GetSoundPitch(args[0].as_int())"
+    custom_body: "GetSoundPitch(INT(0))"
 
   # === TEXT SYSTEM ===
   - name: DRAWTEXTEX
@@ -259,7 +259,7 @@ functions:
     category: custom_cyberbasic
     description: "Draw text with extended options (text, x, y, font size, spacing, R, G, B)"
     working: true
-    custom_body: "DrawTextEx(args[0].as_string().c_str(), args[1].as_int(), args[2].as_int(), args[3].as_int(), args[4].as_int(), Color{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255})"
+    custom_body: "DrawTextEx(STR(0).c_str(), INT(1), INT(2), INT(3), INT(4), Color{(unsigned char)INT(5), (unsigned char)INT(6), (unsigned char)INT(7), 255})"
 
   - name: MEASURETEXT
     raylib_name: MeasureText
@@ -268,7 +268,7 @@ functions:
     category: custom_cyberbasic
     description: "Measure text width (text, font size)"
     working: true
-    custom_body: "MeasureText(args[0].as_string().c_str(), args[1].as_int())"
+    custom_body: "MeasureText(STR(0).c_str(), INT(1))"
 
   - name: DRAWTEXTCENTERED
     raylib_name: DrawTextCentered
@@ -277,7 +277,7 @@ functions:
     category: custom_cyberbasic
     description: "Draw text centered at x,y (text, x, y, font size, spacing, R, G, B)"
     working: true
-    custom_body: "DrawTextCentered(args[0].as_string().c_str(), args[1].as_int(), args[2].as_int(), args[3].as_int(), args[4].as_int(), Color{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255})"
+    custom_body: "DrawTextCentered(STR(0).c_str(), INT(1), INT(2), INT(3), INT(4), Color{(unsigned char)INT(5), (unsigned char)INT(6), (unsigned char)INT(7), 255})"
 
   # === UTILITY FUNCTIONS ===
   - name: RANDOMINT
@@ -287,7 +287,7 @@ functions:
     category: custom_cyberbasic
     description: "Get random integer between min and max (min, max)"
     working: true
-    custom_body: "RandomInt(args[0].as_int(), args[1].as_int())"
+    custom_body: "RandomInt(INT(0), INT(1))"
 
   - name: RANDOMFLOAT
     raylib_name: RandomFloat
@@ -296,7 +296,7 @@ functions:
     category: custom_cyberbasic
     description: "Get random float between min and max (min, max)"
     working: true
-    custom_body: "RandomFloat(args[0].as_number(), args[1].as_number())"
+    custom_body: "RandomFloat(FLOAT(0), FLOAT(1))"
 
   - name: DISTANCE
     raylib_name: Distance
@@ -305,7 +305,7 @@ functions:
     category: custom_cyberbasic
     description: "Calculate distance between two points (x1, y1, x2, y2)"
     working: true
-    custom_body: "Distance(args[0].as_int(), args[1].as_int(), args[2].as_int(), args[3].as_int())"
+    custom_body: "Distance(INT(0), INT(1), INT(2), INT(3))"
 
   - name: ANGLE
     raylib_name: Angle
@@ -314,7 +314,7 @@ functions:
     category: custom_cyberbasic
     description: "Calculate angle between two points (x1, y1, x2, y2)"
     working: true
-    custom_body: "Angle(args[0].as_int(), args[1].as_int(), args[2].as_int(), args[3].as_int())"
+    custom_body: "Angle(INT(0), INT(1), INT(2), INT(3))"
 
   - name: LERP
     raylib_name: Lerp
@@ -323,7 +323,7 @@ functions:
     category: custom_cyberbasic
     description: "Linear interpolation between a and b by t (a, b, t)"
     working: true
-    custom_body: "Lerp(args[0].as_number(), args[1].as_number(), args[2].as_number())"
+    custom_body: "Lerp(FLOAT(0), FLOAT(1), FLOAT(2))"
 
   - name: CLAMP
     raylib_name: Clamp
@@ -332,4 +332,4 @@ functions:
     category: custom_cyberbasic
     description: "Clamp value between min and max (value, min, max)"
     working: true
-    custom_body: "Clamp(args[0].as_number(), args[1].as_number(), args[2].as_number())"
+    custom_body: "Clamp(FLOAT(0), FLOAT(1), FLOAT(2))"

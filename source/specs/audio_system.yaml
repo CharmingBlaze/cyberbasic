@@ -5,7 +5,7 @@ functions:
     args: [string]
     ret: int
     custom_body: |
-      ::Sound sound = ::LoadSound(args[0].as_string().c_str());
+      ::Sound sound = ::LoadSound(STR(0).c_str());
       int id = rlreg::next_sound_id++;
       rlreg::sounds[id] = sound;
       return Value::from_int(id);
@@ -15,7 +15,7 @@ functions:
     args: [int]
     ret: void
     custom_body: |
-      int id = args[0].as_int();
+      int id = INT(0);
       auto it = rlreg::sounds.find(id);
       if (it != rlreg::sounds.end()) {
         ::UnloadSound(it->second);
@@ -28,7 +28,7 @@ functions:
     args: [int]
     ret: void
     custom_body: |
-      int id = args[0].as_int();
+      int id = INT(0);
       auto it = rlreg::sounds.find(id);
       if (it != rlreg::sounds.end()) {
         ::PlaySound(it->second);
@@ -40,7 +40,7 @@ functions:
     args: [int]
     ret: void
     custom_body: |
-      int id = args[0].as_int();
+      int id = INT(0);
       auto it = rlreg::sounds.find(id);
       if (it != rlreg::sounds.end()) {
         ::StopSound(it->second);
@@ -52,7 +52,7 @@ functions:
     args: [int]
     ret: void
     custom_body: |
-      int id = args[0].as_int();
+      int id = INT(0);
       auto it = rlreg::sounds.find(id);
       if (it != rlreg::sounds.end()) {
         ::PauseSound(it->second);
@@ -64,7 +64,7 @@ functions:
     args: [int]
     ret: void
     custom_body: |
-      int id = args[0].as_int();
+      int id = INT(0);
       auto it = rlreg::sounds.find(id);
       if (it != rlreg::sounds.end()) {
         ::ResumeSound(it->second);
@@ -76,8 +76,8 @@ functions:
     args: [int, double]
     ret: void
     custom_body: |
-      int id = args[0].as_int();
-      float volume = (float)args[1].as_number();
+      int id = INT(0);
+      float volume = (float)FLOAT(1);
       auto it = rlreg::sounds.find(id);
       if (it != rlreg::sounds.end()) {
         ::SetSoundVolume(it->second, volume);
@@ -89,7 +89,7 @@ functions:
     args: [int]
     ret: bool
     custom_body: |
-      int id = args[0].as_int();
+      int id = INT(0);
       auto it = rlreg::sounds.find(id);
       if (it != rlreg::sounds.end()) {
         return Value::from_bool(::IsSoundPlaying(it->second));
@@ -101,7 +101,7 @@ functions:
     args: [string]
     ret: int
     custom_body: |
-      ::Music music = ::LoadMusicStream(args[0].as_string().c_str());
+      ::Music music = ::LoadMusicStream(STR(0).c_str());
       int id = rlreg::next_music_id++;
       rlreg::musics[id] = music;
       return Value::from_int(id);
@@ -111,7 +111,7 @@ functions:
     args: [int]
     ret: void
     custom_body: |
-      int id = args[0].as_int();
+      int id = INT(0);
       auto it = rlreg::musics.find(id);
       if (it != rlreg::musics.end()) {
         ::UnloadMusicStream(it->second);
@@ -124,7 +124,7 @@ functions:
     args: [int]
     ret: void
     custom_body: |
-      int id = args[0].as_int();
+      int id = INT(0);
       auto it = rlreg::musics.find(id);
       if (it != rlreg::musics.end()) {
         ::PlayMusicStream(it->second);
@@ -136,7 +136,7 @@ functions:
     args: [int]
     ret: void
     custom_body: |
-      int id = args[0].as_int();
+      int id = INT(0);
       auto it = rlreg::musics.find(id);
       if (it != rlreg::musics.end()) {
         ::StopMusicStream(it->second);
@@ -148,7 +148,7 @@ functions:
     args: [int]
     ret: void
     custom_body: |
-      int id = args[0].as_int();
+      int id = INT(0);
       auto it = rlreg::musics.find(id);
       if (it != rlreg::musics.end()) {
         ::PauseMusicStream(it->second);
@@ -160,7 +160,7 @@ functions:
     args: [int]
     ret: void
     custom_body: |
-      int id = args[0].as_int();
+      int id = INT(0);
       auto it = rlreg::musics.find(id);
       if (it != rlreg::musics.end()) {
         ::ResumeMusicStream(it->second);
@@ -172,8 +172,8 @@ functions:
     args: [int, double]
     ret: void
     custom_body: |
-      int id = args[0].as_int();
-      float volume = (float)args[1].as_number();
+      int id = INT(0);
+      float volume = (float)FLOAT(1);
       auto it = rlreg::musics.find(id);
       if (it != rlreg::musics.end()) {
         ::SetMusicVolume(it->second, volume);
@@ -185,8 +185,8 @@ functions:
     args: [int, double]
     ret: void
     custom_body: |
-      int id = args[0].as_int();
-      float pitch = (float)args[1].as_number();
+      int id = INT(0);
+      float pitch = (float)FLOAT(1);
       auto it = rlreg::musics.find(id);
       if (it != rlreg::musics.end()) {
         ::SetMusicPitch(it->second, pitch);
@@ -198,7 +198,7 @@ functions:
     args: [int]
     ret: void
     custom_body: |
-      int id = args[0].as_int();
+      int id = INT(0);
       auto it = rlreg::musics.find(id);
       if (it != rlreg::musics.end()) {
         ::UpdateMusicStream(it->second);
@@ -210,7 +210,7 @@ functions:
     args: [int]
     ret: bool
     custom_body: |
-      int id = args[0].as_int();
+      int id = INT(0);
       auto it = rlreg::musics.find(id);
       if (it != rlreg::musics.end()) {
         return Value::from_bool(::IsMusicStreamPlaying(it->second));

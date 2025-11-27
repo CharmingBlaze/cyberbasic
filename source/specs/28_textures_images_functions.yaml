@@ -11,7 +11,7 @@ functions:
     description: "Load image sequence from memory buffer (fileType, data, dataSize)"
     custom_body: |
       int frames;
-      ::Image img = ::LoadImageAnimFromMemory(args[0].as_string().c_str(), (const unsigned char*)args[1].as_string().c_str(), args[2].as_int(), &frames);
+      ::Image img = ::LoadImageAnimFromMemory(STR(0).c_str(), (const unsigned char*)STR(1).c_str(), INT(2), &frames);
       int id = rlreg::next_image_id++;
       rlreg::images[id] = img;
       return Value::from_int(id);
@@ -35,7 +35,7 @@ functions:
     category: textures
     description: "Check if image is valid"
     custom_body: |
-      return Value::from_bool(::IsImageValid(rlreg::images.at(args[0].as_int())));
+      return Value::from_bool(::IsImageValid(rlreg::images.at(INT(0))));
 
   - name: EXPORTIMAGETOMEMORY
     raylib_name: ExportImageToMemory
@@ -45,7 +45,7 @@ functions:
     description: "Export image to memory buffer (pass image ID, fileType)"
     custom_body: |
       int fileSize;
-      unsigned char* data = ::ExportImageToMemory(rlreg::images.at(args[0].as_int()), args[1].as_string().c_str(), &fileSize);
+      unsigned char* data = ::ExportImageToMemory(rlreg::images.at(INT(0)), STR(1).c_str(), &fileSize);
       std::string result((char*)data, fileSize);
       ::MemFree(data);
       return Value::from_string(result);
@@ -58,9 +58,9 @@ functions:
     category: textures
     description: "Generate linear gradient image (width, height, direction, R1, G1, B1, R2, G2, B2)"
     custom_body: |
-      ::Color start{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), 255};
-      ::Color end{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
-      ::Image img = ::GenImageGradientLinear(args[0].as_int(), args[1].as_int(), args[2].as_int(), start, end);
+      ::Color start{(unsigned char)INT(3), (unsigned char)INT(4), (unsigned char)INT(5), 255};
+      ::Color end{(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255};
+      ::Image img = ::GenImageGradientLinear(INT(0), INT(1), INT(2), start, end);
       int id = rlreg::next_image_id++;
       rlreg::images[id] = img;
       return Value::from_int(id);
@@ -72,9 +72,9 @@ functions:
     category: textures
     description: "Generate radial gradient image (width, height, density, R1, G1, B1, R2, G2, B2)"
     custom_body: |
-      ::Color inner{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), 255};
-      ::Color outer{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
-      ::Image img = ::GenImageGradientRadial(args[0].as_int(), args[1].as_int(), (float)args[2].as_number(), inner, outer);
+      ::Color inner{(unsigned char)INT(3), (unsigned char)INT(4), (unsigned char)INT(5), 255};
+      ::Color outer{(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255};
+      ::Image img = ::GenImageGradientRadial(INT(0), INT(1), (float)FLOAT(2), inner, outer);
       int id = rlreg::next_image_id++;
       rlreg::images[id] = img;
       return Value::from_int(id);
@@ -86,9 +86,9 @@ functions:
     category: textures
     description: "Generate square gradient image (width, height, density, R1, G1, B1, R2, G2, B2)"
     custom_body: |
-      ::Color inner{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), 255};
-      ::Color outer{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
-      ::Image img = ::GenImageGradientSquare(args[0].as_int(), args[1].as_int(), (float)args[2].as_number(), inner, outer);
+      ::Color inner{(unsigned char)INT(3), (unsigned char)INT(4), (unsigned char)INT(5), 255};
+      ::Color outer{(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255};
+      ::Image img = ::GenImageGradientSquare(INT(0), INT(1), (float)FLOAT(2), inner, outer);
       int id = rlreg::next_image_id++;
       rlreg::images[id] = img;
       return Value::from_int(id);
@@ -100,9 +100,9 @@ functions:
     category: textures
     description: "Generate checked image (width, height, checksX, checksY, R1, G1, B1, R2, G2, B2)"
     custom_body: |
-      ::Color col1{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), 255};
-      ::Color col2{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), 255};
-      ::Image img = ::GenImageChecked(args[0].as_int(), args[1].as_int(), args[2].as_int(), args[3].as_int(), col1, col2);
+      ::Color col1{(unsigned char)INT(4), (unsigned char)INT(5), (unsigned char)INT(6), 255};
+      ::Color col2{(unsigned char)INT(7), (unsigned char)INT(8), (unsigned char)INT(9), 255};
+      ::Image img = ::GenImageChecked(INT(0), INT(1), INT(2), INT(3), col1, col2);
       int id = rlreg::next_image_id++;
       rlreg::images[id] = img;
       return Value::from_int(id);
@@ -114,7 +114,7 @@ functions:
     category: textures
     description: "Generate white noise image (width, height, factor)"
     custom_body: |
-      ::Image img = ::GenImageWhiteNoise(args[0].as_int(), args[1].as_int(), (float)args[2].as_number());
+      ::Image img = ::GenImageWhiteNoise(INT(0), INT(1), (float)FLOAT(2));
       int id = rlreg::next_image_id++;
       rlreg::images[id] = img;
       return Value::from_int(id);
@@ -126,7 +126,7 @@ functions:
     category: textures
     description: "Generate perlin noise image (width, height, offsetX, offsetY, scale)"
     custom_body: |
-      ::Image img = ::GenImagePerlinNoise(args[0].as_int(), args[1].as_int(), args[2].as_int(), args[3].as_int(), (float)args[4].as_number());
+      ::Image img = ::GenImagePerlinNoise(INT(0), INT(1), INT(2), INT(3), (float)FLOAT(4));
       int id = rlreg::next_image_id++;
       rlreg::images[id] = img;
       return Value::from_int(id);
@@ -138,7 +138,7 @@ functions:
     category: textures
     description: "Generate cellular algorithm image (width, height, tileSize)"
     custom_body: |
-      ::Image img = ::GenImageCellular(args[0].as_int(), args[1].as_int(), args[2].as_int());
+      ::Image img = ::GenImageCellular(INT(0), INT(1), INT(2));
       int id = rlreg::next_image_id++;
       rlreg::images[id] = img;
       return Value::from_int(id);
@@ -150,7 +150,7 @@ functions:
     category: textures
     description: "Generate grayscale image from text (width, height, text)"
     custom_body: |
-      ::Image img = ::GenImageText(args[0].as_int(), args[1].as_int(), args[2].as_string().c_str());
+      ::Image img = ::GenImageText(INT(0), INT(1), STR(2).c_str());
       int id = rlreg::next_image_id++;
       rlreg::images[id] = img;
       return Value::from_int(id);
@@ -163,8 +163,8 @@ functions:
     category: textures
     description: "Create image from another image piece (pass image ID, x, y, width, height)"
     custom_body: |
-      ::Rectangle rec{(float)args[1].as_number(), (float)args[2].as_number(), (float)args[3].as_number(), (float)args[4].as_number()};
-      ::Image img = ::ImageFromImage(rlreg::images.at(args[0].as_int()), rec);
+      ::Rectangle rec{(float)FLOAT(1), (float)FLOAT(2), (float)FLOAT(3), (float)FLOAT(4)};
+      ::Image img = ::ImageFromImage(rlreg::images.at(INT(0)), rec);
       int id = rlreg::next_image_id++;
       rlreg::images[id] = img;
       return Value::from_int(id);
@@ -176,7 +176,7 @@ functions:
     category: textures
     description: "Create image from selected channel (pass image ID, selectedChannel)"
     custom_body: |
-      ::Image img = ::ImageFromChannel(rlreg::images.at(args[0].as_int()), args[1].as_int());
+      ::Image img = ::ImageFromChannel(rlreg::images.at(INT(0)), INT(1));
       int id = rlreg::next_image_id++;
       rlreg::images[id] = img;
       return Value::from_int(id);
@@ -188,8 +188,8 @@ functions:
     category: textures
     description: "Create image from text (default font) (text, fontSize, R, G, B)"
     custom_body: |
-      ::Color color{(unsigned char)args[2].as_int(), (unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), 255};
-      ::Image img = ::ImageText(args[0].as_string().c_str(), args[1].as_int(), color);
+      ::Color color{(unsigned char)INT(2), (unsigned char)INT(3), (unsigned char)INT(4), 255};
+      ::Image img = ::ImageText(STR(0).c_str(), INT(1), color);
       int id = rlreg::next_image_id++;
       rlreg::images[id] = img;
       return Value::from_int(id);
@@ -201,8 +201,8 @@ functions:
     category: textures
     description: "Create image from text (custom font) (pass font ID, text, fontSize, spacing, R, G, B)"
     custom_body: |
-      ::Color tint{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), 255};
-      ::Image img = ::ImageTextEx(rlreg::fonts.at(args[0].as_int()), args[1].as_string().c_str(), (float)args[2].as_number(), (float)args[3].as_number(), tint);
+      ::Color tint{(unsigned char)INT(4), (unsigned char)INT(5), (unsigned char)INT(6), 255};
+      ::Image img = ::ImageTextEx(rlreg::fonts.at(INT(0)), STR(1).c_str(), (float)FLOAT(2), (float)FLOAT(3), tint);
       int id = rlreg::next_image_id++;
       rlreg::images[id] = img;
       return Value::from_int(id);
@@ -214,7 +214,7 @@ functions:
     category: textures
     description: "Convert image data to desired format (pass image ID, newFormat)"
     custom_body: |
-      ::ImageFormat(&rlreg::images.at(args[0].as_int()), args[1].as_int());
+      ::ImageFormat(&rlreg::images.at(INT(0)), INT(1));
 
   - name: IMAGETOPOT
     raylib_name: ImageToPOT
@@ -223,8 +223,8 @@ functions:
     category: textures
     description: "Convert image to POT (power-of-two) (pass image ID, R, G, B for fill)"
     custom_body: |
-      ::Color fill{(unsigned char)args[1].as_int(), (unsigned char)args[2].as_int(), (unsigned char)args[3].as_int(), 255};
-      ::ImageToPOT(&rlreg::images.at(args[0].as_int()), fill);
+      ::Color fill{(unsigned char)INT(1), (unsigned char)INT(2), (unsigned char)INT(3), 255};
+      ::ImageToPOT(&rlreg::images.at(INT(0)), fill);
 
   - name: IMAGEALPHACROP
     raylib_name: ImageAlphaCrop
@@ -233,7 +233,7 @@ functions:
     category: textures
     description: "Crop image depending on alpha value (pass image ID, threshold)"
     custom_body: |
-      ::ImageAlphaCrop(&rlreg::images.at(args[0].as_int()), (float)args[1].as_number());
+      ::ImageAlphaCrop(&rlreg::images.at(INT(0)), (float)FLOAT(1));
 
   - name: IMAGEALPHACLEAR
     raylib_name: ImageAlphaClear
@@ -242,8 +242,8 @@ functions:
     category: textures
     description: "Clear alpha channel to desired color (pass image ID, R, G, B, threshold)"
     custom_body: |
-      ::Color color{(unsigned char)args[1].as_int(), (unsigned char)args[2].as_int(), (unsigned char)args[3].as_int(), 255};
-      ::ImageAlphaClear(&rlreg::images.at(args[0].as_int()), color, (float)args[4].as_number());
+      ::Color color{(unsigned char)INT(1), (unsigned char)INT(2), (unsigned char)INT(3), 255};
+      ::ImageAlphaClear(&rlreg::images.at(INT(0)), color, (float)FLOAT(4));
 
   - name: IMAGEALPHAMASK
     raylib_name: ImageAlphaMask
@@ -252,7 +252,7 @@ functions:
     category: textures
     description: "Apply alpha mask to image (pass image ID, alphaMask image ID)"
     custom_body: |
-      ::ImageAlphaMask(&rlreg::images.at(args[0].as_int()), rlreg::images.at(args[1].as_int()));
+      ::ImageAlphaMask(&rlreg::images.at(INT(0)), rlreg::images.at(INT(1)));
 
   - name: IMAGEALPHAPREMULTIPLY
     raylib_name: ImageAlphaPremultiply
@@ -261,7 +261,7 @@ functions:
     category: textures
     description: "Premultiply alpha channel (pass image ID)"
     custom_body: |
-      ::ImageAlphaPremultiply(&rlreg::images.at(args[0].as_int()));
+      ::ImageAlphaPremultiply(&rlreg::images.at(INT(0)));
 
   - name: IMAGEBLURGAUSSIAN
     raylib_name: ImageBlurGaussian
@@ -270,7 +270,7 @@ functions:
     category: textures
     description: "Apply Gaussian blur (pass image ID, blurSize)"
     custom_body: |
-      ::ImageBlurGaussian(&rlreg::images.at(args[0].as_int()), args[1].as_int());
+      ::ImageBlurGaussian(&rlreg::images.at(INT(0)), INT(1));
 
   - name: IMAGEKERNELCONVOLUTION
     raylib_name: ImageKernelConvolution
@@ -288,7 +288,7 @@ functions:
     category: textures
     description: "Resize image (Nearest-Neighbor) (pass image ID, newWidth, newHeight)"
     custom_body: |
-      ::ImageResizeNN(&rlreg::images.at(args[0].as_int()), args[1].as_int(), args[2].as_int());
+      ::ImageResizeNN(&rlreg::images.at(INT(0)), INT(1), INT(2));
 
   - name: IMAGERESIZECANVAS
     raylib_name: ImageResizeCanvas
@@ -297,8 +297,8 @@ functions:
     category: textures
     description: "Resize canvas and fill (pass image ID, newWidth, newHeight, offsetX, offsetY, R, G, B)"
     custom_body: |
-      ::Color fill{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255};
-      ::ImageResizeCanvas(&rlreg::images.at(args[0].as_int()), args[1].as_int(), args[2].as_int(), args[3].as_int(), args[4].as_int(), fill);
+      ::Color fill{(unsigned char)INT(5), (unsigned char)INT(6), (unsigned char)INT(7), 255};
+      ::ImageResizeCanvas(&rlreg::images.at(INT(0)), INT(1), INT(2), INT(3), INT(4), fill);
 
   - name: IMAGEMIPMAPS
     raylib_name: ImageMipmaps
@@ -307,7 +307,7 @@ functions:
     category: textures
     description: "Compute all mipmap levels (pass image ID)"
     custom_body: |
-      ::ImageMipmaps(&rlreg::images.at(args[0].as_int()));
+      ::ImageMipmaps(&rlreg::images.at(INT(0)));
 
   - name: IMAGEDITHER
     raylib_name: ImageDither
@@ -316,7 +316,7 @@ functions:
     category: textures
     description: "Dither image data (pass image ID, rBpp, gBpp, bBpp, aBpp)"
     custom_body: |
-      ::ImageDither(&rlreg::images.at(args[0].as_int()), args[1].as_int(), args[2].as_int(), args[3].as_int(), args[4].as_int());
+      ::ImageDither(&rlreg::images.at(INT(0)), INT(1), INT(2), INT(3), INT(4));
 
   - name: IMAGEFLIPVERTICAL
     raylib_name: ImageFlipVertical
@@ -325,7 +325,7 @@ functions:
     category: textures
     description: "Flip image vertically (pass image ID)"
     custom_body: |
-      ::ImageFlipVertical(&rlreg::images.at(args[0].as_int()));
+      ::ImageFlipVertical(&rlreg::images.at(INT(0)));
 
   - name: IMAGEFLIPHORIZONTAL
     raylib_name: ImageFlipHorizontal
@@ -334,7 +334,7 @@ functions:
     category: textures
     description: "Flip image horizontally (pass image ID)"
     custom_body: |
-      ::ImageFlipHorizontal(&rlreg::images.at(args[0].as_int()));
+      ::ImageFlipHorizontal(&rlreg::images.at(INT(0)));
 
   - name: IMAGEROTATE
     raylib_name: ImageRotate
@@ -343,7 +343,7 @@ functions:
     category: textures
     description: "Rotate image by angle (pass image ID, degrees)"
     custom_body: |
-      ::ImageRotate(&rlreg::images.at(args[0].as_int()), args[1].as_int());
+      ::ImageRotate(&rlreg::images.at(INT(0)), INT(1));
 
   - name: IMAGEROTATECW
     raylib_name: ImageRotateCW
@@ -352,7 +352,7 @@ functions:
     category: textures
     description: "Rotate image clockwise 90deg (pass image ID)"
     custom_body: |
-      ::ImageRotateCW(&rlreg::images.at(args[0].as_int()));
+      ::ImageRotateCW(&rlreg::images.at(INT(0)));
 
   - name: IMAGEROTATECCW
     raylib_name: ImageRotateCCW
@@ -361,7 +361,7 @@ functions:
     category: textures
     description: "Rotate image counter-clockwise 90deg (pass image ID)"
     custom_body: |
-      ::ImageRotateCCW(&rlreg::images.at(args[0].as_int()));
+      ::ImageRotateCCW(&rlreg::images.at(INT(0)));
 
   - name: IMAGECOLORTINT
     raylib_name: ImageColorTint
@@ -370,8 +370,8 @@ functions:
     category: textures
     description: "Modify image color: tint (pass image ID, R, G, B)"
     custom_body: |
-      ::Color color{(unsigned char)args[1].as_int(), (unsigned char)args[2].as_int(), (unsigned char)args[3].as_int(), 255};
-      ::ImageColorTint(&rlreg::images.at(args[0].as_int()), color);
+      ::Color color{(unsigned char)INT(1), (unsigned char)INT(2), (unsigned char)INT(3), 255};
+      ::ImageColorTint(&rlreg::images.at(INT(0)), color);
 
   - name: IMAGECOLORINVERT
     raylib_name: ImageColorInvert
@@ -380,7 +380,7 @@ functions:
     category: textures
     description: "Modify image color: invert (pass image ID)"
     custom_body: |
-      ::ImageColorInvert(&rlreg::images.at(args[0].as_int()));
+      ::ImageColorInvert(&rlreg::images.at(INT(0)));
 
   - name: IMAGECOLORGRAYSCALE
     raylib_name: ImageColorGrayscale
@@ -389,7 +389,7 @@ functions:
     category: textures
     description: "Modify image color: grayscale (pass image ID)"
     custom_body: |
-      ::ImageColorGrayscale(&rlreg::images.at(args[0].as_int()));
+      ::ImageColorGrayscale(&rlreg::images.at(INT(0)));
 
   - name: IMAGECOLORCONTRAST
     raylib_name: ImageColorContrast
@@ -398,7 +398,7 @@ functions:
     category: textures
     description: "Modify image color: contrast (pass image ID, contrast)"
     custom_body: |
-      ::ImageColorContrast(&rlreg::images.at(args[0].as_int()), (float)args[1].as_number());
+      ::ImageColorContrast(&rlreg::images.at(INT(0)), (float)FLOAT(1));
 
   - name: IMAGECOLORBRIGHTNESS
     raylib_name: ImageColorBrightness
@@ -407,7 +407,7 @@ functions:
     category: textures
     description: "Modify image color: brightness (pass image ID, brightness)"
     custom_body: |
-      ::ImageColorBrightness(&rlreg::images.at(args[0].as_int()), args[1].as_int());
+      ::ImageColorBrightness(&rlreg::images.at(INT(0)), INT(1));
 
   - name: IMAGECOLORREPLACE
     raylib_name: ImageColorReplace
@@ -416,9 +416,9 @@ functions:
     category: textures
     description: "Modify image color: replace color (pass image ID, R1, G1, B1, R2, G2, B2)"
     custom_body: |
-      ::Color color{(unsigned char)args[1].as_int(), (unsigned char)args[2].as_int(), (unsigned char)args[3].as_int(), 255};
-      ::Color replace{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), 255};
-      ::ImageColorReplace(&rlreg::images.at(args[0].as_int()), color, replace);
+      ::Color color{(unsigned char)INT(1), (unsigned char)INT(2), (unsigned char)INT(3), 255};
+      ::Color replace{(unsigned char)INT(4), (unsigned char)INT(5), (unsigned char)INT(6), 255};
+      ::ImageColorReplace(&rlreg::images.at(INT(0)), color, replace);
 
   - name: GETIMAGEALPHABORDER
     raylib_name: GetImageAlphaBorder
@@ -427,7 +427,7 @@ functions:
     category: textures
     description: "Get image alpha border rectangle (pass image ID, threshold)"
     custom_body: |
-      ::Rectangle rec = ::GetImageAlphaBorder(rlreg::images.at(args[0].as_int()), (float)args[1].as_number());
+      ::Rectangle rec = ::GetImageAlphaBorder(rlreg::images.at(INT(0)), (float)FLOAT(1));
       return Value::from_string(std::to_string(rec.x) + "," + std::to_string(rec.y) + "," + std::to_string(rec.width) + "," + std::to_string(rec.height));
 
   - name: GETIMAGECOLOR
@@ -437,7 +437,7 @@ functions:
     category: textures
     description: "Get image pixel color at position (pass image ID, x, y)"
     custom_body: |
-      ::Color c = ::GetImageColor(rlreg::images.at(args[0].as_int()), args[1].as_int(), args[2].as_int());
+      ::Color c = ::GetImageColor(rlreg::images.at(INT(0)), INT(1), INT(2));
       return Value::from_string(std::to_string(c.r) + "," + std::to_string(c.g) + "," + std::to_string(c.b) + "," + std::to_string(c.a));
 
   # === IMAGE DRAWING (CPU RENDERING) ===
@@ -448,8 +448,8 @@ functions:
     category: textures
     description: "Clear image background (pass image ID, R, G, B)"
     custom_body: |
-      ::Color color{(unsigned char)args[1].as_int(), (unsigned char)args[2].as_int(), (unsigned char)args[3].as_int(), 255};
-      ::ImageClearBackground(&rlreg::images.at(args[0].as_int()), color);
+      ::Color color{(unsigned char)INT(1), (unsigned char)INT(2), (unsigned char)INT(3), 255};
+      ::ImageClearBackground(&rlreg::images.at(INT(0)), color);
 
   - name: IMAGEDRAWPIXEL
     raylib_name: ImageDrawPixel
@@ -458,8 +458,8 @@ functions:
     category: textures
     description: "Draw pixel within image (pass image ID, posX, posY, R, G, B)"
     custom_body: |
-      ::Color color{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), 255};
-      ::ImageDrawPixel(&rlreg::images.at(args[0].as_int()), args[1].as_int(), args[2].as_int(), color);
+      ::Color color{(unsigned char)INT(3), (unsigned char)INT(4), (unsigned char)INT(5), 255};
+      ::ImageDrawPixel(&rlreg::images.at(INT(0)), INT(1), INT(2), color);
 
   - name: IMAGEDRAWPIXELV
     raylib_name: ImageDrawPixelV
@@ -468,9 +468,9 @@ functions:
     category: textures
     description: "Draw pixel within image (Vector version) (pass image ID, x, y, R, G, B)"
     custom_body: |
-      ::Vector2 position{(float)args[1].as_number(), (float)args[2].as_number()};
-      ::Color color{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), 255};
-      ::ImageDrawPixelV(&rlreg::images.at(args[0].as_int()), position, color);
+      ::Vector2 position{(float)FLOAT(1), (float)FLOAT(2)};
+      ::Color color{(unsigned char)INT(3), (unsigned char)INT(4), (unsigned char)INT(5), 255};
+      ::ImageDrawPixelV(&rlreg::images.at(INT(0)), position, color);
 
   - name: IMAGEDRAWLINE
     raylib_name: ImageDrawLine
@@ -479,8 +479,8 @@ functions:
     category: textures
     description: "Draw line within image (pass image ID, startPosX, startPosY, endPosX, endPosY, R, G, B)"
     custom_body: |
-      ::Color color{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255};
-      ::ImageDrawLine(&rlreg::images.at(args[0].as_int()), args[1].as_int(), args[2].as_int(), args[3].as_int(), args[4].as_int(), color);
+      ::Color color{(unsigned char)INT(5), (unsigned char)INT(6), (unsigned char)INT(7), 255};
+      ::ImageDrawLine(&rlreg::images.at(INT(0)), INT(1), INT(2), INT(3), INT(4), color);
 
   - name: IMAGEDRAWLINEV
     raylib_name: ImageDrawLineV
@@ -489,10 +489,10 @@ functions:
     category: textures
     description: "Draw line within image (Vector version) (pass image ID, startX, startY, endX, endY, R, G, B)"
     custom_body: |
-      ::Vector2 start{(float)args[1].as_number(), (float)args[2].as_number()};
-      ::Vector2 end{(float)args[3].as_number(), (float)args[4].as_number()};
-      ::Color color{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255};
-      ::ImageDrawLineV(&rlreg::images.at(args[0].as_int()), start, end, color);
+      ::Vector2 start{(float)FLOAT(1), (float)FLOAT(2)};
+      ::Vector2 end{(float)FLOAT(3), (float)FLOAT(4)};
+      ::Color color{(unsigned char)INT(5), (unsigned char)INT(6), (unsigned char)INT(7), 255};
+      ::ImageDrawLineV(&rlreg::images.at(INT(0)), start, end, color);
 
   - name: IMAGEDRAWLINEEX
     raylib_name: ImageDrawLineEx
@@ -501,10 +501,10 @@ functions:
     category: textures
     description: "Draw line with thickness within image (pass image ID, startX, startY, endX, endY, thick, R, G, B)"
     custom_body: |
-      ::Vector2 start{(float)args[1].as_number(), (float)args[2].as_number()};
-      ::Vector2 end{(float)args[3].as_number(), (float)args[4].as_number()};
-      ::Color color{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
-      ::ImageDrawLineEx(&rlreg::images.at(args[0].as_int()), start, end, args[5].as_int(), color);
+      ::Vector2 start{(float)FLOAT(1), (float)FLOAT(2)};
+      ::Vector2 end{(float)FLOAT(3), (float)FLOAT(4)};
+      ::Color color{(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255};
+      ::ImageDrawLineEx(&rlreg::images.at(INT(0)), start, end, INT(5), color);
 
   - name: IMAGEDRAWCIRCLE
     raylib_name: ImageDrawCircle
@@ -513,8 +513,8 @@ functions:
     category: textures
     description: "Draw filled circle within image (pass image ID, centerX, centerY, radius, R, G, B)"
     custom_body: |
-      ::Color color{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), 255};
-      ::ImageDrawCircle(&rlreg::images.at(args[0].as_int()), args[1].as_int(), args[2].as_int(), args[3].as_int(), color);
+      ::Color color{(unsigned char)INT(4), (unsigned char)INT(5), (unsigned char)INT(6), 255};
+      ::ImageDrawCircle(&rlreg::images.at(INT(0)), INT(1), INT(2), INT(3), color);
 
   - name: IMAGEDRAWCIRCLEV
     raylib_name: ImageDrawCircleV
@@ -523,9 +523,9 @@ functions:
     category: textures
     description: "Draw filled circle within image (Vector version) (pass image ID, centerX, centerY, radius, R, G, B)"
     custom_body: |
-      ::Vector2 center{(float)args[1].as_number(), (float)args[2].as_number()};
-      ::Color color{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), 255};
-      ::ImageDrawCircleV(&rlreg::images.at(args[0].as_int()), center, args[3].as_int(), color);
+      ::Vector2 center{(float)FLOAT(1), (float)FLOAT(2)};
+      ::Color color{(unsigned char)INT(4), (unsigned char)INT(5), (unsigned char)INT(6), 255};
+      ::ImageDrawCircleV(&rlreg::images.at(INT(0)), center, INT(3), color);
 
   - name: IMAGEDRAWCIRCLELINES
     raylib_name: ImageDrawCircleLines
@@ -534,8 +534,8 @@ functions:
     category: textures
     description: "Draw circle outline within image (pass image ID, centerX, centerY, radius, R, G, B)"
     custom_body: |
-      ::Color color{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), 255};
-      ::ImageDrawCircleLines(&rlreg::images.at(args[0].as_int()), args[1].as_int(), args[2].as_int(), args[3].as_int(), color);
+      ::Color color{(unsigned char)INT(4), (unsigned char)INT(5), (unsigned char)INT(6), 255};
+      ::ImageDrawCircleLines(&rlreg::images.at(INT(0)), INT(1), INT(2), INT(3), color);
 
   - name: IMAGEDRAWCIRCLELINESV
     raylib_name: ImageDrawCircleLinesV
@@ -544,9 +544,9 @@ functions:
     category: textures
     description: "Draw circle outline within image (Vector version) (pass image ID, centerX, centerY, radius, R, G, B)"
     custom_body: |
-      ::Vector2 center{(float)args[1].as_number(), (float)args[2].as_number()};
-      ::Color color{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), 255};
-      ::ImageDrawCircleLinesV(&rlreg::images.at(args[0].as_int()), center, args[3].as_int(), color);
+      ::Vector2 center{(float)FLOAT(1), (float)FLOAT(2)};
+      ::Color color{(unsigned char)INT(4), (unsigned char)INT(5), (unsigned char)INT(6), 255};
+      ::ImageDrawCircleLinesV(&rlreg::images.at(INT(0)), center, INT(3), color);
 
   - name: IMAGEDRAWRECTANGLE
     raylib_name: ImageDrawRectangle
@@ -555,8 +555,8 @@ functions:
     category: textures
     description: "Draw rectangle within image (pass image ID, posX, posY, width, height, R, G, B)"
     custom_body: |
-      ::Color color{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255};
-      ::ImageDrawRectangle(&rlreg::images.at(args[0].as_int()), args[1].as_int(), args[2].as_int(), args[3].as_int(), args[4].as_int(), color);
+      ::Color color{(unsigned char)INT(5), (unsigned char)INT(6), (unsigned char)INT(7), 255};
+      ::ImageDrawRectangle(&rlreg::images.at(INT(0)), INT(1), INT(2), INT(3), INT(4), color);
 
   - name: IMAGEDRAWRECTANGLEV
     raylib_name: ImageDrawRectangleV
@@ -565,10 +565,10 @@ functions:
     category: textures
     description: "Draw rectangle within image (Vector version) (pass image ID, posX, posY, sizeX, sizeY, R, G, B)"
     custom_body: |
-      ::Vector2 position{(float)args[1].as_number(), (float)args[2].as_number()};
-      ::Vector2 size{(float)args[3].as_number(), (float)args[4].as_number()};
-      ::Color color{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255};
-      ::ImageDrawRectangleV(&rlreg::images.at(args[0].as_int()), position, size, color);
+      ::Vector2 position{(float)FLOAT(1), (float)FLOAT(2)};
+      ::Vector2 size{(float)FLOAT(3), (float)FLOAT(4)};
+      ::Color color{(unsigned char)INT(5), (unsigned char)INT(6), (unsigned char)INT(7), 255};
+      ::ImageDrawRectangleV(&rlreg::images.at(INT(0)), position, size, color);
 
   - name: IMAGEDRAWRECTANGLEREC
     raylib_name: ImageDrawRectangleRec
@@ -577,9 +577,9 @@ functions:
     category: textures
     description: "Draw rectangle within image (pass image ID, x, y, width, height, R, G, B)"
     custom_body: |
-      ::Rectangle rec{(float)args[1].as_number(), (float)args[2].as_number(), (float)args[3].as_number(), (float)args[4].as_number()};
-      ::Color color{(unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), 255};
-      ::ImageDrawRectangleRec(&rlreg::images.at(args[0].as_int()), rec, color);
+      ::Rectangle rec{(float)FLOAT(1), (float)FLOAT(2), (float)FLOAT(3), (float)FLOAT(4)};
+      ::Color color{(unsigned char)INT(5), (unsigned char)INT(6), (unsigned char)INT(7), 255};
+      ::ImageDrawRectangleRec(&rlreg::images.at(INT(0)), rec, color);
 
   - name: IMAGEDRAWRECTANGLELINES
     raylib_name: ImageDrawRectangleLines
@@ -588,9 +588,9 @@ functions:
     category: textures
     description: "Draw rectangle lines within image (pass image ID, x, y, width, height, thick, R, G, B)"
     custom_body: |
-      ::Rectangle rec{(float)args[1].as_number(), (float)args[2].as_number(), (float)args[3].as_number(), (float)args[4].as_number()};
-      ::Color color{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
-      ::ImageDrawRectangleLines(&rlreg::images.at(args[0].as_int()), rec, args[5].as_int(), color);
+      ::Rectangle rec{(float)FLOAT(1), (float)FLOAT(2), (float)FLOAT(3), (float)FLOAT(4)};
+      ::Color color{(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255};
+      ::ImageDrawRectangleLines(&rlreg::images.at(INT(0)), rec, INT(5), color);
 
   - name: IMAGEDRAWTRIANGLE
     raylib_name: ImageDrawTriangle
@@ -599,11 +599,11 @@ functions:
     category: textures
     description: "Draw triangle within image (pass image ID, v1x, v1y, v2x, v2y, v3x, v3y, R, G, B)"
     custom_body: |
-      ::Vector2 v1{(float)args[1].as_number(), (float)args[2].as_number()};
-      ::Vector2 v2{(float)args[3].as_number(), (float)args[4].as_number()};
-      ::Vector2 v3{(float)args[5].as_number(), (float)args[6].as_number()};
-      ::Color color{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), 255};
-      ::ImageDrawTriangle(&rlreg::images.at(args[0].as_int()), v1, v2, v3, color);
+      ::Vector2 v1{(float)FLOAT(1), (float)FLOAT(2)};
+      ::Vector2 v2{(float)FLOAT(3), (float)FLOAT(4)};
+      ::Vector2 v3{(float)FLOAT(5), (float)FLOAT(6)};
+      ::Color color{(unsigned char)INT(7), (unsigned char)INT(8), (unsigned char)INT(9), 255};
+      ::ImageDrawTriangle(&rlreg::images.at(INT(0)), v1, v2, v3, color);
 
   - name: IMAGEDRAWTRIANGLEEX
     raylib_name: ImageDrawTriangleEx
@@ -612,13 +612,13 @@ functions:
     category: textures
     description: "Draw triangle with interpolated colors (pass image ID, v1x, v1y, v2x, v2y, v3x, v3y, R1, G1, B1, R2, G2, B2, R3, G3, B3)"
     custom_body: |
-      ::Vector2 v1{(float)args[1].as_number(), (float)args[2].as_number()};
-      ::Vector2 v2{(float)args[3].as_number(), (float)args[4].as_number()};
-      ::Vector2 v3{(float)args[5].as_number(), (float)args[6].as_number()};
-      ::Color c1{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), 255};
-      ::Color c2{(unsigned char)args[10].as_int(), (unsigned char)args[11].as_int(), (unsigned char)args[12].as_int(), 255};
-      ::Color c3{(unsigned char)args[13].as_int(), (unsigned char)args[14].as_int(), (unsigned char)args[15].as_int(), 255};
-      ::ImageDrawTriangleEx(&rlreg::images.at(args[0].as_int()), v1, v2, v3, c1, c2, c3);
+      ::Vector2 v1{(float)FLOAT(1), (float)FLOAT(2)};
+      ::Vector2 v2{(float)FLOAT(3), (float)FLOAT(4)};
+      ::Vector2 v3{(float)FLOAT(5), (float)FLOAT(6)};
+      ::Color c1{(unsigned char)INT(7), (unsigned char)INT(8), (unsigned char)INT(9), 255};
+      ::Color c2{(unsigned char)INT(10), (unsigned char)INT(11), (unsigned char)INT(12), 255};
+      ::Color c3{(unsigned char)INT(13), (unsigned char)INT(14), (unsigned char)INT(15), 255};
+      ::ImageDrawTriangleEx(&rlreg::images.at(INT(0)), v1, v2, v3, c1, c2, c3);
 
   - name: IMAGEDRAWTRIANGLELINES
     raylib_name: ImageDrawTriangleLines
@@ -627,11 +627,11 @@ functions:
     category: textures
     description: "Draw triangle outline within image (pass image ID, v1x, v1y, v2x, v2y, v3x, v3y, R, G, B)"
     custom_body: |
-      ::Vector2 v1{(float)args[1].as_number(), (float)args[2].as_number()};
-      ::Vector2 v2{(float)args[3].as_number(), (float)args[4].as_number()};
-      ::Vector2 v3{(float)args[5].as_number(), (float)args[6].as_number()};
-      ::Color color{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), 255};
-      ::ImageDrawTriangleLines(&rlreg::images.at(args[0].as_int()), v1, v2, v3, color);
+      ::Vector2 v1{(float)FLOAT(1), (float)FLOAT(2)};
+      ::Vector2 v2{(float)FLOAT(3), (float)FLOAT(4)};
+      ::Vector2 v3{(float)FLOAT(5), (float)FLOAT(6)};
+      ::Color color{(unsigned char)INT(7), (unsigned char)INT(8), (unsigned char)INT(9), 255};
+      ::ImageDrawTriangleLines(&rlreg::images.at(INT(0)), v1, v2, v3, color);
 
   - name: IMAGEDRAWTEXT
     raylib_name: ImageDrawText
@@ -640,8 +640,8 @@ functions:
     category: textures
     description: "Draw text within image (default font) (pass image ID, text, posX, posY, fontSize, R, G, B)"
     custom_body: |
-      ::Color color{(unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), (unsigned char)args[6].as_int(), 255};
-      ::ImageDrawText(&rlreg::images.at(args[0].as_int()), args[1].as_string().c_str(), args[2].as_int(), args[3].as_int(), args[4].as_int(), color);
+      ::Color color{(unsigned char)INT(4), (unsigned char)INT(5), (unsigned char)INT(6), 255};
+      ::ImageDrawText(&rlreg::images.at(INT(0)), STR(1).c_str(), INT(2), INT(3), INT(4), color);
 
   - name: IMAGEDRAWTEXTEX
     raylib_name: ImageDrawTextEx
@@ -650,9 +650,9 @@ functions:
     category: textures
     description: "Draw text within image (custom font) (pass image ID, font ID, text, posX, posY, fontSize, spacing, R, G, B)"
     custom_body: |
-      ::Vector2 position{(float)args[3].as_number(), (float)args[4].as_number()};
-      ::Color tint{(unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), (unsigned char)args[9].as_int(), 255};
-      ::ImageDrawTextEx(&rlreg::images.at(args[0].as_int()), rlreg::fonts.at(args[1].as_int()), args[2].as_string().c_str(), position, (float)args[5].as_number(), (float)args[6].as_number(), tint);
+      ::Vector2 position{(float)FLOAT(3), (float)FLOAT(4)};
+      ::Color tint{(unsigned char)INT(7), (unsigned char)INT(8), (unsigned char)INT(9), 255};
+      ::ImageDrawTextEx(&rlreg::images.at(INT(0)), rlreg::fonts.at(INT(1)), STR(2).c_str(), position, (float)FLOAT(5), (float)FLOAT(6), tint);
 
   # === TEXTURE FUNCTIONS ===
   - name: LOADTEXTURECUBEMAP
@@ -662,7 +662,7 @@ functions:
     category: textures
     description: "Load cubemap from image (pass image ID, layout)"
     custom_body: |
-      ::Texture2D tex = ::LoadTextureCubemap(rlreg::images.at(args[0].as_int()), args[1].as_int());
+      ::Texture2D tex = ::LoadTextureCubemap(rlreg::images.at(INT(0)), INT(1));
       int id = rlreg::next_cubemap_id++;
       rlreg::cubemaps[id] = tex;
       return Value::from_int(id);
@@ -674,7 +674,7 @@ functions:
     category: textures
     description: "Check if texture is valid (pass texture ID)"
     custom_body: |
-      return Value::from_bool(::IsTextureValid(rlreg::textures.at(args[0].as_int())));
+      return Value::from_bool(::IsTextureValid(rlreg::textures.at(INT(0))));
 
   - name: ISRENDERTEXTUREVALID
     raylib_name: IsRenderTextureValid
@@ -683,7 +683,7 @@ functions:
     category: textures
     description: "Check if render texture is valid (pass render texture ID)"
     custom_body: |
-      return Value::from_bool(::IsRenderTextureValid(rlreg::rendertextures.at(args[0].as_int())));
+      return Value::from_bool(::IsRenderTextureValid(rlreg::rendertextures.at(INT(0))));
 
   - name: UPDATETEXTUREREC
     raylib_name: UpdateTextureRec
@@ -692,7 +692,7 @@ functions:
     category: textures
     description: "Update GPU texture rectangle (pass texture ID, x, y, width, height, pixels as string)"
     custom_body: |
-      ::Rectangle rec{(float)args[1].as_number(), (float)args[2].as_number(), (float)args[3].as_number(), (float)args[4].as_number()};
+      ::Rectangle rec{(float)FLOAT(1), (float)FLOAT(2), (float)FLOAT(3), (float)FLOAT(4)};
       (void)rec; // Suppress unused variable warning
       // TODO: Proper pixel data handling
 
@@ -704,8 +704,8 @@ functions:
     category: colors
     description: "Check if two colors are equal (R1, G1, B1, R2, G2, B2)"
     custom_body: |
-      ::Color col1{(unsigned char)args[0].as_int(), (unsigned char)args[1].as_int(), (unsigned char)args[2].as_int(), 255};
-      ::Color col2{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), 255};
+      ::Color col1{(unsigned char)INT(0), (unsigned char)INT(1), (unsigned char)INT(2), 255};
+      ::Color col2{(unsigned char)INT(3), (unsigned char)INT(4), (unsigned char)INT(5), 255};
       return Value::from_bool(::ColorIsEqual(col1, col2));
 
   - name: COLORTOINT
@@ -715,7 +715,7 @@ functions:
     category: colors
     description: "Get hexadecimal value for Color (R, G, B)"
     custom_body: |
-      ::Color color{(unsigned char)args[0].as_int(), (unsigned char)args[1].as_int(), (unsigned char)args[2].as_int(), 255};
+      ::Color color{(unsigned char)INT(0), (unsigned char)INT(1), (unsigned char)INT(2), 255};
       return Value::from_int(::ColorToInt(color));
 
   - name: COLORNORMALIZE
@@ -725,7 +725,7 @@ functions:
     category: colors
     description: "Get Color normalized as float [0..1] (R, G, B)"
     custom_body: |
-      ::Color color{(unsigned char)args[0].as_int(), (unsigned char)args[1].as_int(), (unsigned char)args[2].as_int(), 255};
+      ::Color color{(unsigned char)INT(0), (unsigned char)INT(1), (unsigned char)INT(2), 255};
       ::Vector4 normalized = ::ColorNormalize(color);
       return Value::from_string(std::to_string(normalized.x) + "," + std::to_string(normalized.y) + "," + std::to_string(normalized.z) + "," + std::to_string(normalized.w));
 
@@ -736,7 +736,7 @@ functions:
     category: colors
     description: "Get Color from normalized values (x, y, z, w)"
     custom_body: |
-      ::Vector4 normalized{(float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number(), (float)args[3].as_number()};
+      ::Vector4 normalized{(float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2), (float)FLOAT(3)};
       ::Color color = ::ColorFromNormalized(normalized);
       return Value::from_string(std::to_string(color.r) + "," + std::to_string(color.g) + "," + std::to_string(color.b) + "," + std::to_string(color.a));
 
@@ -747,7 +747,7 @@ functions:
     category: colors
     description: "Get HSV values for Color (R, G, B)"
     custom_body: |
-      ::Color color{(unsigned char)args[0].as_int(), (unsigned char)args[1].as_int(), (unsigned char)args[2].as_int(), 255};
+      ::Color color{(unsigned char)INT(0), (unsigned char)INT(1), (unsigned char)INT(2), 255};
       ::Vector3 hsv = ::ColorToHSV(color);
       return Value::from_string(std::to_string(hsv.x) + "," + std::to_string(hsv.y) + "," + std::to_string(hsv.z));
 
@@ -758,7 +758,7 @@ functions:
     category: colors
     description: "Get Color from HSV values (hue, saturation, value)"
     custom_body: |
-      ::Color color = ::ColorFromHSV((float)args[0].as_number(), (float)args[1].as_number(), (float)args[2].as_number());
+      ::Color color = ::ColorFromHSV((float)FLOAT(0), (float)FLOAT(1), (float)FLOAT(2));
       return Value::from_string(std::to_string(color.r) + "," + std::to_string(color.g) + "," + std::to_string(color.b) + "," + std::to_string(color.a));
 
   - name: COLORTINT
@@ -768,8 +768,8 @@ functions:
     category: colors
     description: "Get color multiplied with another color (R1, G1, B1, R2, G2, B2)"
     custom_body: |
-      ::Color color{(unsigned char)args[0].as_int(), (unsigned char)args[1].as_int(), (unsigned char)args[2].as_int(), 255};
-      ::Color tint{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), 255};
+      ::Color color{(unsigned char)INT(0), (unsigned char)INT(1), (unsigned char)INT(2), 255};
+      ::Color tint{(unsigned char)INT(3), (unsigned char)INT(4), (unsigned char)INT(5), 255};
       ::Color result = ::ColorTint(color, tint);
       return Value::from_string(std::to_string(result.r) + "," + std::to_string(result.g) + "," + std::to_string(result.b) + "," + std::to_string(result.a));
 
@@ -780,8 +780,8 @@ functions:
     category: colors
     description: "Get color with brightness correction (R, G, B, factor)"
     custom_body: |
-      ::Color color{(unsigned char)args[0].as_int(), (unsigned char)args[1].as_int(), (unsigned char)args[2].as_int(), 255};
-      ::Color result = ::ColorBrightness(color, (float)args[3].as_number());
+      ::Color color{(unsigned char)INT(0), (unsigned char)INT(1), (unsigned char)INT(2), 255};
+      ::Color result = ::ColorBrightness(color, (float)FLOAT(3));
       return Value::from_string(std::to_string(result.r) + "," + std::to_string(result.g) + "," + std::to_string(result.b) + "," + std::to_string(result.a));
 
   - name: COLORCONTRAST
@@ -791,8 +791,8 @@ functions:
     category: colors
     description: "Get color with contrast correction (R, G, B, contrast)"
     custom_body: |
-      ::Color color{(unsigned char)args[0].as_int(), (unsigned char)args[1].as_int(), (unsigned char)args[2].as_int(), 255};
-      ::Color result = ::ColorContrast(color, (float)args[3].as_number());
+      ::Color color{(unsigned char)INT(0), (unsigned char)INT(1), (unsigned char)INT(2), 255};
+      ::Color result = ::ColorContrast(color, (float)FLOAT(3));
       return Value::from_string(std::to_string(result.r) + "," + std::to_string(result.g) + "," + std::to_string(result.b) + "," + std::to_string(result.a));
 
   - name: COLORALPHA
@@ -802,8 +802,8 @@ functions:
     category: colors
     description: "Get color with alpha applied (R, G, B, alpha)"
     custom_body: |
-      ::Color color{(unsigned char)args[0].as_int(), (unsigned char)args[1].as_int(), (unsigned char)args[2].as_int(), 255};
-      ::Color result = ::ColorAlpha(color, (float)args[3].as_number());
+      ::Color color{(unsigned char)INT(0), (unsigned char)INT(1), (unsigned char)INT(2), 255};
+      ::Color result = ::ColorAlpha(color, (float)FLOAT(3));
       return Value::from_string(std::to_string(result.r) + "," + std::to_string(result.g) + "," + std::to_string(result.b) + "," + std::to_string(result.a));
 
   - name: COLORALPHABLEND
@@ -813,9 +813,9 @@ functions:
     category: colors
     description: "Get src alpha-blended into dst color (R1, G1, B1, R2, G2, B2, R3, G3, B3)"
     custom_body: |
-      ::Color dst{(unsigned char)args[0].as_int(), (unsigned char)args[1].as_int(), (unsigned char)args[2].as_int(), 255};
-      ::Color src{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), 255};
-      ::Color tint{(unsigned char)args[6].as_int(), (unsigned char)args[7].as_int(), (unsigned char)args[8].as_int(), 255};
+      ::Color dst{(unsigned char)INT(0), (unsigned char)INT(1), (unsigned char)INT(2), 255};
+      ::Color src{(unsigned char)INT(3), (unsigned char)INT(4), (unsigned char)INT(5), 255};
+      ::Color tint{(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255};
       ::Color result = ::ColorAlphaBlend(dst, src, tint);
       return Value::from_string(std::to_string(result.r) + "," + std::to_string(result.g) + "," + std::to_string(result.b) + "," + std::to_string(result.a));
 
@@ -826,9 +826,9 @@ functions:
     category: colors
     description: "Get color lerp interpolation (R1, G1, B1, R2, G2, B2, factor)"
     custom_body: |
-      ::Color color1{(unsigned char)args[0].as_int(), (unsigned char)args[1].as_int(), (unsigned char)args[2].as_int(), 255};
-      ::Color color2{(unsigned char)args[3].as_int(), (unsigned char)args[4].as_int(), (unsigned char)args[5].as_int(), 255};
-      ::Color result = ::ColorLerp(color1, color2, (float)args[6].as_number());
+      ::Color color1{(unsigned char)INT(0), (unsigned char)INT(1), (unsigned char)INT(2), 255};
+      ::Color color2{(unsigned char)INT(3), (unsigned char)INT(4), (unsigned char)INT(5), 255};
+      ::Color result = ::ColorLerp(color1, color2, (float)FLOAT(6));
       return Value::from_string(std::to_string(result.r) + "," + std::to_string(result.g) + "," + std::to_string(result.b) + "," + std::to_string(result.a));
 
   - name: GETCOLOR
@@ -838,7 +838,7 @@ functions:
     category: colors
     description: "Get Color structure from hexadecimal value"
     custom_body: |
-      ::Color color = ::GetColor(args[0].as_int());
+      ::Color color = ::GetColor(INT(0));
       return Value::from_string(std::to_string(color.r) + "," + std::to_string(color.g) + "," + std::to_string(color.b) + "," + std::to_string(color.a));
 
   - name: GETPIXELDATASIZE

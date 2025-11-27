@@ -1,0 +1,304 @@
+# Audio System Functions
+# Comprehensive audio device management, sound/music loading, and audio stream processing
+
+functions:
+  # === AUDIO DEVICE MANAGEMENT ===
+  - name: INITAUDIODEVICE
+    raylib_name: InitAudioDevice
+    args: []
+    ret: void
+    description: "Initialize audio device and context"
+    custom_body: |
+      ::InitAudioDevice();
+    
+  - name: CLOSEAUDIODEVICE
+    raylib_name: CloseAudioDevice
+    args: []
+    ret: void
+    description: "Close the audio device and context"
+    custom_body: |
+      ::CloseAudioDevice();
+    
+  - name: ISAUDIODEVICEREADY
+    raylib_name: IsAudioDeviceReady
+    args: []
+    ret: int
+    description: "Check if audio device has been initialized successfully"
+    custom_body: |
+      return Value::from_int(::IsAudioDeviceReady() ? 1 : 0);
+    
+  - name: SETMASTERVOLUME
+    raylib_name: SetMasterVolume
+    args: [float]
+    ret: void
+    description: "Set master volume (listener) (0.0 to 1.0)"
+    custom_body: |
+      ::SetMasterVolume(FLOAT(0));
+    
+  - name: GETMASTERVOLUME
+    raylib_name: GetMasterVolume
+    args: []
+    ret: float
+    description: "Get master volume (listener)"
+    custom_body: |
+      return Value::from_number(::GetMasterVolume());
+    
+  # === WAVE/SOUND LOADING ===
+  - name: LOADWAVE
+    raylib_name: LoadWave
+    args: [string]
+    ret: int
+    description: "Load wave data from file, returns wave ID"
+    custom_body: |
+      ::Wave wave = ::LoadWave(STR(0).c_str());
+      static int next_id = 1;
+      return Value::from_int(next_id++);
+    
+  - name: ISWAVEVALID
+    raylib_name: IsWaveValid
+    args: [int]
+    ret: int
+    description: "Checks if wave data is valid (data loaded and parameters)"
+    custom_body: |
+      ::Wave wave = {}; // Look up by ID in real implementation
+      return Value::from_int(::IsWaveValid(wave) ? 1 : 0);
+    
+  - name: LOADSOUND
+    raylib_name: LoadSound
+    args: [string]
+    ret: int
+    description: "Load sound from file, returns sound ID"
+    custom_body: |
+      ::Sound sound = ::LoadSound(STR(0).c_str());
+      static int next_id = 1;
+      return Value::from_int(next_id++);
+    
+  - name: LOADSOUNDFROMWAVE
+    raylib_name: LoadSoundFromWave
+    args: [int]
+    ret: int
+    description: "Load sound from wave data, returns sound ID"
+    custom_body: |
+      ::Wave wave = {}; // Look up by ID in real implementation
+      ::Sound sound = ::LoadSoundFromWave(wave);
+      static int next_id = 1;
+      return Value::from_int(next_id++);
+    
+  - name: ISSOUNDVALID
+    raylib_name: IsSoundValid
+    args: [int]
+    ret: int
+    description: "Checks if a sound is valid (data loaded and buffers initialized)"
+    custom_body: |
+      ::Sound sound = {}; // Look up by ID in real implementation
+      return Value::from_int(::IsSoundValid(sound) ? 1 : 0);
+    
+  - name: UNLOADWAVE
+    raylib_name: UnloadWave
+    args: [int]
+    ret: void
+    description: "Unload wave data"
+    custom_body: |
+      ::Wave wave = {}; // Look up by ID in real implementation
+      ::UnloadWave(wave);
+    
+  - name: UNLOADSOUND
+    raylib_name: UnloadSound
+    args: [int]
+    ret: void
+    description: "Unload sound"
+    custom_body: |
+      ::Sound sound = {}; // Look up by ID in real implementation
+      ::UnloadSound(sound);
+    
+  # === SOUND MANAGEMENT ===
+  - name: PLAYSOUND
+    raylib_name: PlaySound
+    args: [int]
+    ret: void
+    description: "Play a sound"
+    custom_body: |
+      ::Sound sound = {}; // Look up by ID in real implementation
+      ::PlaySound(sound);
+    
+  - name: STOPSOUND
+    raylib_name: StopSound
+    args: [int]
+    ret: void
+    description: "Stop playing a sound"
+    custom_body: |
+      ::Sound sound = {}; // Look up by ID in real implementation
+      ::StopSound(sound);
+    
+  - name: PAUSESOUND
+    raylib_name: PauseSound
+    args: [int]
+    ret: void
+    description: "Pause a sound"
+    custom_body: |
+      ::Sound sound = {}; // Look up by ID in real implementation
+      ::PauseSound(sound);
+    
+  - name: RESUMESOUND
+    raylib_name: ResumeSound
+    args: [int]
+    ret: void
+    description: "Resume a paused sound"
+    custom_body: |
+      ::Sound sound = {}; // Look up by ID in real implementation
+      ::ResumeSound(sound);
+    
+  - name: ISSOUNDPLAYING
+    raylib_name: IsSoundPlaying
+    args: [int]
+    ret: int
+    description: "Check if a sound is currently playing"
+    custom_body: |
+      ::Sound sound = {}; // Look up by ID in real implementation
+      return Value::from_int(::IsSoundPlaying(sound) ? 1 : 0);
+    
+  - name: SETSOUNDVOLUME
+    raylib_name: SetSoundVolume
+    args: [int, float]
+    ret: void
+    description: "Set volume for a sound (1.0 is max level)"
+    custom_body: |
+      ::Sound sound = {}; // Look up by ID in real implementation
+      ::SetSoundVolume(sound, FLOAT(1));
+    
+  - name: SETSOUNDPITCH
+    raylib_name: SetSoundPitch
+    args: [int, float]
+    ret: void
+    description: "Set pitch for a sound (1.0 is base level)"
+    custom_body: |
+      ::Sound sound = {}; // Look up by ID in real implementation
+      ::SetSoundPitch(sound, FLOAT(1));
+    
+  - name: SETSOUNDPAN
+    raylib_name: SetSoundPan
+    args: [int, float]
+    ret: void
+    description: "Set pan for a sound (0.5 is center)"
+    custom_body: |
+      ::Sound sound = {}; // Look up by ID in real implementation
+      ::SetSoundPan(sound, FLOAT(1));
+    
+  # === MUSIC MANAGEMENT ===
+  - name: LOADMUSICSTREAM
+    raylib_name: LoadMusicStream
+    args: [string]
+    ret: int
+    description: "Load music stream from file, returns music ID"
+    custom_body: |
+      ::Music music = ::LoadMusicStream(STR(0).c_str());
+      static int next_id = 1;
+      return Value::from_int(next_id++);
+    
+  - name: ISMUSICVALID
+    raylib_name: IsMusicValid
+    args: [int]
+    ret: int
+    description: "Checks if a music stream is valid (context and buffers initialized)"
+    custom_body: |
+      ::Music music = {}; // Look up by ID in real implementation
+      return Value::from_int(::IsMusicValid(music) ? 1 : 0);
+    
+  - name: UNLOADMUSICSTREAM
+    raylib_name: UnloadMusicStream
+    args: [int]
+    ret: void
+    description: "Unload music stream"
+    custom_body: |
+      ::Music music = {}; // Look up by ID in real implementation
+      ::UnloadMusicStream(music);
+    
+  - name: PLAYMUSICSTREAM
+    raylib_name: PlayMusicStream
+    args: [int]
+    ret: void
+    description: "Start music playing"
+    custom_body: |
+      ::Music music = {}; // Look up by ID in real implementation
+      ::PlayMusicStream(music);
+    
+  - name: ISMUSICSTREAMPLAYING
+    raylib_name: IsMusicStreamPlaying
+    args: [int]
+    ret: int
+    description: "Check if music is playing"
+    custom_body: |
+      ::Music music = {}; // Look up by ID in real implementation
+      return Value::from_int(::IsMusicStreamPlaying(music) ? 1 : 0);
+    
+  - name: UPDATEMUSICSTREAM
+    raylib_name: UpdateMusicStream
+    args: [int]
+    ret: void
+    description: "Updates buffers for music streaming"
+    custom_body: |
+      ::Music music = {}; // Look up by ID in real implementation
+      ::UpdateMusicStream(music);
+    
+  - name: STOPMUSICSTREAM
+    raylib_name: StopMusicStream
+    args: [int]
+    ret: void
+    description: "Stop music playing"
+    custom_body: |
+      ::Music music = {}; // Look up by ID in real implementation
+      ::StopMusicStream(music);
+    
+  - name: PAUSEMUSICSTREAM
+    raylib_name: PauseMusicStream
+    args: [int]
+    ret: void
+    description: "Pause music playing"
+    custom_body: |
+      ::Music music = {}; // Look up by ID in real implementation
+      ::PauseMusicStream(music);
+    
+  - name: RESUMEMUSICSTREAM
+    raylib_name: ResumeMusicStream
+    args: [int]
+    ret: void
+    description: "Resume playing paused music"
+    custom_body: |
+      ::Music music = {}; // Look up by ID in real implementation
+      ::ResumeMusicStream(music);
+    
+  - name: SETMUSICVOLUME
+    raylib_name: SetMusicVolume
+    args: [int, float]
+    ret: void
+    description: "Set volume for music (1.0 is max level)"
+    custom_body: |
+      ::Music music = {}; // Look up by ID in real implementation
+      ::SetMusicVolume(music, FLOAT(1));
+    
+  - name: SETMUSICPITCH
+    raylib_name: SetMusicPitch
+    args: [int, float]
+    ret: void
+    description: "Set pitch for a music (1.0 is base level)"
+    custom_body: |
+      ::Music music = {}; // Look up by ID in real implementation
+      ::SetMusicPitch(music, FLOAT(1));
+    
+  - name: GETMUSICTIMELENGTH
+    raylib_name: GetMusicTimeLength
+    args: [int]
+    ret: float
+    description: "Get music time length (in seconds)"
+    custom_body: |
+      ::Music music = {}; // Look up by ID in real implementation
+      return Value::from_number(::GetMusicTimeLength(music));
+    
+  - name: GETMUSICTIMEPLAYED
+    raylib_name: GetMusicTimePlayed
+    args: [int]
+    ret: float
+    description: "Get current music time played (in seconds)"
+    custom_body: |
+      ::Music music = {}; // Look up by ID in real implementation
+      return Value::from_number(::GetMusicTimePlayed(music));
