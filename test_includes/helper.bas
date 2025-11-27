@@ -8,3 +8,4 @@ FUNCTION AddNumbers(a, b)
 END FUNCTION
 
 VAR helper_constant = 42
+

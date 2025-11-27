@@ -36,3 +36,4 @@ if [[ "$PLATFORM" == "Windows" ]]; then
 else
     "$BUILD_SCRIPT"
 fi
+

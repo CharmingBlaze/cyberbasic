@@ -99,3 +99,4 @@ cd "$SOURCE_DIR"
 echo -e "\e[32m[SUCCESS]\e[0m Complete Static Build Process Finished"
 echo -e "\e[34m[INFO]\e[0m To test: cd ../bin && ./cyberbasic"
 exit 0
+

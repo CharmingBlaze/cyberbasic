@@ -6,3 +6,4 @@ END FUNCTION
 FUNCTION Square(n)
     RETURN n * n
 END FUNCTION
+

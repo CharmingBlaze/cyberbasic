@@ -10,28 +10,42 @@ CyberBasic combines the simplicity and elegance of classic BASIC programming wit
 
 ##  Quick Start
 
-### Download the Windows Executable (Recommended)
+### Just Want to Make Games? (Easiest)
 
-CyberBasic is primarily distributed as a ready-to-run Windows executable so players never have to touch a compiler. Every push to `master` produces a fresh `cyberbasic.exe` on GitHub Actions—grab it and start building games immediately.
+**Download the Windows Executable:**
+1. **Direct download:** [cyberbasic.exe](https://github.com/CharmingBlaze/cyberbasic/raw/master/bin/cyberbasic.exe) (ready to run)
+2. **Save it** anywhere you want
+3. **Run:** `cyberbasic.exe your_game.bas`
 
-**Steps (pick whichever you prefer):**
+**That's it!** No installation, no setup, just download and start coding games.
 
-1. **Direct download:** Grab the current binary at [bin/cyberbasic.exe](https://github.com/CharmingBlaze/cyberbasic/raw/master/bin/cyberbasic.exe) (committed in this repo so the URL is permanent). Save it somewhere convenient and run `cyberbasic.exe your_game.bas`.
-2. **CI artifact download:**  
-   a. Open the latest [Build CyberBasic workflow run](https://github.com/CharmingBlaze/cyberbasic/actions/workflows/build.yml).  
-   b. Select the newest successful run on `master`.  
-   c. Download the `cyberbasic-windows` artifact (zip).  
-   d. Extract it and run `cyberbasic.exe your_game.bas`.
+### Want to Build from Source? (All Platforms)
 
-**Why Windows users should rely on the artifact:**
-- ✅ Fresh, statically linked `cyberbasic.exe` on every push
-- ✅ Same binary I use locally—fully tested before distribution
-- ✅ No toolchains, MinGW, or CMake setup required
-- ✅ Includes `README.md` and `docs/HOW_TO_USE.md` so everything is in one zip
+**One-Command Build:**
+```bash
+git clone https://github.com/CharmingBlaze/cyberbasic.git
+cd cyberbasic
+python build.py
+```
 
-> **Linux/macOS developers:** I don’t ship executables for those platforms. You’re welcome to build CyberBasic yourself using the documentation inside `source/README.md`, but please understand I can’t provide hands-on macOS support because I don’t own that hardware.
+**Or use platform scripts:**
+```bash
+build.bat      # Windows
+./build.sh     # Linux/macOS
+```
 
-**Need a portable Windows exe for your own release builds?** The repository already includes `bin/cyberbasic.exe`. Copy it wherever you like and share it with your players—no extra tooling required. Developers who want to rebuild the runtime can visit `source/README.md` for full instructions (kept separate from this user-focused guide).
+**Need help?** 
+- **Check your system:** `python check-system.py`
+- **Full guide:** [Installation Guide](INSTALL.md)
+
+### Why CyberBasic?
+
+- **Zero setup** - Download and run immediately
+- **Modern BASIC** - Familiar syntax with modern features  
+- **527 Raylib functions** - Complete 2D/3D graphics, audio, input
+- **69+ examples** - Games and demos to learn from
+- **Cross-platform** - Windows, Linux, macOS support
+- **Self-contained** - No external dependencies needed
 
 ---
 
@@ -126,6 +140,7 @@ The repo already includes a statically linked Windows interpreter at `bin/cyberb
 
 ### Essential Guides
 
+- **[Installation Guide](INSTALL.md)** - Step-by-step setup for all platforms
 - **[How to Use CyberBasic](docs/HOW_TO_USE.md)** - Complete guide to using cyberbasic.exe, running examples, and troubleshooting
 - **[Game Development Guide](docs/GAME_DEVELOPMENT_GUIDE.md)** - Complete guide to making games
 - **[2D Graphics API Guide](docs/2D_GRAPHICS_GUIDE.md)** - Learn 2D rendering, sprites, textures
@@ -637,13 +652,13 @@ For questions, bug reports, or feature requests:
 
 ---
 
-**CyberBasic** - Where classic programming meets modern game development. Start coding games today, not tomorrow. 🎮
+**CyberBasic** - Where classic programming meets modern game development. Start coding games today, not tomorrow.
 
 ---
 
 <div align="center">
 
-**Made with ❤️ for game developers**
+**Made with love for game developers**
 
 [Getting Started](docs/GETTING_STARTED.md) • [Documentation](docs/) • [Examples](examples/) • [Contributing](docs/CONTRIBUTING.md)
 
@@ -653,23 +668,173 @@ For questions, bug reports, or feature requests:
 
 ## Building CyberBasic
 
-**Important:** Raylib is included as a git submodule in this repository. When cloning, use `git clone --recursive` to get raylib automatically, or run `git submodule update --init --recursive` after cloning. You do NOT need to install raylib separately.
+**Important:** Raylib and raygui are included directly in this repository (not as submodules). A simple `git clone` is all you need - no `--recursive` flag required.
+
+### Quick Build (Recommended)
+
+**Universal Method (All Platforms):**
+```bash
+git clone https://github.com/CharmingBlaze/cyberbasic.git
+cd cyberbasic
+
+# One command builds everything
+python build.py
+```
+
+**Platform-Specific Quick Build:**
+```bash
+# Windows
+build.bat
+
+# Linux/macOS  
+./build.sh
+```
+
+That's it! The scripts automatically:
+- Detect your platform and compiler
+- Install missing dependencies (where possible)
+- Configure the optimal build settings
+- Build with maximum CPU cores
+- Copy the executable to `bin/cyberbasic(.exe)`
+
+### Prerequisites
+
+The build scripts will check for these automatically:
+
+**All Platforms:**
+- **CMake** 3.10+ (will prompt to install if missing)
+- **Python** 3.6+ (for binding generation)
+
+**Windows:**
+- **MinGW-w64 GCC** (recommended) or **Clang**
+- **MSVC** (experimental support with `--msvc` flag)
+
+**Linux:**
+- **GCC** or **Clang**
+- Build essentials: `sudo apt install build-essential cmake python3`
+
+**macOS:**
+- **Xcode Command Line Tools**: `xcode-select --install`
+- **Homebrew** (optional): `brew install cmake python`
+
+### Build Options
+
+**Python Build Script (Most Flexible):**
+```bash
+python build.py                    # Standard release build
+python build.py --debug           # Debug build with symbols  
+python build.py --clean           # Clean and rebuild
+python build.py --msvc            # Use MSVC on Windows (experimental)
+python build.py --static          # Force static linking
+python build.py --help            # Show all options
+```
+
+**Batch/Shell Scripts:**
+```bash
+# Windows
+build.bat                         # Standard build
+build.bat --debug                 # Debug build
+build.bat --clean                 # Clean build
+
+# Linux/macOS
+./build.sh                        # Standard build  
+./build.sh --debug                # Debug build
+./build.sh --clean                # Clean build
+./build.sh --static               # Static linking
+```
+
+### Manual Build (Advanced)
+
+If you prefer manual control:
 
 **Windows:**
 ```bash
-git clone --recursive https://github.com/CharmingBlaze/cyberbasic.git
+git clone https://github.com/CharmingBlaze/cyberbasic.git
 cd cyberbasic
-mkdir build-mingw && cd build-mingw
-cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release ..
+mkdir build && cd build
+
+# MinGW (recommended)
+cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release ../source
+cmake --build .
+
+# MSVC (experimental)
+cmake -G "Visual Studio 16 2019" -DALLOW_MSVC=ON ../source  
+cmake --build . --config Release
+```
+
+**Linux:**
+```bash
+git clone https://github.com/CharmingBlaze/cyberbasic.git
+cd cyberbasic
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release ../source
+make -j$(nproc)
+```
+
+**macOS:**
+```bash
+git clone https://github.com/CharmingBlaze/cyberbasic.git
+cd cyberbasic
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release ../source
+make -j$(sysctl -n hw.ncpu)
+```
+
+### Build Output
+
+After building, you'll find:
+- **Executable**: `bin/cyberbasic` (or `cyberbasic.exe` on Windows)
+- **Build files**: `build-{platform}-{type}/` directory
+- **Test it**: `./bin/cyberbasic examples/hello_text.bas`
+
+### Troubleshooting
+
+**"No suitable compiler found":**
+- **Windows**: Install [MinGW-w64](https://www.mingw-w64.org/) or [MSYS2](https://www.msys2.org/)
+- **Linux**: `sudo apt install build-essential` (Ubuntu/Debian)
+- **macOS**: `xcode-select --install`
+
+**"CMake not found":**
+- **Windows**: Download from [cmake.org](https://cmake.org/) or use MSYS2: `pacman -S cmake`
+- **Linux**: `sudo apt install cmake` (Ubuntu/Debian)  
+- **macOS**: `brew install cmake`
+
+**"Python not found":**
+- **Windows**: Download from [python.org](https://python.org/) or use MSYS2: `pacman -S python`
+- **Linux**: `sudo apt install python3`
+- **macOS**: `brew install python` or use system Python
+
+**MSVC Issues:**
+- MSVC support is experimental. Use MinGW-w64 for best results
+- To force MSVC: `python build.py --msvc` or `cmake -DALLOW_MSVC=ON`
+
+**Build fails:**
+1. Try the universal script: `python build.py --clean`
+2. Check all prerequisites are installed
+3. Use debug build to see more details: `python build.py --debug`
+4. Check the [Issues](https://github.com/CharmingBlaze/cyberbasic/issues) page
+
+### For Developers
+
+**Static Linking (Default on Windows):**
+```bash
+python build.py --static          # Creates standalone executable
+```
+
+**Debug Build:**
+```bash
+python build.py --debug           # Includes debug symbols and assertions
+```
+
+**Custom CMake Options:**
+```bash
+mkdir build-custom && cd build-custom
+cmake -DCMAKE_BUILD_TYPE=Release -DBASIC_STATIC_LINK=ON -DALLOW_MSVC=ON ../source
 cmake --build .
 ```
 
-**Linux/macOS:**
-```bash
-git clone --recursive https://github.com/CharmingBlaze/cyberbasic.git
-cd cyberbasic
-mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..
-make -j$(nproc)  # Linux
-# or make -j$(sysctl -n hw.ncpu)  # macOS
-```
+**Available CMake Options:**
+- `BASIC_STATIC_LINK`: Enable static linking (ON/OFF)
+- `ALLOW_MSVC`: Allow MSVC compiler (ON/OFF) 
+- `CMAKE_BUILD_TYPE`: Release, Debug, RelWithDebInfo, MinSizeRel
+- `BUILD_SHARED_LIBS`: Build shared libraries (ON/OFF)
