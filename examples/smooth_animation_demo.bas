@@ -1,3 +1,7 @@
+REM Smooth Animation Demo - CyberBasic Example
+REM This example demonstrates smooth animation demo functionality
+REM Use WASD or arrow keys to interact (where applicable)
+
 PRINT "Starting Smooth Animation Demo..."
 PRINT "Use WASD to move the player around"
 PRINT "Watch the smooth animations and effects!"
@@ -40,7 +44,7 @@ WHILE running AND NOT WINDOWSHOULDCLOSE()
     LET animation_offset = SIN(current_time * 2) * 20
     LET color_pulse = ABS(SIN(current_time * 3)) * 255
     
-    BEGINDRAW()
+    BEGINDRAWING()
     
     REM Clear with animated background
     CLEARBACKGROUND(20, 20, 40)
@@ -65,7 +69,7 @@ WHILE running AND NOT WINDOWSHOULDCLOSE()
     REM Draw UI elements
     DRAWTEXT("Smooth Animation Demo", 10, 10, 30, 255, 255, 255)
     DRAWTEXT("Use WASD to move", 10, 50, 20, 200, 200, 200)
-    DRAWTEXT("Player Position: " + STR(INT(player_x)) + ", " + STR(INT(player_y)), 10, 80, 18, 255, 255, 255)
+    DRAWTEXT("Player Position: " + STR(INT(player_x)) + ", " + STR(INT(player_y)), 10, 80, 18, 255, 255)
     DRAWTEXT("Delta Time: " + STR(delta_time), 10, 110, 18, 255, 255, 255)
     DRAWTEXT("FPS: " + STR(GETFPS()), 10, 140, 18, 255, 255, 255)
     DRAWTEXT("Time: " + STR(INT(current_time)), 10, 170, 18, 255, 255, 255)
@@ -85,7 +89,7 @@ WHILE running AND NOT WINDOWSHOULDCLOSE()
         DRAWLINES(line_x, line_y, line_x + 100, line_y, 255, 255, 255)
     NEXT
     
-    ENDDRAW()
+    ENDDRAWING()
     
     REM Exit on ESC
     IF ISKEYPRESSED(256) THEN LET running = FALSE

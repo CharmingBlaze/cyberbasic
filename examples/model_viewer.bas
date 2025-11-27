@@ -204,7 +204,7 @@ WHILE NOT WINDOWSHOULDCLOSE()
     ENDIF
     
     REM Mouse debug info (can be removed if not needed)
-    DRAWTEXT("Mouse: " + STR(GETMOUSEX()) + ", " + STR(GETMOUSEY()), 10, 385, 14, 150, 150, 150)
+    DRAWTEXT("Mouse: " + STR(GETMOUSEX()) + ", " + STR(GETMOUSEY()), 10, 385, 14, 150, 150)
     IF isDragging = 1 THEN
         DRAWTEXT("Dragging: YES", 10, 405, 14, 0, 255, 0)
     ELSE

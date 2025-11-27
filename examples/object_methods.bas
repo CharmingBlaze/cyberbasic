@@ -1,3 +1,7 @@
+REM Object Methods - CyberBasic Example
+REM This example demonstrates object methods functionality
+REM Use WASD or arrow keys to interact (where applicable)
+
 // Object Methods Demo
 // Demonstrates object methods like vec.length(), vec.normalize(), etc.
 

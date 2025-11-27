@@ -6,7 +6,7 @@ SETTARGETFPS(60)
 
 LET running = TRUE
 WHILE running
-  BEGINDRAW()
+  BEGINDRAWING()
   
   CLEARBACKGROUND(20, 20, 40)
   
@@ -22,13 +22,13 @@ WHILE running
   
   DRAWTEXT("SPLIT Test Results:", 10, 10, 20, 255, 255, 255)
   DRAWTEXT("String: " + test_string, 10, 40, 16, 200, 200, 200)
-  DRAWTEXT("Position of ',': " + STR(pos1), 10, 70, 16, 255, 255, 255)
+  DRAWTEXT("Position of ',': " + STR(pos1), 10, 70, 16, 255, 255)
   DRAWTEXT("Position of 'World': " + STR(pos2), 10, 100, 16, 255, 255, 255)
   DRAWTEXT("Position of 'XYZ': " + STR(pos3), 10, 130, 16, 255, 255, 255)
   
   DRAWTEXT("Press ESC to exit", 10, 550, 18, 200, 200, 200)
   
-  ENDDRAW()
+  ENDDRAWING()
   
   REM Exit on ESC
   IF ISKEYPRESSED(256) THEN LET running = FALSE ENDIF

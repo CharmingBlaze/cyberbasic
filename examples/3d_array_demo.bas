@@ -1,3 +1,7 @@
+REM 3D Array Demo - CyberBasic Example
+REM This example demonstrates 3d array demo functionality
+REM Use WASD or arrow keys to interact (where applicable)
+
 // 3D Array Demo
 // Demonstrates creating and using 3D arrays
 

@@ -1,3 +1,7 @@
+REM String Array Methods - CyberBasic Example
+REM This example demonstrates string array methods functionality
+REM Use WASD or arrow keys to interact (where applicable)
+
 // String and Array Methods Demo
 
 PRINT "=== String Methods ==="

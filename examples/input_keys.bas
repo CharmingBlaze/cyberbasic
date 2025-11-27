@@ -1,3 +1,7 @@
+REM Input Keys - CyberBasic Example
+REM This example demonstrates input keys functionality
+REM Use WASD or arrow keys to interact (where applicable)
+
 #pragma dialect agklite
 SETWINDOWSIZE 640, 360
 SETWINDOWTITLE "Input demo: KEYHIT/KEYUP/MOUSEWHEEL"

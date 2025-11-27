@@ -1,3 +1,7 @@
+REM Complete Feature Demo - CyberBasic Example
+REM This example demonstrates complete feature demo functionality
+REM Use WASD or arrow keys to interact (where applicable)
+
 // Complete Feature Demo
 // Shows all new features working together
 

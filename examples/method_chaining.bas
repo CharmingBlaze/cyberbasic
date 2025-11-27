@@ -1,3 +1,7 @@
+REM Method Chaining - CyberBasic Example
+REM This example demonstrates method chaining functionality
+REM Use WASD or arrow keys to interact (where applicable)
+
 # #include "bas/ast.hpp"
 #include "bas/runtime.hpp"
 #include "bas/namespace_registry.hpp"

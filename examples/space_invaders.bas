@@ -327,7 +327,7 @@ WHILE NOT WINDOWSHOULDCLOSE()
     ENDIF
     
     REM Begin drawing
-    BEGINDRAW()
+    BEGINDRAWING()
     
     REM Clear background
     CLEARBACKGROUND(bgR, bgG, bgB)
@@ -392,7 +392,7 @@ WHILE NOT WINDOWSHOULDCLOSE()
     ENDIF
     
     REM End drawing
-    ENDDRAW()
+    ENDDRAWING()
 WEND
 
 CLOSEWINDOW()

@@ -79,7 +79,7 @@ WHILE NOT WINDOWSHOULDCLOSE()
     ENDIF
     
     REM Begin drawing
-    BEGINDRAW()
+    BEGINDRAWING()
     
     REM Clear background with dark blue
     CLEARBACKGROUND(bgColor.r, bgColor.g, bgColor.b)
@@ -108,7 +108,7 @@ WHILE NOT WINDOWSHOULDCLOSE()
     DRAWTEXT("FPS: " + STR(GETFPS()), 10, 10, 16, textColor.r, textColor.g, textColor.b)
     
     REM End drawing
-    ENDDRAW()
+    ENDDRAWING()
 WEND
 
 CLOSEWINDOW()

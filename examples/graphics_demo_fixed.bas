@@ -14,12 +14,12 @@ WHILE NOT WINDOWSHOULDCLOSE()
     REM Draw some basic shapes
     DRAWCIRCLE(400, 300, 50, 255, 0, 0, 255)
     DRAWRECTANGLE(100, 100, 100, 100, 0, 255, 0, 255)
-    DRAWTEXT("Graphics Demo", 10, 10, 20, 255, 255, 255, 255)
+    DRAWTEXT("Graphics Demo", 10, 10, 20, 255, 255, 255)
     
     ENDDRAWING()
     
     REM Exit on ESC
-    IF ISKEYPRESSED(KEY_ESCAPE) THEN
+    IF ISKEYPRESSED(256) THEN
         EXIT
     ENDIF
 WEND

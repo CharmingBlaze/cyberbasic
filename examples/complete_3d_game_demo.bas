@@ -86,7 +86,7 @@ WHILE NOT GAMESHOULDCLOSE()
     UPDATEPARTICLESYSTEM(sparkle_effect, delta_time)
     
     ' Begin 3D drawing
-    BEGINDRAW3D()
+    BEGINMODE3D()
     
     ' Draw 3D scene
     ' Draw a grid
@@ -107,7 +107,7 @@ WHILE NOT GAMESHOULDCLOSE()
     DRAWMESH(cylinder_mesh, -6, 6, 0, 1.0, 100, 200, 100)
     
     ' End 3D drawing
-    ENDDRAW3D()
+    ENDMODE3D()
     
     ' Render particle systems
     RENDERPARTICLESYSTEM(fire_effect)
@@ -115,9 +115,9 @@ WHILE NOT GAMESHOULDCLOSE()
     RENDERPARTICLESYSTEM(sparkle_effect)
     
     ' Draw 2D UI elements
-    DRAWTEXT("CyberBasic 3D Game Demo", 10, 10, 20, 255, 255, 255, 255)
-    DRAWTEXT("WASD: Move, Space: Up, Shift: Down", 10, 40, 16, 200, 200, 200, 255)
-    DRAWTEXT("FPS: " + STR(GETFPS()), 10, 60, 16, 200, 200, 200, 255)
+    DRAWTEXT("CyberBasic 3D Game Demo", 10, 10, 20, 255, 255, 255)
+    DRAWTEXT("WASD: Move, Space: Up, Shift: Down", 10, 40, 16, 200)
+    DRAWTEXT("FPS: " + STR(GETFPS()), 10, 60, 16, 200, 200, 200)
     
     ' Draw player sprite (2D overlay)
     DRAWSPRITE(player_sprite, 700, 500, 64, 64, 0, 255, 255, 255)

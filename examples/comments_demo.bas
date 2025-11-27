@@ -1,3 +1,7 @@
+REM Comments Demo - CyberBasic Example
+REM This example demonstrates comments demo functionality
+REM Use WASD or arrow keys to interact (where applicable)
+
 // C++ Style Comments Demo
 // This file demonstrates the new comment syntax
 

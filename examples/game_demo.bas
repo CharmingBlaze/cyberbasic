@@ -1,3 +1,7 @@
+REM Game Demo - CyberBasic Example
+REM This example demonstrates game demo functionality
+REM Use WASD or arrow keys to interact (where applicable)
+
 INITWINDOW(800, 600, "Modern BASIC Game Demo")
 SETTARGETFPS(60)
 
@@ -66,7 +70,7 @@ WHILE game_running AND NOT WINDOWSHOULDCLOSE()
         IF lives <= 0 THEN LET game_running = 0 ENDIF
     ENDIF
     
-    BEGINDRAW()
+    BEGINDRAWING()
     
     CLEARBACKGROUND(20, 20, 40)
     
@@ -82,7 +86,7 @@ WHILE game_running AND NOT WINDOWSHOULDCLOSE()
     DRAWTEXT("Lives", 10, 35, 20, 255, 255, 255)
     DRAWTEXT("Time", 10, 60, 20, 255, 255, 255)
     
-    DRAWTEXT("WASD to move, SPACE to shoot", 10, 570, 16, 200, 200, 200)
+    DRAWTEXT("WASD to move, SPACE to shoot", 10, 570, 16, 200, 200)
     
     IF NOT game_running THEN
         DRAWTEXT("GAME OVER!", 300, 250, 40, 255, 0, 0)
@@ -90,7 +94,7 @@ WHILE game_running AND NOT WINDOWSHOULDCLOSE()
         DRAWTEXT("Press ESC to exit", 300, 350, 20, 200, 200, 200)
     ENDIF
     
-    ENDDRAW()
+    ENDDRAWING()
     
     IF ISKEYPRESSED(256) THEN LET game_running = 0 ENDIF
 WEND

@@ -1,3 +1,7 @@
+REM Enhanced Game Demo - CyberBasic Example
+REM This example demonstrates enhanced game demo functionality
+REM Use WASD or arrow keys to interact (where applicable)
+
 INITWINDOW(800, 600, "Enhanced BASIC Game Demo")
 SETTARGETFPS(60)
 
@@ -110,7 +114,7 @@ WHILE game_running AND NOT WINDOWSHOULDCLOSE()
     
     IF ISKEYPRESSED(80) THEN LET game_paused = NOT game_paused ENDIF
     
-    BEGINDRAW()
+    BEGINDRAWING()
     
     CLEARBACKGROUND(20, 20, 40)
     
@@ -176,7 +180,7 @@ WHILE game_running AND NOT WINDOWSHOULDCLOSE()
     IF player_speed = 9 THEN DRAWTEXT("9", 80, 85, 20, 0, 255, 255) ENDIF
     IF player_speed = 10 THEN DRAWTEXT("10", 80, 85, 20, 0, 255, 255) ENDIF
     
-    DRAWTEXT("WASD to move, SPACE to shoot, P to pause", 10, 570, 16, 200, 200, 200)
+    DRAWTEXT("WASD to move, SPACE to shoot, P to pause", 10, 570, 16, 200)
     
     IF game_paused THEN
         DRAWTEXT("PAUSED", 350, 250, 40, 255, 255, 0)
@@ -189,7 +193,7 @@ WHILE game_running AND NOT WINDOWSHOULDCLOSE()
         DRAWTEXT("Press ESC to exit", 300, 320, 20, 200, 200, 200)
     ENDIF
     
-    ENDDRAW()
+    ENDDRAWING()
     
     IF ISKEYPRESSED(256) THEN LET game_running = 0 ENDIF
 WEND

@@ -29,17 +29,17 @@ WHILE running AND NOT WINDOWSHOULDCLOSE()
     REM Update game time
     game_time = game_time + 1
     
-    REM Handle input
-    IF ISKEYDOWN(KEY_W) THEN
+    REM Handle input (using numeric key codes)
+    IF ISKEYDOWN(87) THEN
         player_y = player_y - player_speed
     ENDIF
-    IF ISKEYDOWN(KEY_S) THEN
+    IF ISKEYDOWN(83) THEN
         player_y = player_y + player_speed
     ENDIF
-    IF ISKEYDOWN(KEY_A) THEN
+    IF ISKEYDOWN(65) THEN
         player_x = player_x - player_speed
     ENDIF
-    IF ISKEYDOWN(KEY_D) THEN
+    IF ISKEYDOWN(68) THEN
         player_x = player_x + player_speed
     ENDIF
     
@@ -111,7 +111,7 @@ WHILE running AND NOT WINDOWSHOULDCLOSE()
         obstacle_color_r = 255
     ENDIF
     DRAWRECTANGLE(obstacle_x, obstacle_y, obstacle_w, obstacle_h, obstacle_color_r, 0, 0)
-    DRAWTEXT("Obstacle", obstacle_x, obstacle_y - 20, 16, 255, 255, 255, 255)
+    DRAWTEXT("Obstacle", obstacle_x, obstacle_y - 20, 16, 255, 255, 255)
     
     REM Draw target (green)
     VAR target_color_g = 255
@@ -119,7 +119,7 @@ WHILE running AND NOT WINDOWSHOULDCLOSE()
         target_color_g = 100
     ENDIF
     DRAWRECTANGLE(target_x, target_y, target_w, target_h, 0, target_color_g, 0)
-    DRAWTEXT("Target", target_x, target_y - 20, 16, 255, 255, 255, 255)
+    DRAWTEXT("Target", target_x, target_y - 20, 16, 255, 255, 255)
     
     REM Draw player (blue, changes color on collision)
     VAR player_color_b = 100
@@ -127,42 +127,42 @@ WHILE running AND NOT WINDOWSHOULDCLOSE()
         player_color_b = 255
     ENDIF
     DRAWRECTANGLE(player_x, player_y, player_w, player_h, 0, 0, player_color_b)
-    DRAWTEXT("Player", player_x, player_y - 20, 16, 255, 255, 255, 255)
+    DRAWTEXT("Player", player_x, player_y - 20, 16, 255, 255, 255)
     
     REM Draw collision indicators
     IF hit_obstacle THEN
-        DRAWTEXT("COLLISION!", player_x, player_y - 40, 20, 255, 255, 0, 255)
+        DRAWTEXT("COLLISION!", player_x, player_y - 40, 20, 255, 255, 0)
     ENDIF
     
     IF hit_target THEN
-        DRAWTEXT("TARGET HIT!", target_x, target_y - 40, 20, 255, 255, 0, 255)
+        DRAWTEXT("TARGET HIT!", target_x, target_y - 40, 20, 255, 255, 0)
     ENDIF
     
     REM Draw UI
-    DRAWTEXT("Collision Detection Demo", 10, 10, 24, 255, 255, 255, 255)
-    DRAWTEXT("Use WASD to move", 10, 40, 18, 200, 200, 200, 255)
-    DRAWTEXT("Score: " + STR(score), 10, 70, 20, 255, 255, 255, 255)
-    DRAWTEXT("Game Time: " + STR(game_time), 10, 100, 18, 255, 255, 255, 255)
+    DRAWTEXT("Collision Detection Demo", 10, 10, 24, 255, 255, 255)
+    DRAWTEXT("Use WASD to move", 10, 40, 18, 200, 200, 200)
+    DRAWTEXT("Score: " + STR(score), 10, 70, 20, 255, 255, 255)
+    DRAWTEXT("Game Time: " + STR(game_time), 10, 100, 18, 255, 255, 255)
     
     REM Draw collision info
-    DRAWTEXT("Collision Info:", 10, 130, 18, 255, 255, 255, 255)
-    DRAWTEXT("Hit Obstacle: " + STR(hit_obstacle), 10, 160, 16, 255, 255, 255, 255)
-    DRAWTEXT("Hit Target: " + STR(hit_target), 10, 190, 16, 255, 255, 255, 255)
-    DRAWTEXT("Mouse Over Player: " + STR(mouse_over_player), 10, 220, 16, 255, 255, 255, 255)
+    DRAWTEXT("Collision Info:", 10, 130, 18, 255, 255, 255)
+    DRAWTEXT("Hit Obstacle: " + STR(hit_obstacle), 10, 160, 16, 255, 255, 255)
+    DRAWTEXT("Hit Target: " + STR(hit_target), 10, 190, 16, 255, 255, 255)
+    DRAWTEXT("Mouse Over Player: " + STR(mouse_over_player), 10, 220, 16, 255, 255, 255)
     
     REM Draw distance info
-    DRAWTEXT("Distance Info:", 10, 250, 18, 255, 255, 255, 255)
-    DRAWTEXT("To Obstacle: " + STR(INT(dist_to_obstacle)), 10, 280, 16, 255, 255, 255, 255)
-    DRAWTEXT("To Target: " + STR(INT(dist_to_target)), 10, 310, 16, 255, 255, 255, 255)
+    DRAWTEXT("Distance Info:", 10, 250, 18, 255, 255, 255)
+    DRAWTEXT("To Obstacle: " + STR(INT(dist_to_obstacle)), 10, 280, 16, 255, 255, 255)
+    DRAWTEXT("To Target: " + STR(INT(dist_to_target)), 10, 310, 16, 255, 255, 255)
     
     REM Draw instructions
-    DRAWTEXT("Avoid red obstacle, collect green targets", 10, 350, 16, 200, 200, 200, 255)
-    DRAWTEXT("Press ESC to exit", 10, 550, 18, 200, 200, 200, 255)
+    DRAWTEXT("Avoid red obstacle, collect green targets", 10, 350, 16, 200, 200)
+    DRAWTEXT("Press ESC to exit", 10, 550, 18, 200, 200, 200)
     
     ENDDRAWING()
     
     REM Exit on ESC
-    IF ISKEYPRESSED(KEY_ESCAPE) THEN
+    IF ISKEYPRESSED(256) THEN
         running = FALSE
     ENDIF
 WEND

@@ -1,3 +1,7 @@
+REM Navigation Demo - CyberBasic Example
+REM This example demonstrates navigation demo functionality
+REM Use WASD or arrow keys to interact (where applicable)
+
 INITWINDOW(800, 600, "Navigation System Demo")
 SETTARGETFPS(60)
 
@@ -82,7 +86,7 @@ WHILE NOT WINDOWSHOULDCLOSE()
     ENDIF
     
     REM Drawing
-    BEGINDRAW()
+    BEGINDRAWING()
     CLEARBACKGROUND(20, 20, 40)
     
     REM Draw obstacles
@@ -113,7 +117,7 @@ WHILE NOT WINDOWSHOULDCLOSE()
     
     DRAWTEXT("Distance to target: " + STR(INT(NAVDISTANCE(player_x, player_y, target_x, target_y))), 10, 150, 16, 255, 255, 255)
     
-    ENDDRAW()
+    ENDDRAWING()
 WEND
 
 CLOSEWINDOW()

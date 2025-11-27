@@ -1,3 +1,7 @@
+REM Func And Array - CyberBasic Example
+REM This example demonstrates func and array functionality
+REM Use WASD or arrow keys to interact (where applicable)
+
 # Test FUNCTION return and arrays
 FUNCTION Add(a, b)
   RETURN a + b

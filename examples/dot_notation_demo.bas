@@ -1,3 +1,7 @@
+REM Dot Notation Demo - CyberBasic Example
+REM This example demonstrates dot notation demo functionality
+REM Use WASD or arrow keys to interact (where applicable)
+
 // Dot Notation Demo
 // This example demonstrates the new dot notation features in CyberBasic
 

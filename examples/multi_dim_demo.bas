@@ -1,3 +1,7 @@
+REM Multi Dim Demo - CyberBasic Example
+REM This example demonstrates multi dim demo functionality
+REM Use WASD or arrow keys to interact (where applicable)
+
 PRINT "-- Multi-DIM + REDIM Demo --"
 DIM a(2,3)
 ' Initialize

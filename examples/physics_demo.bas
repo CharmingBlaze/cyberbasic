@@ -1,3 +1,7 @@
+REM Physics Demo - CyberBasic Example
+REM This example demonstrates physics demo functionality
+REM Use WASD or arrow keys to interact (where applicable)
+
 INITWINDOW(800, 600, "Physics System Demo")
 SETTARGETFPS(60)
 
@@ -70,7 +74,7 @@ WHILE NOT WINDOWSHOULDCLOSE()
     PHYSICSSTEP()
     
     REM Drawing
-    BEGINDRAW()
+    BEGINDRAWING()
     CLEARBACKGROUND(20, 20, 40)
     
     REM Draw ground
@@ -97,7 +101,7 @@ WHILE NOT WINDOWSHOULDCLOSE()
     DRAWTEXT("Objects auto-spawn every second", 10, 130, 14, 150, 150, 150)
     DRAWTEXT("Spring joint connects Box1 and Box2", 10, 150, 14, 150, 150, 150)
     
-    ENDDRAW()
+    ENDDRAWING()
 WEND
 
 CLOSEWINDOW()

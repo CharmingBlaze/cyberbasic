@@ -1,3 +1,7 @@
+REM Var Vs Let - CyberBasic Example
+REM This example demonstrates var vs let functionality
+REM Use WASD or arrow keys to interact (where applicable)
+
 // VAR vs LET Demo
 // Both VAR and LET work identically for variable declarations
 

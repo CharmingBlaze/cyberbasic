@@ -1,3 +1,7 @@
+REM Redim Min - CyberBasic Example
+REM This example demonstrates redim min functionality
+REM Use WASD or arrow keys to interact (where applicable)
+
 DIM a(3)
 a[0] = 1
 a[1] = 2

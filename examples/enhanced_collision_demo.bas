@@ -85,7 +85,7 @@ WHILE running
   REM Use MOD for color cycling
   LET color_cycle = game_time MOD 255
   
-  BEGINDRAW()
+  BEGINDRAWING()
   
   REM Clear background
   CLEARBACKGROUND(20, 20, 40)
@@ -141,14 +141,14 @@ WHILE running
   DRAWTEXT("To Target: " + STR(INT(dist_to_target)), 10, 310, 16, 255, 255, 255)
   
   REM Draw mouse position
-  DRAWTEXT("Mouse: (" + STR(mouse_x) + ", " + STR(mouse_y) + ")", 10, 340, 16, 200, 200, 200)
+  DRAWTEXT("Mouse: (" + STR(mouse_x) + ", " + STR(mouse_y) + ")", 10, 340, 16, 200, 200)
   
   REM Draw instructions
-  DRAWTEXT("Avoid red obstacle, collect green targets", 10, 370, 16, 200, 200, 200)
+  DRAWTEXT("Avoid red obstacle, collect green targets", 10, 370, 16, 200, 200)
   DRAWTEXT("Triangles show object types", 10, 390, 16, 200, 200, 200)
   DRAWTEXT("Press ESC to exit", 10, 550, 18, 200, 200, 200)
   
-  ENDDRAW()
+  ENDDRAWING()
   
   REM Exit on ESC
   IF ISKEYPRESSED(256) THEN LET running = FALSE ENDIF
