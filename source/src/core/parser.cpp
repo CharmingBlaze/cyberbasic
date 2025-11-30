@@ -225,7 +225,7 @@ std::vector<std::unique_ptr<Stmt>> Parser::stmt_list_until(Tok end1, Tok end2){
   std::vector<std::unique_ptr<Stmt>> v; 
   v.reserve(16); // Pre-allocate for common case (small blocks)
   
-  while(peek().kind!=Tok::Eof && !check(end1) && !check(end2)){
+  while(peek().kind!=Tok::Eof && !check(end1) && !check(end2) && !check_end_if()){
     // CRITICAL: Always consume statement separators (newlines/colons) BEFORE parsing
     // This ensures we're positioned at the beginning of a statement, not on whitespace
     // This is the key fix - we MUST skip separators before trying to parse each statement
@@ -234,11 +234,15 @@ std::vector<std::unique_ptr<Stmt>> Parser::stmt_list_until(Tok end1, Tok end2){
     // Safeguard: Double-check for terminator after consuming separators
     // Check all common block terminators (EndWhile/EndFor don't exist - use Wend/Next)
     if(check(end1) || check(end2) || peek().kind == Tok::Eof || 
-       check(Tok::EndIf) || check(Tok::Wend) || check(Tok::Next) ||
+       check_end_if() || check(Tok::Wend) || check(Tok::Next) ||
        check(Tok::EndFunction) || check(Tok::EndSub) ||
        check(Tok::EndSelect) || check(Tok::EndState) ||
        check(Tok::EndModule) || check(Tok::EndEnum) ||
        check(Tok::EndUnion) || check(Tok::EndTry)) break;
+    
+    // CRITICAL: Check again for END IF before trying to parse a statement
+    // This prevents trying to parse END as a statement when we have "END IF"
+    if(check_end_if()) break;
     
     // Parse one statement - use parse_statement_no_skip() since we've already consumed separators
     // This avoids double separator consumption that would happen with statement()
@@ -263,7 +267,7 @@ std::vector<std::unique_ptr<Stmt>> Parser::stmt_list_until(Tok end1, Tok end2){
         // CRITICAL: Also check for EndIf and other block terminators to prevent skipping past them
         while(peek().kind != Tok::Eof && !check(Tok::Newline) && !check(Tok::Colon) && 
               !check(end1) && !check(end2) &&
-              !check(Tok::EndIf) && !check(Tok::Wend) && !check(Tok::Next) &&
+              !check_end_if() && !check(Tok::Wend) && !check(Tok::Next) &&
               !check(Tok::EndFunction) && !check(Tok::EndSub) &&
               !check(Tok::EndSelect) && !check(Tok::EndState) &&
               !check(Tok::EndModule) && !check(Tok::EndEnum) &&
@@ -289,7 +293,7 @@ std::unique_ptr<Expr> Parser::expression(){
   // CRITICAL: Stop at statement separators and block terminators to prevent swallowing the next statement
   // This ensures expressions don't run past their intended end
   if(peek().kind == Tok::Newline || peek().kind == Tok::Colon || peek().kind == Tok::Eof ||
-     peek().kind == Tok::EndIf || peek().kind == Tok::Else || peek().kind == Tok::ElseIf ||
+     check_end_if() || peek().kind == Tok::Else || peek().kind == Tok::ElseIf ||
      peek().kind == Tok::Wend || peek().kind == Tok::Next ||
      peek().kind == Tok::EndFunction || peek().kind == Tok::EndSub) {
     return expr;
@@ -470,7 +474,7 @@ std::unique_ptr<Expr> Parser::parse_postfix(std::unique_ptr<Expr> base) {
   while(true) {
     // Stop if we hit a statement separator or block terminator
     if(is_statement_separator(peek().kind) || peek().kind == Tok::Eof ||
-       peek().kind == Tok::EndIf || peek().kind == Tok::Else || peek().kind == Tok::ElseIf ||
+       check_end_if() || peek().kind == Tok::Else || peek().kind == Tok::ElseIf ||
        peek().kind == Tok::Wend || peek().kind == Tok::Next ||
        peek().kind == Tok::EndFunction || peek().kind == Tok::EndSub) {
       break;
@@ -749,15 +753,17 @@ std::unique_ptr<Stmt> Parser::parse_if() {
 
     if (match(Tok::Else)) {
         node->hasElse = true;
+        // For ELSE body, we need to stop at ENDIF or END IF
+        // Since stmt_list_until checks for EndIf in its safeguard, we can use EndIf as terminator
         node->elseBody = stmt_list_until(Tok::EndIf, Tok::EndIf);
         // Consume any trailing separators after the Else body
         consume_statement_separators();
     }
 
-    // CRITICAL: At this point, we must be positioned at EndIf
-    // If we're not, it means the IF block is malformed
-    if (!match(Tok::EndIf)) {
-        diag.err(peek().line, peek().col, "IF: expected ENDIF to close the block");
+    // CRITICAL: At this point, we must be positioned at EndIf or END IF
+    // Support both "ENDIF" and "END IF" syntax
+    if (!match_end_if()) {
+        diag.err(peek().line, peek().col, "IF: expected ENDIF or END IF to close the block");
         return nullptr;
     }
     skipNewlines(); // Align for next statement

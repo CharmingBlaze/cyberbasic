@@ -23,6 +23,22 @@ private:
   void skipNewlines(){ while(check(Tok::Newline)) advance(); }
   void consume_statement_separators(){ while(peek().kind == Tok::Newline || peek().kind == Tok::Colon) advance(); }
   
+  // Helper: Check if we're at ENDIF (single token) or END IF (two tokens)
+  bool check_end_if() const {
+    return check(Tok::EndIf) || (check(Tok::End) && i + 1 < ts.size() && ts[i + 1].kind == Tok::If);
+  }
+  
+  // Helper: Match ENDIF (single token) or END IF (two tokens)
+  bool match_end_if() {
+    if (match(Tok::EndIf)) {
+      return true;
+    }
+    if (match2(Tok::End, Tok::If)) {
+      return true;
+    }
+    return false;
+  }
+  
   // Language Engineering: Statement parser without newline skipping
   // Used by stmt_list_until to avoid double-skipping
   std::unique_ptr<Stmt> parse_statement_no_skip();
