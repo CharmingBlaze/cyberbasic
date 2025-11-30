@@ -243,3 +243,4 @@ functions:
       ::Vector3 v2 = {FLOAT(3), FLOAT(4), FLOAT(5)};
       ::Vector3 result = ::Vector3Lerp(v1, v2, FLOAT(6));
       return Value::from_string(std::to_string(result.x) + "," + std::to_string(result.y) + "," + std::to_string(result.z));
+

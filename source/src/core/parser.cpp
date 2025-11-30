@@ -260,7 +260,14 @@ std::vector<std::unique_ptr<Stmt>> Parser::stmt_list_until(Tok end1, Tok end2){
         consume_statement_separators();
         if(check(end1) || check(end2)) break;
         // Fast recovery: skip to next separator or end token
-        while(peek().kind != Tok::Eof && !check(Tok::Newline) && !check(Tok::Colon) && !check(end1) && !check(end2)) {
+        // CRITICAL: Also check for EndIf and other block terminators to prevent skipping past them
+        while(peek().kind != Tok::Eof && !check(Tok::Newline) && !check(Tok::Colon) && 
+              !check(end1) && !check(end2) &&
+              !check(Tok::EndIf) && !check(Tok::Wend) && !check(Tok::Next) &&
+              !check(Tok::EndFunction) && !check(Tok::EndSub) &&
+              !check(Tok::EndSelect) && !check(Tok::EndState) &&
+              !check(Tok::EndModule) && !check(Tok::EndEnum) &&
+              !check(Tok::EndUnion) && !check(Tok::EndTry)) {
           advance();
         }
         consume_statement_separators();
@@ -718,12 +725,10 @@ std::unique_ptr<Stmt> Parser::parse_if() {
         IfChain::Branch br;
         br.cond = std::move(firstCond);
         // CRITICAL: stmt_list_until stops at ElseIf, Else, or EndIf
-        // We pass EndIf as well so it stops correctly and doesn't try to parse ENDIF as a statement
+        // The safeguard in stmt_list_until will stop at EndIf even though it's not in the terminator list
         br.body = stmt_list_until(Tok::ElseIf, Tok::Else);
         // After stmt_list_until returns, we should be positioned at EndIf, ElseIf, or Else
-        // But we also need to handle EndIf separately since it's not in the terminator list
-        // Actually, stmt_list_until will stop when it encounters EndIf because it's not a valid statement
-        // But to be safe, let's make sure we consume any trailing separators
+        // Consume any trailing separators (newlines/colons) but NOT the EndIf/ElseIf/Else token
         consume_statement_separators();
         node->branches.push_back(std::move(br));
     }
@@ -737,14 +742,20 @@ std::unique_ptr<Stmt> Parser::parse_if() {
         IfChain::Branch br;
         br.cond = std::move(c);
         br.body = stmt_list_until(Tok::ElseIf, Tok::Else);
+        // Consume any trailing separators after the ElseIf body
+        consume_statement_separators();
         node->branches.push_back(std::move(br));
     }
 
     if (match(Tok::Else)) {
         node->hasElse = true;
         node->elseBody = stmt_list_until(Tok::EndIf, Tok::EndIf);
+        // Consume any trailing separators after the Else body
+        consume_statement_separators();
     }
 
+    // CRITICAL: At this point, we must be positioned at EndIf
+    // If we're not, it means the IF block is malformed
     if (!match(Tok::EndIf)) {
         diag.err(peek().line, peek().col, "IF: expected ENDIF to close the block");
         return nullptr;

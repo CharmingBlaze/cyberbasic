@@ -192,3 +192,4 @@ For build issues:
 3. Try the standard build before static build
 4. Report issues with full error output and platform details
 
+

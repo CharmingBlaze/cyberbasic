@@ -252,3 +252,4 @@ Write-Status "- Final executable: $finalExePath"
 Write-Status "- Size: $finalSizeMB MB"
 Write-Status "- Static linking: $(if (!$hasDependencies) { 'SUCCESS' } else { 'PARTIAL' })"
 
+

@@ -100,3 +100,4 @@ echo -e "\033[32m[SUCCESS]\033[0m Complete Static Build Process Finished"
 echo -e "\033[34m[INFO]\033[0m To test: cd ../bin && ./cyberbasic"
 exit 0
 
+

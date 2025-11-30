@@ -209,3 +209,4 @@ functions:
                            {FLOAT(3), FLOAT(4), FLOAT(5)}};
       ::Vector3 center = {FLOAT(6), FLOAT(7), FLOAT(8)};
       return Value::from_int(::CheckCollisionBoxSphere(box, center, FLOAT(9)) ? 1 : 0);
+

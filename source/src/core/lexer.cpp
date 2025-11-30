@@ -169,37 +169,10 @@ std::vector<Token> Lexer::lex() {
             continue;
         }
         
-        // Handle preprocessor directives and legacy comment support
+        // Legacy comment support: # and '
         if (c == '#') {
-            // Check if this is #include
-            size_t saved_i = i - 1; // Save position before #
-            int saved_line = line;
-            int saved_col = col - 1;
-            
-            // Skip whitespace after #
-            while (!atEnd() && (peek() == ' ' || peek() == '\t')) {
-                advance();
-            }
-            
-            // Check if next word is "include"
-            std::string word;
-            size_t word_start = i;
-            while (!atEnd() && (std::isalnum((unsigned char)peek()) || peek() == '_')) {
-                word.push_back(std::toupper((unsigned char)advance()));
-            }
-            
-            if (word == "INCLUDE") {
-                // This is #include - create an INCLUDE token
-                out.push_back({Tok::Include, "#INCLUDE", saved_line, saved_col});
-                continue;
-            } else {
-                // Not #include, treat as comment
-                i = saved_i + 1; // Reset to after #
-                line = saved_line;
-                col = saved_col + 1;
-                while (!atEnd() && peek() != '\n') advance();
-                continue;
-            }
+            while (!atEnd() && peek() != '\n') advance();
+            continue;
         }
         if (std::isalpha((unsigned char)c) || c == '_' || c == '$') {
             out.push_back(lex_identifier());

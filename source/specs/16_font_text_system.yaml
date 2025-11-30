@@ -178,3 +178,4 @@ functions:
     description: "Check if two text strings are equal"
     custom_body: |
       return Value::from_int(::TextIsEqual(STR(0).c_str(), STR(1).c_str()) ? 1 : 0);
+
