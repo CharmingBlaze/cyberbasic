@@ -6,3 +6,5 @@ INCLUDE ("simple_helper.bas")
 PRINT "All syntax variations tested successfully!"
 
 
+
+

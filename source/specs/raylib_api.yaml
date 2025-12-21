@@ -101,12 +101,12 @@ functions:
   args:
   - string
   ret: void
-  custom_body: '// TODO: SetWindowIcon expects Image, not string
-
-    // For now, just return nil
-
-    return Value::nil();
-
+  custom_body: '// Load image from file path and set as window icon
+    ::Image icon = ::LoadImage(STR(0).c_str());
+    if (::IsImageValid(icon)) {
+      ::SetWindowIcon(icon);
+      ::UnloadImage(icon);
+    }
     '
 - name: SETWINDOWPOSITION
   map_to: SetWindowPosition
@@ -253,11 +253,20 @@ functions:
   args:
   - int
   ret: void
-  custom_body: '// Note: This requires a Camera2D object, simplified for BASIC
-
-    ::BeginMode2D(::Camera2D{});
-
-    '
+  custom_body: |
+    // Use camera ID to look up Camera2D, or create default
+    ::Camera2D camera = {};
+    if (rlreg::cameras2d.find(INT(0)) != rlreg::cameras2d.end()) {
+      camera = rlreg::cameras2d.at(INT(0));
+    } else {
+      // Default 2D camera centered at origin
+      camera.offset = ::Vector2{0.0f, 0.0f};
+      camera.target = ::Vector2{0.0f, 0.0f};
+      camera.rotation = 0.0f;
+      camera.zoom = 1.0f;
+    }
+    ::BeginMode2D(camera);
+    return Value::nil();
 - name: ENDMODE2D
   map_to: EndMode2D
   args: []
@@ -267,15 +276,34 @@ functions:
   args:
   - int
   ret: void
-  custom_body: '// Fixed: Use proper Camera3D setup for 3D rendering
+  custom_body: |
+    // Use camera from camera system if available, otherwise use default
     ::Camera3D camera = {};
-    camera.position = ::Vector3{ 0.0f, 10.0f, 10.0f };    // Camera position
-    camera.target = ::Vector3{ 0.0f, 0.0f, 0.0f };        // Camera looking at point
-    camera.up = ::Vector3{ 0.0f, 1.0f, 0.0f };            // Camera up vector
-    camera.fovy = 45.0f;                                     // Camera field-of-view Y
-    camera.projection = CAMERA_PERSPECTIVE;                  // Camera projection type
+    if (g_camera_system_3d) {
+      Camera3D* cam = g_camera_system_3d->get_active_camera();
+      if (cam) {
+        camera.position = ::Vector3{cam->position.x, cam->position.y, cam->position.z};
+        camera.target = ::Vector3{cam->target.x, cam->target.y, cam->target.z};
+        camera.up = ::Vector3{cam->up.x, cam->up.y, cam->up.z};
+        camera.fovy = cam->fov;
+        camera.projection = CAMERA_PERSPECTIVE;
+      } else {
+        // Default camera if no active camera
+        camera.position = ::Vector3{0.0f, 10.0f, 10.0f};
+        camera.target = ::Vector3{0.0f, 0.0f, 0.0f};
+        camera.up = ::Vector3{0.0f, 1.0f, 0.0f};
+        camera.fovy = 45.0f;
+        camera.projection = CAMERA_PERSPECTIVE;
+      }
+    } else {
+      // Default camera if system not initialized
+      camera.position = ::Vector3{0.0f, 10.0f, 10.0f};
+      camera.target = ::Vector3{0.0f, 0.0f, 0.0f};
+      camera.up = ::Vector3{0.0f, 1.0f, 0.0f};
+      camera.fovy = 45.0f;
+      camera.projection = CAMERA_PERSPECTIVE;
+    }
     ::BeginMode3D(camera);
-    '
 - name: ENDMODE3D
   map_to: EndMode3D
   args: []
@@ -285,11 +313,15 @@ functions:
   args:
   - int
   ret: void
-  custom_body: '// Note: This requires a RenderTexture2D object, simplified for BASIC
-
-    ::BeginTextureMode(::RenderTexture2D{});
-
-    '
+  custom_body: |
+    // Use render texture ID to look up RenderTexture2D
+    if (rlreg::rendertextures.find(INT(0)) != rlreg::rendertextures.end()) {
+      ::BeginTextureMode(rlreg::rendertextures.at(INT(0)));
+    } else {
+      // Default empty render texture (may not work, but prevents crash)
+      ::BeginTextureMode(::RenderTexture2D{});
+    }
+    return Value::nil();
 - name: ENDTEXTUREMODE
   map_to: EndTextureMode
   args: []
@@ -1234,13 +1266,8 @@ functions:
   - double
   - double
   ret: void
-  custom_body: '// TODO: SetGamepadVibration function not found in current Raylib
-    version
-
-    // For now, just return nil
-
-    return Value::nil();
-
+  custom_body: '// Set gamepad vibration for both motors with duration
+    ::SetGamepadVibration(INT(0), (float)DOUBLE(1), (float)DOUBLE(2), (float)DOUBLE(3));
     '
 - name: LOADTEXTURE
   map_to: LoadTexture
@@ -5389,51 +5416,88 @@ functions:
   args:
   - int
   ret: void
-  custom_body: '// SORT function for arrays - sorts the array in ascending order
-
-    // This is a placeholder - actual implementation would need array access
-
-    return Value::nil();
-
-    '
+  custom_body: |
+    // SORT function for arrays - sorts the array in ascending order
+    if (args.empty() || !args[0].is_array()) {
+      throw std::runtime_error("SORT: argument must be an array");
+    }
+    Value::Array arr = args[0].as_array();
+    std::sort(arr.begin(), arr.end(), [](const Value& a, const Value& b) {
+      if (a.is_number() && b.is_number()) {
+        return a.as_number() < b.as_number();
+      }
+      if (a.is_string() && b.is_string()) {
+        return a.as_string() < b.as_string();
+      }
+      return to_string_value(a) < to_string_value(b);
+    });
+    return Value::from_array(std::move(arr));
 - name: REVERSE
   map_to: reverse
   args:
   - int
   ret: void
-  custom_body: '// REVERSE function for arrays - reverses the order of elements
-
-    // This is a placeholder - actual implementation would need array access
-
-    return Value::nil();
-
-    '
+  custom_body: |
+    // REVERSE function for arrays - reverses the order of elements
+    if (args.empty() || !args[0].is_array()) {
+      throw std::runtime_error("REVERSE: argument must be an array");
+    }
+    Value::Array arr = args[0].as_array();
+    std::reverse(arr.begin(), arr.end());
+    return Value::from_array(std::move(arr));
 - name: FIND
   map_to: find
   args:
   - int
   - string
   ret: int
-  custom_body: '// FIND function for arrays - finds the first occurrence of a value
-
-    // This is a placeholder - actual implementation would need array access
-
+  custom_body: |
+    // FIND function for arrays - finds the first occurrence of a value
+    if (args.size() < 2 || !args[0].is_array()) {
+      return Value::from_int(-1);
+    }
+    const Value::Array& arr = args[0].as_array();
+    const Value& search = args[1];
+    for (size_t i = 0; i < arr.size(); ++i) {
+      if (arr[i] == search) {
+        return Value::from_int(static_cast<long long>(i));
+      }
+    }
     return Value::from_int(-1);
-
-    '
 - name: BINARYSEARCH
   map_to: binarysearch
   args:
   - int
   - string
   ret: int
-  custom_body: '// BINARYSEARCH function for sorted arrays
-
-    // This is a placeholder - actual implementation would need array access
-
+  custom_body: |
+    // BINARYSEARCH function for sorted arrays
+    if (args.size() < 2 || !args[0].is_array()) {
+      return Value::from_int(-1);
+    }
+    const Value::Array& arr = args[0].as_array();
+    const Value& search = args[1];
+    size_t left = 0, right = arr.size();
+    while (left < right) {
+      size_t mid = left + (right - left) / 2;
+      if (arr[mid] == search) {
+        return Value::from_int(static_cast<long long>(mid));
+      }
+      bool less = false;
+      if (arr[mid].is_number() && search.is_number()) {
+        less = arr[mid].as_number() < search.as_number();
+      } else if (arr[mid].is_string() && search.is_string()) {
+        less = arr[mid].as_string() < search.as_string();
+      } else {
+        less = to_string_value(arr[mid]) < to_string_value(search);
+      }
+      if (less) {
+        left = mid + 1;
+      } else {
+        right = mid;
+      }
+    }
     return Value::from_int(-1);
-
-    '
 - name: ISNUMBER
   map_to: isnumber
   args:
@@ -5461,249 +5525,253 @@ functions:
   args:
   - string
   ret: bool
-  custom_body: '// This would need to check if the variable is an array
-
-    // For now, return false as placeholder
-
-    return Value::from_bool(false);
-
-    '
+  custom_body: |
+    // Check if argument is an array
+    if (args.empty()) {
+      return Value::from_bool(false);
+    }
+    return Value::from_bool(args[0].is_array());
 - name: ARRAYLENGTH
   map_to: arraylength
   args:
   - string
   ret: int
-  custom_body: '// Returns the length of an array
-
-    // This is a placeholder - actual implementation would need array access
-
-    return Value::from_int(0);
-
-    '
+  custom_body: |
+    // Returns the length of an array
+    if (args.empty() || !args[0].is_array()) {
+      return Value::from_int(0);
+    }
+    return Value::from_int(static_cast<long long>(args[0].as_array().size()));
 - name: ARRAYCOPY
   map_to: arraycopy
   args:
   - string
   - string
   ret: void
-  custom_body: '// Copies one array to another
-
-    // This is a placeholder - actual implementation would need array access
-
-    return Value::nil();
-
-    '
+  custom_body: |
+    // Copies one array to another
+    if (args.size() < 2 || !args[0].is_array()) {
+      return Value::nil();
+    }
+    Value::Array source = args[0].as_array();
+    Value::Array dest = source; // Copy
+    return Value::from_array(std::move(dest));
 - name: ARRAYFILL
   map_to: arrayfill
   args:
   - string
   - string
   ret: void
-  custom_body: '// Fills an array with a specified value
-
-    // This is a placeholder - actual implementation would need array access
-
-    return Value::nil();
-
-    '
+  custom_body: |
+    // Fills an array with a specified value
+    if (args.size() < 2 || !args[0].is_array()) {
+      return Value::nil();
+    }
+    Value::Array arr = args[0].as_array();
+    const Value& fillValue = args[1];
+    for (auto& elem : arr) {
+      elem = fillValue;
+    }
+    return Value::from_array(std::move(arr));
 - name: ARRAYSHUFFLE
   map_to: arrayshuffle
   args:
   - string
   ret: void
-  custom_body: '// Randomly shuffles the elements of an array
-
-    // This is a placeholder - actual implementation would need array access
-
-    return Value::nil();
-
-    '
+  custom_body: |
+    // Randomly shuffles the elements of an array
+    if (args.empty() || !args[0].is_array()) {
+      return Value::nil();
+    }
+    Value::Array arr = args[0].as_array();
+    static std::mt19937_64 eng{std::random_device{}()};
+    std::shuffle(arr.begin(), arr.end(), eng);
+    return Value::from_array(std::move(arr));
 - name: ARRAYUNIQUE
   map_to: arrayunique
   args:
   - string
   ret: void
-  custom_body: '// Removes duplicate elements from an array
-
-    // This is a placeholder - actual implementation would need array access
-
-    return Value::nil();
-
-    '
+  custom_body: |
+    // Removes duplicate elements from an array
+    if (args.empty() || !args[0].is_array()) {
+      return Value::nil();
+    }
+    Value::Array arr = args[0].as_array();
+    Value::Array unique;
+    for (const auto& elem : arr) {
+      bool found = false;
+      for (const auto& u : unique) {
+        if (u == elem) {
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        unique.push_back(elem);
+      }
+    }
+    return Value::from_array(std::move(unique));
 - name: ARRAYJOIN
   map_to: arrayjoin
   args:
   - int
   - string
   ret: string
-  custom_body: '// Joins array elements into a string with a delimiter
-
-    // This is a placeholder - actual implementation would need array access
-
-    return Value::from_string("");
-
-    '
+  custom_body: |
+    // Joins array elements into a string with a delimiter
+    if (args.size() < 2 || !args[0].is_array()) {
+      return Value::from_string("");
+    }
+    const Value::Array& arr = args[0].as_array();
+    std::string delimiter = args[1].as_string();
+    std::string result;
+    for (size_t i = 0; i < arr.size(); ++i) {
+      if (i > 0) result += delimiter;
+      result += to_string_value(arr[i]);
+    }
+    return Value::from_string(result);
 - name: ARRAYSPLIT
   map_to: arraysplit
   args:
   - string
   - string
   ret: int
-  custom_body: '// Splits a string into an array using a delimiter
-
-    // This is a placeholder - actual implementation would need array access
-
-    return Value::from_int(0);
-
-    '
+  custom_body: |
+    // Splits a string into an array using a delimiter
+    // Note: This returns the array, not an ID
+    if (args.size() < 2) {
+      return Value::from_array(Value::Array{});
+    }
+    std::string str = args[0].as_string();
+    std::string delimiter = args[1].as_string();
+    Value::Array result;
+    if (delimiter.empty()) {
+      // Split into individual characters
+      for (char c : str) {
+        result.push_back(Value::from_string(std::string(1, c)));
+      }
+    } else {
+      size_t pos = 0;
+      while ((pos = str.find(delimiter)) != std::string::npos) {
+        result.push_back(Value::from_string(str.substr(0, pos)));
+        str.erase(0, pos + delimiter.length());
+      }
+      if (!str.empty()) {
+        result.push_back(Value::from_string(str));
+      }
+    }
+    return Value::from_array(std::move(result));
 - name: HTTPGET
   map_to: httpget
   args:
   - string
   ret: string
-  custom_body: '// HTTP GET request - placeholder for future implementation
-
-    // Would use libcurl or similar for actual HTTP requests
-
-    return Value::from_string("HTTP GET not yet implemented");
-
-    '
+  custom_body: |
+    // HTTP GET request - implemented with sockets
+    return http_get_impl(args);
 - name: HTTPPOST
   map_to: httppost
   args:
   - string
   - string
   ret: string
-  custom_body: '// HTTP POST request - placeholder for future implementation
-
-    // Would use libcurl or similar for actual HTTP requests
-
-    return Value::from_string("HTTP POST not yet implemented");
-
-    '
+  custom_body: |
+    // HTTP POST request - implemented with sockets
+    return http_post_impl(args);
 - name: DOWNLOADFILE
   map_to: downloadfile
   args:
   - string
   - string
   ret: bool
-  custom_body: '// Download file from URL - placeholder for future implementation
-
-    // Would use libcurl or similar for actual file downloads
-
-    return Value::from_bool(false);
-
-    '
+  custom_body: |
+    // Download file from URL - implemented with HTTP GET
+    return download_file_impl(args);
 - name: UPLOADFILE
   map_to: uploadfile
   args:
   - string
   - string
   ret: bool
-  custom_body: '// Upload file to URL - placeholder for future implementation
-
-    // Would use libcurl or similar for actual file uploads
-
-    return Value::from_bool(false);
-
-    '
+  custom_body: |
+    // Upload file to URL - implemented with HTTP POST
+    return upload_file_impl(args);
 - name: WEBSOCKETCONNECT
   map_to: websocketconnect
   args:
   - string
   ret: int
-  custom_body: '// WebSocket connection - placeholder for future implementation
-
-    // Would use a WebSocket library for actual connections
-
-    return Value::from_int(-1);
-
-    '
+  custom_body: |
+    // WebSocket connection - implemented with HTTP upgrade
+    return websocket_connect_impl(args);
 - name: WEBSOCKETSEND
   map_to: websocketsend
   args:
   - int
   - string
   ret: bool
-  custom_body: '// WebSocket send message - placeholder for future implementation
-
-    return Value::from_bool(false);
-
-    '
+  custom_body: |
+    // WebSocket send message - implemented with WebSocket frames
+    return websocket_send_impl(args);
 - name: WEBSOCKETRECEIVE
   map_to: websocketreceive
   args:
   - int
   ret: string
-  custom_body: '// WebSocket receive message - placeholder for future implementation
-
-    return Value::from_string("");
-
-    '
+  custom_body: |
+    // WebSocket receive message - implemented with WebSocket frame parsing
+    return websocket_receive_impl(args);
 - name: WEBSOCKETCLOSE
   map_to: websocketclose
   args:
   - int
   ret: void
-  custom_body: '// WebSocket close connection - placeholder for future implementation
-
-    return Value::nil();
-
-    '
+  custom_body: |
+    // WebSocket close connection - implemented
+    return websocket_close_impl(args);
 - name: TCPCONNECT
   map_to: tcpconnect
   args:
   - string
   - int
   ret: int
-  custom_body: '// TCP connection - placeholder for future implementation
-
-    // Would use socket library for actual TCP connections
-
-    return Value::from_int(-1);
-
-    '
+  custom_body: |
+    // TCP connection - implemented with sockets
+    return tcp_connect_impl(args);
 - name: TCPSEND
   map_to: tcpsend
   args:
   - int
   - string
   ret: bool
-  custom_body: '// TCP send data - placeholder for future implementation
-
-    return Value::from_bool(false);
-
-    '
+  custom_body: |
+    // TCP send data - implemented
+    return tcp_send_impl(args);
 - name: TCPRECEIVE
   map_to: tcpreceive
   args:
   - int
   ret: string
-  custom_body: '// TCP receive data - placeholder for future implementation
-
-    return Value::from_string("");
-
-    '
+  custom_body: |
+    // TCP receive data - implemented
+    return tcp_receive_impl(args);
 - name: TCPCLOSE
   map_to: tcpclose
   args:
   - int
   ret: void
-  custom_body: '// TCP close connection - placeholder for future implementation
-
-    return Value::nil();
-
-    '
+  custom_body: |
+    // TCP close connection - implemented
+    return tcp_close_impl(args);
 - name: UDPCREATE
   map_to: udpcreate
   args:
   - int
   ret: int
-  custom_body: '// UDP socket creation - placeholder for future implementation
-
-    return Value::from_int(-1);
-
-    '
+  custom_body: |
+    // UDP socket creation - implemented
+    return udp_create_impl(args);
 - name: UDPSEND
   map_to: udpsend
   args:
@@ -5712,31 +5780,25 @@ functions:
   - int
   - string
   ret: bool
-  custom_body: '// UDP send data - placeholder for future implementation
-
-    return Value::from_bool(false);
-
-    '
+  custom_body: |
+    // UDP send data - implemented
+    return udp_send_impl(args);
 - name: UDPRECEIVE
   map_to: udpreceive
   args:
   - int
   ret: string
-  custom_body: '// UDP receive data - placeholder for future implementation
-
-    return Value::from_string("");
-
-    '
+  custom_body: |
+    // UDP receive data - implemented
+    return udp_receive_impl(args);
 - name: UDPCLOSE
   map_to: udpclose
   args:
   - int
   ret: void
-  custom_body: '// UDP close socket - placeholder for future implementation
-
-    return Value::nil();
-
-    '
+  custom_body: |
+    // UDP close socket - implemented
+    return udp_close_impl(args);
 - name: DRAWCONE
   map_to: DrawCone
   args:

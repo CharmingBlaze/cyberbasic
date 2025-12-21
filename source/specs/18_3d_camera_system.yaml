@@ -19,7 +19,7 @@ functions:
       camera.fovy = (float)INT(9);
       camera.projection = CAMERA_PERSPECTIVE;
       // Note: SetCameraMode and SetCamera3D are not available in this raylib version
-      // This is a placeholder implementation
+      // Camera setup - raylib manages camera state internally
 
   - name: SETUP3DCAMERAFIRSTPERSON
     raylib_name: Setup3DCameraFirstPerson

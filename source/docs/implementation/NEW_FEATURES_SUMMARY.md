@@ -93,27 +93,31 @@ NEXT
 - `TEST.assert(condition, [message])` - Assert condition
 - `TEST.run(name, testFunction)` - Run a test
 
-### 5. TRY/CATCH/FINALLY Error Handling ✅
-**Status:** Complete
+### 5. Error Handling
+**Status:** Standard error propagation
+
+**Note:** TRY/CATCH/FINALLY blocks have been removed. CyberBASIC uses standard error propagation. Functions that may fail should be checked using conditional logic.
 
 **Usage:**
 ```basic
-TRY
-    VAR data = LOAD JSON "file.json"
-    VAR value = data.field
-CATCH error
-    PRINT "Error occurred: " + error.message
-    ' Handle error
-FINALLY
-    PRINT "Cleanup code always runs"
-END TRY
+VAR data = LOAD JSON "file.json"
+IF data = NIL THEN
+    PRINT "Error occurred: Could not load file.json"
+    REM Handle error
+    RETURN
+ENDIF
+
+VAR value = data.field
+IF value = NIL THEN
+    PRINT "Error: Field not found"
+    REM Handle error
+ENDIF
 ```
 
 **Features:**
-- `TRY` block for code that might throw
-- `CATCH [variable]` block for error handling
-- `FINALLY` block that always executes
-- Error objects with `message` property
+- Standard error propagation
+- Conditional error checking
+- Clear error messages
 
 ## ✅ Medium Priority Features
 
@@ -260,12 +264,12 @@ NEXT
 - `src/modules/core/advanced_features.cpp` - All advanced features
 
 **Modified Files:**
-- `include/bas/token.hpp` - Added TRY, CATCH, FINALLY, THROW tokens
-- `include/bas/ast.hpp` - Added TryCatchStmt, ThrowStmt
+- `include/bas/token.hpp` - Added THROW token
+- `include/bas/ast.hpp` - Added ThrowStmt
 - `include/bas/runtime.hpp` - Added function declarations
-- `src/core/lexer.cpp` - Added TRY/CATCH/FINALLY/THROW keywords
-- `src/core/parser.cpp` - Added TRY/CATCH/FINALLY/THROW parsing
-- `src/core/interpreter.cpp` - Added TRY/CATCH/FINALLY execution, enhanced lambda, enhanced pattern matching
+- `src/core/lexer.cpp` - Added THROW keyword
+- `src/core/parser.cpp` - Added THROW parsing
+- `src/core/interpreter.cpp` - Added THROW execution, enhanced lambda, enhanced pattern matching
 - `src/main.cpp` - Registered new functions
 - `CMakeLists.txt` - Added new source files
 
@@ -284,16 +288,17 @@ VAR movePlayer = LAMBDA(x, y)
     player.y = y
 END LAMBDA
 
-' Try/Catch error handling
-TRY
-    VAR config = LOAD JSON "config.json"
-    VAR level = config.level
-CATCH error
-    PRINT "Error loading config: " + error.message
-    VAR level = 1
-FINALLY
-    PRINT "Config loaded"
-END TRY
+' Error handling with conditional logic
+VAR config = LOAD JSON "config.json"
+VAR level = 1
+IF config <> NIL THEN
+    IF config.level <> NIL THEN
+        level = config.level
+    ENDIF
+ELSE
+    PRINT "Error loading config: config.json not found"
+ENDIF
+PRINT "Config loaded"
 
 ' Pattern matching
 VAR state = "running"

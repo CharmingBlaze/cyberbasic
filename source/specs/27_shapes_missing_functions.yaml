@@ -41,9 +41,34 @@ functions:
     args: [string, int, int, int, int]
     ret: void
     category: drawing
-    description: "Draw lines sequence (using gl lines) - points as comma-separated string"
+    description: "Draw lines sequence (using gl lines) - points as comma-separated string 'x1,y1,x2,y2,...'"
     custom_body: |
-      // TODO: Proper point array handling from string
+      // Parse points from comma-separated string "x1,y1,x2,y2,..."
+      std::string pointStr = STR(0);
+      std::vector<::Vector2> points;
+      size_t start = 0;
+      size_t pos = 0;
+      float x = 0, y = 0;
+      bool hasX = false;
+      while ((pos = pointStr.find(',', start)) != std::string::npos) {
+        if (!hasX) {
+          x = std::stof(pointStr.substr(start, pos - start));
+          hasX = true;
+        } else {
+          y = std::stof(pointStr.substr(start, pos - start));
+          points.push_back({x, y});
+          hasX = false;
+        }
+        start = pos + 1;
+      }
+      if (hasX && start < pointStr.length()) {
+        y = std::stof(pointStr.substr(start));
+        points.push_back({x, y});
+      }
+      ::Color color{(unsigned char)INT(2), (unsigned char)INT(3), (unsigned char)INT(4), 255};
+      if (!points.empty()) {
+        ::DrawLineStrip(points.data(), (int)points.size(), color);
+      }
   
   - name: DRAWCIRCLELINESV
     raylib_name: DrawCircleLinesV
@@ -121,45 +146,170 @@ functions:
     args: [string, int, float, int, int, int]
     ret: void
     category: drawing
-    description: "Draw spline: Linear, minimum 2 points"
+    description: "Draw spline: Linear, minimum 2 points - points as comma-separated string 'x1,y1,x2,y2,...'"
     custom_body: |
-      // TODO: Proper point array handling
+      // Parse points from comma-separated string "x1,y1,x2,y2,..."
+      std::string pointStr = STR(0);
+      std::vector<::Vector2> points;
+      size_t start = 0;
+      size_t pos = 0;
+      float x = 0, y = 0;
+      bool hasX = false;
+      while ((pos = pointStr.find(',', start)) != std::string::npos) {
+        if (!hasX) {
+          x = std::stof(pointStr.substr(start, pos - start));
+          hasX = true;
+        } else {
+          y = std::stof(pointStr.substr(start, pos - start));
+          points.push_back({x, y});
+          hasX = false;
+        }
+        start = pos + 1;
+      }
+      if (hasX && start < pointStr.length()) {
+        y = std::stof(pointStr.substr(start));
+        points.push_back({x, y});
+      }
+      ::Color color{(unsigned char)INT(3), (unsigned char)INT(4), (unsigned char)INT(5), 255};
+      if (points.size() >= 2) {
+        ::DrawSplineLinear(points.data(), (int)points.size(), (float)FLOAT(2), color);
+      }
   
   - name: DRAWSPLINEBASIS
     raylib_name: DrawSplineBasis
     args: [string, int, float, int, int, int]
     ret: void
     category: drawing
-    description: "Draw spline: B-Spline, minimum 4 points"
+    description: "Draw spline: B-Spline, minimum 4 points - points as comma-separated string 'x1,y1,x2,y2,...'"
     custom_body: |
-      // TODO: Proper point array handling
+      // Parse points from comma-separated string "x1,y1,x2,y2,..."
+      std::string pointStr = STR(0);
+      std::vector<::Vector2> points;
+      size_t start = 0;
+      size_t pos = 0;
+      float x = 0, y = 0;
+      bool hasX = false;
+      while ((pos = pointStr.find(',', start)) != std::string::npos) {
+        if (!hasX) {
+          x = std::stof(pointStr.substr(start, pos - start));
+          hasX = true;
+        } else {
+          y = std::stof(pointStr.substr(start, pos - start));
+          points.push_back({x, y});
+          hasX = false;
+        }
+        start = pos + 1;
+      }
+      if (hasX && start < pointStr.length()) {
+        y = std::stof(pointStr.substr(start));
+        points.push_back({x, y});
+      }
+      ::Color color{(unsigned char)INT(3), (unsigned char)INT(4), (unsigned char)INT(5), 255};
+      if (points.size() >= 4) {
+        ::DrawSplineBasis(points.data(), (int)points.size(), (float)FLOAT(2), color);
+      }
   
   - name: DRAWSPLINECATMULLROM
     raylib_name: DrawSplineCatmullRom
     args: [string, int, float, int, int, int]
     ret: void
     category: drawing
-    description: "Draw spline: Catmull-Rom, minimum 4 points"
+    description: "Draw spline: Catmull-Rom, minimum 4 points - points as comma-separated string 'x1,y1,x2,y2,...'"
     custom_body: |
-      // TODO: Proper point array handling
+      // Parse points from comma-separated string "x1,y1,x2,y2,..."
+      std::string pointStr = STR(0);
+      std::vector<::Vector2> points;
+      size_t start = 0;
+      size_t pos = 0;
+      float x = 0, y = 0;
+      bool hasX = false;
+      while ((pos = pointStr.find(',', start)) != std::string::npos) {
+        if (!hasX) {
+          x = std::stof(pointStr.substr(start, pos - start));
+          hasX = true;
+        } else {
+          y = std::stof(pointStr.substr(start, pos - start));
+          points.push_back({x, y});
+          hasX = false;
+        }
+        start = pos + 1;
+      }
+      if (hasX && start < pointStr.length()) {
+        y = std::stof(pointStr.substr(start));
+        points.push_back({x, y});
+      }
+      ::Color color{(unsigned char)INT(3), (unsigned char)INT(4), (unsigned char)INT(5), 255};
+      if (points.size() >= 4) {
+        ::DrawSplineCatmullRom(points.data(), (int)points.size(), (float)FLOAT(2), color);
+      }
   
   - name: DRAWSPLINEBEZIERQUADRATIC
     raylib_name: DrawSplineBezierQuadratic
     args: [string, int, float, int, int, int]
     ret: void
     category: drawing
-    description: "Draw spline: Quadratic Bezier, minimum 3 points"
+    description: "Draw spline: Quadratic Bezier, minimum 3 points - points as comma-separated string 'x1,y1,x2,y2,...'"
     custom_body: |
-      // TODO: Proper point array handling
+      // Parse points from comma-separated string "x1,y1,x2,y2,..."
+      std::string pointStr = STR(0);
+      std::vector<::Vector2> points;
+      size_t start = 0;
+      size_t pos = 0;
+      float x = 0, y = 0;
+      bool hasX = false;
+      while ((pos = pointStr.find(',', start)) != std::string::npos) {
+        if (!hasX) {
+          x = std::stof(pointStr.substr(start, pos - start));
+          hasX = true;
+        } else {
+          y = std::stof(pointStr.substr(start, pos - start));
+          points.push_back({x, y});
+          hasX = false;
+        }
+        start = pos + 1;
+      }
+      if (hasX && start < pointStr.length()) {
+        y = std::stof(pointStr.substr(start));
+        points.push_back({x, y});
+      }
+      ::Color color{(unsigned char)INT(3), (unsigned char)INT(4), (unsigned char)INT(5), 255};
+      if (points.size() >= 3) {
+        ::DrawSplineBezierQuadratic(points.data(), (int)points.size(), (float)FLOAT(2), color);
+      }
   
   - name: DRAWSPLINEBEZIERCUBIC
     raylib_name: DrawSplineBezierCubic
     args: [string, int, float, int, int, int]
     ret: void
     category: drawing
-    description: "Draw spline: Cubic Bezier, minimum 4 points"
+    description: "Draw spline: Cubic Bezier, minimum 4 points - points as comma-separated string 'x1,y1,x2,y2,...'"
     custom_body: |
-      // TODO: Proper point array handling
+      // Parse points from comma-separated string "x1,y1,x2,y2,..."
+      std::string pointStr = STR(0);
+      std::vector<::Vector2> points;
+      size_t start = 0;
+      size_t pos = 0;
+      float x = 0, y = 0;
+      bool hasX = false;
+      while ((pos = pointStr.find(',', start)) != std::string::npos) {
+        if (!hasX) {
+          x = std::stof(pointStr.substr(start, pos - start));
+          hasX = true;
+        } else {
+          y = std::stof(pointStr.substr(start, pos - start));
+          points.push_back({x, y});
+          hasX = false;
+        }
+        start = pos + 1;
+      }
+      if (hasX && start < pointStr.length()) {
+        y = std::stof(pointStr.substr(start));
+        points.push_back({x, y});
+      }
+      ::Color color{(unsigned char)INT(3), (unsigned char)INT(4), (unsigned char)INT(5), 255};
+      if (points.size() >= 4) {
+        ::DrawSplineBezierCubic(points.data(), (int)points.size(), (float)FLOAT(2), color);
+      }
   
   - name: DRAWSPLINESEGMENTLINEAR
     raylib_name: DrawSplineSegmentLinear
@@ -339,9 +489,45 @@ functions:
     args: [string, int]
     ret: bool
     category: collision
-    description: "Check if point is within a polygon described by array of vertices"
+    description: "Check if point is within a polygon described by array of vertices (point as 'x,y', polygon as 'x1,y1,x2,y2,...', pointCount)"
     custom_body: |
-      // TODO: Proper point array handling
+      // Parse point and polygon from string "pointX,pointY,polyX1,polyY1,polyX2,polyY2,..."
+      std::string dataStr = STR(0);
+      std::vector<::Vector2> points;
+      size_t start = 0;
+      size_t pos = 0;
+      float x = 0, y = 0;
+      bool hasX = false;
+      int pointCount = INT(1);
+      ::Vector2 checkPoint{0, 0};
+      bool isFirstPoint = true;
+      while ((pos = dataStr.find(',', start)) != std::string::npos) {
+        if (!hasX) {
+          x = std::stof(dataStr.substr(start, pos - start));
+          hasX = true;
+        } else {
+          y = std::stof(dataStr.substr(start, pos - start));
+          if (isFirstPoint) {
+            checkPoint = {x, y};
+            isFirstPoint = false;
+          } else {
+            points.push_back({x, y});
+          }
+          hasX = false;
+        }
+        start = pos + 1;
+      }
+      if (hasX && start < dataStr.length()) {
+        y = std::stof(dataStr.substr(start));
+        if (isFirstPoint) {
+          checkPoint = {x, y};
+        } else {
+          points.push_back({x, y});
+        }
+      }
+      if (points.size() >= 3 && pointCount > 0) {
+        return Value::from_bool(::CheckCollisionPointPoly(checkPoint, points.data(), pointCount));
+      }
       return Value::from_bool(false);
   
   - name: CHECKCOLLISIONLINES

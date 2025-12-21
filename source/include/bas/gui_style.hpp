@@ -7,16 +7,16 @@ namespace bas {
 // GUI Style System
 class GuiStyle {
 private:
-    std::unordered_map<std::string, Color> colors;
+    std::unordered_map<std::string, GuiColor> colors;
     std::unordered_map<std::string, int> properties;
     
 public:
     GuiStyle();
     
     // Color management
-    void set_color(const std::string& property, const Color& color);
+    void set_color(const std::string& property, const GuiColor& color);
     void set_color(const std::string& property, int r, int g, int b, int a = 255);
-    Color get_color(const std::string& property) const;
+    GuiColor get_color(const std::string& property) const;
     bool has_color(const std::string& property) const;
     
     // Property management
@@ -52,9 +52,9 @@ private:
     
 public:
     // Global style management
-    static void set_global_color(const std::string& property, const Color& color);
+    static void set_global_color(const std::string& property, const GuiColor& color);
     static void set_global_color(const std::string& property, int r, int g, int b, int a = 255);
-    static Color get_global_color(const std::string& property);
+    static GuiColor get_global_color(const std::string& property);
     
     static void set_global_property(const std::string& property, int value);
     static int get_global_property(const std::string& property);

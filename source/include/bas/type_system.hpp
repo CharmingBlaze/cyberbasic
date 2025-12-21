@@ -3,9 +3,20 @@
 #include <unordered_map>
 #include <vector>
 #include <memory>
+#include <cctype>
 #include "value.hpp"
 
 namespace bas {
+
+// Helper: Normalize identifier to lowercase for case-insensitive matching
+inline std::string normalize_type_name(const std::string& s) {
+  std::string r;
+  r.reserve(s.size());
+  for (char c : s) {
+    r.push_back(static_cast<char>(std::tolower(static_cast<unsigned char>(c))));
+  }
+  return r;
+}
 
 // Type system for user-defined types and type checking
 struct TypeInfo {
@@ -16,8 +27,9 @@ struct TypeInfo {
     std::unordered_map<std::string, std::string> methods; // method name -> signature
     
     [[nodiscard]] bool isSubtypeOf(const std::string& otherType) const {
-        if (name == otherType) return true;
-        if (hasParent && parentType == otherType) return true;
+        std::string normalized_other = normalize_type_name(otherType);
+        if (normalize_type_name(name) == normalized_other) return true;
+        if (hasParent && normalize_type_name(parentType) == normalized_other) return true;
         return false;
     }
 };
@@ -25,33 +37,61 @@ struct TypeInfo {
 class TypeRegistry {
 public:
     void registerType(const TypeInfo& type) {
-        types_[type.name] = type;
+        // Normalize type name for case-insensitive storage
+        std::string normalized_name = normalize_type_name(type.name);
+        TypeInfo normalized_type = type;
+        normalized_type.name = normalized_name;
+        
+        // Normalize parent type name if present
+        if (normalized_type.hasParent) {
+            normalized_type.parentType = normalize_type_name(type.parentType);
+        }
+        
+        // Normalize field names
+        std::vector<std::pair<std::string, std::string>> normalized_fields;
+        for (const auto& [fieldName, fieldType] : type.fields) {
+            normalized_fields.emplace_back(normalize_type_name(fieldName), normalize_type_name(fieldType));
+        }
+        normalized_type.fields = normalized_fields;
+        
+        // Normalize method names
+        std::unordered_map<std::string, std::string> normalized_methods;
+        for (const auto& [methodName, signature] : type.methods) {
+            normalized_methods[normalize_type_name(methodName)] = signature;
+        }
+        normalized_type.methods = normalized_methods;
+        
+        types_[normalized_name] = normalized_type;
     }
     
     [[nodiscard]] TypeInfo* getType(const std::string& name) {
-        auto it = types_.find(name);
+        std::string normalized = normalize_type_name(name);
+        auto it = types_.find(normalized);
         return it != types_.end() ? &it->second : nullptr;
     }
     
     [[nodiscard]] const TypeInfo* getType(const std::string& name) const {
-        auto it = types_.find(name);
+        std::string normalized = normalize_type_name(name);
+        auto it = types_.find(normalized);
         return it != types_.end() ? &it->second : nullptr;
     }
     
     [[nodiscard]] bool hasType(const std::string& name) const {
-        return types_.find(name) != types_.end();
+        std::string normalized = normalize_type_name(name);
+        return types_.find(normalized) != types_.end();
     }
     
     [[nodiscard]] Value createInstance(const std::string& typeName) const {
-        const TypeInfo* type = getType(typeName);
+        std::string normalized = normalize_type_name(typeName);
+        const TypeInfo* type = getType(normalized);
         if (!type) {
             return Value::nil();
         }
         
         Value::Map obj;
-        obj["_type"] = Value::from_string(typeName);
+        obj[normalize_type_name("_type")] = Value::from_string(normalized);
         
-        // Initialize fields with default values
+        // Initialize fields with default values (field names already normalized)
         for (const auto& [fieldName, fieldType] : type->fields) {
             obj[fieldName] = getDefaultValue(fieldType);
         }
@@ -72,23 +112,28 @@ public:
     }
     
     [[nodiscard]] bool isSubtype(const std::string& subtype, const std::string& supertype) const {
-        const TypeInfo* sub = getType(subtype);
+        std::string normalized_sub = normalize_type_name(subtype);
+        std::string normalized_super = normalize_type_name(supertype);
+        const TypeInfo* sub = getType(normalized_sub);
         if (!sub) return false;
-        return sub->isSubtypeOf(supertype);
+        return sub->isSubtypeOf(normalized_super);
     }
     
 private:
     std::unordered_map<std::string, TypeInfo> types_;
     
     [[nodiscard]] static Value getDefaultValue(const std::string& typeName) {
-        // Map type names to default values
-        if (typeName == "INTEGER" || typeName == "INT") {
+        // Normalize type name for case-insensitive comparison
+        std::string normalized = normalize_type_name(typeName);
+        
+        // Map type names to default values (all comparisons normalized)
+        if (normalized == "integer" || normalized == "int") {
             return Value::from_int(0);
-        } else if (typeName == "DOUBLE" || typeName == "SINGLE" || typeName == "FLOAT") {
+        } else if (normalized == "double" || normalized == "single" || normalized == "float") {
             return Value::from_number(0.0);
-        } else if (typeName == "STRING") {
+        } else if (normalized == "string") {
             return Value::from_string("");
-        } else if (typeName == "BOOLEAN" || typeName == "BOOL") {
+        } else if (normalized == "boolean" || normalized == "bool") {
             return Value::from_bool(false);
         } else {
             // For user-defined types, return nil (will be handled by createInstance)

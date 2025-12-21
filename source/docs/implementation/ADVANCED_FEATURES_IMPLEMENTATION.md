@@ -129,14 +129,14 @@ All requested features have been **implemented**:
 4. ✅ **Return type annotations** - `AS void` and `AS coroutine` work
 5. ✅ **YIELD** - Already existed, verified working
 
-## 🔧 Testing Notes
+## Testing Notes
 
 Some syntax may need adjustment:
 - Enum values should be comma-separated on same line or use proper line continuation
 - Tuple indexing works: `tuple[0]` accesses first element
 - Destructuring works: `VAR (x, y) = tuple` unpacks tuple
 
-## 🚀 Next Steps (Optional)
+## Next Steps (Optional)
 
 1. **Full Async/Await**: Integrate AWAIT with coroutine system for true async execution
 2. **Coroutine Runtime**: Enhance YIELD to actually suspend/resume coroutines

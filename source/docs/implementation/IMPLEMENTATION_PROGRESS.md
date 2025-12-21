@@ -109,7 +109,7 @@ The following need full implementation:
 23. **Hot Reload** - File watching and code reloading
 24. **Package Manager** - Install and manage libraries
 
-## 🔧 Technical Debt
+## Technical Debt
 
 1. **Parser Extensions**: Need to add all parser function implementations to parser.cpp
 2. **Interpreter Extensions**: Need to complete all expression evaluators
@@ -119,7 +119,7 @@ The following need full implementation:
 6. **Lexer**: May need curly braces for map literals
 7. **Error Handling**: Need better error messages for new features
 
-## 📝 Next Steps
+## Next Steps
 
 ### Immediate (High Priority)
 1. Complete parser implementations for all declared functions
@@ -149,7 +149,7 @@ The following need full implementation:
 4. Complete inheritance system
 5. Complete operator overloading
 
-## 🎯 Completion Estimate
+## Completion Estimate
 
 - **Infrastructure**: 80% complete
 - **Parser**: 40% complete (declarations done, implementations needed)

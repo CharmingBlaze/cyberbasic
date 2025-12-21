@@ -34,7 +34,7 @@ BASIC (Beginner's All-purpose Symbolic Instruction Code) was designed to be easy
 - Object-oriented concepts with dot notation
 - JSON serialization
 - Module system
-- Comprehensive error handling
+- Clear error messages and validation
 
 ### Philosophy
 
@@ -755,16 +755,24 @@ finish:
 
 ### Function Declaration
 
-Functions are reusable code blocks that return values:
+Functions are reusable code blocks that return values. CyberBASIC supports both single-word and two-word END keywords:
 
 ```basic
 FUNCTION add(a, b)
     RETURN a + b
 ENDFUNCTION
 
-VAR result = add(5, 3)  REM Returns 8
-PRINT result
+FUNCTION subtract(a, b)
+    RETURN a - b
+ENDFUNCTION
+
+VAR result1 = add(5, 3)      REM Returns 8
+VAR result2 = subtract(5, 3) REM Returns 2
+PRINT result1
+PRINT result2
 ```
+
+**Note:** `ENDFUNCTION` is the required closing keyword. For IF statements, both `ENDIF` and `END IF` are supported.
 
 ### Function with Return Value
 
@@ -817,7 +825,7 @@ REM PRINT local  REM ERROR: local doesn't exist here
 
 ### Subroutines
 
-Subroutines are functions that don't return values:
+Subroutines are functions that don't return values. Both `ENDSUB` and `END SUB` are supported:
 
 ```basic
 SUB printHeader(title$)
@@ -826,7 +834,14 @@ SUB printHeader(title$)
     PRINT "=========="
 ENDSUB
 
+SUB printFooter(text$)
+    PRINT "=========="
+    PRINT text$
+    PRINT "=========="
+ENDSUB
+
 printHeader("My Program")
+printFooter("End of Program")
 ```
 
 ### Recursion
@@ -1096,33 +1111,34 @@ new_arr.fromJSON(json$)
 
 ## Error Handling
 
-### TRY-CATCH
+### Error Propagation
 
-Handle errors gracefully:
+Errors in CyberBASIC propagate normally. When an error occurs, it will stop execution unless handled by the calling code. Functions that may fail should check their return values or use conditional logic.
 
 ```basic
-TRY
-    VAR result = 10 / 0  REM Division by zero
-    PRINT result
-CATCH error
-    PRINT "Error occurred: " + error
-ENDTRY
+FUNCTION safeDivide(a, b)
+    IF b = 0 THEN
+        PRINT "Error: Division by zero"
+        RETURN 0
+    ENDIF
+    RETURN a / b
+ENDFUNCTION
 
+VAR result = safeDivide(10, 0)
+PRINT "Result: " + STR(result)
 PRINT "Program continues"
 ```
 
-### Common Error Types
+### Common Error Checking
 
 ```basic
-TRY
-    VAR file$ = READFILE("missing.txt")
-CATCH error
-    IF INSTR(error, "file not found") >= 0 THEN
-        PRINT "File does not exist"
-    ELSE
-        PRINT "Unknown error: " + error
-    ENDIF
-ENDTRY
+VAR file$ = READFILE("missing.txt")
+IF file$ = "" THEN
+    PRINT "File does not exist"
+ELSE
+    REM Process file content
+    PRINT "File loaded successfully"
+ENDIF
 ```
 
 ### Assertions
@@ -1268,14 +1284,13 @@ FUNCTION safeDivide(a, b)
     RETURN a / b
 ENDFUNCTION
 
-REM Or use TRY-CATCH
+REM Use conditional logic for error handling
 FUNCTION safeDivide2(a, b)
-    TRY
-        RETURN a / b
-    CATCH error
-        PRINT "Error: " + error
+    IF b = 0 THEN
+        PRINT "Error: Division by zero"
         RETURN 0
-    ENDTRY
+    ENDIF
+    RETURN a / b
 ENDFUNCTION
 ```
 

@@ -1,10 +1,12 @@
+// Include raylib.h at global scope BEFORE any bas headers that open namespace bas
+#include "raylib.h"
+#include "raymath.h"  // For TextToFloat and other utility functions
+
 #include "bas/raygui.hpp"
 #include "bas/value.hpp"
 #include "bas/builtins.hpp"
 #include "bas/raygui_helpers.hpp"
 #include "bas/raymath_helpers.hpp"
-#include "raylib.h"
-#include "raymath.h"  // For TextToFloat and other utility functions
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 // Note: RAYGUI_IMPLEMENTATION is defined in raygui_impl.cpp

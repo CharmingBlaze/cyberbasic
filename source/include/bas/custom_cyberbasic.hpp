@@ -1,11 +1,17 @@
 #pragma once
 
-#include "raylib.h"
+// Note: raylib.h should be included at global scope BEFORE this header
+// This header only declares functions that use Raylib types
+
 #include <vector>
 #include <map>
 #include <string>
 #include <cmath>
 #include <random>
+
+// Forward declare Raylib types to avoid including raylib.h here
+// (raylib.h should be included at global scope in the including file)
+struct Color;  // Forward declaration for ::Color
 
 namespace bas {
 
@@ -52,9 +58,9 @@ void SetSoundPitch(int soundId, float pitch);
 float GetSoundPitch(int soundId);
 
 // Enhanced text system
-void DrawTextEx(const char* text, int x, int y, int fontSize, int spacing, Color color);
+void DrawTextEx(const char* text, int x, int y, int fontSize, int spacing, ::Color color);
 int MeasureText(const char* text, int fontSize);
-void DrawTextCentered(const char* text, int x, int y, int fontSize, int spacing, Color color);
+void DrawTextCentered(const char* text, int x, int y, int fontSize, int spacing, ::Color color);
 
 // Utility functions
 int RandomInt(int min, int max);

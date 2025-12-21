@@ -12,9 +12,10 @@ functions:
     description: "Create particle system (name, maxParticles)"
     working: true
     custom_body: |
-      // Create particle system - returns system ID
-      // This is a simplified version that stores systems globally
-      return Value::from_number(1); // Placeholder ID
+      // Create particle system using registry
+      std::string name = STR(0);
+      int maxParticles = INT(1);
+      return Value::from_int(particle_registry::create_system(name, maxParticles));
 
   - name: DESTROYPARTICLESYSTEM
     raylib_name: DestroyParticleSystem
@@ -25,6 +26,7 @@ functions:
     working: true
     custom_body: |
       // Destroy particle system
+      particle_registry::destroy_system(INT(0));
       return Value::nil();
 
   - name: UPDATEPARTICLESYSTEM
@@ -36,6 +38,7 @@ functions:
     working: true
     custom_body: |
       // Update particle system
+      particle_registry::update_system(INT(0), FLOAT(1));
       return Value::nil();
 
   - name: RENDERPARTICLESYSTEM
@@ -47,6 +50,7 @@ functions:
     working: true
     custom_body: |
       // Render particle system
+      particle_registry::render_system(INT(0));
       return Value::nil();
 
   # === PARTICLE PROPERTIES ===
@@ -59,6 +63,7 @@ functions:
     working: true
     custom_body: |
       // Set particle system position
+      particle_registry::set_position(INT(0), static_cast<float>(INT(1)), static_cast<float>(INT(2)));
       return Value::nil();
 
   - name: SETPARTICLESYSTEMVELOCITY
@@ -70,6 +75,7 @@ functions:
     working: true
     custom_body: |
       // Set particle system velocity
+      particle_registry::set_velocity(INT(0), FLOAT(1), FLOAT(2));
       return Value::nil();
 
   - name: SETPARTICLESYSTEMCOLOR
@@ -81,6 +87,7 @@ functions:
     working: true
     custom_body: |
       // Set particle system color
+      particle_registry::set_color(INT(0), INT(1), INT(2), INT(3), INT(4));
       return Value::nil();
 
   - name: SETPARTICLESYSTEMSIZE
@@ -92,6 +99,7 @@ functions:
     working: true
     custom_body: |
       // Set particle system size
+      particle_registry::set_size(INT(0), FLOAT(1), FLOAT(2));
       return Value::nil();
 
   - name: SETPARTICLESYSTEMLIFETIME
@@ -103,6 +111,7 @@ functions:
     working: true
     custom_body: |
       // Set particle system lifetime
+      particle_registry::set_lifetime(INT(0), FLOAT(1), FLOAT(2));
       return Value::nil();
 
   - name: SETPARTICLESYSTEMEMISSIONRATE
@@ -114,6 +123,7 @@ functions:
     working: true
     custom_body: |
       // Set particle system emission rate
+      particle_registry::set_emission_rate(INT(0), FLOAT(1));
       return Value::nil();
 
   # === PARTICLE EFFECTS ===
@@ -126,7 +136,7 @@ functions:
     working: true
     custom_body: |
       // Create fire effect
-      return Value::from_number(1); // Placeholder ID
+      return Value::from_int(particle_registry::create_effect("fire", static_cast<float>(INT(0)), static_cast<float>(INT(1))));
 
   - name: CREATEEXPLOSIONEFFECT
     raylib_name: CreateExplosionEffect
@@ -137,7 +147,7 @@ functions:
     working: true
     custom_body: |
       // Create explosion effect
-      return Value::from_number(2); // Placeholder ID
+      return Value::from_int(particle_registry::create_effect("explosion", static_cast<float>(INT(0)), static_cast<float>(INT(1))));
 
   - name: CREATESMOKEEFFECT
     raylib_name: CreateSmokeEffect
@@ -148,7 +158,7 @@ functions:
     working: true
     custom_body: |
       // Create smoke effect
-      return Value::from_number(3); // Placeholder ID
+      return Value::from_int(particle_registry::create_effect("smoke", static_cast<float>(INT(0)), static_cast<float>(INT(1))));
 
   - name: CREATESPARKLEEFFECT
     raylib_name: CreateSparkleEffect
@@ -159,7 +169,7 @@ functions:
     working: true
     custom_body: |
       // Create sparkle effect
-      return Value::from_number(4); // Placeholder ID
+      return Value::from_int(particle_registry::create_effect("sparkle", static_cast<float>(INT(0)), static_cast<float>(INT(1))));
 
   - name: CREATERAINEFFECT
     raylib_name: CreateRainEffect
@@ -170,7 +180,7 @@ functions:
     working: true
     custom_body: |
       // Create rain effect
-      return Value::from_number(5); // Placeholder ID
+      return Value::from_int(particle_registry::create_effect("rain", static_cast<float>(INT(0)), static_cast<float>(INT(1)), static_cast<float>(INT(2)), static_cast<float>(INT(3))));
 
   - name: CREATESNOWEFFECT
     raylib_name: CreateSnowEffect
@@ -181,7 +191,7 @@ functions:
     working: true
     custom_body: |
       // Create snow effect
-      return Value::from_number(6); // Placeholder ID
+      return Value::from_int(particle_registry::create_effect("snow", static_cast<float>(INT(0)), static_cast<float>(INT(1)), static_cast<float>(INT(2)), static_cast<float>(INT(3))));
 
   # === PARTICLE CONTROL ===
   - name: ENABLEPARTICLESYSTEM
@@ -193,6 +203,7 @@ functions:
     working: true
     custom_body: |
       // Enable particle system
+      particle_registry::enable_system(INT(0), true);
       return Value::nil();
 
   - name: DISABLEPARTICLESYSTEM
@@ -204,6 +215,7 @@ functions:
     working: true
     custom_body: |
       // Disable particle system
+      particle_registry::enable_system(INT(0), false);
       return Value::nil();
 
   - name: ISPARTICLESYSTEMENABLED
@@ -215,7 +227,7 @@ functions:
     working: true
     custom_body: |
       // Check if particle system is enabled
-      return Value::from_bool(true);
+      return Value::from_bool(particle_registry::is_system_enabled(INT(0)));
 
   - name: GETPARTICLESYSTEMCOUNT
     raylib_name: GetParticleSystemCount
@@ -226,7 +238,7 @@ functions:
     working: true
     custom_body: |
       // Get particle system count
-      return Value::from_number(0);
+      return Value::from_int(particle_registry::get_system_count());
 
   - name: CLEARALLPARTICLESYSTEMS
     raylib_name: ClearAllParticleSystems
@@ -237,4 +249,5 @@ functions:
     working: true
     custom_body: |
       // Clear all particle systems
+      particle_registry::clear_all_systems();
       return Value::nil();

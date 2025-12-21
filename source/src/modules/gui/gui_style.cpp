@@ -10,20 +10,20 @@ GuiStyle::GuiStyle() {
     load_default_style();
 }
 
-void GuiStyle::set_color(const std::string& property, const Color& color) {
+void GuiStyle::set_color(const std::string& property, const GuiColor& color) {
     colors[property] = color;
 }
 
 void GuiStyle::set_color(const std::string& property, int r, int g, int b, int a) {
-    colors[property] = Color(r, g, b, a);
+    colors[property] = GuiColor(r, g, b, a);
 }
 
-Color GuiStyle::get_color(const std::string& property) const {
+GuiColor GuiStyle::get_color(const std::string& property) const {
     auto it = colors.find(property);
     if (it != colors.end()) {
         return it->second;
     }
-    return Color(0, 0, 0, 255); // Default black
+    return GuiColor(0, 0, 0, 255); // Default black
 }
 
 bool GuiStyle::has_color(const std::string& property) const {
@@ -224,7 +224,7 @@ GuiStyle GuiStyleManager::default_style;
 GuiStyle GuiStyleManager::current_style;
 std::unordered_map<std::string, GuiStyle> GuiStyleManager::named_styles;
 
-void GuiStyleManager::set_global_color(const std::string& property, const Color& color) {
+void GuiStyleManager::set_global_color(const std::string& property, const GuiColor& color) {
     current_style.set_color(property, color);
 }
 
@@ -232,7 +232,7 @@ void GuiStyleManager::set_global_color(const std::string& property, int r, int g
     current_style.set_color(property, r, g, b, a);
 }
 
-Color GuiStyleManager::get_global_color(const std::string& property) {
+GuiColor GuiStyleManager::get_global_color(const std::string& property) {
     return current_style.get_color(property);
 }
 

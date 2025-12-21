@@ -39,6 +39,28 @@ private:
     return false;
   }
   
+  // Helper: Match ENDFUNCTION (single token) or END FUNCTION (two tokens)
+  bool match_end_function() {
+    if (match(Tok::EndFunction)) {
+      return true;
+    }
+    if (match2(Tok::End, Tok::Function)) {
+      return true;
+    }
+    return false;
+  }
+  
+  // Helper: Match ENDSUB (single token) or END SUB (two tokens)
+  bool match_end_sub() {
+    if (match(Tok::EndSub)) {
+      return true;
+    }
+    if (match2(Tok::End, Tok::Sub)) {
+      return true;
+    }
+    return false;
+  }
+  
   // Language Engineering: Statement parser without newline skipping
   // Used by stmt_list_until to avoid double-skipping
   std::unique_ptr<Stmt> parse_statement_no_skip();
@@ -53,6 +75,7 @@ private:
   std::unique_ptr<Stmt> parse_let();
   std::unique_ptr<Stmt> parse_const();
   std::unique_ptr<Stmt> parse_if();
+  std::unique_ptr<Stmt> parse_ifn();
   std::unique_ptr<Stmt> parse_while();
   std::unique_ptr<Stmt> parse_for();
   std::unique_ptr<Stmt> parse_sub_decl();
@@ -68,6 +91,7 @@ private:
   std::unique_ptr<Stmt> parse_type_decl();
   std::unique_ptr<Stmt> parse_module_decl();
   std::unique_ptr<Stmt> parse_for_each();
+  std::unique_ptr<Stmt> parse_select_case();
   std::unique_ptr<Stmt> parse_event_handler();
   std::unique_ptr<Stmt> parse_assert();
   std::unique_ptr<Stmt> parse_breakpoint();
@@ -76,8 +100,10 @@ private:
   std::unique_ptr<Stmt> parse_await();
   std::unique_ptr<Stmt> parse_operator_decl();
   std::unique_ptr<Stmt> parse_import();
+  std::unique_ptr<Stmt> parse_do();
+  std::unique_ptr<Stmt> parse_repeat_until();
   FunctionParam parse_function_param();
-  std::vector<std::unique_ptr<Stmt>> stmt_list_until(Tok end1, Tok end2);
+  std::vector<std::unique_ptr<Stmt>> stmt_list_until(Tok end1, Tok end2, Tok end3 = Tok::Eof, Tok end4 = Tok::Eof);
   std::unique_ptr<Expr> expression();
   std::unique_ptr<Expr> parse_lambda();
   std::unique_ptr<Expr> parse_interpolated_string();
@@ -93,11 +119,15 @@ private:
   std::unique_ptr<Stmt> parse_using();
   std::unique_ptr<Stmt> parse_enum();
   std::unique_ptr<Stmt> parse_union();
-  std::unique_ptr<Stmt> parse_try_catch();
-  std::unique_ptr<Stmt> parse_throw();
+  std::unique_ptr<Stmt> parse_global_decl();
+  std::unique_ptr<Stmt> parse_local_decl();
   std::unique_ptr<Expr> or_();
   std::unique_ptr<Expr> xor_();
   std::unique_ptr<Expr> and_();
+  std::unique_ptr<Expr> bitwise_or();
+  std::unique_ptr<Expr> bitwise_xor();
+  std::unique_ptr<Expr> bitwise_and();
+  std::unique_ptr<Expr> shift();
   std::unique_ptr<Expr> equality();
   std::unique_ptr<Expr> comparison();
   std::unique_ptr<Expr> term();

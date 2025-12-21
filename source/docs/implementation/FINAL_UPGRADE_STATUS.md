@@ -92,7 +92,7 @@ cyberbasic/
 └── .clang-tidy            # Code analysis ✅
 ```
 
-## 🎯 Key Achievements
+## Key Achievements
 
 1. ✅ **Zero Duplicates**: All duplicate code removed
 2. ✅ **Modular Design**: Clean separation of concerns
@@ -115,7 +115,7 @@ cyberbasic/
 
 **Overall Progress: ~70%**
 
-## 🚀 What's Been Accomplished
+## What's Been Accomplished
 
 ### Codebase Transformation
 - From monolithic to modular architecture
@@ -152,7 +152,7 @@ cyberbasic/
 - Debugging tools
 - Developer utilities
 
-## ✨ Highlights
+## Highlights
 
 The CyberBasic codebase has been successfully transformed into a:
 - **Modern** - C++20, best practices

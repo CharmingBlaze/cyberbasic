@@ -1,8 +1,10 @@
+// Include raylib.h at global scope BEFORE any bas headers that open namespace bas
+#include "raylib.h"
+
 #include "bas/raymath.hpp"
 #include "bas/value.hpp"
 #include "bas/builtins.hpp"
 #include "bas/raymath_helpers.hpp"
-#include "raylib.h"
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #include "raymath.h"

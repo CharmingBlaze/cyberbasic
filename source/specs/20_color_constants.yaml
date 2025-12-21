@@ -218,3 +218,5 @@ functions:
       ::Color result = ::GetColor(INT(0));
       return Value::from_string(std::to_string(result.r) + "," + std::to_string(result.g) + "," + std::to_string(result.b) + "," + std::to_string(result.a));
 
+
+

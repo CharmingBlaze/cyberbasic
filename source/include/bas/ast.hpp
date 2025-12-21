@@ -20,6 +20,7 @@ struct Variable : Expr {
 
 struct Unary : Expr {
   Tok op; std::unique_ptr<Expr> right;
+  Unary() : op(Tok::Eof), right(nullptr) {}
   Unary(Tok o, std::unique_ptr<Expr> r): op(o), right(std::move(r)) {}
 };
 
@@ -117,7 +118,13 @@ struct IfThenEndIf : Stmt {
 struct WhileWend : Stmt { std::unique_ptr<Expr> cond; std::vector<std::unique_ptr<Stmt>> body; };
 
 // DO ... LOOP (infinite loop, exit via BREAK)
-struct DoLoop : Stmt { std::vector<std::unique_ptr<Stmt>> body; };
+struct DoLoop : Stmt { 
+  std::vector<std::unique_ptr<Stmt>> body; 
+  std::unique_ptr<Expr> untilCond; // Optional: LOOP UNTIL condition
+  std::unique_ptr<Expr> whileCond; // Optional: LOOP WHILE condition
+  bool hasUntil{false};
+  bool hasWhile{false};
+};
 
 // REPEAT ... UNTIL <cond> (post-test loop; executes body, then exits when cond is true)
 struct RepeatUntil : Stmt { std::vector<std::unique_ptr<Stmt>> body; std::unique_ptr<Expr> cond; };
@@ -177,6 +184,10 @@ struct CaseBranch {
   bool isRel{false};
   Tok relOp{Tok::Eq};
   std::unique_ptr<Expr> relExpr;
+  // Optional range form: CASE start TO end
+  bool isRange{false};
+  std::unique_ptr<Expr> rangeStart;
+  std::unique_ptr<Expr> rangeEnd;
 };
 
 struct SelectCaseStmt : Stmt {
@@ -321,6 +332,13 @@ struct NullCoalesceExpr : Expr {
   std::unique_ptr<Expr> right;
 };
 
+// Ternary operator: condition ? trueValue : falseValue
+struct TernaryExpr : Expr {
+  std::unique_ptr<Expr> condition;
+  std::unique_ptr<Expr> trueValue;
+  std::unique_ptr<Expr> falseValue;
+};
+
 // Tuple literal: (x, y, z)
 struct TupleLiteral : Expr {
   std::vector<std::unique_ptr<Expr>> elements;
@@ -350,20 +368,6 @@ struct MatchExpr : Expr {
   std::unique_ptr<Expr> defaultCase; // CASE ELSE
 };
 
-// Try/Catch/Finally block: TRY ... CATCH error ... FINALLY ... END TRY
-struct TryCatchStmt : Stmt {
-  std::vector<std::unique_ptr<Stmt>> tryBody;
-  std::string catchVar; // Variable name for caught exception
-  std::vector<std::unique_ptr<Stmt>> catchBody;
-  std::vector<std::unique_ptr<Stmt>> finallyBody;
-  bool hasCatch{false};
-  bool hasFinally{false};
-};
-
-// Throw statement: THROW error
-struct ThrowStmt : Stmt {
-  std::unique_ptr<Expr> error; // Error value to throw
-};
 
 // Enum declaration
 struct EnumValue {

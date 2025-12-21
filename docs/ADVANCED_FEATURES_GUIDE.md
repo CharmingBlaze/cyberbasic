@@ -1364,50 +1364,58 @@ loadedPlayer.fromJSON(json_data$)
 
 ## Error Handling and Debugging
 
-### TRY-CATCH Blocks
+### Error Handling
 
-Handle errors gracefully:
-
-```basic
-TRY
-    VAR file$ = READFILE("data.txt")
-    VAR data = VAL(file$)
-    PRINT "Data: " + STR(data)
-CATCH error
-    PRINT "Error reading file: " + error
-ENDTRY
-```
-
-### Nested TRY-CATCH
+CyberBASIC uses standard error propagation. Functions that may fail should be checked using conditional logic:
 
 ```basic
-TRY
-    VAR file$ = READFILE("config.json")
-    TRY
-        VAR config = Config()
-        config.fromJSON(file$)
-    CATCH parseError
-        PRINT "JSON parse error: " + parseError
-    ENDTRY
-CATCH fileError
-    PRINT "File error: " + fileError
-ENDTRY
+VAR file$ = READFILE("data.txt")
+IF file$ = "" THEN
+    PRINT "Error reading file"
+    RETURN
+ENDIF
+
+VAR data = VAL(file$)
+IF data = 0 AND file$ <> "0" THEN
+    PRINT "Error: Invalid number format"
+    RETURN
+ENDIF
+
+PRINT "Data: " + STR(data)
 ```
 
-### FINALLY Blocks
+### Nested Error Checking
 
-Execute code regardless of errors:
+```basic
+VAR file$ = READFILE("config.json")
+IF file$ = "" THEN
+    PRINT "File error: Could not read config.json"
+    RETURN
+ENDIF
+
+VAR config = Config()
+IF NOT config.fromJSON(file$) THEN
+    PRINT "JSON parse error: Invalid format"
+    VAR defaultConfig = Config()
+    config = defaultConfig
+ENDIF
+```
+
+### Resource Cleanup
+
+Always clean up resources using conditional logic:
 
 ```basic
 VAR file = OPENFILE("data.txt", "r")
-TRY
+IF file <> NIL THEN
     VAR content$ = READFILE(file)
-    PROCESS content$
-CATCH error
-    PRINT "Error: " + error
-FINALLY
-    CLOSEFILE(file)  REM Always executed
-ENDTRY
+    IF content$ <> "" THEN
+        PROCESS content$
+    ELSE
+        PRINT "Error reading file"
+    ENDIF
+    CLOSEFILE(file)
+ENDIF
 ```
 
 ### Assertions

@@ -1,3 +1,6 @@
+// Include raylib.h at global scope BEFORE any bas headers that might open namespace bas
+#include <raylib.h>
+
 #include "bas/lexer.hpp"
 #include "bas/parser.hpp"
 #include "bas/runtime.hpp"
@@ -41,15 +44,22 @@
 #include "bas/streaming.hpp"
 #include "bas/enhanced_events.hpp"
 #include "bas/screen_transitions.hpp"
+// Include STL headers at global scope BEFORE any bas headers that might open namespace bas
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
-#include <raylib.h>
-#include <raylib.h>
+#include "bas/yaml_module_loader.hpp"
 
 #if defined(_WIN32) && defined(_DEBUG)
 #include <windows.h>
 #include <cstdio>
+// Undefine Windows API macros to avoid conflicts with Raylib functions/types
+#ifdef DrawText
+#undef DrawText
+#endif
+#ifdef Rectangle
+#undef Rectangle
+#endif
 #endif
 #include <string>
 #include <cstring>
@@ -70,6 +80,11 @@ void print_usage(const char* program_name) {
     std::cerr << "                   Default is permissive (agklite features ON)." << std::endl;
     std::cerr << "                   Use --dialect classic to enforce strict classic." << std::endl;
     std::cerr << "  --agk             [deprecated - will be removed] Alias for --dialect agklite" << std::endl;
+    std::cerr << "  --modules        Enable runtime YAML module loading (default: auto-detect)" << std::endl;
+    std::cerr << "  --no-modules     Disable runtime YAML module loading" << std::endl;
+    std::cerr << "  --modules-dir <path>  Specify modules directory (default: ./modules)" << std::endl;
+    std::cerr << "  --strict-modules Enable strict module validation (errors on missing bindings)" << std::endl;
+    std::cerr << "  --validate-modules Validate all YAML modules and print report" << std::endl;
     std::cerr << "  --help, -h      Show this help message" << std::endl;
     std::cout << std::endl;
     std::cout << "Examples:" << std::endl;
@@ -80,10 +95,18 @@ void print_usage(const char* program_name) {
 }
 
 // Forward declaration for file execution
-int execute_basic_file(const std::string& filename, bool debug_mode, bool verbose_mode);
+int execute_basic_file(const std::string& filename, bool debug_mode, bool verbose_mode, 
+                       bool enable_modules = true, const std::string& modules_dir = "modules",
+                       bool strict_modules = false);
+
+// Forward declaration for welcome screen
+int show_welcome_screen(bool debug_mode, bool verbose_mode, bool enable_modules = true, const std::string& modules_dir = "modules", bool strict_modules = false);
+
+// Forward declaration for module validation
+int validate_modules(const std::string& modules_dir, bool strict_mode);
 
 // Welcome screen with drag-and-drop functionality
-int show_welcome_screen(bool debug_mode, bool verbose_mode) {
+int show_welcome_screen(bool debug_mode, bool verbose_mode, bool enable_modules, const std::string& modules_dir, bool strict_modules) {
     // Initialize window
     const int screenWidth = 800;
     const int screenHeight = 600;
@@ -165,7 +188,7 @@ int show_welcome_screen(bool debug_mode, bool verbose_mode) {
                         // Found main.bas, run it directly
                         UnloadDroppedFiles(droppedFiles);
                         CloseWindow();
-                        return execute_basic_file(mainBasPath.string(), debug_mode, verbose_mode);
+                        return execute_basic_file(mainBasPath.string(), debug_mode, verbose_mode, enable_modules, modules_dir, strict_modules);
                     } else {
                         // No main.bas found, scan for .bas files and show browser
                         currentPath = path.string();
@@ -179,7 +202,7 @@ int show_welcome_screen(bool debug_mode, bool verbose_mode) {
                     if (ext == ".bas" || ext == ".basic") {
                         UnloadDroppedFiles(droppedFiles);
                         CloseWindow();
-                        return execute_basic_file(filePath, debug_mode, verbose_mode);
+                        return execute_basic_file(filePath, debug_mode, verbose_mode, enable_modules, modules_dir, strict_modules);
                     }
                 }
             }
@@ -226,7 +249,7 @@ int show_welcome_screen(bool debug_mode, bool verbose_mode) {
                     if (fileIndex >= 0 && fileIndex < (int)basFiles.size()) {
                         std::string filePath = (std::filesystem::path(currentPath) / basFiles[fileIndex]).string();
                         CloseWindow();
-                        return execute_basic_file(filePath, debug_mode, verbose_mode);
+                        return execute_basic_file(filePath, debug_mode, verbose_mode, enable_modules, modules_dir, strict_modules);
                     }
                 }
             }
@@ -261,7 +284,7 @@ int show_welcome_screen(bool debug_mode, bool verbose_mode) {
                         if (fileIndex >= 0 && fileIndex < (int)basFiles.size()) {
                             std::string filePath = (std::filesystem::path(currentPath) / basFiles[fileIndex]).string();
                             CloseWindow();
-                            return execute_basic_file(filePath, debug_mode, verbose_mode);
+                            return execute_basic_file(filePath, debug_mode, verbose_mode, enable_modules, modules_dir, strict_modules);
                         }
                     }
                 }
@@ -295,7 +318,11 @@ int show_welcome_screen(bool debug_mode, bool verbose_mode) {
             y += 60;
             
             // Drop zone
-            Rectangle dropZone = {(float)(centerX - 200), (float)y, 400.0f, 150.0f};
+            struct Rectangle dropZone;
+            dropZone.x = (float)(centerX - 200);
+            dropZone.y = (float)y;
+            dropZone.width = 400.0f;
+            dropZone.height = 150.0f;
             Color currentDropColor = isDragging ? dropZoneActiveColor : dropZoneColor;
             currentDropColor.a = (unsigned char)(255 * dropZoneAlpha);
             DrawRectangleRec(dropZone, currentDropColor);
@@ -389,7 +416,8 @@ int show_welcome_screen(bool debug_mode, bool verbose_mode) {
 }
 
 // Execute a BASIC file with the given options
-int execute_basic_file(const std::string& filename, bool debug_mode, bool verbose_mode) {
+int execute_basic_file(const std::string& filename, bool debug_mode, bool verbose_mode, 
+                       bool enable_modules, const std::string& modules_dir, bool strict_modules) {
     // Use permissive mode by default
     bool agk_mode = true;
     std::string dialect;
@@ -653,6 +681,12 @@ int execute_basic_file(const std::string& filename, bool debug_mode, bool verbos
     bas::register_raymath_functions(R);
     bas::register_raygui_functions(R);
     
+    // Create native function registry for YAML module bindings (populated after raylib registration)
+    bas::NativeFunctionRegistry native_registry;
+    
+    // Populate native registry with raylib functions so YAML modules can reference them
+    bas::populate_raylib_natives(native_registry, R);
+    
     // Game programming systems
     bas::register_game_systems_bindings(R);
     bas::register_navigation_functions(R);
@@ -713,6 +747,62 @@ int execute_basic_file(const std::string& filename, bool debug_mode, bool verbos
         std::cerr << "  Built-in functions registered: " << R.size() << std::endl;
     }
     
+    // ------------------------------------------------------------
+    // Optional: Runtime YAML module loading
+    // ------------------------------------------------------------
+    // This allows dynamic module loading from YAML files without recompilation.
+    // Modules can extend functions, namespaces, types, and constructors.
+    // Place after all built-ins are registered so modules can override/extend them.
+    // Place before interpreter starts so modules are available to scripts.
+    if (enable_modules) {
+        std::filesystem::path modules_path = modules_dir;
+        
+        // Auto-detect: prefer modules directory relative to the script being executed
+        if (filename != "-" && filename != "") {
+            std::filesystem::path script_path = std::filesystem::path(filename).parent_path();
+            std::filesystem::path script_modules = script_path / "modules";
+            if (std::filesystem::exists(script_modules) && std::filesystem::is_directory(script_modules)) {
+                modules_path = script_modules;
+            } else if (modules_dir == "modules") {
+                // Fallback to current directory modules if script-relative doesn't exist
+                modules_path = "modules";
+            }
+        }
+        
+        if (std::filesystem::exists(modules_path) && std::filesystem::is_directory(modules_path)) {
+            // Native registry is already populated with raylib functions above
+            // YAML modules can now reference raylib functions via 'native' field or 'raylib_name' field
+            
+            // Configure loader options
+            bas::YamlModuleLoader::LoadOptions loader_options;
+            loader_options.strict_mode = strict_modules;
+            loader_options.allow_override = false;  // Don't allow overriding built-ins by default
+            loader_options.verbose = verbose_mode || debug_mode;
+            
+            // Create YAML module loader with all registries
+            bas::YamlModuleLoader yaml_loader(R, &namespace_registry, &type_registry, &native_registry, loader_options);
+            
+            // Load all YAML modules from the directory
+            size_t loaded = yaml_loader.load_modules_from_directory(modules_path);
+            
+            if (loaded > 0) {
+                if (debug_mode) {
+                    std::cerr << "  Runtime YAML modules loaded: " << loaded << " from " << modules_path << std::endl;
+                    auto modules = yaml_loader.get_loaded_modules();
+                    for (const auto& mod : modules) {
+                        std::cerr << "    - " << mod << std::endl;
+                    }
+                } else if (verbose_mode) {
+                    std::cerr << "Loaded " << loaded << " runtime module(s) from " << modules_path << std::endl;
+                }
+            }
+        } else if (debug_mode) {
+            std::cerr << "  Modules directory not found: " << modules_path << " (skipping runtime modules)" << std::endl;
+        }
+    } else if (debug_mode) {
+        std::cerr << "  Runtime module loading disabled (--no-modules)" << std::endl;
+    }
+    
     // Execution
     if (debug_mode) {
         std::cerr << "Phase 4: Execution..." << std::endl;
@@ -722,26 +812,9 @@ int execute_basic_file(const std::string& filename, bool debug_mode, bool verbos
     bool had_error = false;
     int exit_code = 0;
     
-    try {
-        int rc = bas::interpret(prog, R, debug_mode);
-        if (rc != 0) {
-            error_message = "Runtime error: Program returned exit code " + std::to_string(rc);
-            std::cerr << error_message << std::endl;
-            had_error = true;
-            exit_code = 70;
-        }
-    } catch (const std::exception& e) {
-        error_message = std::string("Fatal runtime error: ") + e.what();
-        std::cerr << std::endl;
-        std::cerr << error_message << std::endl;
-        if (debug_mode) {
-            std::cerr << "Exception type: " << typeid(e).name() << std::endl;
-        }
-        had_error = true;
-        exit_code = 70;
-    } catch (...) {
-        error_message = "Unknown fatal runtime error occurred";
-        std::cerr << std::endl;
+    int rc = bas::interpret(prog, R, debug_mode);
+    if (rc != 0) {
+        error_message = "Runtime error: Program returned exit code " + std::to_string(rc);
         std::cerr << error_message << std::endl;
         had_error = true;
         exit_code = 70;
@@ -817,6 +890,195 @@ int execute_basic_file(const std::string& filename, bool debug_mode, bool verbos
     return exit_code;
 }
 
+// Module validation harness
+int validate_modules(const std::string& modules_dir, bool strict_mode) {
+    std::cout << "========================================" << std::endl;
+    std::cout << "CyberBASIC Module Validation Harness" << std::endl;
+    std::cout << "========================================" << std::endl;
+    std::cout << std::endl;
+    
+    std::filesystem::path modules_path = modules_dir;
+    if (!std::filesystem::exists(modules_path)) {
+        std::cerr << "Error: Modules directory does not exist: " << modules_path << std::endl;
+        return 1;
+    }
+    
+    if (!std::filesystem::is_directory(modules_path)) {
+        std::cerr << "Error: Path is not a directory: " << modules_path << std::endl;
+        return 1;
+    }
+    
+    std::cout << "Scanning directory: " << modules_path << std::endl;
+    if (strict_mode) {
+        std::cout << "Mode: STRICT (errors on missing bindings, invalid schemas)" << std::endl;
+    } else {
+        std::cout << "Mode: PERMISSIVE (warnings only)" << std::endl;
+    }
+    std::cout << std::endl;
+    
+    // Collect all YAML files
+    std::vector<std::filesystem::path> yaml_files;
+    for (const auto& entry : std::filesystem::directory_iterator(modules_path)) {
+        if (entry.is_regular_file() && entry.path().extension() == ".yaml") {
+            yaml_files.push_back(entry.path());
+        }
+    }
+    
+    if (yaml_files.empty()) {
+        std::cout << "No YAML module files found in " << modules_path << std::endl;
+        return 0;
+    }
+    
+    std::cout << "Found " << yaml_files.size() << " module file(s)" << std::endl;
+    std::cout << std::endl;
+    
+    // Initialize registries
+    bas::FunctionRegistry R;
+    bas::NamespaceRegistry namespace_registry;
+    bas::TypeRegistry type_registry;
+    bas::NativeFunctionRegistry native_registry;
+    
+    // Configure loader with strict mode
+    bas::YamlModuleLoader::LoadOptions loader_options;
+    loader_options.strict_mode = strict_mode;
+    loader_options.allow_override = false;
+    loader_options.verbose = true;
+    
+    bas::YamlModuleLoader yaml_loader(R, &namespace_registry, &type_registry, &native_registry, loader_options);
+    
+    // Validation results
+    struct ValidationResult {
+        std::filesystem::path filepath;
+        bool valid = false;
+        std::string error;
+        bas::YamlModuleLoader::ModuleMetadata metadata;
+    };
+    
+    std::vector<ValidationResult> results;
+    results.reserve(yaml_files.size());
+    
+    // Validate each module
+    std::cout << "Validating modules..." << std::endl;
+    std::cout << std::endl;
+    
+    for (const auto& filepath : yaml_files) {
+        ValidationResult result;
+        result.filepath = filepath;
+        
+        // First, validate without loading
+        std::string validation_error;
+        if (!yaml_loader.validate_module_file(filepath, &validation_error)) {
+            result.valid = false;
+            result.error = validation_error;
+            results.push_back(result);
+            continue;
+        }
+        
+        // Try to load the module
+        if (yaml_loader.load_module(filepath)) {
+            result.valid = true;
+            result.metadata = yaml_loader.get_module_metadata(filepath.stem().string());
+        } else {
+            result.valid = false;
+            result.error = "Failed to load module (unknown error)";
+        }
+        
+        results.push_back(result);
+    }
+    
+    // Print validation report
+    std::cout << "========================================" << std::endl;
+    std::cout << "Validation Report" << std::endl;
+    std::cout << "========================================" << std::endl;
+    std::cout << std::endl;
+    
+    size_t valid_count = 0;
+    size_t invalid_count = 0;
+    
+    for (const auto& result : results) {
+        std::cout << "Module: " << result.filepath.filename().string() << std::endl;
+        
+        if (result.valid) {
+            valid_count++;
+            std::cout << "  Status: ✓ VALID" << std::endl;
+            
+            if (!result.metadata.name.empty()) {
+                std::cout << "  Name: " << result.metadata.name << std::endl;
+            }
+            if (!result.metadata.version.empty()) {
+                std::cout << "  Version: " << result.metadata.version << std::endl;
+            }
+            if (!result.metadata.author.empty()) {
+                std::cout << "  Author: " << result.metadata.author << std::endl;
+            }
+            if (!result.metadata.description.empty()) {
+                std::cout << "  Description: " << result.metadata.description << std::endl;
+            }
+            if (!result.metadata.dependencies.empty()) {
+                std::cout << "  Dependencies: ";
+                for (size_t i = 0; i < result.metadata.dependencies.size(); ++i) {
+                    if (i > 0) std::cout << ", ";
+                    std::cout << result.metadata.dependencies[i];
+                }
+                std::cout << std::endl;
+            }
+        } else {
+            invalid_count++;
+            std::cout << "  Status: ✗ INVALID" << std::endl;
+            std::cout << "  Error: " << result.error << std::endl;
+        }
+        
+        std::cout << std::endl;
+    }
+    
+    // Print dependency graph
+    auto all_metadata = yaml_loader.get_all_module_metadata();
+    if (!all_metadata.empty()) {
+        std::cout << "========================================" << std::endl;
+        std::cout << "Dependency Graph" << std::endl;
+        std::cout << "========================================" << std::endl;
+        std::cout << std::endl;
+        
+        for (const auto& meta : all_metadata) {
+            std::cout << meta.name;
+            if (!meta.version.empty()) {
+                std::cout << " v" << meta.version;
+            }
+            std::cout << std::endl;
+            
+            if (!meta.dependencies.empty()) {
+                for (const auto& dep : meta.dependencies) {
+                    std::cout << "  └─ depends on: " << dep << std::endl;
+                }
+            } else {
+                std::cout << "  └─ (no dependencies)" << std::endl;
+            }
+            std::cout << std::endl;
+        }
+    }
+    
+    // Print summary
+    std::cout << "========================================" << std::endl;
+    std::cout << "Summary" << std::endl;
+    std::cout << "========================================" << std::endl;
+    std::cout << "Total modules: " << results.size() << std::endl;
+    std::cout << "Valid: " << valid_count << std::endl;
+    std::cout << "Invalid: " << invalid_count << std::endl;
+    std::cout << "Success rate: " << (results.empty() ? 0 : (valid_count * 100 / results.size())) << "%" << std::endl;
+    std::cout << std::endl;
+    
+    if (invalid_count > 0) {
+        std::cout << "⚠️  " << invalid_count << " module(s) failed validation!" << std::endl;
+        if (strict_mode) {
+            std::cout << "Strict mode enabled - these errors must be fixed." << std::endl;
+        }
+        return 1;
+    } else {
+        std::cout << "✓ All modules validated successfully!" << std::endl;
+        return 0;
+    }
+}
+
 int main(int argc, char* argv[]) {
     bool debug_mode = false;
     for (int i = 1; i < argc; i++) {
@@ -843,6 +1105,9 @@ int main(int argc, char* argv[]) {
     bool agk_mode = true;
     std::string dialect;
     std::string filename;
+    bool enable_modules = true;  // Auto-detect by default
+    std::string modules_dir = "modules";
+    bool strict_modules = false;  // Strict module validation
     
     // Parse command line arguments
     for (int i = 1; i < argc; i++) {
@@ -860,6 +1125,26 @@ int main(int argc, char* argv[]) {
         } else if (strcmp(argv[i], "--agk") == 0) { // deprecated alias - removed
             std::cerr << "Warning: --agk flag is deprecated. Use --dialect agklite instead." << std::endl;
             dialect = "agklite";
+        } else if (strcmp(argv[i], "--modules") == 0) {
+            enable_modules = true;
+        } else if (strcmp(argv[i], "--no-modules") == 0) {
+            enable_modules = false;
+        } else if (strcmp(argv[i], "--modules-dir") == 0 && i + 1 < argc) {
+            modules_dir = std::string(argv[++i]);
+            enable_modules = true;  // Implicitly enable if directory is specified
+        } else if (strncmp(argv[i], "--modules-dir=", 14) == 0) {
+            modules_dir = std::string(argv[i] + 14);
+            enable_modules = true;  // Implicitly enable if directory is specified
+        } else if (strcmp(argv[i], "--strict-modules") == 0) {
+            strict_modules = true;
+            enable_modules = true;  // Implicitly enable if strict mode is specified
+        } else if (strcmp(argv[i], "--validate-modules") == 0) {
+            // Validate modules and exit
+            std::string validate_dir = modules_dir;
+            if (i + 1 < argc && argv[i + 1][0] != '-') {
+                validate_dir = std::string(argv[++i]);
+            }
+            return validate_modules(validate_dir, strict_modules);
         } else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
             print_usage(argv[0]);
             return 0;
@@ -887,6 +1172,11 @@ int main(int argc, char* argv[]) {
         bas::register_object_constructors(R);
         bas::register_raylib_bindings(R);
         bas::register_raymath_functions(R);
+        
+        // Populate native registry for YAML module support
+        bas::NativeFunctionRegistry native_registry;
+        bas::populate_raylib_natives(native_registry, R);
+        
         bas::register_game_systems_bindings(R);
         bas::register_navigation_functions(R);
         bas::register_physics_functions(R);
@@ -995,9 +1285,11 @@ int main(int argc, char* argv[]) {
                 if (rc != 0 && debug_mode) {
                     std::cerr << "Execution returned code: " << rc << std::endl;
                 }
-                
             } catch (const std::exception& e) {
                 std::cerr << "Error: " << e.what() << std::endl;
+                multi_line.clear();
+                in_multiline = false;
+                continue;
             }
             
             multi_line.clear();
@@ -1011,7 +1303,7 @@ int main(int argc, char* argv[]) {
 
     // If no filename specified, show welcome screen
     if (filename.empty()) {
-        return show_welcome_screen(debug_mode, verbose_mode);
+        return show_welcome_screen(debug_mode, verbose_mode, enable_modules, modules_dir, strict_modules);
     }
     
     // Handle stdin input
@@ -1033,7 +1325,7 @@ int main(int argc, char* argv[]) {
         temp << src;
         temp.close();
         
-        int result = execute_basic_file(tempFile, debug_mode, verbose_mode);
+        int result = execute_basic_file(tempFile, debug_mode, verbose_mode, enable_modules, modules_dir, strict_modules);
         
         // Clean up temporary file
         std::filesystem::remove(tempFile);
@@ -1041,5 +1333,5 @@ int main(int argc, char* argv[]) {
     }
     
     // Execute the specified file
-    return execute_basic_file(filename, debug_mode, verbose_mode);
+    return execute_basic_file(filename, debug_mode, verbose_mode, enable_modules, modules_dir, strict_modules);
 }

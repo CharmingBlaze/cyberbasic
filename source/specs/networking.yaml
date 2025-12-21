@@ -1,138 +1,131 @@
 functions:
   # === NETWORKING & WEB FEATURES ===
-  # Note: These are placeholders for future implementation
-  # Would require additional libraries like libcurl for actual HTTP functionality
+  # Fully implemented with cross-platform socket support
   
   - name: HTTPGET
     map_to: httpget
     args: [string]
     ret: string
     custom_body: |
-      // HTTP GET request - placeholder for future implementation
-      // Would use libcurl or similar for actual HTTP requests
-      return Value::from_string("HTTP GET not yet implemented");
+      // HTTP GET request - implemented with sockets
+      return http_get_impl(args);
   
   - name: HTTPPOST
     map_to: httppost
     args: [string, string]
     ret: string
     custom_body: |
-      // HTTP POST request - placeholder for future implementation
-      // Would use libcurl or similar for actual HTTP requests
-      return Value::from_string("HTTP POST not yet implemented");
+      // HTTP POST request - implemented with sockets
+      return http_post_impl(args);
   
   - name: DOWNLOADFILE
     map_to: downloadfile
     args: [string, string]
     ret: bool
     custom_body: |
-      // Download file from URL - placeholder for future implementation
-      // Would use libcurl or similar for actual file downloads
-      return Value::from_bool(false);
+      // Download file from URL - implemented with HTTP GET
+      return download_file_impl(args);
   
   - name: UPLOADFILE
     map_to: uploadfile
     args: [string, string]
     ret: bool
     custom_body: |
-      // Upload file to URL - placeholder for future implementation
-      // Would use libcurl or similar for actual file uploads
-      return Value::from_bool(false);
+      // Upload file to URL - implemented with HTTP POST
+      return upload_file_impl(args);
   
   - name: WEBSOCKETCONNECT
     map_to: websocketconnect
     args: [string]
     ret: int
     custom_body: |
-      // WebSocket connection - placeholder for future implementation
-      // Would use a WebSocket library for actual connections
-      return Value::from_int(-1);
+      // WebSocket connection - implemented with HTTP upgrade
+      return websocket_connect_impl(args);
   
   - name: WEBSOCKETSEND
     map_to: websocketsend
     args: [int, string]
     ret: bool
     custom_body: |
-      // WebSocket send message - placeholder for future implementation
-      return Value::from_bool(false);
+      // WebSocket send message - implemented with WebSocket frames
+      return websocket_send_impl(args);
   
   - name: WEBSOCKETRECEIVE
     map_to: websocketreceive
     args: [int]
     ret: string
     custom_body: |
-      // WebSocket receive message - placeholder for future implementation
-      return Value::from_string("");
+      // WebSocket receive message - implemented with WebSocket frame parsing
+      return websocket_receive_impl(args);
   
   - name: WEBSOCKETCLOSE
     map_to: websocketclose
     args: [int]
     ret: void
     custom_body: |
-      // WebSocket close connection - placeholder for future implementation
-      return Value::nil();
+      // WebSocket close connection - implemented
+      return websocket_close_impl(args);
   
   - name: TCPCONNECT
     map_to: tcpconnect
     args: [string, int]
     ret: int
     custom_body: |
-      // TCP connection - placeholder for future implementation
-      // Would use socket library for actual TCP connections
-      return Value::from_int(-1);
+      // TCP connection - implemented with sockets
+      return tcp_connect_impl(args);
   
   - name: TCPSEND
     map_to: tcpsend
     args: [int, string]
     ret: bool
     custom_body: |
-      // TCP send data - placeholder for future implementation
-      return Value::from_bool(false);
+      // TCP send data - implemented
+      return tcp_send_impl(args);
   
   - name: TCPRECEIVE
     map_to: tcpreceive
     args: [int]
     ret: string
     custom_body: |
-      // TCP receive data - placeholder for future implementation
-      return Value::from_string("");
+      // TCP receive data - implemented
+      return tcp_receive_impl(args);
   
   - name: TCPCLOSE
     map_to: tcpclose
     args: [int]
     ret: void
     custom_body: |
-      // TCP close connection - placeholder for future implementation
-      return Value::nil();
+      // TCP close connection - implemented
+      return tcp_close_impl(args);
   
   - name: UDPCREATE
     map_to: udpcreate
     args: [int]
     ret: int
     custom_body: |
-      // UDP socket creation - placeholder for future implementation
-      return Value::from_int(-1);
+      // UDP socket creation - implemented
+      return udp_create_impl(args);
   
   - name: UDPSEND
     map_to: udpsend
     args: [int, string, int, string]
     ret: bool
     custom_body: |
-      // UDP send data - placeholder for future implementation
-      return Value::from_bool(false);
+      // UDP send data - implemented
+      return udp_send_impl(args);
   
   - name: UDPRECEIVE
     map_to: udpreceive
     args: [int]
     ret: string
     custom_body: |
-      // UDP receive data - placeholder for future implementation
-      return Value::from_string("");
+      // UDP receive data - implemented
+      return udp_receive_impl(args);
   
   - name: UDPCLOSE
     map_to: udpclose
     args: [int]
     ret: void
     custom_body: |
-      // UDP close socket - placeholder for future implementation
-      return Value::nil();
+      // UDP close socket - implemented
+      return udp_close_impl(args);

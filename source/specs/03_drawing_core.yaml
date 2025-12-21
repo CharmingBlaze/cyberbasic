@@ -127,16 +127,17 @@ functions:
     ret: void
     description: "End scissor mode"
     
-  # === VR MODE (PLACEHOLDER) ===
+  # === VR MODE ===
   - name: BEGINVRSTEREOMODE
     raylib_name: BeginVrStereoMode
     args: [int]
     ret: void
     description: "Begin stereo rendering (requires VR simulator)"
     custom_body: |
-      // VR not implemented yet - placeholder
-      // ::VrStereoConfig config = {};
-      // ::BeginVrStereoMode(config);
+      // VR stereo mode - use raylib's VR config
+      ::VrDeviceInfo device = {2160, 1200, 0.110f, 0.062f, 0.041f, 0.07f, 0.064f, {1.0f, 0.22f, 0.24f, 0.0f}, {0.996f, -0.004f, 1.014f, 0.0f}};
+      ::VrStereoConfig config = ::LoadVrStereoConfig(device);
+      ::BeginVrStereoMode(config);
     
   - name: ENDVRSTEREOMODE
     raylib_name: EndVrStereoMode
@@ -144,5 +145,5 @@ functions:
     ret: void
     description: "End stereo rendering (requires VR simulator)"
     custom_body: |
-      // VR not implemented yet - placeholder
-      // ::EndVrStereoMode();
+      // End VR stereo mode
+      ::EndVrStereoMode();

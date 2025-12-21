@@ -44,12 +44,15 @@ struct Env {
   std::unordered_set<std::string> globals_here; // names in this scope that should bind to root env
   bool strict{false};
   const Env* parent{nullptr};
-  [[nodiscard]] static std::string up(const std::string& s){ 
+  // Normalize identifier to lowercase for case-insensitive matching
+  [[nodiscard]] static std::string normalize(const std::string& s){ 
     std::string r; 
     r.reserve(s.size()); 
-    for(char c:s) r.push_back(static_cast<char>(std::toupper(static_cast<unsigned char>(c)))); 
+    for(char c:s) r.push_back(static_cast<char>(std::tolower(static_cast<unsigned char>(c)))); 
     return r; 
   }
+  // Legacy alias for backward compatibility (now normalizes to lowercase)
+  [[nodiscard]] static std::string up(const std::string& s){ return normalize(s); }
   bool is_declared_here(const std::string& ukey) const { return declared.find(ukey) != declared.end(); }
   bool is_declared(const std::string& n) const {
     auto key = up(n);
@@ -344,6 +347,10 @@ static Value eval(Env& env, FunctionRegistry& R, const Expr* e, bool debug_mode)
     if(u->op==Tok::Minus) return Value::from_number(-to_num(r));
     if(u->op==Tok::Plus) return Value::from_number(+to_num(r));
     if(u->op==Tok::Not) return Value::from_bool(!truthy(r));
+    if(u->op==Tok::BitNot) {
+      long long val = static_cast<long long>(to_num(r));
+      return Value::from_int(~val);
+    }
     throw std::runtime_error("invalid unary op");
   }
   if(auto b = dynamic_cast<const Binary*>(e)){
@@ -492,14 +499,9 @@ static Value eval(Env& env, FunctionRegistry& R, const Expr* e, bool debug_mode)
         return propValue;
       }
       
-      // Try case-insensitive search
+      // Try case-insensitive search (keys are already normalized)
       for (const auto& pair : map) {
-        std::string keyUpper;
-        keyUpper.reserve(pair.first.size());
-        for (char c : pair.first) {
-          keyUpper.push_back(static_cast<char>(std::toupper(static_cast<unsigned char>(c))));
-        }
-        if (keyUpper == member_upper) {
+        if (Env::up(pair.first) == member_upper) {
           return pair.second;
         }
       }
@@ -522,10 +524,10 @@ static Value eval(Env& env, FunctionRegistry& R, const Expr* e, bool debug_mode)
             if(!func_name.empty()){
               // Return a method object that can be called
               Value::Map method_obj;
-              method_obj["_type"] = Value::from_string("Method");
-              method_obj["_namespace"] = Value::from_string(ns_name);
-              method_obj["_method"] = Value::from_string(method_name);
-              method_obj["_function"] = Value::from_string(func_name);
+              method_obj[Env::up("_type")] = Value::from_string(Env::up("Method"));
+              method_obj[Env::up("_namespace")] = Value::from_string(Env::up(ns_name));
+              method_obj[Env::up("_method")] = Value::from_string(Env::up(method_name));
+              method_obj[Env::up("_function")] = Value::from_string(Env::up(func_name));
               return Value::from_map(std::move(method_obj));
             }
           }
@@ -542,10 +544,10 @@ static Value eval(Env& env, FunctionRegistry& R, const Expr* e, bool debug_mode)
         if(fn){
           // Return a method object
           Value::Map method_obj;
-          method_obj["_type"] = Value::from_string("Method");
-          method_obj["_object"] = obj; // Store reference to object
-          method_obj["_method"] = Value::from_string(member_upper);
-          method_obj["_function"] = Value::from_string(method_func);
+          method_obj[Env::up("_type")] = Value::from_string(Env::up("Method"));
+          method_obj[Env::up("_object")] = obj; // Store reference to object
+          method_obj[Env::up("_method")] = Value::from_string(member_upper);
+          method_obj[Env::up("_function")] = Value::from_string(Env::up(method_func));
           return Value::from_map(std::move(method_obj));
         }
       }
@@ -622,10 +624,10 @@ static Value eval(Env& env, FunctionRegistry& R, const Expr* e, bool debug_mode)
       const auto* fn = R.find(method_func);
       if(fn){
         Value::Map method_obj;
-        method_obj["_type"] = Value::from_string("Method");
-        method_obj["_object"] = obj;
-        method_obj["_method"] = Value::from_string(Env::up(ma->member));
-        method_obj["_function"] = Value::from_string(method_func);
+        method_obj[Env::up("_type")] = Value::from_string(Env::up("Method"));
+        method_obj[Env::up("_object")] = obj;
+        method_obj[Env::up("_method")] = Value::from_string(Env::up(ma->member));
+        method_obj[Env::up("_function")] = Value::from_string(Env::up(method_func));
         return Value::from_map(std::move(method_obj));
       }
     }
@@ -637,14 +639,15 @@ static Value eval(Env& env, FunctionRegistry& R, const Expr* e, bool debug_mode)
       const auto* fn = R.find(method_func);
       if(fn){
         Value::Map method_obj;
-        method_obj["_type"] = Value::from_string("Method");
-        method_obj["_object"] = obj;
-        method_obj["_method"] = Value::from_string(Env::up(ma->member));
-        method_obj["_function"] = Value::from_string(method_func);
+        method_obj[Env::up("_type")] = Value::from_string(Env::up("Method"));
+        method_obj[Env::up("_object")] = obj;
+        method_obj[Env::up("_method")] = Value::from_string(Env::up(ma->member));
+        method_obj[Env::up("_function")] = Value::from_string(Env::up(method_func));
         return Value::from_map(std::move(method_obj));
       }
       // Try array properties (length, etc.)
-      if (ma->member == "length" || ma->member == "LENGTH" || ma->member == "size" || ma->member == "SIZE") {
+      // Identifiers are normalized to lowercase, so just check lowercase
+      if (ma->member == "length" || ma->member == "size") {
         return Value::from_int(static_cast<long long>(obj.as_array().size()));
       }
     }
@@ -656,14 +659,15 @@ static Value eval(Env& env, FunctionRegistry& R, const Expr* e, bool debug_mode)
       const auto* fn = R.find(method_func);
       if(fn){
         Value::Map method_obj;
-        method_obj["_type"] = Value::from_string("Method");
-        method_obj["_object"] = obj;
-        method_obj["_method"] = Value::from_string(Env::up(ma->member));
-        method_obj["_function"] = Value::from_string(method_func);
+        method_obj[Env::up("_type")] = Value::from_string(Env::up("Method"));
+        method_obj[Env::up("_object")] = obj;
+        method_obj[Env::up("_method")] = Value::from_string(Env::up(ma->member));
+        method_obj[Env::up("_function")] = Value::from_string(Env::up(method_func));
         return Value::from_map(std::move(method_obj));
       }
       // Try string properties (length, etc.)
-      if (ma->member == "length" || ma->member == "LENGTH" || ma->member == "size" || ma->member == "SIZE") {
+      // Identifiers are normalized to lowercase, so just check lowercase
+      if (ma->member == "length" || ma->member == "size") {
         return Value::from_int(static_cast<long long>(obj.as_string().size()));
       }
     }
@@ -821,19 +825,19 @@ static Value eval(Env& env, FunctionRegistry& R, const Expr* e, bool debug_mode)
   if (auto lambda = dynamic_cast<const LambdaExpr*>(e)) {
     // Lambda expressions - create a callable function object with closure
     Value::Map funcObj;
-    funcObj["_type"] = Value::from_string("Lambda");
-    funcObj["_paramCount"] = Value::from_int(static_cast<long long>(lambda->params.size()));
+    funcObj[Env::up("_type")] = Value::from_string(Env::up("Lambda"));
+    funcObj[Env::up("_paramCount")] = Value::from_int(static_cast<long long>(lambda->params.size()));
     
     // Store closure (captured environment)
     Value::Map closure;
     for (const auto& pair : env.vars) {
       closure[pair.first] = pair.second;
     }
-    funcObj["_closure"] = Value::from_map(std::move(closure));
+    funcObj[Env::up("_closure")] = Value::from_map(std::move(closure));
     
     // Store lambda AST (in a real implementation, this would be serialized)
     // For now, we'll store a reference that can be looked up
-    funcObj["_lambdaId"] = Value::from_int(static_cast<long long>(reinterpret_cast<intptr_t>(lambda)));
+    funcObj[Env::up("_lambdaId")] = Value::from_int(static_cast<long long>(reinterpret_cast<intptr_t>(lambda)));
     
     return Value::from_map(std::move(funcObj));
   }
@@ -948,7 +952,7 @@ static Value eval(Env& env, FunctionRegistry& R, const Expr* e, bool debug_mode)
         const TypeInfo* typeInfo = typeReg->getType(typeName);
         if (typeInfo) {
           for (const auto& [methodName, signature] : typeInfo->methods) {
-            methods.push_back(Value::from_string(methodName));
+            methods.push_back(Value::from_string(Env::up(methodName)));
           }
         }
       }
@@ -1137,10 +1141,10 @@ static Value eval(Env& env, FunctionRegistry& R, const Expr* e, bool debug_mode)
           if(fn){
             // Return a method object
             Value::Map method_obj;
-            method_obj["_type"] = Value::from_string("Method");
-            method_obj["_object"] = obj;
-            method_obj["_method"] = Value::from_string(member_upper);
-            method_obj["_function"] = Value::from_string(method_func);
+            method_obj[Env::up("_type")] = Value::from_string(Env::up("Method"));
+            method_obj[Env::up("_object")] = obj;
+            method_obj[Env::up("_method")] = Value::from_string(member_upper);
+            method_obj[Env::up("_function")] = Value::from_string(Env::up(method_func));
             return Value::from_map(std::move(method_obj));
           }
         }
@@ -1150,10 +1154,10 @@ static Value eval(Env& env, FunctionRegistry& R, const Expr* e, bool debug_mode)
         const auto* fn = R.find(method_func);
         if(fn){
           Value::Map method_obj;
-          method_obj["_type"] = Value::from_string("Method");
-          method_obj["_object"] = obj;
-          method_obj["_method"] = Value::from_string(Env::up(null_safe->member));
-          method_obj["_function"] = Value::from_string(method_func);
+          method_obj[Env::up("_type")] = Value::from_string(Env::up("Method"));
+          method_obj[Env::up("_object")] = obj;
+          method_obj[Env::up("_method")] = Value::from_string(Env::up(null_safe->member));
+          method_obj[Env::up("_function")] = Value::from_string(Env::up(method_func));
           return Value::from_map(std::move(method_obj));
         }
         // String properties
@@ -1167,10 +1171,10 @@ static Value eval(Env& env, FunctionRegistry& R, const Expr* e, bool debug_mode)
         const auto* fn = R.find(method_func);
         if(fn){
           Value::Map method_obj;
-          method_obj["_type"] = Value::from_string("Method");
-          method_obj["_object"] = obj;
-          method_obj["_method"] = Value::from_string(Env::up(null_safe->member));
-          method_obj["_function"] = Value::from_string(method_func);
+          method_obj[Env::up("_type")] = Value::from_string(Env::up("Method"));
+          method_obj[Env::up("_object")] = obj;
+          method_obj[Env::up("_method")] = Value::from_string(Env::up(null_safe->member));
+          method_obj[Env::up("_function")] = Value::from_string(Env::up(method_func));
           return Value::from_map(std::move(method_obj));
         }
         // Array properties
@@ -1187,6 +1191,14 @@ static Value eval(Env& env, FunctionRegistry& R, const Expr* e, bool debug_mode)
     Value left = eval(env, R, null_coalesce->left.get(), debug_mode);
     if (!left.is_nil()) return left;
     return eval(env, R, null_coalesce->right.get(), debug_mode);
+  }
+  if (auto ternary = dynamic_cast<const TernaryExpr*>(e)) {
+    Value cond = eval(env, R, ternary->condition.get(), debug_mode);
+    if (truthy(cond)) {
+      return eval(env, R, ternary->trueValue.get(), debug_mode);
+    } else {
+      return eval(env, R, ternary->falseValue.get(), debug_mode);
+    }
   }
   
   if (auto tuple = dynamic_cast<const TupleLiteral*>(e)) {
@@ -1338,7 +1350,7 @@ static void exec(Env& env, FunctionRegistry& R, const Stmt* s, bool debug_mode){
       } catch(const BreakSignal&) {
         break; // Exit the loop
       } catch(const ExitSignal& es) {
-        if(es.target == "WHILE") break;
+        if(es.target == "while") break;
         throw; // Re-throw if not for this loop type
       } catch(const ContinueSignal&) {
         // Continue to next iteration
@@ -1382,7 +1394,7 @@ static void exec(Env& env, FunctionRegistry& R, const Stmt* s, bool debug_mode){
       } catch(const BreakSignal&) {
         break; // Exit the loop
       } catch(const ExitSignal& es) {
-        if(es.target == "FOR") break;
+        if(es.target == "for") break;
         throw; // Re-throw if not for this loop type
       } catch(const ContinueSignal&) {
         // fallthrough to step update
@@ -1398,10 +1410,19 @@ static void exec(Env& env, FunctionRegistry& R, const Stmt* s, bool debug_mode){
       } catch(const BreakSignal&){
         break;
       } catch(const ExitSignal& es) {
-        if(es.target == "DO" || es.target == "LOOP") break;
+        if(es.target == "do" || es.target == "loop") break;
         throw; // Re-throw if not for this loop type
       } catch(const ContinueSignal&){
         // continue next iteration
+      }
+      
+      // Check LOOP UNTIL condition (exit when true)
+      if(d->hasUntil) {
+        if(truthy(eval(env, R, d->untilCond.get(), debug_mode))) break;
+      }
+      // Check LOOP WHILE condition (exit when false)
+      if(d->hasWhile) {
+        if(!truthy(eval(env, R, d->whileCond.get(), debug_mode))) break;
       }
     }
     return;
@@ -1413,7 +1434,7 @@ static void exec(Env& env, FunctionRegistry& R, const Stmt* s, bool debug_mode){
       } catch(const BreakSignal&){
         break;
       } catch(const ExitSignal& es) {
-        if(es.target == "REPEAT" || es.target == "UNTIL") break;
+        if(es.target == "repeat" || es.target == "until") break;
         throw; // Re-throw if not for this loop type
       } catch(const ContinueSignal&){
         // after continue, still evaluate condition for post-test semantics
@@ -1582,12 +1603,7 @@ static void exec(Env& env, FunctionRegistry& R, const Stmt* s, bool debug_mode){
       // Try case-insensitive assignment
       bool found = false;
       for (auto& pair : map) {
-        std::string keyUpper;
-        keyUpper.reserve(pair.first.size());
-        for (char c : pair.first) {
-          keyUpper.push_back(static_cast<char>(std::toupper(static_cast<unsigned char>(c))));
-        }
-        if (keyUpper == memberUpper) {
+        if (Env::up(pair.first) == memberUpper) {
           pair.second = val;
           found = true;
           break;
@@ -1595,7 +1611,7 @@ static void exec(Env& env, FunctionRegistry& R, const Stmt* s, bool debug_mode){
       }
       
       if (!found) {
-        // Fallback to simple assignment
+        // Fallback to simple assignment (key already normalized)
         map[memberUpper] = val;
       }
       
@@ -1635,6 +1651,14 @@ static void exec(Env& env, FunctionRegistry& R, const Stmt* s, bool debug_mode){
           case Tok::Gte: doRun = (c >= 0); break;
           default: break;
         }
+      } else if(br.isRange){
+        // CASE start TO end (range match)
+        Value start = eval(env, R, br.rangeStart.get(), debug_mode);
+        Value end = eval(env, R, br.rangeEnd.get(), debug_mode);
+        int c1 = cmp_values(sel, start);
+        int c2 = cmp_values(sel, end);
+        // Check if sel is in range [start, end] (inclusive)
+        doRun = (c1 >= 0 && c2 <= 0);
       } else {
         // Evaluate case values, first equal match wins
         for(const auto& vexpr : br.values){
@@ -1815,75 +1839,6 @@ static void exec(Env& env, FunctionRegistry& R, const Stmt* s, bool debug_mode){
     }
     return;
   }
-  if (auto try_catch = dynamic_cast<const TryCatchStmt*>(s)) {
-    // Execute try block
-    try {
-      for (auto& stmt : try_catch->tryBody) {
-        exec(env, R, stmt.get(), debug_mode);
-      }
-    } catch (const std::exception& e) {
-      // Catch block
-      if (try_catch->hasCatch) {
-        Env catchEnv; catchEnv.parent = &env; catchEnv.strict = env.strict;
-        if (!try_catch->catchVar.empty()) {
-          catchEnv.declare(try_catch->catchVar);
-          Value::Map errorObj;
-          errorObj["_type"] = Value::from_string("Error");
-          errorObj["message"] = Value::from_string(e.what());
-          catchEnv.set(try_catch->catchVar, Value::from_map(std::move(errorObj)));
-        }
-        for (auto& stmt : try_catch->catchBody) {
-          exec(catchEnv, R, stmt.get(), debug_mode);
-        }
-      } else {
-        // No catch block, re-throw
-        throw;
-      }
-    } catch (...) {
-      // Catch any other exception
-      if (try_catch->hasCatch) {
-        Env catchEnv; catchEnv.parent = &env; catchEnv.strict = env.strict;
-        if (!try_catch->catchVar.empty()) {
-          catchEnv.declare(try_catch->catchVar);
-          Value::Map errorObj;
-          errorObj["_type"] = Value::from_string("Error");
-          errorObj["message"] = Value::from_string("Unknown error");
-          catchEnv.set(try_catch->catchVar, Value::from_map(std::move(errorObj)));
-        }
-        for (auto& stmt : try_catch->catchBody) {
-          exec(catchEnv, R, stmt.get(), debug_mode);
-        }
-      } else {
-        throw;
-      }
-    }
-    
-    // Finally block (always executes)
-    if (try_catch->hasFinally) {
-      for (auto& stmt : try_catch->finallyBody) {
-        exec(env, R, stmt.get(), debug_mode);
-      }
-    }
-    return;
-  }
-  if (auto throw_stmt = dynamic_cast<const ThrowStmt*>(s)) {
-    Value error = eval(env, R, throw_stmt->error.get(), debug_mode);
-    std::string errorMsg;
-    if (error.is_string()) {
-      errorMsg = error.as_string();
-    } else if (error.is_map()) {
-      const auto& map = error.as_map();
-      auto msgIt = map.find("message");
-      if (msgIt != map.end() && msgIt->second.is_string()) {
-        errorMsg = msgIt->second.as_string();
-      } else {
-        errorMsg = "Error thrown";
-      }
-    } else {
-      errorMsg = "Error thrown";
-    }
-    throw std::runtime_error(errorMsg);
-  }
 }
 
 static void call_sub(Env& caller, FunctionRegistry& R, const std::string& name, const std::vector<Value>& args, bool debug_mode){
@@ -1903,7 +1858,7 @@ static void call_sub(Env& caller, FunctionRegistry& R, const std::string& name, 
     }
   } catch(const ReturnSignal&){ /* swallow - RETURN from sub */ }
   catch(const ExitSignal& es) {
-    if(es.target == "SUB") return; // Exit the sub
+    if(es.target == "sub") return; // Exit the sub
     throw; // Re-throw if not for SUB
   }
 }
@@ -1958,7 +1913,7 @@ static Value call_func(Env& caller, FunctionRegistry& R, const std::string& name
   } catch(const ReturnSignal& rs){ 
     returnValue = rs.v;
   } catch(const ExitSignal& es) {
-    if(es.target == "FUNCTION") return Value::nil(); // Exit the function
+    if(es.target == "function") return Value::nil(); // Exit the function
     throw; // Re-throw if not for FUNCTION
   }
   // Check return type if specified

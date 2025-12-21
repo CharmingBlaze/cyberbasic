@@ -58,11 +58,32 @@ functions:
     category: 3d
     description: "Draw billboard texture (pass camera ID, texture ID, x, y, z, scale, R, G, B)"
     custom_body: |
-      // TODO: Camera handling
+      ::Camera3D camera = {};
+      if (g_camera_system_3d) {
+        Camera3D* cam = g_camera_system_3d->get_active_camera();
+        if (cam) {
+          camera.position = ::Vector3{cam->position.x, cam->position.y, cam->position.z};
+          camera.target = ::Vector3{cam->target.x, cam->target.y, cam->target.z};
+          camera.up = ::Vector3{cam->up.x, cam->up.y, cam->up.z};
+          camera.fovy = cam->fov;
+          camera.projection = CAMERA_PERSPECTIVE;
+        } else {
+          camera.position = ::Vector3{0.0f, 0.0f, 0.0f};
+          camera.target = ::Vector3{0.0f, 0.0f, 1.0f};
+          camera.up = ::Vector3{0.0f, 1.0f, 0.0f};
+          camera.fovy = 60.0f;
+          camera.projection = CAMERA_PERSPECTIVE;
+        }
+      } else {
+        camera.position = ::Vector3{0.0f, 0.0f, 0.0f};
+        camera.target = ::Vector3{0.0f, 0.0f, 1.0f};
+        camera.up = ::Vector3{0.0f, 1.0f, 0.0f};
+        camera.fovy = 60.0f;
+        camera.projection = CAMERA_PERSPECTIVE;
+      }
       ::Vector3 position{(float)FLOAT(2), (float)FLOAT(3), (float)FLOAT(4)};
       ::Color tint{(unsigned char)INT(6), (unsigned char)INT(7), (unsigned char)INT(8), 255};
-      (void)position; (void)tint; // Suppress unused variable warnings
-      // ::DrawBillboard(camera, rlreg::textures.at(INT(1)), position, (float)FLOAT(5), tint);
+      ::DrawBillboard(camera, rlreg::textures.at(INT(1)), position, (float)FLOAT(5), tint);
 
   - name: DRAWBILLBOARDREC
     raylib_name: DrawBillboardRec
@@ -71,7 +92,34 @@ functions:
     category: 3d
     description: "Draw billboard texture defined by source (pass camera ID, texture ID, x, y, z, sizeX, sizeY, R, G, B)"
     custom_body: |
-      // TODO: Camera and Rectangle handling
+      ::Camera3D camera = {};
+      if (g_camera_system_3d) {
+        Camera3D* cam = g_camera_system_3d->get_active_camera();
+        if (cam) {
+          camera.position = ::Vector3{cam->position.x, cam->position.y, cam->position.z};
+          camera.target = ::Vector3{cam->target.x, cam->target.y, cam->target.z};
+          camera.up = ::Vector3{cam->up.x, cam->up.y, cam->up.z};
+          camera.fovy = cam->fov;
+          camera.projection = CAMERA_PERSPECTIVE;
+        } else {
+          camera.position = ::Vector3{0.0f, 0.0f, 0.0f};
+          camera.target = ::Vector3{0.0f, 0.0f, 1.0f};
+          camera.up = ::Vector3{0.0f, 1.0f, 0.0f};
+          camera.fovy = 60.0f;
+          camera.projection = CAMERA_PERSPECTIVE;
+        }
+      } else {
+        camera.position = ::Vector3{0.0f, 0.0f, 0.0f};
+        camera.target = ::Vector3{0.0f, 0.0f, 1.0f};
+        camera.up = ::Vector3{0.0f, 1.0f, 0.0f};
+        camera.fovy = 60.0f;
+        camera.projection = CAMERA_PERSPECTIVE;
+      }
+      ::Vector3 position{(float)FLOAT(2), (float)FLOAT(3), (float)FLOAT(4)};
+      ::Rectangle source{(float)0.0f, (float)0.0f, (float)FLOAT(5), (float)FLOAT(6)};
+      ::Vector2 size{(float)FLOAT(5), (float)FLOAT(6)};
+      ::Color tint{(unsigned char)INT(8), (unsigned char)INT(9), (unsigned char)INT(10), 255};
+      ::DrawBillboardRec(camera, rlreg::textures.at(INT(1)), source, position, size, tint);
 
   - name: DRAWBILLBOARDPRO
     raylib_name: DrawBillboardPro
@@ -80,7 +128,36 @@ functions:
     category: 3d
     description: "Draw billboard texture with rotation (pass camera ID, texture ID, x, y, z, upX, upY, upZ, sizeX, sizeY, originX, originY, rotation, R, G, B)"
     custom_body: |
-      // TODO: Camera handling
+      ::Camera3D camera = {};
+      if (g_camera_system_3d) {
+        Camera3D* cam = g_camera_system_3d->get_active_camera();
+        if (cam) {
+          camera.position = ::Vector3{cam->position.x, cam->position.y, cam->position.z};
+          camera.target = ::Vector3{cam->target.x, cam->target.y, cam->target.z};
+          camera.up = ::Vector3{cam->up.x, cam->up.y, cam->up.z};
+          camera.fovy = cam->fov;
+          camera.projection = CAMERA_PERSPECTIVE;
+        } else {
+          camera.position = ::Vector3{0.0f, 0.0f, 0.0f};
+          camera.target = ::Vector3{0.0f, 0.0f, 1.0f};
+          camera.up = ::Vector3{0.0f, 1.0f, 0.0f};
+          camera.fovy = 60.0f;
+          camera.projection = CAMERA_PERSPECTIVE;
+        }
+      } else {
+        camera.position = ::Vector3{0.0f, 0.0f, 0.0f};
+        camera.target = ::Vector3{0.0f, 0.0f, 1.0f};
+        camera.up = ::Vector3{0.0f, 1.0f, 0.0f};
+        camera.fovy = 60.0f;
+        camera.projection = CAMERA_PERSPECTIVE;
+      }
+      ::Vector3 position{(float)FLOAT(2), (float)FLOAT(3), (float)FLOAT(4)};
+      ::Vector3 up{(float)FLOAT(5), (float)FLOAT(6), (float)FLOAT(7)};
+      ::Vector2 size{(float)FLOAT(8), (float)FLOAT(9)};
+      ::Vector2 origin{(float)FLOAT(10), (float)FLOAT(11)};
+      ::Rectangle source{(float)0.0f, (float)0.0f, (float)FLOAT(8), (float)FLOAT(9)};
+      ::Color tint{(unsigned char)INT(13), (unsigned char)INT(14), (unsigned char)INT(15), 255};
+      ::DrawBillboardPro(camera, rlreg::textures.at(INT(1)), source, position, up, size, origin, (float)FLOAT(12), tint);
 
   # === MODEL FUNCTIONS ===
   - name: ISMODELVALID
@@ -119,7 +196,10 @@ functions:
     category: 3d
     description: "Update mesh vertex data in GPU (pass mesh ID, index, data as string, dataSize, offset)"
     custom_body: |
-      // TODO: Proper data handling
+      std::string dataStr = STR(2);
+      const void* data = reinterpret_cast<const void*>(dataStr.c_str());
+      ::Mesh mesh = rlreg::meshes.at(INT(0));
+      ::UpdateMeshBuffer(mesh, INT(1), data, INT(3), INT(4));
 
   - name: GETMESHBOUNDINGBOX
     raylib_name: GetMeshBoundingBox

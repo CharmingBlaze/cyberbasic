@@ -2,7 +2,7 @@
 
 Based on the current state of CyberBasic, here are the most impactful improvements we should tackle next:
 
-## 🎯 Top 3 Priorities
+## Top 3 Priorities
 
 ### 1. Object Methods (Highest Impact)
 **Status:** Not implemented  
@@ -84,7 +84,7 @@ ERROR at line 10, column 5:
 
 ---
 
-## 🔧 Medium Priority
+## Medium Priority
 
 ### 4. REPL Mode (Interactive Development)
 **Priority:** ⭐⭐  
@@ -130,7 +130,7 @@ Low Impact───────────────────────�
 
 ---
 
-## 🚀 Recommended Action Plan
+## Recommended Action Plan
 
 ### Week 1: Quick Wins
 1. **Day 1:** Better error messages for dot notation
@@ -144,7 +144,7 @@ Low Impact───────────────────────�
 
 ---
 
-## 💡 Why These Priorities?
+## Why These Priorities?
 
 1. **Object Methods** - Transforms the language from "has objects" to "objects are useful"
 2. **Better Errors** - Makes the language actually usable for development

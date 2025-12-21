@@ -61,7 +61,7 @@
 - ✅ Added to CMakeLists.txt
 - ✅ Integrated into main.cpp
 
-## 🎯 Current Capabilities
+## Current Capabilities
 
 ### Object Creation & Access
 ```basic

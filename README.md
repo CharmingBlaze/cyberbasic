@@ -145,6 +145,8 @@ The repo already includes a statically linked Windows interpreter at `bin/cyberb
 - **[Game Development Guide](docs/GAME_DEVELOPMENT_GUIDE.md)** - Complete guide to making games
 - **[2D Graphics API Guide](docs/2D_GRAPHICS_GUIDE.md)** - Learn 2D rendering, sprites, textures
 - **[3D Graphics API Guide](docs/3D_GRAPHICS_GUIDE.md)** - Learn 3D rendering, models, cameras, lighting
+- **[GUI System Guide](docs/GUI_SYSTEM_GUIDE.md)** - Complete GUI system documentation
+- **[GUI Quick Reference](docs/GUI_QUICK_REFERENCE.md)** - Quick reference for all GUI commands
 - **[Distribution Guide](docs/DISTRIBUTION_GUIDE.md)** - How to distribute your games
 
 ### Quick References
@@ -364,10 +366,15 @@ The repository includes **69+ example programs** in the `examples/` directory:
 ![Pong Game](images/pong.png)
 ![Space Invaders](images/SpaceInvaders.png)
 ![3D Model Viewer](images/3dmodelviewer.png)
+![Spinning Cube](images/spinningcube.png)
+![FPS Game](images/fps.png)
+![GUI Demo](images/GUI.png)
 
 - `pong_game.bas` - Complete Pong game with AI
 - `space_invaders.bas` - Classic Space Invaders game
 - `model_viewer.bas` - 3D model viewer with mouse orbit controls
+- `spinning_cube.bas` - Animated 3D spinning cube demonstration
+- `fps_game.bas` - First-person shooter with 3D graphics and projectile system
 - `space_defender.bas` - Space shooter with AI enemies
 - `2d_game_template.bas` - 2D game template
 - `3d_game_template.bas` - 3D game template
@@ -378,6 +385,7 @@ The repository includes **69+ example programs** in the `examples/` directory:
 - `smooth_animation_demo.bas` - Smooth animations
 - `audio_demo.bas` - Audio system
 - `gui_demo.bas` - GUI system
+- `comprehensive_gui_demo.bas` - Complete GUI demonstration with buttons, sliders, checkboxes, tabs, and more
 - `physics_demo.bas` - Physics simulation
 - `models3d_demo.bas` - 3D models
 - `complete_3d_game_demo.bas` - Complete 3D game

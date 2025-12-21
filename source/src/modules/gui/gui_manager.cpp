@@ -1,6 +1,8 @@
+// Include raylib.h at global scope BEFORE any bas headers that open namespace bas
+#include "raylib.h"
+
 #include "bas/gui_manager.hpp"
 #include "bas/gui_controls.hpp"
-#include "raylib.h"
 #include <stdexcept>
 #include <iostream>
 #include <algorithm>
@@ -41,7 +43,7 @@ int GuiManager::create_button(const std::string& name, int x, int y, int width, 
     if (!system_initialized) throw std::runtime_error("GuiManager not initialized");
     
     int id = next_control_id++;
-    Rectangle bounds(x, y, width, height);
+    GuiRectangle bounds(x, y, width, height);
     auto control = std::make_shared<GuiButton>(id, name, bounds);
     control->set_text(text);
     
@@ -56,7 +58,7 @@ int GuiManager::create_label(const std::string& name, int x, int y, int width, i
     if (!system_initialized) throw std::runtime_error("GuiManager not initialized");
     
     int id = next_control_id++;
-    Rectangle bounds(x, y, width, height);
+    GuiRectangle bounds(x, y, width, height);
     auto control = std::make_shared<GuiLabel>(id, name, bounds);
     control->set_text(text);
     
@@ -71,7 +73,7 @@ int GuiManager::create_textbox(const std::string& name, int x, int y, int width,
     if (!system_initialized) throw std::runtime_error("GuiManager not initialized");
     
     int id = next_control_id++;
-    Rectangle bounds(x, y, width, height);
+    GuiRectangle bounds(x, y, width, height);
     auto control = std::make_shared<GuiTextBox>(id, name, bounds, max_length);
     control->set_text(text);
     
@@ -86,7 +88,7 @@ int GuiManager::create_slider(const std::string& name, int x, int y, int width, 
     if (!system_initialized) throw std::runtime_error("GuiManager not initialized");
     
     int id = next_control_id++;
-    Rectangle bounds(x, y, width, height);
+    GuiRectangle bounds(x, y, width, height);
     auto control = std::make_shared<GuiSlider>(id, name, bounds, min_val, max_val, current_val);
     
     controls[id] = control;
@@ -100,7 +102,7 @@ int GuiManager::create_checkbox(const std::string& name, int x, int y, int width
     if (!system_initialized) throw std::runtime_error("GuiManager not initialized");
     
     int id = next_control_id++;
-    Rectangle bounds(x, y, width, height);
+    GuiRectangle bounds(x, y, width, height);
     auto control = std::make_shared<GuiCheckBox>(id, name, bounds, checked);
     control->set_text(text);
     
@@ -115,7 +117,7 @@ int GuiManager::create_combobox(const std::string& name, int x, int y, int width
     if (!system_initialized) throw std::runtime_error("GuiManager not initialized");
     
     int id = next_control_id++;
-    Rectangle bounds(x, y, width, height);
+    GuiRectangle bounds(x, y, width, height);
     auto control = std::make_shared<GuiComboBox>(id, name, bounds);
     
     controls[id] = control;
@@ -129,7 +131,7 @@ int GuiManager::create_progressbar(const std::string& name, int x, int y, int wi
     if (!system_initialized) throw std::runtime_error("GuiManager not initialized");
     
     int id = next_control_id++;
-    Rectangle bounds(x, y, width, height);
+    GuiRectangle bounds(x, y, width, height);
     auto control = std::make_shared<GuiProgressBar>(id, name, bounds, min_val, max_val, current_val);
     
     controls[id] = control;
@@ -143,7 +145,7 @@ int GuiManager::create_listview(const std::string& name, int x, int y, int width
     if (!system_initialized) throw std::runtime_error("GuiManager not initialized");
     
     int id = next_control_id++;
-    Rectangle bounds(x, y, width, height);
+    GuiRectangle bounds(x, y, width, height);
     auto control = std::make_shared<GuiListView>(id, name, bounds);
     
     controls[id] = control;
@@ -157,7 +159,7 @@ int GuiManager::create_windowbox(const std::string& name, int x, int y, int widt
     if (!system_initialized) throw std::runtime_error("GuiManager not initialized");
     
     int id = next_control_id++;
-    Rectangle bounds(x, y, width, height);
+    GuiRectangle bounds(x, y, width, height);
     auto control = std::make_shared<GuiWindowBox>(id, name, bounds);
     control->set_text(title);
     
@@ -172,7 +174,7 @@ int GuiManager::create_panel(const std::string& name, int x, int y, int width, i
     if (!system_initialized) throw std::runtime_error("GuiManager not initialized");
     
     int id = next_control_id++;
-    Rectangle bounds(x, y, width, height);
+    GuiRectangle bounds(x, y, width, height);
     auto control = std::make_shared<GuiPanel>(id, name, bounds);
     
     controls[id] = control;
@@ -186,8 +188,8 @@ int GuiManager::create_scrollpanel(const std::string& name, int x, int y, int wi
     if (!system_initialized) throw std::runtime_error("GuiManager not initialized");
     
     int id = next_control_id++;
-    Rectangle bounds(x, y, width, height);
-    Rectangle content_bounds(0, 0, content_width, content_height);
+    GuiRectangle bounds(x, y, width, height);
+    GuiRectangle content_bounds(0, 0, content_width, content_height);
     auto control = std::make_shared<GuiScrollPanel>(id, name, bounds, content_bounds);
     
     controls[id] = control;

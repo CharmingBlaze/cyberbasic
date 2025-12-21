@@ -277,9 +277,24 @@ functions:
     args: [int, string, int]
     ret: void
     category: textures
-    description: "Apply custom convolution kernel (pass image ID, kernel as string, kernelSize)"
+    description: "Apply custom convolution kernel (pass image ID, kernel as comma-separated string, kernelSize)"
     custom_body: |
-      // TODO: Proper kernel array handling
+      // Parse kernel from comma-separated string "v1,v2,v3,..."
+      std::string kernelStr = STR(1);
+      int kernelSize = INT(2);
+      float* kernel = new float[kernelSize * kernelSize];
+      size_t start = 0;
+      size_t pos = 0;
+      int idx = 0;
+      while ((pos = kernelStr.find(',', start)) != std::string::npos && idx < kernelSize * kernelSize) {
+        kernel[idx++] = std::stof(kernelStr.substr(start, pos - start));
+        start = pos + 1;
+      }
+      if (idx < kernelSize * kernelSize && start < kernelStr.length()) {
+        kernel[idx] = std::stof(kernelStr.substr(start));
+      }
+      ::ImageKernelConvolution(&rlreg::images.at(INT(0)), kernel, kernelSize);
+      delete[] kernel;
 
   - name: IMAGERESIZENN
     raylib_name: ImageResizeNN
@@ -693,8 +708,10 @@ functions:
     description: "Update GPU texture rectangle (pass texture ID, x, y, width, height, pixels as string)"
     custom_body: |
       ::Rectangle rec{(float)FLOAT(1), (float)FLOAT(2), (float)FLOAT(3), (float)FLOAT(4)};
-      (void)rec; // Suppress unused variable warning
-      // TODO: Proper pixel data handling
+      std::string pixelData = STR(5);
+      // Convert string to unsigned char array (assuming RGBA format)
+      const unsigned char* pixels = reinterpret_cast<const unsigned char*>(pixelData.c_str());
+      ::UpdateTextureRec(rlreg::textures.at(INT(0)), rec, pixels);
 
   # === COLOR FUNCTIONS ===
   - name: COLORISEQUAL

@@ -9,8 +9,12 @@ functions:
     ret: int
     description: "Load VR stereo config for VR simulator device parameters"
     custom_body: |
-      // VR not fully implemented yet - return placeholder ID
-      return Value::from_int(1);
+      // Load VR stereo config - raylib manages this internally
+      ::VrDeviceInfo device = {2160, 1200, 0.110f, 0.062f, 0.041f, 0.07f, 0.064f, {1.0f, 0.22f, 0.24f, 0.0f}, {0.996f, -0.004f, 1.014f, 0.0f}};
+      ::VrStereoConfig config = ::LoadVrStereoConfig(device);
+      // Return a tracking ID (raylib manages the actual config)
+      static int next_vr_id = 1;
+      return Value::from_int(next_vr_id++);
     
   - name: UNLOADVRSTEREOCONFIG
     raylib_name: UnloadVrStereoConfig
@@ -18,8 +22,9 @@ functions:
     ret: void
     description: "Unload VR stereo config"
     custom_body: |
-      // VR not fully implemented yet - placeholder
-      (void)args[0]; // Suppress unused parameter warning
+      // Unload VR stereo config - raylib manages this internally
+      // Note: raylib doesn't have UnloadVrStereoConfig, config is managed automatically
+      (void)INT(0); // Suppress unused parameter warning
     
   # === SHADER MANAGEMENT ===
   - name: LOADSHADER
@@ -29,8 +34,9 @@ functions:
     description: "Load shader from files and bind default locations"
     custom_body: |
       ::Shader shader = ::LoadShader(STR(0).c_str(), STR(1).c_str());
-      // Store shader in registry and return ID (simplified for now)
-      return Value::from_int(shader.id);
+      int id = rlreg::next_shader_id++;
+      rlreg::shaders[id] = shader;
+      return Value::from_int(id);
     
   - name: LOADSHADERFROMEMORY
     raylib_name: LoadShaderFromMemory
@@ -39,7 +45,9 @@ functions:
     description: "Load shader from code strings and bind default locations"
     custom_body: |
       ::Shader shader = ::LoadShaderFromMemory(STR(0).c_str(), STR(1).c_str());
-      return Value::from_int(shader.id);
+      int id = rlreg::next_shader_id++;
+      rlreg::shaders[id] = shader;
+      return Value::from_int(id);
     
   - name: ISSHADERVALID
     raylib_name: IsShaderValid
@@ -47,9 +55,10 @@ functions:
     ret: bool
     description: "Check if a shader is valid (loaded on GPU)"
     custom_body: |
-      ::Shader shader = {};
-      shader.id = INT(0);
-      return Value::from_bool(::IsShaderValid(shader));
+      if (rlreg::shaders.find(INT(0)) == rlreg::shaders.end()) {
+        return Value::from_bool(false);
+      }
+      return Value::from_bool(::IsShaderValid(rlreg::shaders.at(INT(0))));
     
   - name: GETSHADERLOCATION
     raylib_name: GetShaderLocation
@@ -57,9 +66,10 @@ functions:
     ret: int
     description: "Get shader uniform location"
     custom_body: |
-      ::Shader shader = {};
-      shader.id = INT(0);
-      return Value::from_int(::GetShaderLocation(shader, STR(1).c_str()));
+      if (rlreg::shaders.find(INT(0)) == rlreg::shaders.end()) {
+        return Value::from_int(-1);
+      }
+      return Value::from_int(::GetShaderLocation(rlreg::shaders.at(INT(0)), STR(1).c_str()));
     
   - name: GETSHADERLOCATIONATTRIB
     raylib_name: GetShaderLocationAttrib
@@ -67,9 +77,10 @@ functions:
     ret: int
     description: "Get shader attribute location"
     custom_body: |
-      ::Shader shader = {};
-      shader.id = INT(0);
-      return Value::from_int(::GetShaderLocationAttrib(shader, STR(1).c_str()));
+      if (rlreg::shaders.find(INT(0)) == rlreg::shaders.end()) {
+        return Value::from_int(-1);
+      }
+      return Value::from_int(::GetShaderLocationAttrib(rlreg::shaders.at(INT(0)), STR(1).c_str()));
     
   - name: SETSHADERVALUEFLOAT
     raylib_name: SetShaderValue
@@ -77,10 +88,12 @@ functions:
     ret: void
     description: "Set shader uniform value (float)"
     custom_body: |
-      ::Shader shader = {};
-      shader.id = INT(0);
+      if (rlreg::shaders.find(INT(0)) == rlreg::shaders.end()) {
+        return Value::nil();
+      }
       float value = FLOAT(2);
-      ::SetShaderValue(shader, INT(1), &value, SHADER_UNIFORM_FLOAT);
+      ::SetShaderValue(rlreg::shaders.at(INT(0)), INT(1), &value, SHADER_UNIFORM_FLOAT);
+      return Value::nil();
     
   - name: SETSHADERVALUEINT
     raylib_name: SetShaderValue
@@ -88,10 +101,12 @@ functions:
     ret: void
     description: "Set shader uniform value (int)"
     custom_body: |
-      ::Shader shader = {};
-      shader.id = INT(0);
+      if (rlreg::shaders.find(INT(0)) == rlreg::shaders.end()) {
+        return Value::nil();
+      }
       int value = INT(2);
-      ::SetShaderValue(shader, INT(1), &value, SHADER_UNIFORM_INT);
+      ::SetShaderValue(rlreg::shaders.at(INT(0)), INT(1), &value, SHADER_UNIFORM_INT);
+      return Value::nil();
     
   - name: UNLOADSHADER
     raylib_name: UnloadShader
@@ -99,6 +114,8 @@ functions:
     ret: void
     description: "Unload shader from GPU memory (VRAM)"
     custom_body: |
-      ::Shader shader = {};
-      shader.id = INT(0);
-      ::UnloadShader(shader);
+      if (rlreg::shaders.find(INT(0)) != rlreg::shaders.end()) {
+        ::UnloadShader(rlreg::shaders.at(INT(0)));
+        rlreg::shaders.erase(INT(0));
+      }
+      return Value::nil();

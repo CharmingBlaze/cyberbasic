@@ -4,36 +4,50 @@
 
 using namespace bas;
 
+// Helper: Normalize identifier to lowercase for case-insensitive matching
+static std::string normalize_identifier(const std::string& s) {
+  std::string r;
+  r.reserve(s.size());
+  for (char c : s) {
+    r.push_back(static_cast<char>(std::tolower(static_cast<unsigned char>(c))));
+  }
+  return r;
+}
+
 void NamespaceRegistry::register_namespace(
     const std::string& namespace_name,
     const std::unordered_map<std::string, std::string>& methods
 ) {
-    std::string upper_name = namespace_name;
-    std::transform(upper_name.begin(), upper_name.end(), upper_name.begin(),
-                   [](unsigned char c) { return std::toupper(c); });
+    // Normalize namespace name to lowercase
+    std::string lower_name = normalize_identifier(namespace_name);
     
-    namespaces_[upper_name] = methods;
+    // Normalize method names and function names in the map
+    std::unordered_map<std::string, std::string> normalized_methods;
+    for (const auto& [method_name, func_name] : methods) {
+        normalized_methods[normalize_identifier(method_name)] = normalize_identifier(func_name);
+    }
+    
+    namespaces_[lower_name] = normalized_methods;
 }
 
 Value NamespaceRegistry::create_namespace_object(const std::string& namespace_name) const {
-    std::string upper_name = namespace_name;
-    std::transform(upper_name.begin(), upper_name.end(), upper_name.begin(),
-                   [](unsigned char c) { return std::toupper(c); });
+    // Normalize namespace name to lowercase
+    std::string lower_name = normalize_identifier(namespace_name);
     
     Value::Map obj;
-    obj["_type"] = Value::from_string("Namespace");
-    obj["_name"] = Value::from_string(upper_name);
+    obj[normalize_identifier("_type")] = Value::from_string(normalize_identifier("Namespace"));
+    obj[normalize_identifier("_name")] = Value::from_string(lower_name);
     
     // Add all methods as properties (they'll be resolved at call time)
-    auto it = namespaces_.find(upper_name);
+    auto it = namespaces_.find(lower_name);
     if (it != namespaces_.end()) {
         for (const auto& [method_name, func_name] : it->second) {
-            // Store method metadata
+            // Store method metadata (all normalized to lowercase)
             Value::Map method_obj;
-            method_obj["_type"] = Value::from_string("Method");
-            method_obj["_namespace"] = Value::from_string(upper_name);
-            method_obj["_method"] = Value::from_string(method_name);
-            method_obj["_function"] = Value::from_string(func_name);
+            method_obj[normalize_identifier("_type")] = Value::from_string(normalize_identifier("Method"));
+            method_obj[normalize_identifier("_namespace")] = Value::from_string(lower_name);
+            method_obj[normalize_identifier("_method")] = Value::from_string(method_name);
+            method_obj[normalize_identifier("_function")] = Value::from_string(normalize_identifier(func_name));
             obj[method_name] = Value::from_map(std::move(method_obj));
         }
     }
@@ -45,20 +59,16 @@ std::string NamespaceRegistry::resolve_method(
     const std::string& namespace_name,
     const std::string& method_name
 ) const {
-    std::string upper_ns = namespace_name;
-    std::transform(upper_ns.begin(), upper_ns.end(), upper_ns.begin(),
-                   [](unsigned char c) { return std::toupper(c); });
+    // Normalize both namespace and method names to lowercase
+    std::string lower_ns = normalize_identifier(namespace_name);
+    std::string lower_method = normalize_identifier(method_name);
     
-    std::string upper_method = method_name;
-    std::transform(upper_method.begin(), upper_method.end(), upper_method.begin(),
-                   [](unsigned char c) { return std::toupper(c); });
-    
-    auto ns_it = namespaces_.find(upper_ns);
+    auto ns_it = namespaces_.find(lower_ns);
     if (ns_it == namespaces_.end()) {
         return "";
     }
     
-    auto method_it = ns_it->second.find(upper_method);
+    auto method_it = ns_it->second.find(lower_method);
     if (method_it == ns_it->second.end()) {
         return "";
     }
@@ -67,10 +77,9 @@ std::string NamespaceRegistry::resolve_method(
 }
 
 bool NamespaceRegistry::has_namespace(const std::string& namespace_name) const {
-    std::string upper_name = namespace_name;
-    std::transform(upper_name.begin(), upper_name.end(), upper_name.begin(),
-                   [](unsigned char c) { return std::toupper(c); });
-    return namespaces_.find(upper_name) != namespaces_.end();
+    // Normalize namespace name to lowercase
+    std::string lower_name = normalize_identifier(namespace_name);
+    return namespaces_.find(lower_name) != namespaces_.end();
 }
 
 std::vector<std::string> NamespaceRegistry::get_namespaces() const {

@@ -1,12 +1,14 @@
-#include "bas/gui_controls.hpp"
+// Include raylib.h at global scope BEFORE any bas headers that open namespace bas
 #include "raylib.h"
+
+#include "bas/gui_controls.hpp"
 #include <stdexcept>
 #include <iostream>
 
 namespace bas {
 
-// Helper function to convert bas::Rectangle to raylib Rectangle
-static ::Rectangle to_raylib_rect(const Rectangle& rect) {
+// Helper function to convert bas::GuiRectangle to raylib Rectangle
+static ::Rectangle to_raylib_rect(const GuiRectangle& rect) {
     return {static_cast<float>(rect.x), static_cast<float>(rect.y), 
             static_cast<float>(rect.width), static_cast<float>(rect.height)};
 }
@@ -14,7 +16,7 @@ static ::Rectangle to_raylib_rect(const Rectangle& rect) {
 
 
 // GuiButton Implementation
-GuiButton::GuiButton(int id, const std::string& name, const Rectangle& bounds) 
+GuiButton::GuiButton(int id, const std::string& name, const GuiRectangle& bounds) 
     : GuiControl(id, name, GuiControlType::BUTTON, bounds) {
 }
 
@@ -52,7 +54,7 @@ void GuiButton::draw() {
 }
 
 // GuiLabel Implementation
-GuiLabel::GuiLabel(int id, const std::string& name, const Rectangle& bounds) 
+GuiLabel::GuiLabel(int id, const std::string& name, const GuiRectangle& bounds) 
     : GuiControl(id, name, GuiControlType::LABEL, bounds) {
 }
 
@@ -72,7 +74,7 @@ void GuiLabel::draw() {
 }
 
 // GuiTextBox Implementation
-GuiTextBox::GuiTextBox(int id, const std::string& name, const Rectangle& bounds, int max_len) 
+GuiTextBox::GuiTextBox(int id, const std::string& name, const GuiRectangle& bounds, int max_len) 
     : GuiControl(id, name, GuiControlType::TEXTBOX, bounds), maxLength(max_len), editMode(false), cursorPosition(0) {
 }
 
@@ -182,7 +184,7 @@ std::string GuiTextBox::get_value() const {
 }
 
 // GuiSlider Implementation
-GuiSlider::GuiSlider(int id, const std::string& name, const Rectangle& bounds, 
+GuiSlider::GuiSlider(int id, const std::string& name, const GuiRectangle& bounds, 
                      double min_val, double max_val, double current_val) 
     : GuiControl(id, name, GuiControlType::SLIDER, bounds), 
       minValue(min_val), maxValue(max_val), currentValue(current_val) {
@@ -247,7 +249,7 @@ std::string GuiSlider::get_value() const {
 }
 
 // GuiCheckBox Implementation
-GuiCheckBox::GuiCheckBox(int id, const std::string& name, const Rectangle& bounds, bool is_checked) 
+GuiCheckBox::GuiCheckBox(int id, const std::string& name, const GuiRectangle& bounds, bool is_checked) 
     : GuiControl(id, name, GuiControlType::CHECKBOX, bounds), checked(is_checked) {
 }
 
@@ -292,7 +294,7 @@ std::string GuiCheckBox::get_value() const {
 }
 
 // GuiComboBox Implementation
-GuiComboBox::GuiComboBox(int id, const std::string& name, const Rectangle& bounds) 
+GuiComboBox::GuiComboBox(int id, const std::string& name, const GuiRectangle& bounds) 
     : GuiControl(id, name, GuiControlType::COMBOBOX, bounds), selectedIndex(0), dropdownOpen(false) {
 }
 
@@ -413,7 +415,7 @@ void GuiComboBox::set_selected_index(int index) {
 }
 
 // GuiProgressBar Implementation
-GuiProgressBar::GuiProgressBar(int id, const std::string& name, const Rectangle& bounds,
+GuiProgressBar::GuiProgressBar(int id, const std::string& name, const GuiRectangle& bounds,
                                double min_val, double max_val, double current_val) 
     : GuiControl(id, name, GuiControlType::PROGRESSBAR, bounds), 
       minValue(min_val), maxValue(max_val), currentValue(current_val) {
@@ -461,7 +463,7 @@ std::string GuiProgressBar::get_value() const {
 }
 
 // GuiListView Implementation
-GuiListView::GuiListView(int id, const std::string& name, const Rectangle& bounds) 
+GuiListView::GuiListView(int id, const std::string& name, const GuiRectangle& bounds) 
     : GuiControl(id, name, GuiControlType::LISTVIEW, bounds), selectedIndex(0), scrollIndex(0), itemsToShow(5) {
 }
 
@@ -571,7 +573,7 @@ void GuiListView::set_selected_index(int index) {
 }
 
 // GuiWindowBox Implementation
-GuiWindowBox::GuiWindowBox(int id, const std::string& name, const Rectangle& bounds) 
+GuiWindowBox::GuiWindowBox(int id, const std::string& name, const GuiRectangle& bounds) 
     : GuiControl(id, name, GuiControlType::WINDOWBOX, bounds), resizable(false), isDragging(false), dragOffset({0, 0}), closeButton(true), draggable(true) {
 }
 
@@ -640,7 +642,7 @@ void GuiWindowBox::draw() {
 }
 
 // GuiPanel Implementation
-GuiPanel::GuiPanel(int id, const std::string& name, const Rectangle& bounds) 
+GuiPanel::GuiPanel(int id, const std::string& name, const GuiRectangle& bounds) 
     : GuiControl(id, name, GuiControlType::PANEL, bounds) {
 }
 
@@ -660,7 +662,7 @@ void GuiPanel::draw() {
 }
 
 // GuiScrollPanel Implementation
-GuiScrollPanel::GuiScrollPanel(int id, const std::string& name, const Rectangle& bounds, const Rectangle& content_bounds) 
+GuiScrollPanel::GuiScrollPanel(int id, const std::string& name, const GuiRectangle& bounds, const GuiRectangle& content_bounds) 
     : GuiControl(id, name, GuiControlType::SCROLLPANEL, bounds), content(content_bounds), scroll(0, 0) {
 }
 

@@ -84,7 +84,7 @@ cyberbasic/
 └── .clang-tidy            # Code analysis ✅
 ```
 
-## 🎯 Key Achievements
+## Key Achievements
 
 1. **Zero Duplicates**: All duplicate code removed
 2. **Modular Design**: Clean separation of concerns
@@ -94,7 +94,7 @@ cyberbasic/
 6. **Best Practices**: Code style enforcement ready
 7. **Documentation**: Comprehensive guides created
 
-## 📈 Progress by Phase
+## Progress by Phase
 
 | Phase | Status | Completion |
 |-------|--------|------------|
@@ -107,7 +107,7 @@ cyberbasic/
 
 **Overall Progress: ~70%**
 
-## 🚀 What's Next
+## What's Next
 
 ### Immediate
 - Continue Phase 4: Apply C++20 features
@@ -123,7 +123,7 @@ cyberbasic/
 - Additional features
 - Community contributions
 
-## ✨ Highlights
+## Highlights
 
 - **Clean Architecture**: Modular, maintainable, scalable
 - **Easy to Build**: Simple commands, clear documentation

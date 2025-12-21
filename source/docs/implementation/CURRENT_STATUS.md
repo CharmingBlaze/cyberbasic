@@ -30,7 +30,7 @@
 - Module build options added
 - Generator script updated
 
-## 🎯 Next Steps
+## Next Steps
 
 1. **Phase 2.3**: Organize raylib bindings by category (optional enhancement)
 2. **Phase 3**: Simplify build system further

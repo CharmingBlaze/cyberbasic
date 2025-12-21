@@ -8,9 +8,9 @@
 namespace bas {
 
 // Forward declarations
-struct Rectangle;
-struct Color;
-struct Vector2;
+struct GuiRectangle;
+struct GuiColor;
+struct GuiVector2;
 
 // GUI Control Types
 enum class GuiControlType {
@@ -72,22 +72,22 @@ enum class GuiTextWrapMode {
     WORD
 };
 
-// Basic GUI Types
-struct Rectangle {
+// Basic GUI Types (renamed to avoid conflict with Raylib types)
+struct GuiRectangle {
     double x, y, width, height;
-    Rectangle(double px = 0, double py = 0, double w = 0, double h = 0) 
+    GuiRectangle(double px = 0, double py = 0, double w = 0, double h = 0) 
         : x(px), y(py), width(w), height(h) {}
 };
 
-struct Color {
+struct GuiColor {
     unsigned char r, g, b, a;
-    Color(unsigned char red = 0, unsigned char green = 0, unsigned char blue = 0, unsigned char alpha = 255) 
+    GuiColor(unsigned char red = 0, unsigned char green = 0, unsigned char blue = 0, unsigned char alpha = 255) 
         : r(red), g(green), b(blue), a(alpha) {}
 };
 
-struct Vector2 {
+struct GuiVector2 {
     double x, y;
-    Vector2(double px = 0, double py = 0) : x(px), y(py) {}
+    GuiVector2(double px = 0, double py = 0) : x(px), y(py) {}
 };
 
 // Event Types

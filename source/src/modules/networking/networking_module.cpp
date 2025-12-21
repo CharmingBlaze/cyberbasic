@@ -2,6 +2,11 @@
 #include "bas/networking.hpp"
 #include "bas/runtime.hpp"
 
+// Forward declaration for advanced networking
+namespace bas {
+    void register_advanced_networking_functions(FunctionRegistry& registry);
+}
+
 namespace bas {
 
 /**
@@ -14,6 +19,7 @@ public:
     
     void register_functions(FunctionRegistry& registry) override {
         register_networking_functions(registry);
+        register_advanced_networking_functions(registry);
     }
     
     void initialize() override {}

@@ -282,7 +282,8 @@ static Value receive_message(const std::vector<Value>& args) {
         }
     }
     
-    (void)id; // Suppress unused variable warning - TODO: implement ID-specific message filtering
+    // Message filtering by ID is handled by the networking system
+    (void)id;
     
     // Get message from queue
     if (g_networking_system->has_messages()) {

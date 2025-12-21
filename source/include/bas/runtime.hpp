@@ -5,10 +5,22 @@
 #include <unordered_map>
 #include <vector>
 #include <cctype>
+// Include these BEFORE opening namespace bas to avoid nested namespace issues
 #include "value.hpp"
 #include "ast.hpp"
 
 namespace bas {
+
+// Shared normalization function for case-insensitive identifiers
+// This matches Env::up() behavior from interpreter.cpp
+inline std::string normalize_identifier(const std::string& s) {
+  std::string r;
+  r.reserve(s.size());
+  for (char c : s) {
+    r.push_back(static_cast<char>(std::tolower(static_cast<unsigned char>(c))));
+  }
+  return r;
+}
 
 // Native function entry for the runtime registry.
 struct NativeFn {
@@ -25,38 +37,38 @@ struct NativeFn {
 class FunctionRegistry {
 public:
   void add(const std::string& name, const NativeFn& fn){
-    std::string upper_name;
-    upper_name.reserve(name.size());
-    for (char c : name) upper_name += static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
+    std::string normalized_name;
+    normalized_name.reserve(name.size());
+    for (char c : name) normalized_name += static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
     // Duplicate detection: do not allow silent overwrite of existing functions
-    if (fns.find(upper_name) != fns.end()) {
-      throw std::runtime_error(std::string("Duplicate native function registration: ") + upper_name);
+    if (fns.find(normalized_name) != fns.end()) {
+      throw std::runtime_error(std::string("Duplicate native function registration: ") + normalized_name);
     }
-    fns[upper_name] = fn;
+    fns[normalized_name] = fn;
   }
   
   // Add with collision policy for generated bindings
   void add_with_policy(const std::string& name, const NativeFn& fn, bool allow_override = false){
-    std::string upper_name;
-    upper_name.reserve(name.size());
-    for (char c : name) upper_name += static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
-    if (fns.find(upper_name) != fns.end()) {
+    std::string normalized_name;
+    normalized_name.reserve(name.size());
+    for (char c : name) normalized_name += static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    if (fns.find(normalized_name) != fns.end()) {
       if (!allow_override) {
-        throw std::runtime_error(std::string("Duplicate native function registration: ") + upper_name);
+        throw std::runtime_error(std::string("Duplicate native function registration: ") + normalized_name);
       }
       // Log override in debug builds
       #ifdef DEBUG
-      std::cerr << "Warning: Overriding function " << upper_name << std::endl;
+      std::cerr << "Warning: Overriding function " << normalized_name << std::endl;
       #endif
     }
-    fns[upper_name] = fn;
+    fns[normalized_name] = fn;
   }
   
   [[nodiscard]] const NativeFn* find(const std::string& name) const {
-    std::string upper_name;
-    upper_name.reserve(name.size());
-    for (char c : name) upper_name += static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
-    auto it=fns.find(upper_name); 
+    std::string normalized_name;
+    normalized_name.reserve(name.size());
+    for (char c : name) normalized_name += static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    auto it=fns.find(normalized_name); 
     return it==fns.end() ? nullptr : &it->second;
   }
   
@@ -68,6 +80,10 @@ private:
 void register_builtins(FunctionRegistry&);
 void register_object_constructors(FunctionRegistry&);
 void register_raylib_bindings(FunctionRegistry&);
+
+// Populate NativeFunctionRegistry with raylib functions for YAML module loading
+class NativeFunctionRegistry;
+void populate_raylib_natives(NativeFunctionRegistry& native_registry, FunctionRegistry& function_registry);
 
 // Member access hooks allow subsystems (e.g., ECS) to resolve custom dot-notation.
 using MemberReadHook = std::function<std::optional<Value>(const Value&, const std::string&)>;
@@ -96,5 +112,9 @@ void register_advanced_features(FunctionRegistry&);
 // Set the global namespace registry for the interpreter
 class NamespaceRegistry;
 void set_namespace_registry(NamespaceRegistry* registry);
+
+// Runtime YAML module loader for dynamic module loading
+class YamlModuleLoader;
+class NativeFunctionRegistry;
 
 } // namespace bas

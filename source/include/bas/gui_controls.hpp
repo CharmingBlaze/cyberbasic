@@ -6,14 +6,14 @@ namespace bas {
 // Basic Controls
 class GuiButton : public GuiControl {
 public:
-    GuiButton(int id, const std::string& name, const Rectangle& bounds);
+    GuiButton(int id, const std::string& name, const GuiRectangle& bounds);
     bool update() override;
     void draw() override;
 };
 
 class GuiLabel : public GuiControl {
 public:
-    GuiLabel(int id, const std::string& name, const Rectangle& bounds);
+    GuiLabel(int id, const std::string& name, const GuiRectangle& bounds);
     bool update() override;
     void draw() override;
 };
@@ -25,7 +25,7 @@ private:
     int cursorPosition;
     
 public:
-    GuiTextBox(int id, const std::string& name, const Rectangle& bounds, int max_len = 256);
+    GuiTextBox(int id, const std::string& name, const GuiRectangle& bounds, int max_len = 256);
     bool update() override;
     void draw() override;
     void set_value(const std::string& value) override;
@@ -41,7 +41,7 @@ private:
     double currentValue;
     
 public:
-    GuiSlider(int id, const std::string& name, const Rectangle& bounds, 
+    GuiSlider(int id, const std::string& name, const GuiRectangle& bounds, 
               double min_val, double max_val, double current_val);
     bool update() override;
     void draw() override;
@@ -56,7 +56,7 @@ private:
     bool checked;
     
 public:
-    GuiCheckBox(int id, const std::string& name, const Rectangle& bounds, bool is_checked = false);
+    GuiCheckBox(int id, const std::string& name, const GuiRectangle& bounds, bool is_checked = false);
     bool update() override;
     void draw() override;
     void set_value(const std::string& value) override;
@@ -72,7 +72,7 @@ private:
     bool dropdownOpen;
     
 public:
-    GuiComboBox(int id, const std::string& name, const Rectangle& bounds);
+    GuiComboBox(int id, const std::string& name, const GuiRectangle& bounds);
     bool update() override;
     void draw() override;
     void set_value(const std::string& value) override;
@@ -92,7 +92,7 @@ private:
     double currentValue;
     
 public:
-    GuiProgressBar(int id, const std::string& name, const Rectangle& bounds,
+    GuiProgressBar(int id, const std::string& name, const GuiRectangle& bounds,
                    double min_val, double max_val, double current_val);
     bool update() override;
     void draw() override;
@@ -110,7 +110,7 @@ private:
     int itemsToShow;
     
 public:
-    GuiListView(int id, const std::string& name, const Rectangle& bounds);
+    GuiListView(int id, const std::string& name, const GuiRectangle& bounds);
     bool update() override;
     void draw() override;
     void set_value(const std::string& value) override;
@@ -128,12 +128,12 @@ class GuiWindowBox : public GuiControl {
 private:
     bool resizable;
     bool isDragging;
-    Vector2 dragOffset;
+    GuiVector2 dragOffset;
     bool closeButton;
     bool draggable;
     
 public:
-    GuiWindowBox(int id, const std::string& name, const Rectangle& bounds);
+    GuiWindowBox(int id, const std::string& name, const GuiRectangle& bounds);
     bool update() override;
     void draw() override;
     void set_close_button(bool show) { closeButton = show; }
@@ -143,24 +143,24 @@ public:
 
 class GuiPanel : public GuiControl {
 public:
-    GuiPanel(int id, const std::string& name, const Rectangle& bounds);
+    GuiPanel(int id, const std::string& name, const GuiRectangle& bounds);
     bool update() override;
     void draw() override;
 };
 
 class GuiScrollPanel : public GuiControl {
 private:
-    Rectangle content;
-    Vector2 scroll;
+    GuiRectangle content;
+    GuiVector2 scroll;
     
 public:
-    GuiScrollPanel(int id, const std::string& name, const Rectangle& bounds, const Rectangle& content_bounds);
+    GuiScrollPanel(int id, const std::string& name, const GuiRectangle& bounds, const GuiRectangle& content_bounds);
     bool update() override;
     void draw() override;
-    void set_content_bounds(const Rectangle& content_bounds) { content = content_bounds; }
-    Rectangle get_content_bounds() const { return content; }
-    Vector2 get_scroll() const { return scroll; }
-    void set_scroll(const Vector2& new_scroll) { scroll = new_scroll; }
+    void set_content_bounds(const GuiRectangle& content_bounds) { content = content_bounds; }
+    GuiRectangle get_content_bounds() const { return content; }
+    GuiVector2 get_scroll() const { return scroll; }
+    void set_scroll(const GuiVector2& new_scroll) { scroll = new_scroll; }
 };
 
 } // namespace bas

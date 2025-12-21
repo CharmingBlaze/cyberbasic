@@ -102,6 +102,7 @@ std::unique_ptr<Stmt> Parser::dispatch_statement(const Token& t) {
         case Tok::Const:    return parse_const();
         case Tok::Input:    return parse_input();
         case Tok::If:       return parse_if();
+        case Tok::IfNot:    return parse_ifn();
         case Tok::While:    return parse_while();
         case Tok::Sub:      return parse_sub_decl();
         case Tok::Function: return parse_function_decl();
@@ -132,9 +133,8 @@ std::unique_ptr<Stmt> Parser::dispatch_statement(const Token& t) {
             advance();
             auto exitStmt = std::make_unique<Exit>();
             if (check(Tok::Ident)) {
-                std::string target = advance().lex;
-                for (char& ch : target) ch = static_cast<char>(std::toupper(static_cast<unsigned char>(ch)));
-                if (target == "FOR" || target == "WHILE" || target == "SUB" || target == "FUNCTION") {
+                std::string target = advance().lex; // Already lowercase from lexer
+                if (target == "for" || target == "while" || target == "sub" || target == "function") {
                     exitStmt->target = target;
                 } else {
                     diag.err_at(peek().line, peek().col, "EXIT: expected FOR, WHILE, SUB, or FUNCTION");
@@ -196,15 +196,27 @@ std::unique_ptr<Stmt> Parser::dispatch_statement(const Token& t) {
             }
             break;
         }
-        case Tok::Try: {
-            return parse_try_catch();
-        }
-        case Tok::Throw: {
-            return parse_throw();
+        case Tok::On: {
+            return parse_event_handler();
         }
         case Tok::Import:
         case Tok::Include: {
             return parse_import();
+        }
+        case Tok::Do: {
+            return parse_do();
+        }
+        case Tok::Repeat: {
+            return parse_repeat_until();
+        }
+        case Tok::Select: {
+            return parse_select_case();
+        }
+        case Tok::Global: {
+            return parse_global_decl();
+        }
+        case Tok::Local: {
+            return parse_local_decl();
         }
         default: break;
     }
@@ -215,7 +227,7 @@ std::unique_ptr<Stmt> Parser::dispatch_statement(const Token& t) {
     return nullptr;
 }
 
-std::vector<std::unique_ptr<Stmt>> Parser::stmt_list_until(Tok end1, Tok end2){
+std::vector<std::unique_ptr<Stmt>> Parser::stmt_list_until(Tok end1, Tok end2, Tok end3, Tok end4){
   // Language Engineering: Fast, safe statement list parser with proper error recovery
   // Architecture: Single-pass recursive descent with incremental parsing
   // Performance: Pre-allocated vector, minimal token lookahead, fast path for common cases
@@ -225,7 +237,7 @@ std::vector<std::unique_ptr<Stmt>> Parser::stmt_list_until(Tok end1, Tok end2){
   std::vector<std::unique_ptr<Stmt>> v; 
   v.reserve(16); // Pre-allocate for common case (small blocks)
   
-  while(peek().kind!=Tok::Eof && !check(end1) && !check(end2) && !check_end_if()){
+  while(peek().kind!=Tok::Eof && !check(end1) && !check(end2) && !check(end3) && !check(end4) && !check_end_if()){
     // CRITICAL: Always consume statement separators (newlines/colons) BEFORE parsing
     // This ensures we're positioned at the beginning of a statement, not on whitespace
     // This is the key fix - we MUST skip separators before trying to parse each statement
@@ -233,16 +245,18 @@ std::vector<std::unique_ptr<Stmt>> Parser::stmt_list_until(Tok end1, Tok end2){
     
     // Safeguard: Double-check for terminator after consuming separators
     // Check all common block terminators (EndWhile/EndFor don't exist - use Wend/Next)
-    if(check(end1) || check(end2) || peek().kind == Tok::Eof || 
+    if(check(end1) || check(end2) || check(end3) || check(end4) || peek().kind == Tok::Eof || 
        check_end_if() || check(Tok::Wend) || check(Tok::Next) ||
        check(Tok::EndFunction) || check(Tok::EndSub) ||
        check(Tok::EndSelect) || check(Tok::EndState) ||
        check(Tok::EndModule) || check(Tok::EndEnum) ||
-       check(Tok::EndUnion) || check(Tok::EndTry)) break;
+       check(Tok::EndUnion)) break;
     
-    // CRITICAL: Check again for END IF before trying to parse a statement
-    // This prevents trying to parse END as a statement when we have "END IF"
+    // CRITICAL: Check again for END IF, END FUNCTION, END SUB before trying to parse a statement
+    // This prevents trying to parse END as a statement when we have "END IF", "END FUNCTION", "END SUB"
     if(check_end_if()) break;
+    if(check(Tok::End) && i + 1 < ts.size() && ts[i + 1].kind == Tok::Function) break;
+    if(check(Tok::End) && i + 1 < ts.size() && ts[i + 1].kind == Tok::Sub) break;
     
     // Parse one statement - use parse_statement_no_skip() since we've already consumed separators
     // This avoids double separator consumption that would happen with statement()
@@ -262,7 +276,7 @@ std::vector<std::unique_ptr<Stmt>> Parser::stmt_list_until(Tok end1, Tok end2){
       if(i > start_pos) {
         // We consumed some tokens but failed - skip to next statement boundary
         consume_statement_separators();
-        if(check(end1) || check(end2)) break;
+        if(check(end1) || check(end2) || check(end3) || check(end4)) break;
         // Fast recovery: skip to next separator or end token
         // CRITICAL: Also check for EndIf and other block terminators to prevent skipping past them
         while(peek().kind != Tok::Eof && !check(Tok::Newline) && !check(Tok::Colon) && 
@@ -271,7 +285,7 @@ std::vector<std::unique_ptr<Stmt>> Parser::stmt_list_until(Tok end1, Tok end2){
               !check(Tok::EndFunction) && !check(Tok::EndSub) &&
               !check(Tok::EndSelect) && !check(Tok::EndState) &&
               !check(Tok::EndModule) && !check(Tok::EndEnum) &&
-              !check(Tok::EndUnion) && !check(Tok::EndTry)) {
+              !check(Tok::EndUnion)) {
           advance();
         }
         consume_statement_separators();
@@ -304,6 +318,23 @@ std::unique_ptr<Expr> Parser::or_(){
   auto e = xor_();
   // CRITICAL: Stop at statement separators to prevent swallowing the next statement
   while(check(Tok::Or) && !is_statement_separator(peek().kind)){ Tok op=advance().kind; auto r=xor_(); e = std::make_unique<Binary>(std::move(e), op, std::move(r)); }
+  
+  // Ternary operator: condition ? trueValue : falseValue
+  if(check(Tok::Question)) {
+    advance(); // consume '?'
+    auto trueVal = expression();
+    if(!match(Tok::Colon)) {
+      diag.err_at(peek().line, peek().col, "ternary: expected ':' after true value");
+      return e;
+    }
+    auto falseVal = expression();
+    auto ternary = std::make_unique<TernaryExpr>();
+    ternary->condition = std::move(e);
+    ternary->trueValue = std::move(trueVal);
+    ternary->falseValue = std::move(falseVal);
+    return ternary;
+  }
+  
   return e;
 }
 std::unique_ptr<Expr> Parser::xor_(){
@@ -350,7 +381,7 @@ std::unique_ptr<Expr> Parser::power(){
   return e;
 }
 std::unique_ptr<Expr> Parser::unary(){
-  if(check(Tok::Plus) || check(Tok::Minus) || check(Tok::Not)){
+  if(check(Tok::Plus) || check(Tok::Minus) || check(Tok::Not) || check(Tok::BitNot)){
     Tok op=advance().kind; auto r=unary(); return std::make_unique<Unary>(op, std::move(r));
   }
   return primary();
@@ -380,16 +411,16 @@ std::unique_ptr<Expr> Parser::primary(){
     Token id = advance();
     std::unique_ptr<Expr> base;
     
-    // Check for special keywords
-    if(id.lex == "TYPEOF") {
+    // Check for special keywords (all identifiers are lowercase from lexer)
+    if(id.lex == "typeof") {
       return parse_typeof();
-    } else if(id.lex == "GETPROPERTIES") {
+    } else if(id.lex == "getproperties") {
       return parse_get_properties();
-    } else if(id.lex == "GETMETHODS") {
+    } else if(id.lex == "getmethods") {
       return parse_get_methods();
-    } else if(id.lex == "SUPER") {
+    } else if(id.lex == "super") {
       return parse_super_call();
-    } else if(id.lex == "LAMBDA") {
+    } else if(id.lex == "lambda") {
       return parse_lambda();
     }
     
@@ -723,6 +754,17 @@ std::unique_ptr<Stmt> Parser::parse_if() {
         return node;
     }
 
+    // Multi-line IF (THEN is optional - if not present, check for newline)
+    if (!hasThen && !check(Tok::Newline) && !check(Tok::Eof)) {
+        // No THEN and not at newline - treat as single-line IF without THEN
+        auto node = std::make_unique<IfChain>();
+        IfChain::Branch br;
+        br.cond = std::move(firstCond);
+        if (auto s = statement()) br.body.push_back(std::move(s));
+        node->branches.push_back(std::move(br));
+        return node;
+    }
+
     // Multi-line IF
     auto node = std::make_unique<IfChain>();
     {
@@ -770,6 +812,65 @@ std::unique_ptr<Stmt> Parser::parse_if() {
     return node;
 }
 
+// Parse IFN (If Not) statement - shorthand for IF NOT
+std::unique_ptr<Stmt> Parser::parse_ifn() {
+    advance(); // consume IFN
+    auto firstCond = expression();
+    
+    // Apply NOT to the condition - wrap it in a Unary NOT expression
+    auto notExpr = std::make_unique<Unary>();
+    notExpr->op = Tok::Not;
+    notExpr->right = std::move(firstCond);
+    
+    // Now parse as regular IF with the negated condition
+    bool hasThen = match(Tok::Then);
+    
+    if (hasThen && !check(Tok::Newline) && !check(Tok::Eof)) { // Single-line IFN THEN
+        auto node = std::make_unique<IfChain>();
+        IfChain::Branch br;
+        br.cond = std::move(notExpr);
+        if (auto s = statement()) br.body.push_back(std::move(s));
+        node->branches.push_back(std::move(br));
+        return node;
+    }
+    
+    // Multi-line IFN
+    auto node = std::make_unique<IfChain>();
+    {
+        IfChain::Branch br;
+        br.cond = std::move(notExpr);
+        br.body = stmt_list_until(Tok::ElseIf, Tok::Else);
+        consume_statement_separators();
+        node->branches.push_back(std::move(br));
+    }
+    
+    while (match(Tok::ElseIf)) {
+        auto c = expression();
+        if (!match(Tok::Then)) {
+            diag.err(peek().line, peek().col, "ELSEIF: expected THEN after condition");
+            return nullptr;
+        }
+        IfChain::Branch br;
+        br.cond = std::move(c);
+        br.body = stmt_list_until(Tok::ElseIf, Tok::Else);
+        consume_statement_separators();
+        node->branches.push_back(std::move(br));
+    }
+    
+    if (match(Tok::Else)) {
+        node->hasElse = true;
+        node->elseBody = stmt_list_until(Tok::EndIf, Tok::EndIf);
+        consume_statement_separators();
+    }
+    
+    if (!match_end_if()) {
+        diag.err_at(peek().line, peek().col, "IFN: expected ENDIF or END IF to close the block");
+        return nullptr;
+    }
+    skipNewlines();
+    return node;
+}
+
 std::unique_ptr<Stmt> Parser::parse_while() {
     advance(); // consume WHILE
     auto cond = expression();
@@ -784,6 +885,47 @@ std::unique_ptr<Stmt> Parser::parse_while() {
     s->cond = std::move(cond);
     s->body = std::move(body);
     return s;
+}
+
+// Parse DO...LOOP [UNTIL|WHILE] loop
+std::unique_ptr<Stmt> Parser::parse_do() {
+    advance(); // consume DO
+    auto body = stmt_list_until(Tok::Loop, Tok::Loop);
+    if (!match(Tok::Loop)) {
+        diag.err(peek().line, peek().col, "DO: expected LOOP to close the loop");
+        return nullptr;
+    }
+    
+    auto loop = std::make_unique<DoLoop>();
+    loop->body = std::move(body);
+    
+    // Check for LOOP UNTIL or LOOP WHILE
+    if (match(Tok::Until)) {
+        loop->untilCond = expression();
+        loop->hasUntil = true;
+    } else if (match(Tok::While)) {
+        loop->whileCond = expression();
+        loop->hasWhile = true;
+    }
+    
+    skipNewlines();
+    return loop;
+}
+
+// Parse REPEAT...UNTIL loop
+std::unique_ptr<Stmt> Parser::parse_repeat_until() {
+    advance(); // consume REPEAT
+    auto body = stmt_list_until(Tok::Until, Tok::Until);
+    if (!match(Tok::Until)) {
+        diag.err(peek().line, peek().col, "REPEAT: expected UNTIL to close the loop");
+        return nullptr;
+    }
+    auto cond = expression();
+    auto loop = std::make_unique<RepeatUntil>();
+    loop->body = std::move(body);
+    loop->cond = std::move(cond);
+    skipNewlines();
+    return loop;
 }
 
 std::unique_ptr<Stmt> Parser::parse_for() {
@@ -906,11 +1048,10 @@ std::unique_ptr<Stmt> Parser::parse_sub_decl() {
         }
     }
     auto body = stmt_list_until(Tok::EndSub, Tok::EndSub);
-    if (!match(Tok::EndSub)) {
-        diag.err(peek().line, peek().col, "SUB: expected ENDSUB");
+    if (!match_end_sub()) {
+        diag.err_at(peek().line, peek().col, "SUB: expected ENDSUB or END SUB");
         return nullptr;
     }
-    advance();
     auto s = std::make_unique<SubDecl>();
     s->name = std::move(name);
     s->params = std::move(params);
@@ -951,11 +1092,10 @@ std::unique_ptr<Stmt> Parser::parse_function_decl() {
     }
     
     auto body = stmt_list_until(Tok::EndFunction, Tok::EndFunction);
-    if (!match(Tok::EndFunction)) {
-        diag.err(peek().line, peek().col, "FUNCTION: expected ENDFUNCTION");
+    if (!match_end_function()) {
+        diag.err_at(peek().line, peek().col, "FUNCTION: expected ENDFUNCTION or END FUNCTION");
         return nullptr;
     }
-    advance();
     auto f = std::make_unique<FunctionDecl>();
     f->name = std::move(name);
     f->params = std::move(params);
@@ -1162,6 +1302,38 @@ std::unique_ptr<Stmt> Parser::parse_call() {
 // ============================================================================
 // Parser Extension Functions - Modular implementations for new features
 // ============================================================================
+
+// Parse GLOBAL declaration: GLOBAL x [= expr], y [= expr], ...
+std::unique_ptr<Stmt> Parser::parse_global_decl() {
+    advance(); // consume GLOBAL
+    auto decl = std::make_unique<GlobalDecl>();
+    
+    do {
+        if (!check(Tok::Ident)) {
+            diag.err_at(peek().line, peek().col, "GLOBAL: expected variable name");
+            return nullptr;
+        }
+        decl->names.push_back(advance().lex);
+    } while (match(Tok::Comma));
+    
+    return decl;
+}
+
+// Parse LOCAL declaration: LOCAL x [= expr], y [= expr], ...
+std::unique_ptr<Stmt> Parser::parse_local_decl() {
+    advance(); // consume LOCAL
+    auto decl = std::make_unique<LocalDecl>();
+    
+    do {
+        if (!check(Tok::Ident)) {
+            diag.err_at(peek().line, peek().col, "LOCAL: expected variable name");
+            return nullptr;
+        }
+        decl->names.push_back(advance().lex);
+    } while (match(Tok::Comma));
+    
+    return decl;
+}
 
 // Parse TYPE declaration: TYPE Name [EXTENDS ParentType] ... END TYPE
 std::unique_ptr<Stmt> Parser::parse_type_decl() {
@@ -1941,50 +2113,132 @@ std::unique_ptr<Expr> Parser::parse_super_call() {
     return expr;
 }
 
-// Parse TRY/CATCH/FINALLY block
-std::unique_ptr<Stmt> Parser::parse_try_catch() {
-    advance(); // consume TRY
+
+// Parse SELECT CASE statement: SELECT expression CASE values ... [ELSE|DEFAULT] ... ENDSELECT
+std::unique_ptr<Stmt> Parser::parse_select_case() {
+    advance(); // consume SELECT
+    auto selector = expression();
+    auto selectStmt = std::make_unique<SelectCaseStmt>();
+    selectStmt->selector = std::move(selector);
     
-    auto tryCatch = std::make_unique<TryCatchStmt>();
-    
-    // Parse try body
-    tryCatch->tryBody = stmt_list_until(Tok::Catch, Tok::Finally);
-    
-    // Check for CATCH
-    if (match(Tok::Catch)) {
-        tryCatch->hasCatch = true;
+    while (peek().kind != Tok::Eof && !check(Tok::EndSelect)) {
+        consume_statement_separators();
+        if (check(Tok::EndSelect)) break;
         
-        // Optional catch variable
-        if (check(Tok::Ident)) {
-            tryCatch->catchVar = advance().lex;
+        if (match(Tok::Case)) {
+            CaseBranch branch;
+            branch.isElse = false;
+            
+            // Check for CASE IS <op> expr (relational form)
+            if (match(Tok::Is)) {
+                branch.isRel = true;
+                if (check(Tok::Lt) || check(Tok::Lte) || check(Tok::Gt) || check(Tok::Gte) || 
+                    check(Tok::Eq) || check(Tok::Neq)) {
+                    branch.relOp = advance().kind;
+                    branch.relExpr = expression();
+                } else {
+                    diag.err_at(peek().line, peek().col, "CASE IS: expected comparison operator");
+                    return nullptr;
+                }
+            } else {
+                // Regular CASE with value list or range
+                branch.isRel = false;
+                branch.isRange = false;
+                auto firstValue = expression();
+                
+                // Check for CASE value TO value (range syntax)
+                if (match(Tok::To)) {
+                    auto lastValue = expression();
+                    // Create a range expression
+                    branch.isRange = true;
+                    branch.rangeStart = std::move(firstValue);
+                    branch.rangeEnd = std::move(lastValue);
+                } else {
+                    // Regular value list
+                    branch.values.push_back(std::move(firstValue));
+                    while (match(Tok::Comma)) {
+                        branch.values.push_back(expression());
+                    }
+                }
+            }
+            
+            branch.body = stmt_list_until(Tok::Case, Tok::Else, Tok::Default, Tok::EndSelect);
+            consume_statement_separators();
+            selectStmt->branches.push_back(std::move(branch));
+        } else if (match(Tok::Else) || match(Tok::Default)) {
+            // Handle both ELSE and DEFAULT as the default clause
+            CaseBranch elseBranch;
+            elseBranch.isElse = true;
+            elseBranch.body = stmt_list_until(Tok::EndSelect, Tok::Eof);
+            consume_statement_separators();
+            selectStmt->branches.push_back(std::move(elseBranch));
+        } else {
+            diag.err_at(peek().line, peek().col, "SELECT: expected CASE, ELSE, DEFAULT, or ENDSELECT");
+            return nullptr;
         }
-        
-        // Parse catch body
-        tryCatch->catchBody = stmt_list_until(Tok::Finally, Tok::EndTry);
     }
     
-    // Check for FINALLY
-    if (match(Tok::Finally)) {
-        tryCatch->hasFinally = true;
-        tryCatch->finallyBody = stmt_list_until(Tok::EndTry, Tok::Eof);
-    }
-    
-    // Consume END TRY
-    if (!match(Tok::EndTry)) {
-        diag.err_at(peek().line, peek().col, "TRY: expected END TRY");
+    if (!match(Tok::EndSelect)) {
+        diag.err_at(peek().line, peek().col, "SELECT: expected ENDSELECT to close the block");
         return nullptr;
     }
-    skipNewlines(); // Align for next statement
-    
-    return tryCatch;
+    skipNewlines();
+    return selectStmt;
 }
 
-// Parse THROW statement
-std::unique_ptr<Stmt> Parser::parse_throw() {
-    advance(); // consume THROW
+// Parse event handler: ON EVENT eventType eventName ... END EVENT
+std::unique_ptr<Stmt> Parser::parse_event_handler() {
+    advance(); // consume ON
     
-    auto throwStmt = std::make_unique<ThrowStmt>();
-    throwStmt->error = expression();
+    // Expect EVENT keyword
+    if (!match(Tok::Event)) {
+        diag.err_at(peek().line, peek().col, "ON: expected EVENT keyword");
+        return nullptr;
+    }
     
-    return throwStmt;
+    // Parse event type (identifier)
+    if (!check(Tok::Ident)) {
+        diag.err_at(peek().line, peek().col, "ON EVENT: expected event type identifier");
+        return nullptr;
+    }
+    std::string eventType = advance().lex;
+    
+    // Parse event name (identifier)
+    if (!check(Tok::Ident)) {
+        diag.err_at(peek().line, peek().col, "ON EVENT: expected event name identifier");
+        return nullptr;
+    }
+    std::string eventName = advance().lex;
+    
+    skipNewlines();
+    
+    // Parse body statements
+    std::vector<std::unique_ptr<Stmt>> body;
+    while (!check(Tok::End) && !check(Tok::Eof)) {
+        if (check(Tok::End)) {
+            advance(); // consume END
+            if (match(Tok::Event)) {
+                skipNewlines();
+                break;
+            } else {
+                diag.err_at(peek().line, peek().col, "ON EVENT: expected END EVENT");
+                return nullptr;
+            }
+        }
+        
+        auto stmt = statement();
+        if (stmt) {
+            body.push_back(std::move(stmt));
+        } else {
+            break;
+        }
+        skipNewlines();
+    }
+    
+    auto handler = std::make_unique<EventHandler>();
+    handler->eventType = eventType;
+    handler->eventName = eventName;
+    handler->body = std::move(body);
+    
+    return handler;
 }

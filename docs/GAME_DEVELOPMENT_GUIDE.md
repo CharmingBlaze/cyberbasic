@@ -489,11 +489,12 @@ NEXT
 
 ### 6. Error Handling
 ```basic
-TRY
-    VAR data = LOADFILE("save.dat")
-CATCH error
-    PRINT "Error loading file: " + error
-ENDTRY
+VAR data = LOADFILE("save.dat")
+IF data = NIL THEN
+    PRINT "Error loading file: save.dat not found"
+    REM Use default data or exit
+    RETURN
+ENDIF
 ```
 
 ---

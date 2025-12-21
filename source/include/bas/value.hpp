@@ -68,5 +68,22 @@ struct Value {
     if (auto m=std::get_if<Map>(&v)) return *m;
     throw std::runtime_error("Expected map");
   }
+  
+  // Comparison operators for Value
+  bool operator==(const Value& other) const {
+    if (v.index() != other.v.index()) return false;
+    if (is_nil()) return true;
+    if (is_bool()) return as_bool() == other.as_bool();
+    if (is_int()) return as_int() == other.as_int();
+    if (is_number()) return as_number() == other.as_number();
+    if (is_string()) return as_string() == other.as_string();
+    if (is_array()) return as_array() == other.as_array();
+    if (is_map()) return as_map() == other.as_map();
+    return false;
+  }
+  
+  bool operator!=(const Value& other) const {
+    return !(*this == other);
+  }
 };
 } // namespace bas

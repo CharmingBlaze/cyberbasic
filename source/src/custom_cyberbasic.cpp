@@ -1,3 +1,4 @@
+#include "raylib.h"
 #include "bas/custom_cyberbasic.hpp"
 #include <algorithm>
 #include <chrono>

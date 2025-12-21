@@ -4,6 +4,56 @@ project(basic_raylib LANGUAGES CXX VERSION 1.0.0)
 # Prevent MSVC usage
 include(cmake/PreventMSVC.cmake)
 
+# Validate generator consistency to prevent build directory corruption
+if(EXISTS "${CMAKE_BINARY_DIR}/CMakeCache.txt")
+    file(READ "${CMAKE_BINARY_DIR}/CMakeCache.txt" cache_content)
+    string(REGEX MATCH "CMAKE_GENERATOR:INTERNAL=([^\r\n]+)" generator_match "${cache_content}")
+    if(generator_match)
+        set(CACHED_GENERATOR "${CMAKE_MATCH_1}")
+        # Get current generator from CMake (CMAKE_GENERATOR is set automatically)
+        # Note: CMAKE_GENERATOR may not be available in all CMake versions, so we use a simpler check
+        if(CMAKE_GENERATOR)
+            set(CURRENT_GENERATOR "${CMAKE_GENERATOR}")
+        else()
+            # Fallback: use the generator from command line if available
+            set(CURRENT_GENERATOR "Unknown")
+        endif()
+        
+        # Normalize generator names for comparison (remove extra spaces, etc.)
+        string(STRIP "${CACHED_GENERATOR}" CACHED_GENERATOR)
+        string(STRIP "${CURRENT_GENERATOR}" CURRENT_GENERATOR)
+        
+        if(NOT "${CACHED_GENERATOR}" STREQUAL "${CURRENT_GENERATOR}")
+            message(FATAL_ERROR 
+                "\n"
+                "=============================================================================\n"
+                "ERROR: Generator mismatch detected!\n"
+                "=============================================================================\n"
+                "The build directory was previously configured with a different generator:\n"
+                "  Cached generator:  ${CACHED_GENERATOR}\n"
+                "  Current generator: ${CURRENT_GENERATOR}\n"
+                "\n"
+                "This will cause build failures. Please clean the build directory:\n"
+                "  Windows PowerShell: Remove-Item -Recurse -Force build\n"
+                "  Or delete the 'build' directory manually\n"
+                "\n"
+                "Then reconfigure with the desired generator.\n"
+                "\n"
+                "Tip: Use build-robust.ps1 which automatically handles this:\n"
+                "  .\\build-robust.ps1 -Clean\n"
+                "=============================================================================\n"
+            )
+        endif()
+    endif()
+endif()
+
+# Warn about unknown compilers on Windows
+if(WIN32)
+    if(NOT MINGW AND NOT MSVC)
+        message(WARNING "Unknown compiler on Windows. MinGW-w64 GCC is recommended for best compatibility.")
+    endif()
+endif()
+
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -73,12 +123,15 @@ find_package(Python3 COMPONENTS Interpreter REQUIRED)
 # Ensure bindings directory exists
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/src/bindings)
 
+# Collect all YAML spec files for dependency tracking
+file(GLOB_RECURSE YAML_SPEC_FILES "${CMAKE_SOURCE_DIR}/specs/*.yaml")
+
 add_custom_command(
     OUTPUT ${CMAKE_BINARY_DIR}/src/bindings/rt_raylib.gen.cpp
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/src/bindings
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/gen_raylib_bindings.py
-    DEPENDS ${CMAKE_SOURCE_DIR}/tools/gen_raylib_bindings.py ${CMAKE_SOURCE_DIR}/specs/raylib_api.yaml
-    COMMENT "Generating raylib bindings"
+    DEPENDS ${CMAKE_SOURCE_DIR}/tools/gen_raylib_bindings.py ${YAML_SPEC_FILES}
+    COMMENT "Generating raylib bindings from YAML specifications"
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 )
 
@@ -98,6 +151,7 @@ add_executable(cyberbasic
   src/core/runtime.cpp
   src/core/namespace_registry.cpp
   src/core/type_system.cpp
+  src/core/yaml_module_loader.cpp
   # Builtin functions
   src/builtins_core.cpp
   src/core/builtins_objects.cpp
@@ -120,6 +174,7 @@ add_executable(cyberbasic
   src/modules/graphics/graphics.cpp
   src/modules/graphics/graphics_module.cpp
   src/modules/networking/networking.cpp
+  src/modules/networking/networking_advanced.cpp
   src/modules/networking/networking_module.cpp
   src/modules/audio/audio.cpp
   src/modules/audio/audio_module.cpp
@@ -159,6 +214,8 @@ add_executable(cyberbasic
   src/modules/game/modern_features.cpp
   src/modules/game/advanced_features.cpp
   src/modules/game/post_processing.cpp
+  src/modules/game/post_processing_registry.cpp
+  src/modules/game/particle_system_registry.cpp
   src/modules/game/streaming.cpp
   src/modules/game/enhanced_events.cpp
   src/modules/game/screen_transitions.cpp
@@ -218,6 +275,7 @@ if(WIN32)
             oleaut32 
             imm32 
             winmm 
+            ws2_32  # Windows sockets (for networking)
             version
             setupapi
             advapi32

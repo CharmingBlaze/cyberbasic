@@ -1,12 +1,13 @@
 #include "bas/gui_layout.hpp"
 #include "bas/gui_manager.hpp"
+#include "bas/gui_types.hpp"
 #include <algorithm>
 #include <iostream>
 
 namespace bas {
 
 // GuiLayout Implementation
-GuiLayout::GuiLayout(LayoutType layout_type, const Rectangle& layout_bounds)
+GuiLayout::GuiLayout(LayoutType layout_type, const GuiRectangle& layout_bounds)
     : type(layout_type), bounds(layout_bounds), spacing(5), alignment(Alignment::START) {
 }
 
@@ -26,7 +27,7 @@ void GuiLayout::clear_items() {
 }
 
 // GuiHorizontalLayout Implementation
-GuiHorizontalLayout::GuiHorizontalLayout(const Rectangle& bounds)
+GuiHorizontalLayout::GuiHorizontalLayout(const GuiRectangle& bounds)
     : GuiLayout(LayoutType::HORIZONTAL, bounds) {
 }
 
@@ -68,7 +69,7 @@ void GuiHorizontalLayout::calculate_layout() {
         // Set position
         auto control = GuiManager::get_control(item.control_id);
         if (control) {
-            Rectangle new_bounds = control->get_bounds();
+            GuiRectangle new_bounds = control->get_bounds();
             new_bounds.x = current_x + item.constraints.margin_left;
             new_bounds.width = item_width - item.constraints.margin_left - item.constraints.margin_right;
             new_bounds.y = bounds.y + item.constraints.margin_top;
@@ -85,7 +86,7 @@ void GuiHorizontalLayout::apply_layout() {
 }
 
 // GuiVerticalLayout Implementation
-GuiVerticalLayout::GuiVerticalLayout(const Rectangle& bounds)
+GuiVerticalLayout::GuiVerticalLayout(const GuiRectangle& bounds)
     : GuiLayout(LayoutType::VERTICAL, bounds) {
 }
 
@@ -127,7 +128,7 @@ void GuiVerticalLayout::calculate_layout() {
         // Set position
         auto control = GuiManager::get_control(item.control_id);
         if (control) {
-            Rectangle new_bounds = control->get_bounds();
+            GuiRectangle new_bounds = control->get_bounds();
             new_bounds.x = bounds.x + item.constraints.margin_left;
             new_bounds.width = bounds.width - item.constraints.margin_left - item.constraints.margin_right;
             new_bounds.y = current_y + item.constraints.margin_top;
@@ -144,7 +145,7 @@ void GuiVerticalLayout::apply_layout() {
 }
 
 // GuiGridLayout Implementation
-GuiGridLayout::GuiGridLayout(const Rectangle& bounds, int cols, int rws)
+GuiGridLayout::GuiGridLayout(const GuiRectangle& bounds, int cols, int rws)
     : GuiLayout(LayoutType::GRID, bounds), columns(cols), rows(rws) {
 }
 
@@ -161,7 +162,7 @@ void GuiGridLayout::calculate_layout() {
         auto& item = items[i];
         auto control = GuiManager::get_control(item.control_id);
         if (control) {
-            Rectangle new_bounds = control->get_bounds();
+            GuiRectangle new_bounds = control->get_bounds();
             new_bounds.x = bounds.x + col * cell_width + item.constraints.margin_left;
             new_bounds.y = bounds.y + row * cell_height + item.constraints.margin_top;
             new_bounds.width = cell_width - item.constraints.margin_left - item.constraints.margin_right;
@@ -179,19 +180,19 @@ void GuiGridLayout::apply_layout() {
 std::vector<std::unique_ptr<GuiLayout>> GuiLayoutManager::layouts;
 int GuiLayoutManager::next_layout_id = 1;
 
-int GuiLayoutManager::create_horizontal_layout(const Rectangle& bounds) {
+int GuiLayoutManager::create_horizontal_layout(const GuiRectangle& bounds) {
     int id = next_layout_id++;
     layouts.push_back(std::make_unique<GuiHorizontalLayout>(bounds));
     return id;
 }
 
-int GuiLayoutManager::create_vertical_layout(const Rectangle& bounds) {
+int GuiLayoutManager::create_vertical_layout(const GuiRectangle& bounds) {
     int id = next_layout_id++;
     layouts.push_back(std::make_unique<GuiVerticalLayout>(bounds));
     return id;
 }
 
-int GuiLayoutManager::create_grid_layout(const Rectangle& bounds, int columns, int rows) {
+int GuiLayoutManager::create_grid_layout(const GuiRectangle& bounds, int columns, int rows) {
     int id = next_layout_id++;
     layouts.push_back(std::make_unique<GuiGridLayout>(bounds, columns, rows));
     return id;

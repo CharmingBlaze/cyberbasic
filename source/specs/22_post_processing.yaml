@@ -12,8 +12,10 @@ functions:
     description: "Create post-processing effect (name, intensity)"
     working: true
     custom_body: |
-      // Create post-processing effect
-      return Value::from_number(1); // Placeholder ID
+      // Create post-processing effect using registry
+      std::string name = STR(0);
+      int intensity = INT(1);
+      return Value::from_int(postfx_registry::create_effect(name, "generic", intensity));
 
   - name: DESTROYPOSTEFFECT
     raylib_name: DestroyPostEffect
@@ -24,6 +26,7 @@ functions:
     working: true
     custom_body: |
       // Destroy post-processing effect
+      postfx_registry::destroy_effect(INT(0));
       return Value::nil();
 
   - name: ENABLEPOSTEFFECT
@@ -35,6 +38,7 @@ functions:
     working: true
     custom_body: |
       // Enable post-processing effect
+      postfx_registry::enable_effect(INT(0), true);
       return Value::nil();
 
   - name: DISABLEPOSTEFFECT
@@ -46,6 +50,7 @@ functions:
     working: true
     custom_body: |
       // Disable post-processing effect
+      postfx_registry::enable_effect(INT(0), false);
       return Value::nil();
 
   # === BLUR EFFECTS ===
@@ -58,7 +63,8 @@ functions:
     working: true
     custom_body: |
       // Create blur effect
-      return Value::from_number(1); // Placeholder ID
+      int intensity = INT(0);
+      return Value::from_int(postfx_registry::create_effect("blur", "blur", intensity));
 
   - name: SETBLURINTENSITY
     raylib_name: SetBlurIntensity
@@ -69,6 +75,7 @@ functions:
     working: true
     custom_body: |
       // Set blur intensity
+      postfx_registry::set_effect_intensity(INT(0), INT(1));
       return Value::nil();
 
   # === BLOOM EFFECTS ===
@@ -81,7 +88,8 @@ functions:
     working: true
     custom_body: |
       // Create bloom effect
-      return Value::from_number(2); // Placeholder ID
+      int intensity = INT(0);
+      return Value::from_int(postfx_registry::create_effect("bloom", "bloom", intensity));
 
   - name: SETBLOOMINTENSITY
     raylib_name: SetBloomIntensity
@@ -92,6 +100,7 @@ functions:
     working: true
     custom_body: |
       // Set bloom intensity
+      postfx_registry::set_effect_intensity(INT(0), INT(1));
       return Value::nil();
 
   # === COLOR EFFECTS ===
@@ -104,7 +113,13 @@ functions:
     working: true
     custom_body: |
       // Create color effect
-      return Value::from_number(3); // Placeholder ID
+      int brightness = INT(0);
+      int contrast = INT(1);
+      int saturation = INT(2);
+      int hue = INT(3);
+      // Use average intensity for registry
+      int avg_intensity = (brightness + contrast + saturation + hue) / 4;
+      return Value::from_int(postfx_registry::create_effect("color", "color", avg_intensity));
 
   - name: SETCOLOREFFECTBRIGHTNESS
     raylib_name: SetColorEffectBrightness
@@ -160,7 +175,8 @@ functions:
     working: true
     custom_body: |
       // Create distortion effect
-      return Value::from_number(4); // Placeholder ID
+      int intensity = INT(0);
+      return Value::from_int(postfx_registry::create_effect("distortion", "distortion", intensity));
 
   - name: SETDISTORTIONINTENSITY
     raylib_name: SetDistortionIntensity
@@ -216,7 +232,7 @@ functions:
     working: true
     custom_body: |
       // Get post-processing effect count
-      return Value::from_number(0);
+      return Value::from_int(postfx_registry::get_effect_count());
 
   - name: CLEARALLPOSTEFFECTS
     raylib_name: ClearAllPostEffects
@@ -227,4 +243,5 @@ functions:
     working: true
     custom_body: |
       // Clear all post-processing effects
+      postfx_registry::clear_all_effects();
       return Value::nil();

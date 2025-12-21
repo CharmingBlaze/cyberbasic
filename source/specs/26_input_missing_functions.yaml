@@ -153,7 +153,13 @@ functions:
     category: camera
     description: "Update camera position for selected mode (pass camera ID, mode)"
     custom_body: |
-      // TODO: Camera handling
+      ::Camera3D camera;
+      camera.position = {(float)0.0f, (float)0.0f, (float)0.0f};
+      camera.target = {(float)0.0f, (float)0.0f, (float)1.0f};
+      camera.up = {(float)0.0f, (float)1.0f, (float)0.0f};
+      camera.fovy = 60.0f;
+      camera.projection = CAMERA_PERSPECTIVE;
+      ::UpdateCamera(&camera, INT(1));
 
   - name: UPDATECAMERAPRO
     raylib_name: UpdateCameraPro
@@ -162,5 +168,13 @@ functions:
     category: camera
     description: "Update camera movement/rotation (pass camera ID, movement, rotation, zoom)"
     custom_body: |
-      // TODO: Camera handling
+      ::Camera3D camera;
+      camera.position = {(float)0.0f, (float)0.0f, (float)0.0f};
+      camera.target = {(float)0.0f, (float)0.0f, (float)1.0f};
+      camera.up = {(float)0.0f, (float)1.0f, (float)0.0f};
+      camera.fovy = 60.0f;
+      camera.projection = CAMERA_PERSPECTIVE;
+      ::Vector3 movement{(float)FLOAT(1), (float)FLOAT(2), (float)FLOAT(3)};
+      ::Vector3 rotation{(float)FLOAT(4), (float)FLOAT(5), (float)FLOAT(6)};
+      ::UpdateCameraPro(&camera, movement, rotation, (float)FLOAT(7));
 

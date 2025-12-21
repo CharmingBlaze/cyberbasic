@@ -11,7 +11,7 @@ using namespace bas;
 // Helper to create an object (map) with properties
 [[maybe_unused]] static Value create_object(const std::string& type_name) {
     Value::Map obj;
-    obj["_type"] = Value::from_string(type_name);
+    obj[normalize_identifier("_type")] = Value::from_string(normalize_identifier(type_name));
     return Value::from_map(std::move(obj));
 }
 
@@ -22,10 +22,10 @@ static Value vector3_constructor(const std::vector<Value>& args) {
     double z = args.size() > 2 ? args[2].as_number() : 0.0;
     
     Value::Map vec;
-    vec["_type"] = Value::from_string("Vector3");
-    vec["x"] = Value::from_number(x);
-    vec["y"] = Value::from_number(y);
-    vec["z"] = Value::from_number(z);
+    vec[normalize_identifier("_type")] = Value::from_string(normalize_identifier("Vector3"));
+    vec[normalize_identifier("x")] = Value::from_number(x);
+    vec[normalize_identifier("y")] = Value::from_number(y);
+    vec[normalize_identifier("z")] = Value::from_number(z);
     
     return Value::from_map(std::move(vec));
 }
@@ -36,9 +36,9 @@ static Value vector2_constructor(const std::vector<Value>& args) {
     double y = args.size() > 1 ? args[1].as_number() : 0.0;
     
     Value::Map vec;
-    vec["_type"] = Value::from_string("Vector2");
-    vec["x"] = Value::from_number(x);
-    vec["y"] = Value::from_number(y);
+    vec[normalize_identifier("_type")] = Value::from_string(normalize_identifier("Vector2"));
+    vec[normalize_identifier("x")] = Value::from_number(x);
+    vec[normalize_identifier("y")] = Value::from_number(y);
     
     return Value::from_map(std::move(vec));
 }
@@ -57,11 +57,11 @@ static Value color_constructor(const std::vector<Value>& args) {
     a = std::max(0.0, std::min(255.0, a));
     
     Value::Map color;
-    color["_type"] = Value::from_string("Color");
-    color["r"] = Value::from_number(r);
-    color["g"] = Value::from_number(g);
-    color["b"] = Value::from_number(b);
-    color["a"] = Value::from_number(a);
+    color[normalize_identifier("_type")] = Value::from_string(normalize_identifier("Color"));
+    color[normalize_identifier("r")] = Value::from_number(r);
+    color[normalize_identifier("g")] = Value::from_number(g);
+    color[normalize_identifier("b")] = Value::from_number(b);
+    color[normalize_identifier("a")] = Value::from_number(a);
     
     return Value::from_map(std::move(color));
 }
@@ -74,11 +74,11 @@ static Value rectangle_constructor(const std::vector<Value>& args) {
     double h = args.size() > 3 ? args[3].as_number() : 0.0;
     
     Value::Map rect;
-    rect["_type"] = Value::from_string("Rectangle");
-    rect["x"] = Value::from_number(x);
-    rect["y"] = Value::from_number(y);
-    rect["width"] = Value::from_number(w);
-    rect["height"] = Value::from_number(h);
+    rect[normalize_identifier("_type")] = Value::from_string(normalize_identifier("Rectangle"));
+    rect[normalize_identifier("x")] = Value::from_number(x);
+    rect[normalize_identifier("y")] = Value::from_number(y);
+    rect[normalize_identifier("width")] = Value::from_number(w);
+    rect[normalize_identifier("height")] = Value::from_number(h);
     
     return Value::from_map(std::move(rect));
 }
@@ -86,32 +86,32 @@ static Value rectangle_constructor(const std::vector<Value>& args) {
 // Camera3D object constructor: Camera3D()
 static Value camera3d_constructor(const std::vector<Value>& args) {
     Value::Map camera;
-    camera["_type"] = Value::from_string("Camera3D");
+    camera[normalize_identifier("_type")] = Value::from_string(normalize_identifier("Camera3D"));
     
     // Default camera properties - create Vector3 objects properly
     Value::Map position;
-    position["_type"] = Value::from_string("Vector3");
-    position["x"] = Value::from_number(0.0);
-    position["y"] = Value::from_number(0.0);
-    position["z"] = Value::from_number(10.0);
+    position[normalize_identifier("_type")] = Value::from_string(normalize_identifier("Vector3"));
+    position[normalize_identifier("x")] = Value::from_number(0.0);
+    position[normalize_identifier("y")] = Value::from_number(0.0);
+    position[normalize_identifier("z")] = Value::from_number(10.0);
     
     Value::Map target;
-    target["_type"] = Value::from_string("Vector3");
-    target["x"] = Value::from_number(0.0);
-    target["y"] = Value::from_number(0.0);
-    target["z"] = Value::from_number(0.0);
+    target[normalize_identifier("_type")] = Value::from_string(normalize_identifier("Vector3"));
+    target[normalize_identifier("x")] = Value::from_number(0.0);
+    target[normalize_identifier("y")] = Value::from_number(0.0);
+    target[normalize_identifier("z")] = Value::from_number(0.0);
     
     Value::Map up;
-    up["_type"] = Value::from_string("Vector3");
-    up["x"] = Value::from_number(0.0);
-    up["y"] = Value::from_number(1.0);
-    up["z"] = Value::from_number(0.0);
+    up[normalize_identifier("_type")] = Value::from_string(normalize_identifier("Vector3"));
+    up[normalize_identifier("x")] = Value::from_number(0.0);
+    up[normalize_identifier("y")] = Value::from_number(1.0);
+    up[normalize_identifier("z")] = Value::from_number(0.0);
     
-    camera["position"] = Value::from_map(std::move(position));
-    camera["target"] = Value::from_map(std::move(target));
-    camera["up"] = Value::from_map(std::move(up));
-    camera["fovy"] = Value::from_number(60.0);
-    camera["projection"] = Value::from_number(0.0); // CAMERA_PERSPECTIVE
+    camera[normalize_identifier("position")] = Value::from_map(std::move(position));
+    camera[normalize_identifier("target")] = Value::from_map(std::move(target));
+    camera[normalize_identifier("up")] = Value::from_map(std::move(up));
+    camera[normalize_identifier("fovy")] = Value::from_number(60.0);
+    camera[normalize_identifier("projection")] = Value::from_number(0.0); // CAMERA_PERSPECTIVE
     
     return Value::from_map(std::move(camera));
 }
@@ -123,9 +123,9 @@ static void get_vector3_components(const Value& vec, double& x, double& y, doubl
         return;
     }
     const auto& map = vec.as_map();
-    x = map.count("x") ? map.at("x").as_number() : 0.0;
-    y = map.count("y") ? map.at("y").as_number() : 0.0;
-    z = map.count("z") ? map.at("z").as_number() : 0.0;
+    x = map.count(normalize_identifier("x")) ? map.at(normalize_identifier("x")).as_number() : 0.0;
+    y = map.count(normalize_identifier("y")) ? map.at(normalize_identifier("y")).as_number() : 0.0;
+    z = map.count(normalize_identifier("z")) ? map.at(normalize_identifier("z")).as_number() : 0.0;
 }
 
 // Vector3 methods
@@ -200,8 +200,8 @@ static void get_vector2_components(const Value& vec, double& x, double& y) {
         return;
     }
     const auto& map = vec.as_map();
-    x = map.count("x") ? map.at("x").as_number() : 0.0;
-    y = map.count("y") ? map.at("y").as_number() : 0.0;
+    x = map.count(normalize_identifier("x")) ? map.at(normalize_identifier("x")).as_number() : 0.0;
+    y = map.count(normalize_identifier("y")) ? map.at(normalize_identifier("y")).as_number() : 0.0;
 }
 
 static Value vector2_length(const std::vector<Value>& args) {
@@ -245,9 +245,9 @@ static Value color_brightness(const std::vector<Value>& args) {
         return Value::from_number(0.0);
     }
     const auto& color = args[0].as_map();
-    double r = color.count("r") ? color.at("r").as_number() : 0.0;
-    double g = color.count("g") ? color.at("g").as_number() : 0.0;
-    double b = color.count("b") ? color.at("b").as_number() : 0.0;
+    double r = color.count(normalize_identifier("r")) ? color.at(normalize_identifier("r")).as_number() : 0.0;
+    double g = color.count(normalize_identifier("g")) ? color.at(normalize_identifier("g")).as_number() : 0.0;
+    double b = color.count(normalize_identifier("b")) ? color.at(normalize_identifier("b")).as_number() : 0.0;
     // Calculate perceived brightness (luminance)
     return Value::from_number(0.299*r + 0.587*g + 0.114*b);
 }
@@ -257,10 +257,10 @@ static Value color_darken(const std::vector<Value>& args) {
         return color_constructor({});
     }
     const auto& color = args[0].as_map();
-    double r = color.count("r") ? color.at("r").as_number() : 0.0;
-    double g = color.count("g") ? color.at("g").as_number() : 0.0;
-    double b = color.count("b") ? color.at("b").as_number() : 0.0;
-    double a = color.count("a") ? color.at("a").as_number() : 255.0;
+    double r = color.count(normalize_identifier("r")) ? color.at(normalize_identifier("r")).as_number() : 0.0;
+    double g = color.count(normalize_identifier("g")) ? color.at(normalize_identifier("g")).as_number() : 0.0;
+    double b = color.count(normalize_identifier("b")) ? color.at(normalize_identifier("b")).as_number() : 0.0;
+    double a = color.count(normalize_identifier("a")) ? color.at(normalize_identifier("a")).as_number() : 255.0;
     double factor = args.size() > 1 ? args[1].as_number() : 0.5;
     factor = std::max(0.0, std::min(1.0, factor));
     return color_constructor({
@@ -405,10 +405,10 @@ static Value color_lighten(const std::vector<Value>& args) {
         return color_constructor({});
     }
     const auto& color = args[0].as_map();
-    double r = color.count("r") ? color.at("r").as_number() : 0.0;
-    double g = color.count("g") ? color.at("g").as_number() : 0.0;
-    double b = color.count("b") ? color.at("b").as_number() : 0.0;
-    double a = color.count("a") ? color.at("a").as_number() : 255.0;
+    double r = color.count(normalize_identifier("r")) ? color.at(normalize_identifier("r")).as_number() : 0.0;
+    double g = color.count(normalize_identifier("g")) ? color.at(normalize_identifier("g")).as_number() : 0.0;
+    double b = color.count(normalize_identifier("b")) ? color.at(normalize_identifier("b")).as_number() : 0.0;
+    double a = color.count(normalize_identifier("a")) ? color.at(normalize_identifier("a")).as_number() : 255.0;
     double factor = args.size() > 1 ? args[1].as_number() : 0.5;
     factor = std::max(0.0, std::min(1.0, factor));
     return color_constructor({
@@ -425,14 +425,14 @@ static Value color_mix(const std::vector<Value>& args) {
     }
     const auto& c1 = args[0].as_map();
     const auto& c2 = args[1].as_map();
-    double r1 = c1.count("r") ? c1.at("r").as_number() : 0.0;
-    double g1 = c1.count("g") ? c1.at("g").as_number() : 0.0;
-    double b1 = c1.count("b") ? c1.at("b").as_number() : 0.0;
-    double a1 = c1.count("a") ? c1.at("a").as_number() : 255.0;
-    double r2 = c2.count("r") ? c2.at("r").as_number() : 0.0;
-    double g2 = c2.count("g") ? c2.at("g").as_number() : 0.0;
-    double b2 = c2.count("b") ? c2.at("b").as_number() : 0.0;
-    double a2 = c2.count("a") ? c2.at("a").as_number() : 255.0;
+    double r1 = c1.count(normalize_identifier("r")) ? c1.at(normalize_identifier("r")).as_number() : 0.0;
+    double g1 = c1.count(normalize_identifier("g")) ? c1.at(normalize_identifier("g")).as_number() : 0.0;
+    double b1 = c1.count(normalize_identifier("b")) ? c1.at(normalize_identifier("b")).as_number() : 0.0;
+    double a1 = c1.count(normalize_identifier("a")) ? c1.at(normalize_identifier("a")).as_number() : 255.0;
+    double r2 = c2.count(normalize_identifier("r")) ? c2.at(normalize_identifier("r")).as_number() : 0.0;
+    double g2 = c2.count(normalize_identifier("g")) ? c2.at(normalize_identifier("g")).as_number() : 0.0;
+    double b2 = c2.count(normalize_identifier("b")) ? c2.at(normalize_identifier("b")).as_number() : 0.0;
+    double a2 = c2.count(normalize_identifier("a")) ? c2.at(normalize_identifier("a")).as_number() : 255.0;
     double t = args.size() > 2 ? args[2].as_number() : 0.5;
     t = std::max(0.0, std::min(1.0, t));
     return color_constructor({
@@ -448,9 +448,9 @@ static Value color_toHex(const std::vector<Value>& args) {
         return Value::from_string("#000000");
     }
     const auto& color = args[0].as_map();
-    int r = static_cast<int>(color.count("r") ? color.at("r").as_number() : 0.0);
-    int g = static_cast<int>(color.count("g") ? color.at("g").as_number() : 0.0);
-    int b = static_cast<int>(color.count("b") ? color.at("b").as_number() : 0.0);
+    int r = static_cast<int>(color.count(normalize_identifier("r")) ? color.at(normalize_identifier("r")).as_number() : 0.0);
+    int g = static_cast<int>(color.count(normalize_identifier("g")) ? color.at(normalize_identifier("g")).as_number() : 0.0);
+    int b = static_cast<int>(color.count(normalize_identifier("b")) ? color.at(normalize_identifier("b")).as_number() : 0.0);
     r = std::max(0, std::min(255, r));
     g = std::max(0, std::min(255, g));
     b = std::max(0, std::min(255, b));
@@ -572,20 +572,20 @@ static Value array_pop(const std::vector<Value>& args) {
 static Value texture2d_constructor(const std::vector<Value>& args) {
     if(args.empty()) {
         Value::Map tex;
-        tex["_type"] = Value::from_string("Texture2D");
-        tex["_id"] = Value::from_int(-1); // Invalid ID
+        tex[normalize_identifier("_type")] = Value::from_string(normalize_identifier("Texture2D"));
+        tex[normalize_identifier("_id")] = Value::from_int(-1); // Invalid ID
         return Value::from_map(std::move(tex));
     }
     // If first arg is a string, it's a file path - use LOADTEXTURE
     // If first arg is an int, it's an existing texture ID
     Value::Map tex;
-    tex["_type"] = Value::from_string("Texture2D");
+    tex[normalize_identifier("_type")] = Value::from_string(normalize_identifier("Texture2D"));
     if(args[0].is_string()) {
         // Will be loaded via Texture2D.load() method
-        tex["_path"] = args[0];
-        tex["_id"] = Value::from_int(-1);
+        tex[normalize_identifier("_path")] = args[0];
+        tex[normalize_identifier("_id")] = Value::from_int(-1);
     } else {
-        tex["_id"] = args[0];
+        tex[normalize_identifier("_id")] = args[0];
     }
     return Value::from_map(std::move(tex));
 }
@@ -596,7 +596,7 @@ static Value texture2d_load(const std::vector<Value>& args) {
         return texture2d_constructor({});
     }
     const auto& tex = args[0].as_map();
-    auto path_it = tex.find("_path");
+    auto path_it = tex.find(normalize_identifier("_path"));
     if(path_it == tex.end() || !path_it->second.is_string()) {
         return args[0]; // Return as-is if no path
     }
@@ -617,14 +617,14 @@ static Value texture2d_getHeight(const std::vector<Value>& args) {
 // Model object constructor
 static Value model_constructor(const std::vector<Value>& args) {
     Value::Map model;
-    model["_type"] = Value::from_string("Model");
+    model[normalize_identifier("_type")] = Value::from_string(normalize_identifier("Model"));
     if(args.empty()) {
-        model["_id"] = Value::from_int(-1);
+        model[normalize_identifier("_id")] = Value::from_int(-1);
     } else if(args[0].is_string()) {
-        model["_path"] = args[0];
-        model["_id"] = Value::from_int(-1);
+        model[normalize_identifier("_path")] = args[0];
+        model[normalize_identifier("_id")] = Value::from_int(-1);
     } else {
-        model["_id"] = args[0];
+        model[normalize_identifier("_id")] = args[0];
     }
     return Value::from_map(std::move(model));
 }
@@ -632,14 +632,14 @@ static Value model_constructor(const std::vector<Value>& args) {
 // Sound object constructor
 static Value sound_constructor(const std::vector<Value>& args) {
     Value::Map sound;
-    sound["_type"] = Value::from_string("Sound");
+    sound[normalize_identifier("_type")] = Value::from_string(normalize_identifier("Sound"));
     if(args.empty()) {
-        sound["_id"] = Value::from_int(-1);
+        sound[normalize_identifier("_id")] = Value::from_int(-1);
     } else if(args[0].is_string()) {
-        sound["_path"] = args[0];
-        sound["_id"] = Value::from_int(-1);
+        sound[normalize_identifier("_path")] = args[0];
+        sound[normalize_identifier("_id")] = Value::from_int(-1);
     } else {
-        sound["_id"] = args[0];
+        sound[normalize_identifier("_id")] = args[0];
     }
     return Value::from_map(std::move(sound));
 }
@@ -779,69 +779,69 @@ static Value array_getSize(const std::vector<Value>& args) {
 
 // Register object constructors and methods
 void bas::register_object_constructors(FunctionRegistry& R) {
-    // Object constructors
-    R.add("VECTOR3", NativeFn{"VECTOR3", -1, vector3_constructor});
-    R.add("VECTOR2", NativeFn{"VECTOR2", -1, vector2_constructor});
-    R.add("COLOR", NativeFn{"COLOR", -1, color_constructor});
-    R.add("RECTANGLE", NativeFn{"RECTANGLE", -1, rectangle_constructor});
-    R.add("CAMERA3D", NativeFn{"CAMERA3D", -1, camera3d_constructor});
-    R.add("TEXTURE2D", NativeFn{"TEXTURE2D", -1, texture2d_constructor});
-    R.add("MODEL", NativeFn{"MODEL", -1, model_constructor});
-    R.add("SOUND", NativeFn{"SOUND", -1, sound_constructor});
-    R.add_with_policy("ARRAY", NativeFn{"ARRAY", -1, array_constructor}, true);
-    R.add("ARRAY_GETDIMENSIONS", NativeFn{"ARRAY_GETDIMENSIONS", 1, array_getDimensions});
-    R.add("ARRAY_GETSIZE", NativeFn{"ARRAY_GETSIZE", 1, array_getSize});
+    // Object constructors (normalize function names to lowercase)
+    R.add(normalize_identifier("VECTOR3"), NativeFn{normalize_identifier("VECTOR3"), -1, vector3_constructor});
+    R.add(normalize_identifier("VECTOR2"), NativeFn{normalize_identifier("VECTOR2"), -1, vector2_constructor});
+    R.add(normalize_identifier("COLOR"), NativeFn{normalize_identifier("COLOR"), -1, color_constructor});
+    R.add(normalize_identifier("RECTANGLE"), NativeFn{normalize_identifier("RECTANGLE"), -1, rectangle_constructor});
+    R.add(normalize_identifier("CAMERA3D"), NativeFn{normalize_identifier("CAMERA3D"), -1, camera3d_constructor});
+    R.add(normalize_identifier("TEXTURE2D"), NativeFn{normalize_identifier("TEXTURE2D"), -1, texture2d_constructor});
+    R.add(normalize_identifier("MODEL"), NativeFn{normalize_identifier("MODEL"), -1, model_constructor});
+    R.add(normalize_identifier("SOUND"), NativeFn{normalize_identifier("SOUND"), -1, sound_constructor});
+    R.add_with_policy(normalize_identifier("ARRAY"), NativeFn{normalize_identifier("ARRAY"), -1, array_constructor}, true);
+    R.add(normalize_identifier("ARRAY_GETDIMENSIONS"), NativeFn{normalize_identifier("ARRAY_GETDIMENSIONS"), 1, array_getDimensions});
+    R.add(normalize_identifier("ARRAY_GETSIZE"), NativeFn{normalize_identifier("ARRAY_GETSIZE"), 1, array_getSize});
     
     // Texture2D methods
-    R.add("TEXTURE2D_LOAD", NativeFn{"TEXTURE2D_LOAD", 1, texture2d_load});
-    R.add("TEXTURE2D_GETWIDTH", NativeFn{"TEXTURE2D_GETWIDTH", 1, texture2d_getWidth});
-    R.add("TEXTURE2D_GETHEIGHT", NativeFn{"TEXTURE2D_GETHEIGHT", 1, texture2d_getHeight});
+    R.add(normalize_identifier("TEXTURE2D_LOAD"), NativeFn{normalize_identifier("TEXTURE2D_LOAD"), 1, texture2d_load});
+    R.add(normalize_identifier("TEXTURE2D_GETWIDTH"), NativeFn{normalize_identifier("TEXTURE2D_GETWIDTH"), 1, texture2d_getWidth});
+    R.add(normalize_identifier("TEXTURE2D_GETHEIGHT"), NativeFn{normalize_identifier("TEXTURE2D_GETHEIGHT"), 1, texture2d_getHeight});
     
     // Sound methods
-    R.add("SOUND_PLAY", NativeFn{"SOUND_PLAY", 1, sound_play});
-    R.add("SOUND_STOP", NativeFn{"SOUND_STOP", 1, sound_stop});
-    R.add("SOUND_SETVOLUME", NativeFn{"SOUND_SETVOLUME", 2, sound_setVolume});
+    R.add(normalize_identifier("SOUND_PLAY"), NativeFn{normalize_identifier("SOUND_PLAY"), 1, sound_play});
+    R.add(normalize_identifier("SOUND_STOP"), NativeFn{normalize_identifier("SOUND_STOP"), 1, sound_stop});
+    R.add(normalize_identifier("SOUND_SETVOLUME"), NativeFn{normalize_identifier("SOUND_SETVOLUME"), 2, sound_setVolume});
     
     // Vector3 methods (accessible via vec.method())
-    R.add("VECTOR3_LENGTH", NativeFn{"VECTOR3_LENGTH", 1, vector3_length});
-    R.add("VECTOR3_NORMALIZE", NativeFn{"VECTOR3_NORMALIZE", 1, vector3_normalize});
-    R.add("VECTOR3_DOT", NativeFn{"VECTOR3_DOT", 2, vector3_dot});
-    R.add("VECTOR3_CROSS", NativeFn{"VECTOR3_CROSS", 2, vector3_cross});
-    R.add("VECTOR3_DISTANCE", NativeFn{"VECTOR3_DISTANCE", 2, vector3_distance});
-    R.add("VECTOR3_SCALE", NativeFn{"VECTOR3_SCALE", -1, vector3_scale});
-    R.add("VECTOR3_ADD", NativeFn{"VECTOR3_ADD", 2, vector3_add});
-    R.add("VECTOR3_SUBTRACT", NativeFn{"VECTOR3_SUBTRACT", 2, vector3_subtract});
-    R.add("VECTOR3_MULTIPLY", NativeFn{"VECTOR3_MULTIPLY", -1, vector3_multiply});
-    R.add("VECTOR3_LERP", NativeFn{"VECTOR3_LERP", 3, vector3_lerp});
+    R.add(normalize_identifier("VECTOR3_LENGTH"), NativeFn{normalize_identifier("VECTOR3_LENGTH"), 1, vector3_length});
+    R.add(normalize_identifier("VECTOR3_NORMALIZE"), NativeFn{normalize_identifier("VECTOR3_NORMALIZE"), 1, vector3_normalize});
+    R.add(normalize_identifier("VECTOR3_DOT"), NativeFn{normalize_identifier("VECTOR3_DOT"), 2, vector3_dot});
+    R.add(normalize_identifier("VECTOR3_CROSS"), NativeFn{normalize_identifier("VECTOR3_CROSS"), 2, vector3_cross});
+    R.add(normalize_identifier("VECTOR3_DISTANCE"), NativeFn{normalize_identifier("VECTOR3_DISTANCE"), 2, vector3_distance});
+    R.add(normalize_identifier("VECTOR3_SCALE"), NativeFn{normalize_identifier("VECTOR3_SCALE"), -1, vector3_scale});
+    R.add(normalize_identifier("VECTOR3_ADD"), NativeFn{normalize_identifier("VECTOR3_ADD"), 2, vector3_add});
+    R.add(normalize_identifier("VECTOR3_SUBTRACT"), NativeFn{normalize_identifier("VECTOR3_SUBTRACT"), 2, vector3_subtract});
+    R.add(normalize_identifier("VECTOR3_MULTIPLY"), NativeFn{normalize_identifier("VECTOR3_MULTIPLY"), -1, vector3_multiply});
+    R.add(normalize_identifier("VECTOR3_LERP"), NativeFn{normalize_identifier("VECTOR3_LERP"), 3, vector3_lerp});
     
     // Vector2 methods
-    R.add("VECTOR2_LENGTH", NativeFn{"VECTOR2_LENGTH", 1, vector2_length});
-    R.add("VECTOR2_NORMALIZE", NativeFn{"VECTOR2_NORMALIZE", 1, vector2_normalize});
-    R.add("VECTOR2_DOT", NativeFn{"VECTOR2_DOT", 2, vector2_dot});
-    R.add("VECTOR2_SCALE", NativeFn{"VECTOR2_SCALE", -1, vector2_scale});
-    R.add("VECTOR2_ADD", NativeFn{"VECTOR2_ADD", 2, vector2_add});
-    R.add("VECTOR2_SUBTRACT", NativeFn{"VECTOR2_SUBTRACT", 2, vector2_subtract});
-    R.add("VECTOR2_LERP", NativeFn{"VECTOR2_LERP", 3, vector2_lerp});
+    R.add(normalize_identifier("VECTOR2_LENGTH"), NativeFn{normalize_identifier("VECTOR2_LENGTH"), 1, vector2_length});
+    R.add(normalize_identifier("VECTOR2_NORMALIZE"), NativeFn{normalize_identifier("VECTOR2_NORMALIZE"), 1, vector2_normalize});
+    R.add(normalize_identifier("VECTOR2_DOT"), NativeFn{normalize_identifier("VECTOR2_DOT"), 2, vector2_dot});
+    R.add(normalize_identifier("VECTOR2_SCALE"), NativeFn{normalize_identifier("VECTOR2_SCALE"), -1, vector2_scale});
+    R.add(normalize_identifier("VECTOR2_ADD"), NativeFn{normalize_identifier("VECTOR2_ADD"), 2, vector2_add});
+    R.add(normalize_identifier("VECTOR2_SUBTRACT"), NativeFn{normalize_identifier("VECTOR2_SUBTRACT"), 2, vector2_subtract});
+    R.add(normalize_identifier("VECTOR2_LERP"), NativeFn{normalize_identifier("VECTOR2_LERP"), 3, vector2_lerp});
     
     // Color methods
-    R.add("COLOR_BRIGHTNESS", NativeFn{"COLOR_BRIGHTNESS", 1, color_brightness});
-    R.add("COLOR_DARKEN", NativeFn{"COLOR_DARKEN", -1, color_darken});
-    R.add("COLOR_LIGHTEN", NativeFn{"COLOR_LIGHTEN", -1, color_lighten});
-    R.add("COLOR_MIX", NativeFn{"COLOR_MIX", -1, color_mix});
-    R.add("COLOR_TOHEX", NativeFn{"COLOR_TOHEX", 1, color_toHex});
+    R.add(normalize_identifier("COLOR_BRIGHTNESS"), NativeFn{normalize_identifier("COLOR_BRIGHTNESS"), 1, color_brightness});
+    R.add(normalize_identifier("COLOR_DARKEN"), NativeFn{normalize_identifier("COLOR_DARKEN"), -1, color_darken});
+    R.add(normalize_identifier("COLOR_LIGHTEN"), NativeFn{normalize_identifier("COLOR_LIGHTEN"), -1, color_lighten});
+    R.add(normalize_identifier("COLOR_MIX"), NativeFn{normalize_identifier("COLOR_MIX"), -1, color_mix});
+    R.add(normalize_identifier("COLOR_TOHEX"), NativeFn{normalize_identifier("COLOR_TOHEX"), 1, color_toHex});
     
     // String methods (accessible via str.method())
-    R.add("STRING_UPPER", NativeFn{"STRING_UPPER", 1, string_upper});
-    R.add("STRING_LOWER", NativeFn{"STRING_LOWER", 1, string_lower});
-    R.add("STRING_TRIM", NativeFn{"STRING_TRIM", 1, string_trim});
-    R.add("STRING_SPLIT", NativeFn{"STRING_SPLIT", -1, string_split});
-    R.add("STRING_CONTAINS", NativeFn{"STRING_CONTAINS", 2, string_contains});
+    R.add(normalize_identifier("STRING_UPPER"), NativeFn{normalize_identifier("STRING_UPPER"), 1, string_upper});
+    R.add(normalize_identifier("STRING_LOWER"), NativeFn{normalize_identifier("STRING_LOWER"), 1, string_lower});
+    R.add(normalize_identifier("STRING_TRIM"), NativeFn{normalize_identifier("STRING_TRIM"), 1, string_trim});
+    R.add(normalize_identifier("STRING_SPLIT"), NativeFn{normalize_identifier("STRING_SPLIT"), -1, string_split});
+    R.add(normalize_identifier("STRING_CONTAINS"), NativeFn{normalize_identifier("STRING_CONTAINS"), 2, string_contains});
     
     // Array methods (accessible via arr.method())
-    R.add("ARRAY_LENGTH", NativeFn{"ARRAY_LENGTH", 1, array_length});
-    R.add("ARRAY_FIRST", NativeFn{"ARRAY_FIRST", 1, array_first});
-    R.add("ARRAY_LAST", NativeFn{"ARRAY_LAST", 1, array_last});
-    R.add("ARRAY_PUSH", NativeFn{"ARRAY_PUSH", -1, array_push});
-    R.add("ARRAY_POP", NativeFn{"ARRAY_POP", 1, array_pop});
+    R.add(normalize_identifier("ARRAY_LENGTH"), NativeFn{normalize_identifier("ARRAY_LENGTH"), 1, array_length});
+    R.add(normalize_identifier("ARRAY_FIRST"), NativeFn{normalize_identifier("ARRAY_FIRST"), 1, array_first});
+    R.add(normalize_identifier("ARRAY_LAST"), NativeFn{normalize_identifier("ARRAY_LAST"), 1, array_last});
+    R.add(normalize_identifier("ARRAY_PUSH"), NativeFn{normalize_identifier("ARRAY_PUSH"), -1, array_push});
+    R.add(normalize_identifier("ARRAY_POP"), NativeFn{normalize_identifier("ARRAY_POP"), 1, array_pop});
 }
 

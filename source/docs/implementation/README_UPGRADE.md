@@ -1,6 +1,6 @@
 # CyberBasic Upgrade Status
 
-## 🚀 Quick Status
+## Quick Status
 
 **Current Phase**: Phase 4 (Code Quality & Best Practices)  
 **Overall Progress**: ~60% Complete  
@@ -30,7 +30,7 @@
 - C++20 modernization in progress
 - Error handling improvements planned
 
-## 📚 Documentation
+## Documentation
 
 - **COMPREHENSIVE_UPGRADE_PLAN.md** - Full upgrade roadmap
 - **QUICK_START_UPGRADE.md** - Immediate action guide
@@ -38,7 +38,7 @@
 - **BUILD_GUIDE.md** - How to build
 - **DEPENDENCIES.md** - Dependency information
 
-## 🎯 Goals Achieved
+## Goals Achieved
 
 - ✅ Zero duplicates
 - ✅ Modular architecture

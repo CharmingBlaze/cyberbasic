@@ -158,15 +158,15 @@ inline void UseGameStyle() {
 
 // Layout functions
 inline int CreateHorizontalLayout(int x, int y, int width, int height) {
-    return GuiLayoutManager::create_horizontal_layout(Rectangle(x, y, width, height));
+    return GuiLayoutManager::create_horizontal_layout(GuiRectangle(x, y, width, height));
 }
 
 inline int CreateVerticalLayout(int x, int y, int width, int height) {
-    return GuiLayoutManager::create_vertical_layout(Rectangle(x, y, width, height));
+    return GuiLayoutManager::create_vertical_layout(GuiRectangle(x, y, width, height));
 }
 
 inline int CreateGridLayout(int x, int y, int width, int height, int columns, int rows) {
-    return GuiLayoutManager::create_grid_layout(Rectangle(x, y, width, height), columns, rows);
+    return GuiLayoutManager::create_grid_layout(GuiRectangle(x, y, width, height), columns, rows);
 }
 
 inline void AddToLayout(int layout_id, int control_id) {

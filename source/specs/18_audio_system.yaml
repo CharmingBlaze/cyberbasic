@@ -303,3 +303,5 @@ functions:
       ::Music music = {}; // Look up by ID in real implementation
       return Value::from_number(::GetMusicTimePlayed(music));
 
+
+

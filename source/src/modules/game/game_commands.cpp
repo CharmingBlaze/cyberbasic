@@ -1,11 +1,13 @@
 #include "bas/runtime.hpp"
 #include "bas/value.hpp"
+// Include raylib.h at global scope BEFORE any bas headers that open namespace bas
+#include <raylib.h>
+
 #include "bas/game_commands.hpp"
 #include "bas/ecs_system.hpp"
 #include "bas/animation_system.hpp"
 #include "bas/audio.hpp"
 #include "bas/physics.hpp"
-#include <raylib.h>
 #include <unordered_map>
 #include <string>
 #include <vector>

@@ -6,14 +6,15 @@ namespace bas {
 // Token kinds for the BASIC lexer/parser.
 enum class Tok {
     Eof, Newline, Error, Ident, Number, String,
-    Let, Print, PrintC, If, Then, EndIf, While, Wend, Not, And, Or, True, False, Call,
+    Let, Print, PrintC, If, IfNot, Then, EndIf, While, Wend, Not, And, Or, True, False, Call,
   Sub, EndSub, Function, EndFunction, Return,
   For, To, Step, Next, Dim, Gosub, Goto, Redim, Preserve,
   Else, ElseIf,
   Open, Close, Read, Write, Input,
   LParen, RParen, Comma, Assign, Plus, Minus, Star, Slash, Mod,
-  Eq, Neq, Lt, Lte, Gt, Gte, LBracket, RBracket, Dot,
-  Select, Case, EndSelect, Is, Break, Continue, Do, Loop, Repeat, Until,
+  Eq, Neq, Lt, Lte, Gt, Gte, LBracket, RBracket, Dot, Question, Colon,
+  BitAnd, BitOr, BitXor, BitNot, ShiftLeft, ShiftRight,
+  Select, Case, EndSelect, Is, Default, Break, Continue, Do, Loop, Repeat, Until,
   Var, Const,
   Option, Explicit,
   Local, Global,
@@ -26,7 +27,7 @@ enum class Tok {
   Lambda, EndLambda,
   Assert, Breakpoint, Debug,
   Exit, Xor,
-  Colon, Power, IntDiv,
+  Power, IntDiv,
   FString, Using, EndUsing,
   Match, EndMatch,
   Enum, EndEnum,
@@ -38,14 +39,13 @@ enum class Tok {
   Parallel, EndParallel, Group, EndGroup, Event,
   Define, System, EndSystem, Attach, From,
   Override, Priority, Enable, Disable,
-  Try, Catch, Finally, EndTry, Throw,
   Nil, None, Null, Void, End, Await, Coroutine
 };
 
 // Token with lexeme and position.
 struct Token {
   Tok kind{};
-  std::string lex;
+  ::std::string lex;
   int line{1};
   int col{1};
 };

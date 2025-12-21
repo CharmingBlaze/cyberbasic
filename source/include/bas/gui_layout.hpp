@@ -55,13 +55,13 @@ struct LayoutItem {
 class GuiLayout {
 protected:
     LayoutType type;
-    Rectangle bounds;
+    GuiRectangle bounds;
     std::vector<LayoutItem> items;
     double spacing;
     Alignment alignment;
     
 public:
-    GuiLayout(LayoutType layout_type, const Rectangle& layout_bounds);
+    GuiLayout(LayoutType layout_type, const GuiRectangle& layout_bounds);
     virtual ~GuiLayout() = default;
     
     // Item management
@@ -70,7 +70,7 @@ public:
     void clear_items();
     
     // Layout properties
-    void set_bounds(const Rectangle& new_bounds) { bounds = new_bounds; }
+    void set_bounds(const GuiRectangle& new_bounds) { bounds = new_bounds; }
     void set_spacing(double new_spacing) { spacing = new_spacing; }
     void set_alignment(Alignment new_alignment) { alignment = new_alignment; }
     
@@ -80,7 +80,7 @@ public:
     
     // Getters
     LayoutType get_type() const { return type; }
-    const Rectangle& get_bounds() const { return bounds; }
+    const GuiRectangle& get_bounds() const { return bounds; }
     double get_spacing() const { return spacing; }
     Alignment get_alignment() const { return alignment; }
     const std::vector<LayoutItem>& get_items() const { return items; }
@@ -89,14 +89,14 @@ public:
 // Specific Layout Implementations
 class GuiHorizontalLayout : public GuiLayout {
 public:
-    GuiHorizontalLayout(const Rectangle& bounds);
+    GuiHorizontalLayout(const GuiRectangle& bounds);
     void calculate_layout() override;
     void apply_layout() override;
 };
 
 class GuiVerticalLayout : public GuiLayout {
 public:
-    GuiVerticalLayout(const Rectangle& bounds);
+    GuiVerticalLayout(const GuiRectangle& bounds);
     void calculate_layout() override;
     void apply_layout() override;
 };
@@ -107,7 +107,7 @@ private:
     int rows;
     
 public:
-    GuiGridLayout(const Rectangle& bounds, int cols, int rws);
+    GuiGridLayout(const GuiRectangle& bounds, int cols, int rws);
     void calculate_layout() override;
     void apply_layout() override;
     void set_columns(int cols) { columns = cols; }
@@ -124,9 +124,9 @@ private:
     
 public:
     // Layout creation
-    static int create_horizontal_layout(const Rectangle& bounds);
-    static int create_vertical_layout(const Rectangle& bounds);
-    static int create_grid_layout(const Rectangle& bounds, int columns, int rows);
+    static int create_horizontal_layout(const GuiRectangle& bounds);
+    static int create_vertical_layout(const GuiRectangle& bounds);
+    static int create_grid_layout(const GuiRectangle& bounds, int columns, int rows);
     
     // Layout management
     static GuiLayout* get_layout(int layout_id);

@@ -216,3 +216,99 @@ SETPROGRESSBARVALUE(progress, slider_value)
 - Get functions return the appropriate data type (string, number, boolean)
 - Set functions return boolean (true for success)
 - System functions return boolean (true for success)
+
+## GUI Drawing Commands
+
+CyberBasic provides comprehensive drawing commands for building custom GUI elements. These are the core functions used in `comprehensive_gui_demo.bas`:
+
+### Basic Shapes
+
+| Function | Description | Parameters |
+|----------|-------------|------------|
+| `DRAWRECTANGLE(x, y, width, height, r, g, b)` | Draw filled rectangle | x, y, width, height, red, green, blue |
+| `DRAWRECTANGLELINES(x, y, width, height, r, g, b)` | Draw rectangle outline | x, y, width, height, red, green, blue |
+| `DRAWRECTANGLEROUNDED(x, y, width, height, roundness, segments, r, g, b)` | Draw rounded rectangle | x, y, width, height, roundness (0.0-1.0), segments, red, green, blue |
+| `DRAWRECTANGLEROUNDEDLINES(x, y, width, height, roundness, segments, r, g, b)` | Draw rounded rectangle outline | x, y, width, height, roundness, segments, red, green, blue |
+| `DRAWCIRCLE(x, y, radius, r, g, b)` | Draw filled circle | x, y, radius, red, green, blue |
+| `DRAWCIRCLELINES(x, y, radius, r, g, b)` | Draw circle outline | x, y, radius, red, green, blue |
+| `DRAWTRIANGLE(x1, y1, x2, y2, x3, y3, r, g, b)` | Draw filled triangle | x1, y1, x2, y2, x3, y3, red, green, blue |
+| `DRAWTRIANGLELINES(x1, y1, x2, y2, x3, y3, r, g, b)` | Draw triangle outline | x1, y1, x2, y2, x3, y3, red, green, blue |
+| `DRAWLINE(x1, y1, x2, y2, r, g, b)` | Draw line | x1, y1, x2, y2, red, green, blue |
+| `DRAWELLIPSE(x, y, radiusX, radiusY, r, g, b)` | Draw filled ellipse | x, y, radiusX, radiusY, red, green, blue |
+| `DRAWELLIPSELINES(x, y, radiusX, radiusY, r, g, b)` | Draw ellipse outline | x, y, radiusX, radiusY, red, green, blue |
+
+### Text Rendering
+
+| Function | Description | Parameters |
+|----------|-------------|------------|
+| `DRAWTEXT(text, x, y, fontSize, r, g, b)` | Draw text | text string, x, y, fontSize, red, green, blue |
+| `MEASURETEXT(text, fontSize)` | Measure text width | text string, fontSize |
+
+### Input Functions
+
+| Function | Description | Parameters |
+|----------|-------------|------------|
+| `GETMOUSEX()` | Get mouse X position | None |
+| `GETMOUSEY()` | Get mouse Y position | None |
+| `ISMOUSEBUTTONDOWN(button)` | Check if mouse button is down | button (1=left, 2=right, 3=middle) |
+| `ISMOUSEBUTTONPRESSED(button)` | Check if mouse button was pressed | button (1=left, 2=right, 3=middle) |
+| `GETKEYPRESSED()` | Get pressed key code | None |
+| `GETCHARPRESSED()` | Get pressed character | None |
+
+### Example: Custom Button
+
+```basic
+FUNCTION drawbutton(x, y, w, h, text$, hover) AS INTEGER
+    VAR clicked = 0
+    IF hover = 1 THEN
+        DRAWRECTANGLEROUNDED(x, y, w, h, 0.3, 8, 100, 120, 150)
+    ELSE
+        DRAWRECTANGLEROUNDED(x, y, w, h, 0.3, 8, 80, 100, 120)
+    ENDIF
+    DRAWRECTANGLEROUNDEDLINES(x, y, w, h, 0.3, 8, 200, 200, 200)
+    
+    VAR text_width = MEASURETEXT(text$, 20)
+    VAR text_x = x + (w - text_width) / 2
+    VAR text_y = y + (h - 20) / 2
+    DRAWTEXT(text$, text_x, text_y, 20, 255, 255, 255)
+    
+    RETURN clicked
+ENDFUNCTION
+```
+
+### Example: Custom Slider
+
+```basic
+FUNCTION drawslider(x, y, w, h, min_val, max_val, value) AS DOUBLE
+    DRAWRECTANGLE(x, y, w, h, 40, 40, 40)
+    DRAWRECTANGLELINES(x, y, w, h, 150, 150, 150)
+    
+    VAR slider_pos = (value - min_val) / (max_val - min_val)
+    VAR handle_x = x + slider_pos * (w - h)
+    
+    DRAWRECTANGLEROUNDED(handle_x, y, h, h, 0.5, 8, 100, 150, 200)
+    
+    RETURN value
+ENDFUNCTION
+```
+
+### Example: Custom Checkbox
+
+```basic
+FUNCTION drawcheckbox(x, y, size, label$, checked) AS INTEGER
+    DRAWRECTANGLE(x, y, size, size, 50, 50, 50)
+    DRAWRECTANGLELINES(x, y, size, size, 200, 200, 200)
+    
+    IF checked = 1 THEN
+        DRAWRECTANGLE(x + 2, y + 2, size - 4, size - 4, 100, 200, 100)
+        DRAWLINE(x + 2, y + size/2, x + size/2, y + size - 2, 255, 255, 255)
+        DRAWLINE(x + size/2, y + size - 2, x + size - 2, y + 2, 255, 255, 255)
+    ENDIF
+    
+    DRAWTEXT(label$, x + size + 10, y + (size - 20) / 2, 18, 255, 255, 255)
+    
+    RETURN 0
+ENDFUNCTION
+```
+
+See `examples/comprehensive_gui_demo.bas` for a complete working example with all GUI elements.

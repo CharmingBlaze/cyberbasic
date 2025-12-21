@@ -60,9 +60,12 @@ functions:
     args: [string]
     ret: void
     custom_body: |
-      // TODO: SetWindowIcon expects Image, not string
-      // For now, just return nil
-      return Value::nil();
+      // Load image from file path and set as window icon
+      ::Image icon = ::LoadImage(STR(0).c_str());
+      if (::IsImageValid(icon)) {
+        ::SetWindowIcon(icon);
+        ::UnloadImage(icon);
+      }
   
   - name: SETWINDOWTITLE
     map_to: SetWindowTitle

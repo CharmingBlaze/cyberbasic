@@ -1,54 +1,56 @@
 #pragma once
 #include "bas/value.hpp"
-#include "raylib.h"
 #include <stdexcept>
+
+// Include raylib.h at global scope BEFORE opening namespace bas
+#include "raylib.h"
 
 namespace bas {
 
 // --- Conversion helpers for raylib types ---
 
 // Vector2 <-> Value::Map
-inline Value::Map Vector2_to_Map(Vector2 v) {
+inline Value::Map Vector2_to_Map(::Vector2 v) {
     return {{ "x", Value::from_number(v.x) }, { "y", Value::from_number(v.y) }};
 }
 
-inline Vector2 Map_to_Vector2(const Value::Map& m) {
-    Vector2 v = { 0.0f, 0.0f };
+inline ::Vector2 Map_to_Vector2(const Value::Map& m) {
+    ::Vector2 v = { 0.0f, 0.0f };
     if (auto it = m.find("x"); it != m.end()) v.x = (float)it->second.as_number();
     if (auto it = m.find("y"); it != m.end()) v.y = (float)it->second.as_number();
     return v;
 }
 
-inline Vector2 Value_to_Vector2(const Value& val) {
+inline ::Vector2 Value_to_Vector2(const Value& val) {
     if (!val.is_map()) throw std::runtime_error("Expected a map for Vector2");
     return Map_to_Vector2(val.as_map());
 }
 
 // Vector3 <-> Value::Map
-inline Value::Map Vector3_to_Map(Vector3 v) {
+inline Value::Map Vector3_to_Map(::Vector3 v) {
     return {{ "x", Value::from_number(v.x) }, { "y", Value::from_number(v.y) }, { "z", Value::from_number(v.z) }};
 }
 
-inline Vector3 Map_to_Vector3(const Value::Map& m) {
-    Vector3 v = { 0.0f, 0.0f, 0.0f };
+inline ::Vector3 Map_to_Vector3(const Value::Map& m) {
+    ::Vector3 v = { 0.0f, 0.0f, 0.0f };
     if (auto it = m.find("x"); it != m.end()) v.x = (float)it->second.as_number();
     if (auto it = m.find("y"); it != m.end()) v.y = (float)it->second.as_number();
     if (auto it = m.find("z"); it != m.end()) v.z = (float)it->second.as_number();
     return v;
 }
 
-inline Vector3 Value_to_Vector3(const Value& val) {
+inline ::Vector3 Value_to_Vector3(const Value& val) {
     if (!val.is_map()) throw std::runtime_error("Expected a map for Vector3");
     return Map_to_Vector3(val.as_map());
 }
 
 // Vector4 <-> Value::Map
-inline Value::Map Vector4_to_Map(Vector4 v) {
+inline Value::Map Vector4_to_Map(::Vector4 v) {
     return {{ "x", Value::from_number(v.x) }, { "y", Value::from_number(v.y) }, { "z", Value::from_number(v.z) }, { "w", Value::from_number(v.w) }};
 }
 
-inline Vector4 Map_to_Vector4(const Value::Map& m) {
-    Vector4 v = { 0.0f, 0.0f, 0.0f, 0.0f };
+inline ::Vector4 Map_to_Vector4(const Value::Map& m) {
+    ::Vector4 v = { 0.0f, 0.0f, 0.0f, 0.0f };
     if (auto it = m.find("x"); it != m.end()) v.x = (float)it->second.as_number();
     if (auto it = m.find("y"); it != m.end()) v.y = (float)it->second.as_number();
     if (auto it = m.find("z"); it != m.end()) v.z = (float)it->second.as_number();
@@ -56,7 +58,7 @@ inline Vector4 Map_to_Vector4(const Value::Map& m) {
     return v;
 }
 
-inline Vector4 Value_to_Vector4(const Value& val) {
+inline ::Vector4 Value_to_Vector4(const Value& val) {
     if (!val.is_map()) throw std::runtime_error("Expected a map for Vector4");
     return Map_to_Vector4(val.as_map());
 }
@@ -68,7 +70,7 @@ using ::Quaternion;
 #define Value_to_Quaternion Value_to_Vector4
 
 // Matrix <-> Value::Map
-inline Value::Map Matrix_to_Map(const Matrix& mat) {
+inline Value::Map Matrix_to_Map(const ::Matrix& mat) {
     return {
         {"m0", Value::from_number(mat.m0)}, {"m1", Value::from_number(mat.m1)}, {"m2", Value::from_number(mat.m2)}, {"m3", Value::from_number(mat.m3)},
         {"m4", Value::from_number(mat.m4)}, {"m5", Value::from_number(mat.m5)}, {"m6", Value::from_number(mat.m6)}, {"m7", Value::from_number(mat.m7)},
@@ -77,8 +79,8 @@ inline Value::Map Matrix_to_Map(const Matrix& mat) {
     };
 }
 
-inline Matrix Map_to_Matrix(const Value::Map& m) {
-    Matrix mat = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
+inline ::Matrix Map_to_Matrix(const Value::Map& m) {
+    ::Matrix mat = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
     if (auto it = m.find("m0"); it != m.end()) mat.m0 = (float)it->second.as_number();
     if (auto it = m.find("m1"); it != m.end()) mat.m1 = (float)it->second.as_number();
     if (auto it = m.find("m2"); it != m.end()) mat.m2 = (float)it->second.as_number();
@@ -98,9 +100,59 @@ inline Matrix Map_to_Matrix(const Value::Map& m) {
     return mat;
 }
 
-inline Matrix Value_to_Matrix(const Value& val) {
+inline ::Matrix Value_to_Matrix(const Value& val) {
     if (!val.is_map()) throw std::runtime_error("Expected a map for Matrix");
     return Map_to_Matrix(val.as_map());
+}
+
+// Camera2D <-> Value::Map
+inline Value::Map Camera2D_to_Map(::Camera2D cam) {
+    Value::Map result;
+    result["offset"] = Value::from_map(Vector2_to_Map(cam.offset));
+    result["target"] = Value::from_map(Vector2_to_Map(cam.target));
+    result["rotation"] = Value::from_number(cam.rotation);
+    result["zoom"] = Value::from_number(cam.zoom);
+    return result;
+}
+
+inline ::Camera2D Map_to_Camera2D(const Value::Map& m) {
+    ::Camera2D cam = { {0, 0}, {0, 0}, 0.0f, 1.0f };
+    if (auto it = m.find("offset"); it != m.end()) cam.offset = Map_to_Vector2(it->second.as_map());
+    if (auto it = m.find("target"); it != m.end()) cam.target = Map_to_Vector2(it->second.as_map());
+    if (auto it = m.find("rotation"); it != m.end()) cam.rotation = (float)it->second.as_number();
+    if (auto it = m.find("zoom"); it != m.end()) cam.zoom = (float)it->second.as_number();
+    return cam;
+}
+
+inline ::Camera2D Value_to_Camera2D(const Value& val) {
+    if (!val.is_map()) throw std::runtime_error("Expected a map for Camera2D");
+    return Map_to_Camera2D(val.as_map());
+}
+
+// Camera3D <-> Value::Map
+inline Value::Map Camera3D_to_Map(::Camera3D cam) {
+    Value::Map result;
+    result["position"] = Value::from_map(Vector3_to_Map(cam.position));
+    result["target"] = Value::from_map(Vector3_to_Map(cam.target));
+    result["up"] = Value::from_map(Vector3_to_Map(cam.up));
+    result["fovy"] = Value::from_number(cam.fovy);
+    result["projection"] = Value::from_int(cam.projection);
+    return result;
+}
+
+inline ::Camera3D Map_to_Camera3D(const Value::Map& m) {
+    ::Camera3D cam = { {0, 0, 0}, {0, 0, 0}, {0, 1, 0}, 60.0f, ::CAMERA_PERSPECTIVE };
+    if (auto it = m.find("position"); it != m.end()) cam.position = Map_to_Vector3(it->second.as_map());
+    if (auto it = m.find("target"); it != m.end()) cam.target = Map_to_Vector3(it->second.as_map());
+    if (auto it = m.find("up"); it != m.end()) cam.up = Map_to_Vector3(it->second.as_map());
+    if (auto it = m.find("fovy"); it != m.end()) cam.fovy = (float)it->second.as_number();
+    if (auto it = m.find("projection"); it != m.end()) cam.projection = (int)it->second.as_int();
+    return cam;
+}
+
+inline ::Camera3D Value_to_Camera3D(const Value& val) {
+    if (!val.is_map()) throw std::runtime_error("Expected a map for Camera3D");
+    return Map_to_Camera3D(val.as_map());
 }
 
 } // namespace bas

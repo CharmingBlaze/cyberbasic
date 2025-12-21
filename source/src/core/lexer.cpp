@@ -4,54 +4,52 @@
 
 using namespace bas;
 
-// Keyword map for converting identifiers to tokens
+// Keyword map for converting identifiers to tokens (all lowercase for case-insensitive matching)
 static Tok kw(const std::string& w) {
     static const std::unordered_map<std::string, Tok> k{
-        {"LET", Tok::Let}, {"PRINT", Tok::Print}, {"PRINTC", Tok::PrintC}, {"IF", Tok::If}, {"THEN", Tok::Then}, {"ENDIF", Tok::EndIf},
-        {"ELSE", Tok::Else}, {"ELSEIF", Tok::ElseIf},
-        {"WHILE", Tok::While}, {"WEND", Tok::Wend}, {"NOT", Tok::Not}, {"AND", Tok::And}, {"OR", Tok::Or},
-        {"TRUE", Tok::True}, {"FALSE", Tok::False},
-        {"CALL", Tok::Call},
-        {"FOR", Tok::For}, {"TO", Tok::To}, {"STEP", Tok::Step}, {"NEXT", Tok::Next},
-        {"SUB", Tok::Sub}, {"ENDSUB", Tok::EndSub}, {"RETURN", Tok::Return}, {"GOSUB", Tok::Gosub}, {"GOTO", Tok::Goto},
-        {"FUNCTION", Tok::Function}, {"ENDFUNCTION", Tok::EndFunction},
-        {"DIM", Tok::Dim}, {"REDIM", Tok::Redim}, {"PRESERVE", Tok::Preserve},
-        {"OPEN", Tok::Open}, {"CLOSE", Tok::Close}, {"READ", Tok::Read}, {"WRITE", Tok::Write},
-        {"INPUT", Tok::Input},
-        {"SELECT", Tok::Select}, {"CASE", Tok::Case}, {"ENDSELECT", Tok::EndSelect}, {"IS", Tok::Is},
-        {"MOD", Tok::Mod}, {"BREAK", Tok::Break}, {"CONTINUE", Tok::Continue}, {"DO", Tok::Do}, {"LOOP", Tok::Loop}, {"REPEAT", Tok::Repeat}, {"UNTIL", Tok::Until},
-        {"VAR", Tok::Var}, {"CONST", Tok::Const},
-        {"OPTION", Tok::Option}, {"EXPLICIT", Tok::Explicit},
-        {"LOCAL", Tok::Local}, {"GLOBAL", Tok::Global},
-        {"IMPORT", Tok::Import}, {"INCLUDE", Tok::Include}, {"IN", Tok::In},
-        {"TYPE", Tok::Type}, {"ENDTYPE", Tok::EndType}, {"AS", Tok::As},
-        {"EXTENDS", Tok::Extends}, {"SUPER", Tok::Super},
-        {"EACH", Tok::Each}, {"YIELD", Tok::Yield},
-        {"OPERATOR", Tok::Operator}, {"ENDOPERATOR", Tok::EndOperator},
-        {"MODULE", Tok::Module}, {"ENDMODULE", Tok::EndModule},
-        {"PUBLIC", Tok::Public}, {"PRIVATE", Tok::Private},
-        {"LAMBDA", Tok::Lambda}, {"ENDLAMBDA", Tok::EndLambda},
-        {"ASSERT", Tok::Assert}, {"BREAKPOINT", Tok::Breakpoint}, {"DEBUG", Tok::Debug},
-        {"EXIT", Tok::Exit}, {"XOR", Tok::Xor},
-        {"USING", Tok::Using}, {"ENDUSING", Tok::EndUsing},
-        {"MATCH", Tok::Match}, {"ENDMATCH", Tok::EndMatch},
-        {"ENUM", Tok::Enum}, {"ENDENUM", Tok::EndEnum},
-        {"UNION", Tok::Union}, {"ENDUNION", Tok::EndUnion},
+        {"let", Tok::Let}, {"print", Tok::Print}, {"printc", Tok::PrintC}, {"if", Tok::If}, {"ifn", Tok::IfNot}, {"then", Tok::Then}, {"endif", Tok::EndIf},
+        {"else", Tok::Else}, {"elseif", Tok::ElseIf},
+        {"while", Tok::While}, {"wend", Tok::Wend}, {"not", Tok::Not}, {"and", Tok::And}, {"or", Tok::Or},
+        {"true", Tok::True}, {"false", Tok::False},
+        {"call", Tok::Call},
+        {"for", Tok::For}, {"to", Tok::To}, {"step", Tok::Step}, {"next", Tok::Next},
+        {"sub", Tok::Sub}, {"endsub", Tok::EndSub}, {"return", Tok::Return}, {"gosub", Tok::Gosub}, {"goto", Tok::Goto},
+        {"function", Tok::Function}, {"endfunction", Tok::EndFunction},
+        {"dim", Tok::Dim}, {"redim", Tok::Redim}, {"preserve", Tok::Preserve},
+        {"open", Tok::Open}, {"close", Tok::Close}, {"read", Tok::Read}, {"write", Tok::Write},
+        {"input", Tok::Input},
+        {"select", Tok::Select}, {"case", Tok::Case}, {"endselect", Tok::EndSelect}, {"is", Tok::Is}, {"default", Tok::Default},
+        {"mod", Tok::Mod}, {"break", Tok::Break}, {"continue", Tok::Continue}, {"do", Tok::Do}, {"loop", Tok::Loop}, {"repeat", Tok::Repeat}, {"until", Tok::Until},
+        {"var", Tok::Var}, {"const", Tok::Const},
+        {"option", Tok::Option}, {"explicit", Tok::Explicit},
+        {"local", Tok::Local}, {"global", Tok::Global},
+        {"import", Tok::Import}, {"include", Tok::Include}, {"in", Tok::In},
+        {"type", Tok::Type}, {"endtype", Tok::EndType}, {"as", Tok::As},
+        {"extends", Tok::Extends}, {"super", Tok::Super},
+        {"each", Tok::Each}, {"yield", Tok::Yield},
+        {"operator", Tok::Operator}, {"endoperator", Tok::EndOperator},
+        {"module", Tok::Module}, {"endmodule", Tok::EndModule},
+        {"public", Tok::Public}, {"private", Tok::Private},
+        {"lambda", Tok::Lambda}, {"endlambda", Tok::EndLambda},
+        {"assert", Tok::Assert}, {"breakpoint", Tok::Breakpoint}, {"debug", Tok::Debug},
+        {"exit", Tok::Exit}, {"xor", Tok::Xor},
+        {"using", Tok::Using}, {"endusing", Tok::EndUsing},
+        {"match", Tok::Match}, {"endmatch", Tok::EndMatch},
+        {"enum", Tok::Enum}, {"endenum", Tok::EndEnum},
+        {"union", Tok::Union}, {"endunion", Tok::EndUnion},
         // State system keywords
-        {"STATE", Tok::State}, {"ENDSTATE", Tok::EndState},
-        {"TRANSITION", Tok::Transition},
-        {"ON", Tok::On}, {"ENTER", Tok::Enter}, {"EXIT", Tok::Exit}, {"UPDATE", Tok::Update},
-        {"PARALLEL", Tok::Parallel}, {"ENDPARALLEL", Tok::EndParallel},
-        {"GROUP", Tok::Group}, {"ENDGROUP", Tok::EndGroup},
-        {"EVENT", Tok::Event},
-        {"DEFINE", Tok::Define}, {"SYSTEM", Tok::System}, {"ENDSYSTEM", Tok::EndSystem},
-        {"ATTACH", Tok::Attach}, {"TO", Tok::To}, {"FROM", Tok::From},
-        {"OVERRIDE", Tok::Override}, {"PRIORITY", Tok::Priority},
-        {"ENABLE", Tok::Enable}, {"DISABLE", Tok::Disable},
-        {"TRY", Tok::Try}, {"CATCH", Tok::Catch}, {"FINALLY", Tok::Finally},
-        {"ENDTRY", Tok::EndTry}, {"THROW", Tok::Throw},
-        {"NIL", Tok::Nil}, {"NONE", Tok::None}, {"NULL", Tok::Null}, {"VOID", Tok::Void},
-        {"END", Tok::End}, {"AWAIT", Tok::Await}, {"COROUTINE", Tok::Coroutine}
+        {"state", Tok::State}, {"endstate", Tok::EndState},
+        {"transition", Tok::Transition},
+        {"on", Tok::On}, {"enter", Tok::Enter}, {"exit", Tok::Exit}, {"update", Tok::Update},
+        {"parallel", Tok::Parallel}, {"endparallel", Tok::EndParallel},
+        {"group", Tok::Group}, {"endgroup", Tok::EndGroup},
+        {"event", Tok::Event},
+        {"define", Tok::Define}, {"system", Tok::System}, {"endsystem", Tok::EndSystem},
+        {"attach", Tok::Attach}, {"from", Tok::From},
+        {"override", Tok::Override}, {"priority", Tok::Priority},
+        {"enable", Tok::Enable}, {"disable", Tok::Disable},
+        {"nil", Tok::Nil}, {"none", Tok::None}, {"null", Tok::Null}, {"void", Tok::Void},
+        {"end", Tok::End}, {"await", Tok::Await}, {"coroutine", Tok::Coroutine}
     };
     auto it = k.find(w);
     return it == k.end() ? Tok::Ident : it->second;
@@ -78,11 +76,11 @@ Token Lexer::lex_identifier() {
         id.push_back(advance());
     }
     for (char& ch : id) {
-        ch = std::toupper((unsigned char)ch);
+        ch = std::tolower((unsigned char)ch);
     }
 
     // REM is still supported for backward compatibility, but // is preferred
-    if (id == "REM") {
+    if (id == "rem") {
         while (!atEnd() && peek() != '\n') {
             advance();
         }
@@ -206,6 +204,25 @@ std::vector<Token> Lexer::lex() {
             case '/': out.push_back({Tok::Slash, "/", line, start_col}); break;
             case '\\': out.push_back({Tok::IntDiv, "\\", line, start_col}); break;
             case '^': out.push_back({Tok::Power, "^", line, start_col}); break;
+            case '&': {
+                if (peek() == '&') {
+                    advance();
+                    out.push_back({Tok::And, "&&", line, start_col});
+                } else {
+                    out.push_back({Tok::BitAnd, "&", line, start_col});
+                }
+                break;
+            }
+            case '|': {
+                if (peek() == '|') {
+                    advance();
+                    out.push_back({Tok::Or, "||", line, start_col});
+                } else {
+                    out.push_back({Tok::BitOr, "|", line, start_col});
+                }
+                break;
+            }
+            case '~': out.push_back({Tok::BitNot, "~", line, start_col}); break;
             case '=': {
                 if (peek() == '=') {
                     advance();
@@ -235,8 +252,7 @@ std::vector<Token> Lexer::lex() {
                     advance();
                     out.push_back({Tok::NullCoalesce, "??", line, start_col});
                 } else {
-                    std::string unknown(1, c);
-                    out.push_back({Tok::Error, "Unexpected character: " + unknown, line, start_col});
+                    out.push_back({Tok::Question, "?", line, start_col});
                 }
                 break;
             }
@@ -253,13 +269,29 @@ std::vector<Token> Lexer::lex() {
                 while (!atEnd() && peek() != '\n') advance();
                 break;
             case '<':
-                if (peek() == '>') { advance(); out.push_back({Tok::Neq, "<>", line, start_col}); }
-                else if (peek() == '=') { advance(); out.push_back({Tok::Lte, "<=", line, start_col}); }
-                else { out.push_back({Tok::Lt, "<", line, start_col}); }
+                if (peek() == '<') {
+                    advance();
+                    out.push_back({Tok::ShiftLeft, "<<", line, start_col});
+                } else if (peek() == '>') { 
+                    advance(); 
+                    out.push_back({Tok::Neq, "<>", line, start_col}); 
+                } else if (peek() == '=') { 
+                    advance(); 
+                    out.push_back({Tok::Lte, "<=", line, start_col}); 
+                } else { 
+                    out.push_back({Tok::Lt, "<", line, start_col}); 
+                }
                 break;
             case '>':
-                if (peek() == '=') { advance(); out.push_back({Tok::Gte, ">=", line, start_col}); }
-                else { out.push_back({Tok::Gt, ">", line, start_col}); }
+                if (peek() == '>') {
+                    advance();
+                    out.push_back({Tok::ShiftRight, ">>", line, start_col});
+                } else if (peek() == '=') { 
+                    advance(); 
+                    out.push_back({Tok::Gte, ">=", line, start_col}); 
+                } else { 
+                    out.push_back({Tok::Gt, ">", line, start_col}); 
+                }
                 break;
             default: {
                 std::string unknown(1, c);
