@@ -72,10 +72,10 @@ VAR y = 300
 VAR speed = 5
 
 WHILE NOT WINDOWSHOULDCLOSE()
-    IF ISKEYDOWN(KEY_W) THEN y = y - speed
-    IF ISKEYDOWN(KEY_S) THEN y = y + speed
-    IF ISKEYDOWN(KEY_A) THEN x = x - speed
-    IF ISKEYDOWN(KEY_D) THEN x = x + speed
+    IF ISKEYDOWN(87) THEN y = y - speed
+    IF ISKEYDOWN(83) THEN y = y + speed
+    IF ISKEYDOWN(65) THEN x = x - speed
+    IF ISKEYDOWN(68) THEN x = x + speed
     
     BEGINDRAW()
     CLEARBACKGROUND(20, 20, 30)
@@ -84,6 +84,7 @@ WHILE NOT WINDOWSHOULDCLOSE()
 WEND
 
 CLOSEWINDOW()
+
 ```
 
 Run it: `cyberbasic.exe my_game.bas`
