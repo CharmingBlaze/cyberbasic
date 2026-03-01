@@ -4,6 +4,14 @@
 
 **The Modern BASIC Language for Game Development**
 
+
+
+Big changes are comming in April 2006! There has been a lot of work on getting the next version ready. In CyberBASIC version 2 we have Included BOX2D and Bullet Physics into the language and we have changed develeopment from C++ to GO and we have a working compiler. Also we will have everything working correctly and its close to being done. This version will change. The team has had a hard time with C++ and getting it to work on other devices, especially MAC. Working with C++ has been a headache. The GO switch has been going smoothly. 
+
+If you want to take a look at the pre-pre-version you can go here:https://github.com/CharmingBlaze/cyberbasic2 and we will be releasing it here in april and retiring the C++ version.
+
+
+
 CyberBasic combines the simplicity and elegance of classic BASIC programming with the full power of modern game development. Write games, graphics applications, and interactive programs using familiar BASIC syntax while leveraging the complete Raylib graphics library.
 
 > **Distribution focus:** CyberBasic is primarily offered as a plug-and-play Windows executable (`cyberbasic.exe`). Linux and macOS users are welcome—and fully supported—to compile from source using the instructions later in this README, but I only distribute binaries for Windows.
