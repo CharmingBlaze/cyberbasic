@@ -1,15 +1,98 @@
+<p align="center"><img src="cyberbasic.png" alt="CyberBasic" width="420"></p>
 
-Important Project Notice
-The CyberBASIC and CyberBASIC 2 projects are no longer being developed. After extensive experimentation and more than a year of focused work, the team has created a significantly more advanced and better engineered successor. This new project is called MoonBASIC and it represents the true direction of our work.
+# CyberBasic
 
-MoonBASIC is a complete redesign rather than an update to CyberBASIC. It was built after we identified the architectural limitations of the earlier versions and realized that a modern BASIC language required a cleaner and more maintainable foundation. The new project is written in Go, which has provided faster compilation, a safer and more predictable memory model, and a development experience that is far easier to maintain over time.
+A modern BASIC for making 2D and 3D games, in the spirit of Blitz3D and AGK2. You write in a simple BASIC, or later build games visually with nodes. Everything runs on a modern renderer (Babylon.js), and finished games export without the editor.
 
-The runtime is powered by Raylib, Jolt Physics, and Box2D, giving MoonBASIC smooth and reliable performance for both two dimensional and three dimensional development. The language is inspired by BlitzBasic 3D and DarkBASIC Professional, but it introduces a modern architecture, a clearer compiler pipeline, and a more capable engine. The project is designed to run well on low end systems while also scaling to high end hardware, and future support for high resolution and high density displays is planned.
+> **Status: Phase 0 (walking skeleton).** This is a full rewrite. The old C++/raylib interpreter is in this repo's git history. The roadmap is in [PLAN.md](PLAN.md).
 
-The earlier CyberBASIC projects were important steps in understanding what the language needed to become. However, the C++ based versions became increasingly difficult to manage and slowed progress. The transition to Go allowed us to build a cleaner, faster, and more scalable system. MoonBASIC is the result of that work and is the project we will continue to develop.
+```basic
+Game "My First 3D Game"
+Graphics3D 1280, 720
 
-Anyone interested in the future of this language should use MoonBASIC instead of CyberBASIC. The repository is available here:
+camera = CreateCamera()
+PositionEntity camera, 0, 5, -10
+PointEntity camera, 0, 0, 0
 
-https://github.com/CharmingBlaze/moonbasic
+light = CreateLight(LIGHT_DIRECTIONAL)
+cube  = CreateCube()
+EntityColor cube, 0, 200, 255
 
-MoonBASIC is the modern and fully supported version of the project and we encourage all users and contributors to follow its development.
+While Not KeyHit(KEY_ESCAPE)
+    If KeyDown(KEY_W) Then MoveEntity cube, 0, 0, 5 * Delta
+    TurnEntity cube, 0, 45 * Delta, 0
+    Sync
+Wend
+```
+
+## Quick start
+
+Requires [Rust](https://rustup.rs) and a browser.
+
+```sh
+cargo run --release -- run examples/cube.cb
+```
+
+This compiles `examples/cube.cb` to `examples/build/cube/` and opens it. `build` instead of `run` only writes the files. The output folder is a standalone web game: `index.html`, `runtime.js` and `game.js`.
+
+> Phase 0 games load Babylon.js from its CDN, so they need an internet connection.
+
+## How it works
+
+```
+file.cb ──▶ Rust compiler ──▶ game.js ──▶ CyberBasic runtime ──▶ Babylon.js
+           (lex, parse, codegen)  (JS generator)   (runtime/runtime.js)
+```
+
+The `While … Sync … Wend` loop compiles to a JavaScript generator: each `Sync` is a `yield`, and the runtime resumes the program once per frame. That way classic BASIC game loops run in the browser without freezing it.
+
+## Language (Phase 0 subset)
+
+- Variables, `=`, `+=`, `-=`, numbers, strings, `.field` access
+- `If … Then … [Else …]` on one line, or block `If / ElseIf / Else / EndIf` (`End If` also works)
+- `While … Wend`, `Sync`, `End`
+- Operators: `+ - * /`, `= <> < <= > >=`, `And Or Not`
+- `'` comments, `:` to put several statements on one line
+- Commands are case-insensitive (`MoveEntity` = `moveentity`)
+- `Delta`: seconds since the last frame
+
+### Commands
+
+| Command | Description |
+|---------|-------------|
+| `Game title$` | Sets the window title |
+| `Graphics3D width, height` | Opens the 3D view |
+| `CreateCamera()` | Creates a camera |
+| `CreateLight([type])` | `LIGHT_DIRECTIONAL` (default) or `LIGHT_POINT` |
+| `CreateCube([size])`, `CreateSphere([size])`, `CreatePlane([size])` | Primitive meshes |
+| `PositionEntity e, x, y, z` | Sets the absolute position |
+| `MoveEntity e, x, y, z` | Moves relative to the entity's own facing |
+| `RotateEntity e, pitch, yaw, roll` | Sets the absolute rotation (degrees) |
+| `TurnEntity e, pitch, yaw, roll` | Rotates relative to the current rotation (degrees) |
+| `PointEntity e, x, y, z` | Faces a point |
+| `EntityColor e, r, g, b` | Mesh color, 0–255 |
+| `KeyDown(key)`, `KeyHit(key)` | Key held / pressed this frame |
+| `Print value` | Writes to the browser console |
+
+Keys: `KEY_A`–`KEY_Z`, `KEY_0`–`KEY_9`, `KEY_ESCAPE`, `KEY_SPACE`, `KEY_ENTER`, `KEY_LEFT`, `KEY_RIGHT`, `KEY_UP`, `KEY_DOWN`.
+
+## Project layout
+
+```
+crates/cyberbasic/   compiler + CLI (Rust, no dependencies)
+runtime/             runtime.js and the index.html page template
+examples/            sample programs
+PLAN.md              product and technical plan
+```
+
+## Development
+
+```sh
+cargo test
+```
+
+The tests cover parsing, code generation, error messages, and a check that every compiler command exists in the runtime.
+
+## License
+
+See [LICENSE](LICENSE).

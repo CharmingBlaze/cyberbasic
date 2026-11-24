@@ -1,0 +1,23 @@
+' My first 3D game: W/S moves the cube, Escape quits.
+Game "My First 3D Game"
+Graphics3D 1280, 720
+
+camera = CreateCamera()
+PositionEntity camera, 0, 5, -10
+PointEntity camera, 0, 0, 0
+
+light  = CreateLight(LIGHT_DIRECTIONAL)
+cube   = CreateCube()
+ground = CreatePlane(100)
+PositionEntity cube, 0, 1, 0
+PositionEntity ground, 0, -1, 0
+EntityColor cube, 0, 200, 255
+EntityColor ground, 40, 40, 60
+
+While Not KeyHit(KEY_ESCAPE)
+    If KeyDown(KEY_W) Then MoveEntity cube, 0, 0, 5 * Delta
+    If KeyDown(KEY_S) Then MoveEntity cube, 0, 0, -5 * Delta
+    TurnEntity cube, 0, 45 * Delta, 0
+    Sync
+Wend
+End

@@ -1,0 +1,9 @@
+[package]
+name = "cyberbasic"
+version = "0.1.0"
+edition = "2021"
+description = "CyberBasic compiler (Phase 0 walking skeleton)"
+
+[[bin]]
+name = "cyberbasic"
+path = "src/main.rs"
