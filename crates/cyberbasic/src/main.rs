@@ -10,7 +10,7 @@ fn main() {
         _ => die(USAGE),
     };
     let src = fs::read_to_string(file).unwrap_or_else(|e| die(&format!("cannot read {file}: {e}")));
-    let js = cyberbasic::compile(&src).unwrap_or_else(|e| {
+    let js = cyberbasic_core::compile(&src).unwrap_or_else(|e| {
         report(file, &src, &e);
         process::exit(1)
     });
@@ -26,15 +26,35 @@ fn main() {
         fs::write(out.join(name), body).unwrap_or_else(|e| die(&format!("cannot write {}: {e}", out.join(name).display())))
     };
     fs::create_dir_all(&out).unwrap_or_else(|e| die(&format!("cannot create {}: {e}", out.display())));
-    write("index.html", cyberbasic::INDEX_HTML);
-    write("runtime.js", cyberbasic::RUNTIME_JS);
+    write("index.html", cyberbasic_core::INDEX_HTML);
+    write("runtime.js", cyberbasic_core::RUNTIME_JS);
     write("game.js", &js);
+    let assets = Path::new(file).parent().unwrap_or(Path::new(".")).join("assets");
+    if assets.is_dir() {
+        copy_dir(&assets, &out.join("assets")).unwrap_or_else(|e| die(&format!("cannot copy assets: {e}")));
+    }
     let index = out.join("index.html");
     println!("Built {}", index.display());
 
     if cmd == "run" {
         open(&index);
     }
+}
+
+/// Copies the `assets/` folder next to the source file into the build, so LoadImage/LoadSound
+/// paths like "assets/player.png" work in the exported game.
+fn copy_dir(from: &Path, to: &Path) -> std::io::Result<()> {
+    fs::create_dir_all(to)?;
+    for entry in fs::read_dir(from)? {
+        let path = entry?.path();
+        let target = to.join(path.file_name().unwrap_or_default());
+        if path.is_dir() {
+            copy_dir(&path, &target)?;
+        } else {
+            fs::copy(&path, &target)?;
+        }
+    }
+    Ok(())
 }
 
 fn open(path: &Path) {
@@ -50,7 +70,7 @@ fn open(path: &Path) {
     }
 }
 
-fn report(file: &str, src: &str, e: &cyberbasic::Error) {
+fn report(file: &str, src: &str, e: &cyberbasic_core::Error) {
     eprintln!("{file}:{}:{}: error: {}", e.line, e.col, e.msg);
     if let Some(text) = src.lines().nth(e.line - 1) {
         eprintln!("  {:>4} | {text}", e.line);

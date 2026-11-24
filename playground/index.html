@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CyberBasic Playground</title>
+<style>
+  :root { --bg: #0b0b10; --panel: #14141c; --line: #262634; --text: #e4e4ec; --muted: #8a8aa0; --accent: #39c6ff; --err: #ff7b7b; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 14px system-ui, sans-serif; }
+  body { display: grid; grid-template-rows: auto 1fr auto; }
+  header { display: flex; gap: 12px; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--line); background: var(--panel); }
+  header strong { color: var(--accent); letter-spacing: .5px; }
+  select, button { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 5px 10px; }
+  button { background: var(--accent); color: #001018; border-color: var(--accent); font-weight: 600; cursor: pointer; }
+  button:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  #status { color: var(--muted); margin-left: auto; font-size: 13px; }
+  main { display: grid; grid-template-columns: minmax(320px, 2fr) 3fr; min-height: 0; }
+  textarea { resize: none; border: 0; border-right: 1px solid var(--line); padding: 14px; background: var(--bg); color: var(--text);
+             font: 14px/1.5 ui-monospace, Consolas, monospace; tab-size: 4; white-space: pre; }
+  iframe { border: 0; width: 100%; height: 100%; background: var(--bg); }
+  #err { margin: 0; padding: 8px 14px; min-height: 2.2em; border-top: 1px solid var(--line); background: var(--panel);
+         font: 13px ui-monospace, Consolas, monospace; color: var(--err); white-space: pre-wrap; }
+  @media (max-width: 800px) { main { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; } }
+</style>
+<header>
+  <strong>CyberBasic</strong>
+  <label>Example <select id="example"></select></label>
+  <button id="run" title="Ctrl+Enter">Run ▶</button>
+  <span id="status">Loading compiler…</span>
+</header>
+<main>
+  <textarea id="code" spellcheck="false" aria-label="CyberBasic source code"></textarea>
+  <iframe id="game" title="Game output"></iframe>
+</main>
+<pre id="err" role="alert"></pre>
+<script type="module">
+// Served from the repo root (see README): the compiler is target/.../cyberbasic_core.wasm, built by
+// `cargo build --release -p cyberbasic --lib --target wasm32-unknown-unknown`.
+const EXAMPLES = ["cube", "pong", "breakout"];
+const NO_CACHE = { cache: "no-store" }; // always pick up local edits
+const $ = (id) => document.getElementById(id);
+const status = (s) => { $("status").textContent = s; };
+
+const [wasmBytes, runtime, page] = await Promise.all([
+  fetch("../target/wasm32-unknown-unknown/release/cyberbasic_core.wasm", NO_CACHE).then((r) => {
+    if (!r.ok) throw new Error("compiler not built");
+    return r.arrayBuffer();
+  }),
+  fetch("../runtime/runtime.js", NO_CACHE).then((r) => r.text()),
+  fetch("../runtime/index.html", NO_CACHE).then((r) => r.text()),
+]).catch((e) => {
+  status("");
+  $("err").textContent = `Could not load the compiler (${e.message}). Build it with:\ncargo build --release -p cyberbasic --lib --target wasm32-unknown-unknown`;
+  throw e;
+});
+const wasm = (await WebAssembly.instantiate(wasmBytes)).instance.exports;
+
+function compile(src) {
+  const bytes = new TextEncoder().encode(src);
+  const p = wasm.cb_alloc(bytes.length);
+  new Uint8Array(wasm.memory.buffer, p, bytes.length).set(bytes);
+  const ok = wasm.cb_compile(p, bytes.length);
+  wasm.cb_free(p, bytes.length);
+  const out = new TextDecoder().decode(new Uint8Array(wasm.memory.buffer, wasm.cb_out_ptr(), wasm.cb_out_len()));
+  return { ok: ok === 1, out };
+}
+
+// A literal closing script tag would end an inline script early (including this one), so every
+// one in this file is written as <\/script>.
+const inline = (js) => js.replaceAll("<\/script", "<\\/script");
+
+function run() {
+  const src = $("code").value;
+  const t0 = performance.now();
+  const { ok, out } = compile(src);
+  if (!ok) {
+    const [line, col, ...msg] = out.split(":");
+    $("err").textContent = `Line ${line}, column ${col}: ${msg.join(":")}`;
+    status("Compile error");
+    // Put the cursor on the error.
+    const lines = src.split("\n");
+    const at = lines.slice(0, line - 1).reduce((n, l) => n + l.length + 1, 0) + (col - 1);
+    $("code").focus();
+    $("code").setSelectionRange(at, at + (lines[line - 1] || "").length - (col - 1));
+    return;
+  }
+  $("err").textContent = "";
+  status(`Compiled in ${(performance.now() - t0).toFixed(1)} ms`);
+  $("game").srcdoc = page
+    .replace('<meta charset="utf-8">', () => '<meta charset="utf-8"><base href="../examples/">')
+    .replace('<script src="runtime.js"><\/script>', () => `<script>${inline(runtime)}<\/script>`)
+    .replace('<script src="game.js"><\/script>', () => `<script>${inline(out)}<\/script>`);
+  $("game").addEventListener("load", () => $("game").focus(), { once: true });
+}
+
+async function loadExample(name) {
+  $("code").value = await fetch(`../examples/${name}.cb`, NO_CACHE).then((r) => r.text());
+  run();
+}
+
+for (const name of EXAMPLES) $("example").add(new Option(name, name));
+$("example").addEventListener("change", (e) => loadExample(e.target.value));
+$("run").addEventListener("click", run);
+$("code").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); run(); }
+  if (e.key === "Tab" && !e.shiftKey) { e.preventDefault(); document.execCommand("insertText", false, "    "); }
+});
+status("Ready");
+loadExample(EXAMPLES[0]);
+</script>
+</html>

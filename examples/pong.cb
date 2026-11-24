@@ -1,0 +1,70 @@
+' Pong for two players. W/S moves the left paddle, Up/Down the right one.
+' First to 5 points wins. Escape quits.
+Game "Pong"
+Graphics 800, 600
+
+Const W = 800, H = 600
+Const PADDLE_W = 14, PADDLE_H = 90, PADDLE_SPEED = 420, BALL = 12
+Global leftY = 255, rightY = 255
+Global leftScore, rightScore
+Global ballX, ballY, ballDX, ballDY
+
+Function ResetBall(direction)
+    ballX = W / 2 - BALL / 2
+    ballY = H / 2 - BALL / 2
+    ballDX = 320 * direction
+    ballDY = Rnd(-200, 200)
+End Function
+
+Function MovePaddle(y, upKey, downKey)
+    If KeyDown(upKey) Then y -= PADDLE_SPEED * Delta
+    If KeyDown(downKey) Then y += PADDLE_SPEED * Delta
+    Return Max(0, Min(H - PADDLE_H, y))
+End Function
+
+' Sends the ball back, angled by where it hit the paddle.
+Function Bounce(paddleY)
+    ballDX = -ballDX * 1.05
+    ballDY = (ballY + BALL / 2 - (paddleY + PADDLE_H / 2)) * 6
+End Function
+
+ResetBall 1
+While Not KeyHit(KEY_ESCAPE)
+    leftY = MovePaddle(leftY, KEY_W, KEY_S)
+    rightY = MovePaddle(rightY, KEY_UP, KEY_DOWN)
+
+    ballX += ballDX * Delta
+    ballY += ballDY * Delta
+    If ballY < 0 Or ballY > H - BALL
+        ballDY = -ballDY
+        ballY = Max(0, Min(H - BALL, ballY))
+    EndIf
+    If ballDX < 0 And RectsOverlap(ballX, ballY, BALL, BALL, 30, leftY, PADDLE_W, PADDLE_H) Then Bounce leftY
+    If ballDX > 0 And RectsOverlap(ballX, ballY, BALL, BALL, W - 30 - PADDLE_W, rightY, PADDLE_W, PADDLE_H) Then Bounce rightY
+    If ballX < -BALL Then rightScore += 1 : ResetBall 1
+    If ballX > W Then leftScore += 1 : ResetBall -1
+
+    Cls
+    Color 70, 70, 90
+    For y = 0 To H Step 30
+        Rect W / 2 - 3, y, 6, 15
+    Next
+    Color 255, 255, 255
+    Rect 30, leftY, PADDLE_W, PADDLE_H
+    Rect W - 30 - PADDLE_W, rightY, PADDLE_W, PADDLE_H
+    Oval ballX, ballY, BALL, BALL
+    Text W / 2 - 60, 20, leftScore
+    Text W / 2 + 50, 20, rightScore
+    Sync
+
+    If leftScore = 5 Or rightScore = 5 Then Exit
+Wend
+
+If leftScore = 5 Then winner$ = "Left" Else winner$ = "Right"
+If leftScore = 5 Or rightScore = 5
+    Cls
+    Text W / 2 - 90, H / 2 - 8, winner + " player wins!"
+    Sync
+    Delay 3000
+EndIf
+End

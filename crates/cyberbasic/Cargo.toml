@@ -2,8 +2,13 @@
 name = "cyberbasic"
 version = "0.1.0"
 edition = "2021"
-description = "CyberBasic compiler (Phase 0 walking skeleton)"
+description = "CyberBasic compiler and CLI"
 
 [[bin]]
 name = "cyberbasic"
 path = "src/main.rs"
+
+[lib]
+# rlib for the CLI and tests, cdylib for the browser playground (wasm32-unknown-unknown).
+name = "cyberbasic_core"
+crate-type = ["rlib", "cdylib"]

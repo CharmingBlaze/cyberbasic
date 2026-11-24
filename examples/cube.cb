@@ -18,6 +18,7 @@ While Not KeyHit(KEY_ESCAPE)
     If KeyDown(KEY_W) Then MoveEntity cube, 0, 0, 5 * Delta
     If KeyDown(KEY_S) Then MoveEntity cube, 0, 0, -5 * Delta
     TurnEntity cube, 0, 45 * Delta, 0
+    Text 10, 10, "W/S: move   Esc: quit"
     Sync
 Wend
 End

@@ -3,6 +3,20 @@
 > Product name: **CyberBasic**.
 > Status: draft v2. Last updated: 2026-11-25.
 
+## Progress
+
+| Phase | State | Done | Still open |
+|-------|-------|------|------------|
+| **0. Walking skeleton** | ✅ Done | Rust compiler → JS generators, Babylon runtime, `cyberbasic build/run` CLI, **in-browser playground** (compiler as WASM, ~160 KB) | Tauri/WebKitGTK rendering spike (§9.2) not run yet |
+| **1. Language core** | 🟡 Mostly done | Functions (call before definition, recursion), `Global`/`Const`, locals by default, `For/Next/Step`, `For … = Each`, `Repeat/Until/Forever`, `Select/Case/Default`, `Exit`, `Dim` arrays (multi-dim, bounds-checked), `Type`/`Field`/`New`/`Delete`, `Mod`, `^`, `:` statement chains, single-line `If` owns its line, friendly errors with "did you mean", runtime errors with BASIC line numbers, frozen-loop guard. 16 tests, including programs executed under Node. | Rowan CST + error recovery (stops at the first error today), type inference/annotations, modules (`Import`), `On` event handlers, coroutines, Salsa, 2,000-line compile benchmark |
+| **2. Runtime & engine API** | 🟡 Started | ~75 commands: 2D drawing (also a HUD over 3D), images, sound, keyboard, mouse, `Delay`, math, strings, 3D entities/lights/camera. **Demos: Pong ✅, Breakout ✅**, spinning cube ✅ | Command manifest file (still a Rust table + parity test), sprites/animation/tilemaps, glTF loading, Havok physics, collision events, gamepad, screenshot tests, 3D marble-roller demo |
+| 3. IDE v1 + web export | 🟡 Started | Web export works today (`cyberbasic build` output is a standalone web game); the playground is a minimal editor | Monaco + LSP, dockview, project manager, debugger, Tauri shell |
+| 4. Visual scripting | ⬜ Not started | | |
+| 5. Scene & creation tools | ⬜ Not started | | |
+| 6. Desktop export & 1.0 | ⬜ Not started | | |
+
+Known deviations from this plan, each marked with a `shortcut:` comment in the code: no shared IR yet (AST → JS directly), command table in Rust instead of `api/*.toml`, runtime in plain JS instead of TypeScript, 2D drawn with Canvas 2D rather than Babylon, Babylon.js loaded from its CDN (exports need internet).
+
 ---
 
 ## 1. Vision

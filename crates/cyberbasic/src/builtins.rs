@@ -1,34 +1,60 @@
 // shortcut: hard-coded table stands in for the api/*.toml command manifest from PLAN.md §6;
-// move to the manifest when visual nodes or generated docs need it (Phase 2/4).
+// move to the manifest when visual nodes or generated docs need it (Phase 4).
 
+#[derive(Debug)]
 pub struct Builtin {
     pub name: &'static str,
     pub returns: bool,
     pub min: usize,
     pub max: usize,
+    /// Runtime implements it as a generator that waits across frames (called with `yield*`).
+    pub wait: bool,
 }
 
-const fn b(name: &'static str, returns: bool, min: usize, max: usize) -> Builtin {
-    Builtin { name, returns, min, max }
+/// Statement command.
+const fn s(name: &'static str, min: usize, max: usize) -> Builtin {
+    Builtin { name, returns: false, min, max, wait: false }
+}
+/// Function that returns a value.
+const fn f(name: &'static str, min: usize, max: usize) -> Builtin {
+    Builtin { name, returns: true, min, max, wait: false }
+}
+/// Waits across frames; `returns` says whether it gives back a value.
+const fn w(name: &'static str, returns: bool, n: usize) -> Builtin {
+    Builtin { name, returns, min: n, max: n, wait: true }
 }
 
+#[rustfmt::skip]
 pub const BUILTINS: &[Builtin] = &[
-    b("Game", false, 1, 1),
-    b("Graphics3D", false, 2, 2),
-    b("CreateCamera", true, 0, 0),
-    b("CreateLight", true, 0, 1),
-    b("CreateCube", true, 0, 1),
-    b("CreateSphere", true, 0, 1),
-    b("CreatePlane", true, 0, 1),
-    b("PositionEntity", false, 4, 4),
-    b("RotateEntity", false, 4, 4),
-    b("MoveEntity", false, 4, 4),
-    b("TurnEntity", false, 4, 4),
-    b("PointEntity", false, 4, 4),
-    b("EntityColor", false, 4, 4),
-    b("KeyDown", true, 1, 1),
-    b("KeyHit", true, 1, 1),
-    b("Print", false, 1, 1),
+    // Setup
+    s("Game", 1, 1), s("Graphics", 2, 2), s("Graphics3D", 2, 2),
+    // 2D drawing (also draws over the 3D view as a HUD)
+    s("Cls", 0, 0), s("ClsColor", 3, 3), s("Color", 3, 3),
+    s("Rect", 4, 5), s("Oval", 4, 5), s("Line", 4, 4), s("Plot", 2, 2), s("Text", 3, 3),
+    f("GraphicsWidth", 0, 0), f("GraphicsHeight", 0, 0),
+    w("LoadImage", true, 1), s("DrawImage", 3, 3), f("ImageWidth", 1, 1), f("ImageHeight", 1, 1),
+    // Sound
+    w("LoadSound", true, 1), s("PlaySound", 1, 1),
+    // Input
+    f("KeyDown", 1, 1), f("KeyHit", 1, 1),
+    f("MouseX", 0, 0), f("MouseY", 0, 0), f("MouseDown", 0, 1), f("MouseHit", 0, 1),
+    // Time and output
+    w("Delay", false, 1), f("Millisecs", 0, 0), s("Print", 1, 1),
+    // Math
+    f("Abs", 1, 1), f("Sqr", 1, 1), f("Sin", 1, 1), f("Cos", 1, 1), f("Tan", 1, 1), f("ATan2", 2, 2),
+    f("Floor", 1, 1), f("Ceil", 1, 1), f("Int", 1, 1), f("Float", 1, 1), f("Min", 2, 2), f("Max", 2, 2),
+    f("Rnd", 1, 2), f("Rand", 1, 2), f("RectsOverlap", 8, 8),
+    // Strings
+    f("Str", 1, 1), f("Len", 1, 1), f("Left", 2, 2), f("Right", 2, 2), f("Mid", 2, 3),
+    f("Upper", 1, 1), f("Lower", 1, 1), f("Chr", 1, 1), f("Asc", 1, 1), f("Instr", 2, 2),
+    f("Replace", 3, 3), f("Trim", 1, 1),
+    // 3D
+    f("CreateCamera", 0, 0), f("CreateLight", 0, 1),
+    f("CreateCube", 0, 1), f("CreateSphere", 0, 1), f("CreatePlane", 0, 1),
+    s("PositionEntity", 4, 4), s("RotateEntity", 4, 4), s("MoveEntity", 4, 4), s("TurnEntity", 4, 4),
+    s("PointEntity", 4, 4), s("ScaleEntity", 4, 4), s("EntityColor", 4, 4), s("FreeEntity", 1, 1),
+    f("EntityX", 1, 1), f("EntityY", 1, 1), f("EntityZ", 1, 1), f("EntityDistance", 2, 2),
+    s("AmbientLight", 3, 3),
 ];
 
 // KEY_A..KEY_Z and KEY_0..KEY_9 are accepted by pattern, see `constant`.
@@ -38,7 +64,9 @@ pub const CONSTANTS: &[&str] = &[
 ];
 
 pub const KEYWORDS: &[&str] = &[
-    "if", "then", "else", "elseif", "endif", "end", "while", "wend", "sync", "and", "or", "not", "delta",
+    "if", "then", "else", "elseif", "endif", "end", "while", "wend", "for", "to", "step", "next", "each",
+    "repeat", "until", "forever", "exit", "select", "case", "default", "function", "return", "global",
+    "const", "dim", "type", "field", "new", "delete", "sync", "and", "or", "not", "mod", "delta",
 ];
 
 pub fn find(name: &str) -> Option<&'static Builtin> {
@@ -49,6 +77,10 @@ pub fn constant(name: &str) -> Option<String> {
     let up = name.to_ascii_uppercase();
     let letter_key = up.len() == 5 && up.starts_with("KEY_") && up.as_bytes()[4].is_ascii_alphanumeric();
     (letter_key || CONSTANTS.contains(&up.as_str())).then_some(up)
+}
+
+pub fn is_keyword(name: &str) -> bool {
+    KEYWORDS.contains(&name.to_ascii_lowercase().as_str())
 }
 
 /// Closest builtin within 2 edits, for "did you mean" errors.

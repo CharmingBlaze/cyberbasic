@@ -17,9 +17,9 @@ pub struct Token {
     pub col: usize,
 }
 
-// Two-char operators first so `<=` wins over `<`.
-const OPS: [&str; 16] = [
-    "<>", "<=", ">=", "+=", "-=", "=", "<", ">", "+", "-", "*", "/", "(", ")", ",", ".",
+// Two-char operators first so `<=` wins over `<`. `:` separates statements on one line.
+const OPS: [&str; 20] = [
+    "<>", "<=", ">=", "+=", "-=", "=", "<", ">", "+", "-", "*", "/", "^", "(", ")", "[", "]", ",", ".", ":",
 ];
 
 pub fn lex(src: &str) -> Result<Vec<Token>, Error> {
@@ -29,12 +29,10 @@ pub fn lex(src: &str) -> Result<Vec<Token>, Error> {
     while i < cs.len() {
         let (c, start, ln) = (cs[i], i, line);
         let col = i - line_start + 1;
-        let tok = if c == '\n' || c == ':' {
+        let tok = if c == '\n' {
             i += 1;
-            if c == '\n' {
-                line += 1;
-                line_start = i;
-            }
+            line += 1;
+            line_start = i;
             Tok::Nl
         } else if c.is_whitespace() {
             i += 1;

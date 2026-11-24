@@ -1,0 +1,72 @@
+' Breakout. Left/Right (or the mouse) moves the paddle. Clear every brick to win.
+Game "Breakout"
+Graphics 800, 600
+
+Type Brick
+    Field x, y, r, g, b, points
+End Type
+
+Const COLS = 10, ROWS = 6, BW = 72, BH = 24, PADDLE_W = 100
+Dim rowPoints[ROWS]
+
+For row = 0 To ROWS - 1
+    rowPoints[row] = (ROWS - row) * 10
+    For col = 0 To COLS - 1
+        brick = New Brick
+        brick.x = 22 + col * (BW + 4)
+        brick.y = 60 + row * (BH + 4)
+        brick.r = 255 - row * 30
+        brick.g = 80 + row * 25
+        brick.b = 120 + row * 20
+        brick.points = rowPoints[row]
+        bricksLeft += 1
+    Next
+Next
+
+paddleX = 350 : lastMouse = MouseX()
+ballX = 400 : ballY = 400 : dx = 240 : dy = -320
+score = 0 : lives = 3
+
+While Not KeyHit(KEY_ESCAPE) And lives > 0 And bricksLeft > 0
+    If KeyDown(KEY_LEFT) Then paddleX -= 520 * Delta
+    If KeyDown(KEY_RIGHT) Then paddleX += 520 * Delta
+    If MouseX() <> lastMouse Then paddleX = MouseX() - PADDLE_W / 2 : lastMouse = MouseX()
+    paddleX = Max(0, Min(800 - PADDLE_W, paddleX))
+
+    ballX += dx * Delta : ballY += dy * Delta
+    If ballX < 0 Or ballX > 790 Then dx = -dx : ballX = Max(0, Min(790, ballX))
+    If ballY < 0 Then dy = Abs(dy)
+    If ballY > 600 Then lives -= 1 : ballX = 400 : ballY = 400 : dy = -320
+    If dy > 0 And RectsOverlap(ballX, ballY, 10, 10, paddleX, 560, PADDLE_W, 12)
+        dy = -Abs(dy)
+        dx = (ballX + 5 - (paddleX + PADDLE_W / 2)) * 8
+    EndIf
+
+    For brick = Each Brick
+        If RectsOverlap(ballX, ballY, 10, 10, brick.x, brick.y, BW, BH)
+            score += brick.points
+            bricksLeft -= 1
+            Delete brick
+            dy = -dy
+            Exit
+        EndIf
+    Next
+
+    Cls
+    For brick = Each Brick
+        Color brick.r, brick.g, brick.b
+        Rect brick.x, brick.y, BW, BH
+    Next
+    Color 255, 255, 255
+    Rect paddleX, 560, PADDLE_W, 12
+    Oval ballX, ballY, 10, 10
+    Text 10, 10, "Score: " + score + "   Lives: " + lives
+    Sync
+Wend
+
+Cls
+If bricksLeft = 0 Then Text 340, 270, "You win!" Else Text 340, 270, "Game over"
+Text 340, 300, "Score: " + score
+Sync
+Delay 3000
+End

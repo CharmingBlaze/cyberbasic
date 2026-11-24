@@ -4,23 +4,25 @@
 
 A modern BASIC for making 2D and 3D games, in the spirit of Blitz3D and AGK2. You write in a simple BASIC, or later build games visually with nodes. Everything runs on a modern renderer (Babylon.js), and finished games export without the editor.
 
-> **Status: Phase 0 (walking skeleton).** This is a full rewrite. The old C++/raylib interpreter is in this repo's git history. The roadmap is in [PLAN.md](PLAN.md).
+> **Status: early development.** This is a full rewrite; the old C++/raylib interpreter is in this repo's git history. Phase 0 is done and the core language works. Progress and roadmap are in [PLAN.md](PLAN.md).
 
 ```basic
-Game "My First 3D Game"
-Graphics3D 1280, 720
+Game "Pong-ish"
+Graphics 800, 600
 
-camera = CreateCamera()
-PositionEntity camera, 0, 5, -10
-PointEntity camera, 0, 0, 0
+Global score
 
-light = CreateLight(LIGHT_DIRECTIONAL)
-cube  = CreateCube()
-EntityColor cube, 0, 200, 255
+Function Paddle(y)
+    If KeyDown(KEY_UP) Then y -= 400 * Delta
+    If KeyDown(KEY_DOWN) Then y += 400 * Delta
+    Return Max(0, Min(510, y))
+End Function
 
 While Not KeyHit(KEY_ESCAPE)
-    If KeyDown(KEY_W) Then MoveEntity cube, 0, 0, 5 * Delta
-    TurnEntity cube, 0, 45 * Delta, 0
+    y = Paddle(y)
+    Cls
+    Rect 30, y, 14, 90
+    Text 10, 10, "Score: " + score
     Sync
 Wend
 ```
@@ -30,59 +32,118 @@ Wend
 Requires [Rust](https://rustup.rs) and a browser.
 
 ```sh
-cargo run --release -- run examples/cube.cb
+cargo run --release -- run examples/pong.cb
 ```
 
-This compiles `examples/cube.cb` to `examples/build/cube/` and opens it. `build` instead of `run` only writes the files. The output folder is a standalone web game: `index.html`, `runtime.js` and `game.js`.
+This compiles `examples/pong.cb` into `examples/build/pong/` and opens it. Use `build` instead of `run` to only write the files. The output folder is a standalone web game (`index.html`, `runtime.js`, `game.js`, plus an `assets/` folder if one sits next to your `.cb` file).
 
-> Phase 0 games load Babylon.js from its CDN, so they need an internet connection.
+> Games load Babylon.js from its CDN, so for now they need an internet connection.
+
+### Playground
+
+Edit and run CyberBasic in the browser; the compiler runs there as WebAssembly.
+
+```sh
+rustup target add wasm32-unknown-unknown
+cargo build --release -p cyberbasic --lib --target wasm32-unknown-unknown
+python -m http.server 8765
+```
+
+Then open <http://localhost:8765/playground/>. **Ctrl+Enter** runs the code.
+
+## Examples
+
+| File | Shows |
+|------|-------|
+| [examples/cube.cb](examples/cube.cb) | 3D camera, light, meshes, HUD text |
+| [examples/pong.cb](examples/pong.cb) | Two-player 2D game: functions, globals, constants, collision |
+| [examples/breakout.cb](examples/breakout.cb) | `Type`s, `For … Each`, `Delete`, arrays, mouse control |
 
 ## How it works
 
 ```
-file.cb ──▶ Rust compiler ──▶ game.js ──▶ CyberBasic runtime ──▶ Babylon.js
-           (lex, parse, codegen)  (JS generator)   (runtime/runtime.js)
+file.cb ──▶ Rust compiler ──▶ game.js ──▶ CyberBasic runtime ──▶ Babylon.js / Canvas 2D
+           (lex, parse, codegen)  (JS generators)   (runtime/runtime.js)
 ```
 
-The `While … Sync … Wend` loop compiles to a JavaScript generator: each `Sync` is a `yield`, and the runtime resumes the program once per frame. That way classic BASIC game loops run in the browser without freezing it.
+The program and every function compile to JavaScript generators. `Sync`, `Delay` and loading commands `yield`, and the runtime resumes the program once per frame, so classic `While … Sync … Wend` game loops run in the browser without freezing it. A loop that never reaches `Sync` is stopped after 5 seconds with an error.
 
-## Language (Phase 0 subset)
+## Language
 
-- Variables, `=`, `+=`, `-=`, numbers, strings, `.field` access
-- `If … Then … [Else …]` on one line, or block `If / ElseIf / Else / EndIf` (`End If` also works)
-- `While … Wend`, `Sync`, `End`
-- Operators: `+ - * /`, `= <> < <= > >=`, `And Or Not`
-- `'` comments, `:` to put several statements on one line
-- Commands are case-insensitive (`MoveEntity` = `moveentity`)
-- `Delta`: seconds since the last frame
+```basic
+' comment
+x = 10 : y = 20              ' `:` puts several statements on one line
+name$ = "Ada"                ' Blitz suffixes (# % $) are accepted
+Const SPEED = 300, SIZE = 32
+Global lives = 3, score      ' visible inside functions
 
-### Commands
+If x > 5 Then Print "big" : x = 0 Else Print "small"   ' everything after Then belongs to the If
+If x = 1
+    ...
+ElseIf x = 2
+    ...
+Else
+    ...
+EndIf                        ' or End If
 
-| Command | Description |
-|---------|-------------|
-| `Game title$` | Sets the window title |
-| `Graphics3D width, height` | Opens the 3D view |
-| `CreateCamera()` | Creates a camera |
-| `CreateLight([type])` | `LIGHT_DIRECTIONAL` (default) or `LIGHT_POINT` |
-| `CreateCube([size])`, `CreateSphere([size])`, `CreatePlane([size])` | Primitive meshes |
-| `PositionEntity e, x, y, z` | Sets the absolute position |
-| `MoveEntity e, x, y, z` | Moves relative to the entity's own facing |
-| `RotateEntity e, pitch, yaw, roll` | Sets the absolute rotation (degrees) |
-| `TurnEntity e, pitch, yaw, roll` | Rotates relative to the current rotation (degrees) |
-| `PointEntity e, x, y, z` | Faces a point |
-| `EntityColor e, r, g, b` | Mesh color, 0–255 |
-| `KeyDown(key)`, `KeyHit(key)` | Key held / pressed this frame |
-| `Print value` | Writes to the browser console |
+For i = 1 To 10 Step 2 : Print i : Next
+While x < 100 : x += 1 : Wend
+Repeat : x -= 1 : Until x = 0
+Repeat ... Forever           ' leave any loop with Exit
+
+Select key
+Case 1, 2
+    ...
+Default
+    ...
+End Select
+
+Function Add(a, b)           ' can be called before it is defined
+    Return a + b             ' variables inside are local unless Global
+End Function
+
+Dim grid[10, 10]             ' 0-based, bounds-checked
+grid[2, 3] = 1
+
+Type Enemy
+    Field x, y, hp
+End Type
+e = New Enemy : e.hp = 3
+For e = Each Enemy
+    If e.hp <= 0 Then Delete e
+Next
+```
+
+- Operators: `+ - * / Mod ^`, `= <> < <= > >=`, `And Or Not`, `+=`, `-=`. `+` joins strings.
+- Commands and keywords are case-insensitive. `Delta` is the seconds since the last frame.
+- `End` stops the program from anywhere.
+
+## Commands
+
+| Area | Commands |
+|------|----------|
+| Setup | `Game title`, `Graphics w, h`, `Graphics3D w, h` |
+| 2D drawing | `Cls`, `ClsColor r,g,b`, `Color r,g,b`, `Rect x,y,w,h[,fill]`, `Oval x,y,w,h[,fill]`, `Line x1,y1,x2,y2`, `Plot x,y`, `Text x,y,value`, `GraphicsWidth()`, `GraphicsHeight()` |
+| Images | `LoadImage(path)`, `DrawImage img,x,y`, `ImageWidth(img)`, `ImageHeight(img)` |
+| Sound | `LoadSound(path)`, `PlaySound snd` |
+| Input | `KeyDown(key)`, `KeyHit(key)`, `MouseX()`, `MouseY()`, `MouseDown([button])`, `MouseHit([button])` (1 left, 2 right, 3 middle) |
+| Time / output | `Delay ms`, `Millisecs()`, `Print value` (browser console) |
+| Math | `Abs`, `Sqr`, `Sin`, `Cos`, `Tan`, `ATan2` (degrees), `Floor`, `Ceil`, `Int`, `Float`, `Min`, `Max`, `Rnd([min,] max)`, `Rand([min,] max)`, `RectsOverlap(x1,y1,w1,h1, x2,y2,w2,h2)` |
+| Strings | `Str`, `Len`, `Left`, `Right`, `Mid(s, start[, n])`, `Upper`, `Lower`, `Chr`, `Asc`, `Instr`, `Replace`, `Trim` (positions start at 1) |
+| 3D | `CreateCamera()`, `CreateLight([LIGHT_DIRECTIONAL \| LIGHT_POINT])`, `CreateCube([size])`, `CreateSphere([size])`, `CreatePlane([size])`, `PositionEntity`, `MoveEntity`, `RotateEntity`, `TurnEntity`, `PointEntity`, `ScaleEntity` (all `e, x, y, z`), `EntityColor e,r,g,b`, `FreeEntity e`, `EntityX/Y/Z(e)`, `EntityDistance(a, b)`, `AmbientLight r,g,b` |
+
+`LoadImage`, `LoadSound` and `Delay` wait without freezing the game: frames keep rendering until they finish.
 
 Keys: `KEY_A`–`KEY_Z`, `KEY_0`–`KEY_9`, `KEY_ESCAPE`, `KEY_SPACE`, `KEY_ENTER`, `KEY_LEFT`, `KEY_RIGHT`, `KEY_UP`, `KEY_DOWN`.
 
 ## Project layout
 
 ```
-crates/cyberbasic/   compiler + CLI (Rust, no dependencies)
+crates/cyberbasic/   compiler + CLI (Rust, no dependencies); also builds to WASM
 runtime/             runtime.js and the index.html page template
-examples/            sample programs
-PLAN.md              product and technical plan
+playground/          in-browser editor using the WASM compiler
+examples/            sample games
+PLAN.md              product plan, roadmap and progress
 ```
 
 ## Development
@@ -91,7 +152,7 @@ PLAN.md              product and technical plan
 cargo test
 ```
 
-The tests cover parsing, code generation, error messages, and a check that every compiler command exists in the runtime.
+Tests cover parsing, code generation and error messages. If Node.js is installed, they also compile small programs, run them against the real runtime and check the output. A parity test makes sure every compiler command exists in the runtime.
 
 ## License
 

@@ -4,7 +4,7 @@
 <title>CyberBasic</title>
 <style>
   html, body { margin: 0; min-height: 100%; background: #0b0b10; color: #ddd; font: 14px ui-monospace, Consolas, monospace; }
-  body { display: grid; place-content: center; gap: 8px; min-height: 100vh; }
+  body { display: grid; place-content: safe center; gap: 8px; min-height: 100vh; } /* safe: never clip the left edge */
   canvas { display: block; outline: none; }
   .cb-msg { margin: 0; padding: 8px 12px; }
   .cb-msg.err { color: #ff7b7b; }
