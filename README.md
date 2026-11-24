@@ -58,6 +58,8 @@ Then open <http://localhost:8765/playground/>. **Ctrl+Enter** runs the code.
 | [examples/cube.cb](examples/cube.cb) | 3D camera, light, meshes, HUD text |
 | [examples/pong.cb](examples/pong.cb) | Two-player 2D game: functions, globals, constants, collision |
 | [examples/breakout.cb](examples/breakout.cb) | `Type`s, `For … Each`, `Delete`, arrays, mouse control |
+| [examples/drift.cb](examples/drift.cb) | Animated sprite sheet, rotation, screen wrap |
+| [examples/marble.cb](examples/marble.cb) | Havok physics, a glTF model, raycast ground check, follow camera |
 
 ## How it works
 
@@ -124,15 +126,16 @@ Next
 |------|----------|
 | Setup | `Game title`, `Graphics w, h`, `Graphics3D w, h` |
 | 2D drawing | `Cls`, `ClsColor r,g,b`, `Color r,g,b`, `Rect x,y,w,h[,fill]`, `Oval x,y,w,h[,fill]`, `Line x1,y1,x2,y2`, `Plot x,y`, `Text x,y,value`, `GraphicsWidth()`, `GraphicsHeight()` |
-| Images | `LoadImage(path)`, `DrawImage img,x,y`, `ImageWidth(img)`, `ImageHeight(img)` |
+| Images | `LoadImage(path)`, `LoadAnimImage(path, frameW, frameH, first, count)`, `DrawImage img,x,y[,frame]`, `DrawImageEx img,x,y,angle,scale[,frame]` (centered), `ImageWidth(img)`, `ImageHeight(img)`. Frame numbers wrap around. |
 | Sound | `LoadSound(path)`, `PlaySound snd` |
-| Input | `KeyDown(key)`, `KeyHit(key)`, `MouseX()`, `MouseY()`, `MouseDown([button])`, `MouseHit([button])` (1 left, 2 right, 3 middle) |
+| Input | `KeyDown(key)`, `KeyHit(key)`, `MouseX()`, `MouseY()`, `MouseDown([button])`, `MouseHit([button])` (1 left, 2 right, 3 middle), `JoyX()`, `JoyY()`, `JoyDown(button)` |
 | Time / output | `Delay ms`, `Millisecs()`, `Print value` (browser console) |
 | Math | `Abs`, `Sqr`, `Sin`, `Cos`, `Tan`, `ATan2` (degrees), `Floor`, `Ceil`, `Int`, `Float`, `Min`, `Max`, `Rnd([min,] max)`, `Rand([min,] max)`, `RectsOverlap(x1,y1,w1,h1, x2,y2,w2,h2)` |
 | Strings | `Str`, `Len`, `Left`, `Right`, `Mid(s, start[, n])`, `Upper`, `Lower`, `Chr`, `Asc`, `Instr`, `Replace`, `Trim` (positions start at 1) |
-| 3D | `CreateCamera()`, `CreateLight([LIGHT_DIRECTIONAL \| LIGHT_POINT])`, `CreateCube([size])`, `CreateSphere([size])`, `CreatePlane([size])`, `PositionEntity`, `MoveEntity`, `RotateEntity`, `TurnEntity`, `PointEntity`, `ScaleEntity` (all `e, x, y, z`), `EntityColor e,r,g,b`, `FreeEntity e`, `EntityX/Y/Z(e)`, `EntityDistance(a, b)`, `AmbientLight r,g,b` |
+| 3D | `CreateCamera()`, `CreateLight([LIGHT_DIRECTIONAL \| LIGHT_POINT])`, `CreateCube([size])`, `CreateSphere([size])`, `CreatePlane([size])`, `PositionEntity`, `MoveEntity`, `RotateEntity`, `TurnEntity`, `PointEntity`, `ScaleEntity` (all `e, x, y, z`), `EntityColor e,r,g,b`, `FreeEntity e`, `EntityX/Y/Z(e)`, `EntityDistance(a, b)`, `AmbientLight r,g,b`, `LoadMesh(path)` (.glb/.gltf), `LinePick(x,y,z, dx,dy,dz)` (mesh hit or 0), `EntityPickMode e, 0\|1` |
+| Physics | `EnablePhysics [gx, gy, gz]`, `EntityPhysics e, mass[, bounce]` (mass 0 = static; spheres get a sphere shape, others a box), `ApplyImpulse e,x,y,z`, `SetVelocity e,x,y,z`, `EntityCollided(a[, b])` (started touching in the last step) |
 
-`LoadImage`, `LoadSound` and `Delay` wait without freezing the game: frames keep rendering until they finish.
+`LoadImage`, `LoadAnimImage`, `LoadSound`, `LoadMesh`, `EnablePhysics` and `Delay` wait without freezing the game: frames keep rendering until they finish. Havok physics and the glTF loader are downloaded only when a game first uses them.
 
 Keys: `KEY_A`–`KEY_Z`, `KEY_0`–`KEY_9`, `KEY_ESCAPE`, `KEY_SPACE`, `KEY_ENTER`, `KEY_LEFT`, `KEY_RIGHT`, `KEY_UP`, `KEY_DOWN`.
 

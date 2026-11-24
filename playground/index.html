@@ -36,7 +36,7 @@
 <script type="module">
 // Served from the repo root (see README): the compiler is target/.../cyberbasic_core.wasm, built by
 // `cargo build --release -p cyberbasic --lib --target wasm32-unknown-unknown`.
-const EXAMPLES = ["cube", "pong", "breakout"];
+const EXAMPLES = ["cube", "pong", "breakout", "drift", "marble"];
 const NO_CACHE = { cache: "no-store" }; // always pick up local edits
 const $ = (id) => document.getElementById(id);
 const status = (s) => { $("status").textContent = s; };

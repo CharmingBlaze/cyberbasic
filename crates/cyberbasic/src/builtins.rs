@@ -20,8 +20,8 @@ const fn f(name: &'static str, min: usize, max: usize) -> Builtin {
     Builtin { name, returns: true, min, max, wait: false }
 }
 /// Waits across frames; `returns` says whether it gives back a value.
-const fn w(name: &'static str, returns: bool, n: usize) -> Builtin {
-    Builtin { name, returns, min: n, max: n, wait: true }
+const fn w(name: &'static str, returns: bool, min: usize, max: usize) -> Builtin {
+    Builtin { name, returns, min, max, wait: true }
 }
 
 #[rustfmt::skip]
@@ -32,14 +32,16 @@ pub const BUILTINS: &[Builtin] = &[
     s("Cls", 0, 0), s("ClsColor", 3, 3), s("Color", 3, 3),
     s("Rect", 4, 5), s("Oval", 4, 5), s("Line", 4, 4), s("Plot", 2, 2), s("Text", 3, 3),
     f("GraphicsWidth", 0, 0), f("GraphicsHeight", 0, 0),
-    w("LoadImage", true, 1), s("DrawImage", 3, 3), f("ImageWidth", 1, 1), f("ImageHeight", 1, 1),
+    w("LoadImage", true, 1, 1), w("LoadAnimImage", true, 5, 5), s("DrawImage", 3, 4), s("DrawImageEx", 5, 6),
+    f("ImageWidth", 1, 1), f("ImageHeight", 1, 1),
     // Sound
-    w("LoadSound", true, 1), s("PlaySound", 1, 1),
+    w("LoadSound", true, 1, 1), s("PlaySound", 1, 1),
     // Input
     f("KeyDown", 1, 1), f("KeyHit", 1, 1),
     f("MouseX", 0, 0), f("MouseY", 0, 0), f("MouseDown", 0, 1), f("MouseHit", 0, 1),
+    f("JoyX", 0, 0), f("JoyY", 0, 0), f("JoyDown", 1, 1),
     // Time and output
-    w("Delay", false, 1), f("Millisecs", 0, 0), s("Print", 1, 1),
+    w("Delay", false, 1, 1), f("Millisecs", 0, 0), s("Print", 1, 1),
     // Math
     f("Abs", 1, 1), f("Sqr", 1, 1), f("Sin", 1, 1), f("Cos", 1, 1), f("Tan", 1, 1), f("ATan2", 2, 2),
     f("Floor", 1, 1), f("Ceil", 1, 1), f("Int", 1, 1), f("Float", 1, 1), f("Min", 2, 2), f("Max", 2, 2),
@@ -54,7 +56,10 @@ pub const BUILTINS: &[Builtin] = &[
     s("PositionEntity", 4, 4), s("RotateEntity", 4, 4), s("MoveEntity", 4, 4), s("TurnEntity", 4, 4),
     s("PointEntity", 4, 4), s("ScaleEntity", 4, 4), s("EntityColor", 4, 4), s("FreeEntity", 1, 1),
     f("EntityX", 1, 1), f("EntityY", 1, 1), f("EntityZ", 1, 1), f("EntityDistance", 2, 2),
-    s("AmbientLight", 3, 3),
+    s("AmbientLight", 3, 3), w("LoadMesh", true, 1, 1), f("LinePick", 6, 6), s("EntityPickMode", 2, 2),
+    // Physics (Havok)
+    w("EnablePhysics", false, 0, 3), s("EntityPhysics", 2, 3), s("ApplyImpulse", 4, 4), s("SetVelocity", 4, 4),
+    f("EntityCollided", 1, 2),
 ];
 
 // KEY_A..KEY_Z and KEY_0..KEY_9 are accepted by pattern, see `constant`.

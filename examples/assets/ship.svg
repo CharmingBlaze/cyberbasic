@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="48" viewBox="0 0 192 48">
+  <!-- 4 frames of 48x48: ship with the engine flame off, short, long, medium. Ship points up. -->
+  <defs>
+    <g id="ship">
+      <path d="M24 4 L38 36 L24 30 L10 36 Z" fill="#39c6ff" stroke="#dff6ff" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M24 12 L29 26 L24 24 L19 26 Z" fill="#0b3a52"/>
+    </g>
+  </defs>
+  <g><use href="#ship"/></g>
+  <g transform="translate(48 0)"><use href="#ship"/><path d="M19 33 L24 40 L29 33 Z" fill="#ffb347"/></g>
+  <g transform="translate(96 0)"><use href="#ship"/><path d="M18 33 L24 47 L30 33 Z" fill="#ff7b3a"/><path d="M21 33 L24 41 L27 33 Z" fill="#fff1a8"/></g>
+  <g transform="translate(144 0)"><use href="#ship"/><path d="M19 33 L24 44 L29 33 Z" fill="#ff9447"/><path d="M22 33 L24 38 L26 33 Z" fill="#fff1a8"/></g>
+</svg>

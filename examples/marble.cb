@@ -1,0 +1,62 @@
+' Marble Run: roll the marble down the course to the trophy.
+' Arrow keys roll, Space jumps, R restarts, Escape quits.
+Game "Marble Run"
+Graphics3D 1280, 720
+ClsColor 20, 24, 40
+EnablePhysics ' loads Havok the first time; the game waits here without freezing
+
+camera = CreateCamera()
+light = CreateLight()
+
+Function Platform(x, y, z, w, d, tilt)
+    p = CreateCube()
+    ScaleEntity p, w, 0.5, d
+    RotateEntity p, tilt, 0, 0 ' positive tilt lowers the far (+z) end
+    PositionEntity p, x, y, z
+    EntityColor p, 70, 80, 130
+    EntityPhysics p, 0 ' mass 0: static
+    Return p
+End Function
+
+Platform 0, 0, 0, 6, 6, 0           ' start
+Platform 0, -1.55, 7.75, 4, 10, 18  ' ramp down
+Platform 0, -3.1, 15.5, 6, 6, 0     ' landing
+Platform 0, -3.1, 21.5, 1.5, 6, 0   ' narrow bridge
+Platform 0, -3.1, 27.5, 6, 6, 0     ' goal
+
+trophy = LoadMesh("assets/trophy.gltf")
+PositionEntity trophy, 0, -1.9, 27.5
+
+ball = CreateSphere(1)
+EntityColor ball, 235, 235, 245
+PositionEntity ball, 0, 1.5, 0
+EntityPhysics ball, 1, 0.3
+EntityPickMode ball, 0 ' so the ground check below doesn't hit the ball itself
+
+start = Millisecs() : won = 0
+While Not KeyHit(KEY_ESCAPE)
+    If won = 0
+        If KeyDown(KEY_LEFT) Then ApplyImpulse ball, -6 * Delta, 0, 0
+        If KeyDown(KEY_RIGHT) Then ApplyImpulse ball, 6 * Delta, 0, 0
+        If KeyDown(KEY_UP) Then ApplyImpulse ball, 0, 0, 6 * Delta
+        If KeyDown(KEY_DOWN) Then ApplyImpulse ball, 0, 0, -6 * Delta
+        onGround = LinePick(EntityX(ball), EntityY(ball), EntityZ(ball), 0, -0.7, 0) <> 0
+        If KeyHit(KEY_SPACE) And onGround Then ApplyImpulse ball, 0, 5, 0
+        If EntityDistance(ball, trophy) < 1.6 Then won = Millisecs() - start : SetVelocity ball, 0, 0, 0
+    EndIf
+    If EntityY(ball) < -20 Or KeyHit(KEY_R)
+        PositionEntity ball, 0, 1.5, 0
+        start = Millisecs() : won = 0
+    EndIf
+
+    TurnEntity trophy, 0, 90 * Delta, 0
+    PositionEntity camera, EntityX(ball), EntityY(ball) + 4, EntityZ(ball) - 8
+    PointEntity camera, EntityX(ball), EntityY(ball), EntityZ(ball)
+
+    If won
+        Text 20, 20, "You made it in " + won / 1000 + " seconds! Press R to play again."
+    Else
+        Text 20, 20, "Time: " + Int((Millisecs() - start) / 100) / 10
+    EndIf
+    Sync
+Wend

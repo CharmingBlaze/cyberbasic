@@ -1,0 +1,90 @@
+{
+ "asset": {
+  "version": "2.0",
+  "generator": "cyberbasic examples"
+ },
+ "scene": 0,
+ "scenes": [
+  {
+   "nodes": [
+    0
+   ]
+  }
+ ],
+ "nodes": [
+  {
+   "mesh": 0,
+   "name": "trophy"
+  }
+ ],
+ "meshes": [
+  {
+   "primitives": [
+    {
+     "attributes": {
+      "POSITION": 0,
+      "NORMAL": 1
+     },
+     "material": 0
+    }
+   ]
+  }
+ ],
+ "materials": [
+  {
+   "name": "gold",
+   "pbrMetallicRoughness": {
+    "baseColorFactor": [
+     1,
+     0.78,
+     0.2,
+     1
+    ],
+    "metallicFactor": 0.6,
+    "roughnessFactor": 0.35
+   }
+  }
+ ],
+ "buffers": [
+  {
+   "byteLength": 576,
+   "uri": "data:application/octet-stream;base64,AAAAAJqZmT8AAAAAAAAAAAAAAACamRk/mpkZPwAAAAAAAAAAAAAAAJqZGb8AAAAAmpkZPwAAAAAAAAAAAAAAAAAAAACamRk/AAAAAJqZmT8AAAAAmpkZvwAAAAAAAAAAAAAAAAAAAACamRk/AAAAAJqZGb8AAAAAAAAAAAAAAACamRk/mpkZvwAAAAAAAAAAAAAAAJqZmT8AAAAAAAAAAAAAAACamRm/mpkZvwAAAAAAAAAAAAAAAJqZGb8AAAAAmpkZvwAAAAAAAAAAAAAAAAAAAACamRm/AAAAAJqZmT8AAAAAmpkZPwAAAAAAAAAAAAAAAAAAAACamRm/AAAAAJqZGb8AAAAAAAAAAAAAAACamRm/mpkZPwAAAAAAAAAAq6oqP6uqqj6rqio/q6oqP6uqqj6rqio/q6oqP6uqqj6rqio/Os0TPzrNE786zRM/Os0TPzrNE786zRM/Os0TPzrNE786zRM/q6oqv6uqqj6rqio/q6oqv6uqqj6rqio/q6oqv6uqqj6rqio/Os0TvzrNE786zRM/Os0TvzrNE786zRM/Os0TvzrNE786zRM/q6oqv6uqqj6rqiq/q6oqv6uqqj6rqiq/q6oqv6uqqj6rqiq/Os0TvzrNE786zRO/Os0TvzrNE786zRO/Os0TvzrNE786zRO/q6oqP6uqqj6rqiq/q6oqP6uqqj6rqiq/q6oqP6uqqj6rqiq/Os0TPzrNE786zRO/Os0TPzrNE786zRO/Os0TPzrNE786zRO/"
+  }
+ ],
+ "bufferViews": [
+  {
+   "buffer": 0,
+   "byteOffset": 0,
+   "byteLength": 288
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 288,
+   "byteLength": 288
+  }
+ ],
+ "accessors": [
+  {
+   "bufferView": 0,
+   "componentType": 5126,
+   "count": 24,
+   "type": "VEC3",
+   "min": [
+    -0.6,
+    -0.6,
+    -0.6
+   ],
+   "max": [
+    0.6,
+    1.2,
+    0.6
+   ]
+  },
+  {
+   "bufferView": 1,
+   "componentType": 5126,
+   "count": 24,
+   "type": "VEC3"
+  }
+ ]
+}

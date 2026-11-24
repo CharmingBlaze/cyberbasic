@@ -84,6 +84,8 @@ globalThis.requestAnimationFrame = (f) => setImmediate(() => f(performance.now()
             ("cube", include_str!("../../../examples/cube.cb")),
             ("pong", include_str!("../../../examples/pong.cb")),
             ("breakout", include_str!("../../../examples/breakout.cb")),
+            ("drift", include_str!("../../../examples/drift.cb")),
+            ("marble", include_str!("../../../examples/marble.cb")),
         ] {
             compile(src).unwrap_or_else(|e| panic!("{name}.cb: {e:?}"));
         }

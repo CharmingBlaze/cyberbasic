@@ -34,6 +34,13 @@ const CB = (() => {
   const node = (name) => { need3d(); return new B.TransformNode(name, scene); };
   const mesh = (m) => { m.material = new B.StandardMaterial(m.name, scene); return m; };
   const shape = (fill, draw) => { need2d(); ctx.beginPath(); draw(); fill ? ctx.fill() : ctx.stroke(); };
+  // Frame numbers wrap around, so `frame = Millisecs() / 100` animates without bounds checks.
+  const blit = (img, x, y, frame) => {
+    if (!img.sheet) return ctx.drawImage(img, x, y);
+    const f = img.first + (((Math.trunc(frame) % img.count) + img.count) % img.count);
+    const { width: w, height: h } = img;
+    ctx.drawImage(img.sheet, (f % img.cols) * w, Math.floor(f / img.cols) * h, w, h, x, y, w, h);
+  };
   const say = (text, err) => {
     const p = document.createElement("pre");
     p.className = err ? "cb-msg err" : "cb-msg";
@@ -77,6 +84,38 @@ const CB = (() => {
     mode = three ? 3 : 2;
     if (!three) cb.Cls();
   }
+
+  // Waits for a promise without blocking: frames keep running until it settles.
+  function* settle(promise) {
+    let state = 0, value;
+    promise.then((v) => { state = 1; value = v; }, (e) => { state = 2; value = e; });
+    while (state === 0) yield;
+    if (state === 2) throw value instanceof Error ? value : new Error(String(value));
+    return value;
+  }
+
+  // Optional engine parts load only when a game first uses them, so plain games stay small.
+  const CDN = "https://cdn.babylonjs.com/";
+  const scripts = new Map();
+  function* script(url) {
+    if (!scripts.has(url)) {
+      scripts.set(url, new Promise((ok, fail) => {
+        const s = document.createElement("script");
+        s.onload = ok;
+        s.onerror = () => fail(new Error(`could not load ${url} (games need internet for now)`));
+        s.src = url;
+        document.head.append(s);
+      }));
+    }
+    yield* settle(scripts.get(url));
+  }
+
+  const body = (e) => {
+    if (!e.physics) throw new Error("that entity has no physics body (use EntityPhysics first)");
+    return e.physics.body;
+  };
+  const collisions = new Set(); // "a:b" and "a" keys for contacts that started during the last physics step
+  const pad = () => (navigator.getGamepads ? navigator.getGamepads()[0] : null);
 
   // Waits for a media element to load, keeping frames running meanwhile.
   function* load(el, okEvent, path, what) {
@@ -123,7 +162,26 @@ const CB = (() => {
     GraphicsWidth() { need2d(); return ctx.canvas.width; },
     GraphicsHeight() { need2d(); return ctx.canvas.height; },
     *LoadImage(path) { return yield* load(new Image(), "load", path, "image"); },
-    DrawImage(img, x, y) { need2d(); ctx.drawImage(img, x, y); },
+    // A sprite sheet: frames of fw x fh, read left to right, top to bottom, starting at `first`.
+    *LoadAnimImage(path, fw, fh, first, count) {
+      const sheet = yield* load(new Image(), "load", path, "image");
+      const cols = Math.floor(sheet.width / fw);
+      if (cols < 1 || first + count > cols * Math.floor(sheet.height / fh)) {
+        throw new Error(`"${path}" is too small for ${count} frames of ${fw}x${fh} starting at ${first}`);
+      }
+      return { sheet, width: fw, height: fh, first, count, cols };
+    },
+    DrawImage(img, x, y, frame = 0) { need2d(); blit(img, x, y, frame); },
+    // Draws centered on x,y, rotated `angle` degrees clockwise and scaled.
+    DrawImageEx(img, x, y, angle, scale, frame = 0) {
+      need2d();
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle * D2R);
+      ctx.scale(scale, scale);
+      blit(img, -img.width / 2, -img.height / 2, frame);
+      ctx.restore();
+    },
     ImageWidth(img) { return img.width; },
     ImageHeight(img) { return img.height; },
 
@@ -142,6 +200,9 @@ const CB = (() => {
     MouseY() { return mouse.y; },
     MouseDown(b = 1) { return buttons.has(BUTTON[b]); },
     MouseHit(b = 1) { return buttonHits.has(BUTTON[b]); },
+    JoyX() { return pad()?.axes[0] ?? 0; },
+    JoyY() { return pad()?.axes[1] ?? 0; },
+    JoyDown(b) { return !!pad()?.buttons[b - 1]?.pressed; }, // 1-based, standard gamepad layout
 
     // --- Time and output
     *Delay(ms) { const until = performance.now() + ms; while (performance.now() < until) yield; },
@@ -199,15 +260,27 @@ const CB = (() => {
     CreateCube(size = 1) { need3d(); return mesh(B.MeshBuilder.CreateBox("cube", { size }, scene)); },
     CreateSphere(size = 1) { need3d(); return mesh(B.MeshBuilder.CreateSphere("sphere", { diameter: size }, scene)); },
     CreatePlane(size = 100) { need3d(); return mesh(B.MeshBuilder.CreateGround("plane", { width: size, height: size }, scene)); },
-    PositionEntity(e, x, y, z) { e.position.set(x, y, z); },
+    PositionEntity(e, x, y, z) {
+      e.position.set(x, y, z);
+      if (e.physics) {
+        // Teleport a physics body: let the transform win for one step and stop its motion.
+        const b = e.physics.body;
+        b.disablePreStep = false;
+        b.setLinearVelocity(V(0, 0, 0));
+        b.setAngularVelocity(V(0, 0, 0));
+        scene.onAfterPhysicsObservable.addOnce(() => { b.disablePreStep = true; });
+      }
+    },
     RotateEntity(e, pitch, yaw, roll) { e.rotation.set(pitch * D2R, yaw * D2R, roll * D2R); },
     MoveEntity(e, x, y, z) { e.locallyTranslate(V(x, y, z)); },
     TurnEntity(e, pitch, yaw, roll) { e.addRotation(pitch * D2R, yaw * D2R, roll * D2R); },
     PointEntity(e, x, y, z) { e.lookAt(V(x, y, z)); },
     ScaleEntity(e, x, y, z) { e.scaling.set(x, y, z); },
     EntityColor(e, r, g, b) {
-      if (!e.material) throw new Error("EntityColor needs a mesh (cube, sphere, plane)");
-      e.material.diffuseColor = new B.Color3(r / 255, g / 255, b / 255);
+      const c = new B.Color3(r / 255, g / 255, b / 255);
+      const mats = [e, ...(e.getChildMeshes ? e.getChildMeshes() : [])].map((m) => m.material).filter(Boolean);
+      if (!mats.length) throw new Error("EntityColor needs a mesh (cube, sphere, plane or a loaded model)");
+      for (const m of mats) "albedoColor" in m ? (m.albedoColor = c) : (m.diffuseColor = c); // glTF models use PBR
     },
     FreeEntity(e) { e.dispose(); },
     EntityX(e) { return e.position.x; },
@@ -219,6 +292,57 @@ const CB = (() => {
       ambient.diffuse = ambient.groundColor = new B.Color3(r / 255, g / 255, b / 255);
       ambient.intensity = 1;
     },
+    // Loads a .glb/.gltf model. Returns a node you can move like any entity.
+    *LoadMesh(path) {
+      need3d();
+      yield* script(CDN + "loaders/babylonjs.loaders.min.js");
+      const p = String(path), cut = p.lastIndexOf("/") + 1;
+      const result = yield* settle(B.SceneLoader.ImportMeshAsync("", p.slice(0, cut), p.slice(cut), scene));
+      const n = node("model");
+      result.meshes[0].parent = n; // the glTF root carries the handedness flip; keep it underneath
+      return n;
+    },
+    // Casts a ray from x,y,z along dx,dy,dz (its length is the reach). Returns the mesh hit, or 0.
+    LinePick(x, y, z, dx, dy, dz) {
+      need3d();
+      const dir = V(dx, dy, dz), len = dir.length();
+      if (!len) return 0;
+      return scene.pickWithRay(new B.Ray(V(x, y, z), dir.scale(1 / len), len)).pickedMesh || 0;
+    },
+
+    // 0 = LinePick ignores the entity (e.g. the player casting a ray from inside itself), 1 = pickable.
+    EntityPickMode(e, mode) {
+      for (const m of [e, ...(e.getChildMeshes ? e.getChildMeshes() : [])]) m.isPickable = !!mode;
+    },
+
+    // --- Physics (Havok, loaded on first use)
+    *EnablePhysics(gx = 0, gy = -9.81, gz = 0) {
+      need3d();
+      if (scene.isPhysicsEnabled()) return;
+      yield* script(CDN + "havok/HavokPhysics_umd.js");
+      const havok = yield* settle(HavokPhysics());
+      scene.enablePhysics(V(gx, gy, gz), new B.HavokPlugin(true, havok));
+    },
+    // mass 0 = static (floors, walls). Spheres get a sphere shape, everything else a box.
+    EntityPhysics(e, mass, bounce = 0.2) {
+      need3d();
+      if (!scene.isPhysicsEnabled()) throw new Error("call EnablePhysics first");
+      if (!(e instanceof B.Mesh)) throw new Error("EntityPhysics works on cubes, spheres and planes for now");
+      e.physics?.dispose();
+      const shape = e.name === "sphere" ? B.PhysicsShapeType.SPHERE : B.PhysicsShapeType.BOX;
+      e.physics = new B.PhysicsAggregate(e, shape, { mass, restitution: bounce, friction: 0.6 }, scene);
+      const b = e.physics.body;
+      b.setCollisionCallbackEnabled(true);
+      b.getCollisionObservable().add((ev) => {
+        if (ev.type === "COLLISION_FINISHED") return;
+        const a = ev.collider.transformNode.uniqueId, o = ev.collidedAgainst.transformNode.uniqueId;
+        collisions.add(`${a}`).add(`${o}`).add(`${a}:${o}`).add(`${o}:${a}`);
+      });
+    },
+    ApplyImpulse(e, x, y, z) { body(e).applyImpulse(V(x, y, z), e.getAbsolutePosition()); },
+    SetVelocity(e, x, y, z) { body(e).setLinearVelocity(V(x, y, z)); },
+    // True if `a` started touching `b` (or anything, without `b`) in the last physics step.
+    EntityCollided(a, b) { return collisions.has(b === undefined ? `${a.uniqueId}` : `${a.uniqueId}:${b.uniqueId}`); },
 
     // --- Helpers used by generated code (not BASIC commands)
     dim(n, ...rest) {
@@ -275,7 +399,10 @@ const CB = (() => {
         }
         keyHits.clear();
         buttonHits.clear();
-        if (scene?.activeCamera) { engine.beginFrame(); scene.render(); engine.endFrame(); }
+        if (scene?.activeCamera) {
+          collisions.clear(); // the physics step inside render() refills it for the next frame's logic
+          engine.beginFrame(); scene.render(); engine.endFrame();
+        }
         if (done) return say("Program ended.");
         requestAnimationFrame(frame);
       };
