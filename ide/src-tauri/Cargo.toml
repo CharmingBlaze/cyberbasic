@@ -1,0 +1,11 @@
+[package]
+name = "cyberbasic-ide"
+version = "0.1.0"
+edition = "2021"
+description = "CyberBasic IDE desktop app (Tauri shell around the web IDE in ide/)"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }

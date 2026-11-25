@@ -3,6 +3,7 @@ import { DockviewReact, themeAbyssSpaced, type IDockviewHeaderActionsProps } fro
 import * as A from "./actions";
 import { manifest } from "./compiler";
 import { Icon, type IconName } from "./icons";
+import { appWindow, guardClose, isDesktop } from "./desktop";
 import { COMPONENTS, Tab } from "./panels";
 import { TEMPLATES, fsSupported } from "./project";
 import { get, set, useStore, type WorkspaceId } from "./store";
@@ -104,6 +105,7 @@ export default function App() {
 
   useShortcuts();
   useWindowTitle();
+  useEffect(guardClose, []);
 
   if (error) return <div className="boot error"><Icon name="alert" size={28} /><p>{error}</p></div>;
   if (!ready) return <div className="boot"><img src="/icon.svg" width={48} alt="" /><p>Starting CyberBasic…</p></div>;
@@ -166,7 +168,7 @@ function GroupActions({ group, containerApi, location }: IDockviewHeaderActionsP
           <Icon name="dock" size={14} />
         </button>
       )}
-      {where !== "popout" && (
+      {where !== "popout" && !isDesktop && (
         <button title="Pop out into its own window" onClick={() => containerApi.addPopoutGroup(group, { popoutUrl: "/popout.html" })}>
           <Icon name="popout" size={14} />
         </button>
@@ -186,10 +188,12 @@ function TitleBar() {
   const project = useStore((s) => s.project.name);
   const dirty = useStore((s) => s.dirty);
   return (
-    <header className="titlebar">
-      <img className="logo" src="/icon.svg" alt="CyberBasic" width={20} height={20} />
+    // data-tauri-drag-region: in the desktop app, dragging empty title bar space moves the window
+    // and double-clicking it maximizes. Buttons inside keep working as buttons.
+    <header className={"titlebar" + (isDesktop ? " desktop" : "")} data-tauri-drag-region>
+      <img className="logo" src="/icon.svg" alt="CyberBasic" width={20} height={20} data-tauri-drag-region />
       <MenuBar />
-      <div className="title-center">
+      <div className="title-center" data-tauri-drag-region>
         <span className="project-title">
           {project}
           {dirty && <span className="dirty" title="Unsaved changes" />}
@@ -202,7 +206,35 @@ function TitleBar() {
         <span>Search commands</span>
         <kbd>Ctrl Shift P</kbd>
       </button>
+      {isDesktop && <WindowControls />}
     </header>
+  );
+}
+
+/** Minimize / maximize / close for the frameless desktop window, styled like Windows' own. */
+function WindowControls() {
+  const [max, setMax] = useState(false);
+  useEffect(() => {
+    const w = appWindow();
+    const update = () => w.isMaximized().then(setMax);
+    update();
+    const off = w.onResized(update);
+    return () => void off.then((f) => f());
+  }, []);
+  return (
+    <div className="window-controls">
+      <button title="Minimize" onClick={() => appWindow().minimize()}>
+        <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M0 5h10" stroke="currentColor" /></svg>
+      </button>
+      <button title={max ? "Restore" : "Maximize"} onClick={() => appWindow().toggleMaximize()}>
+        <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true" fill="none" stroke="currentColor">
+          {max ? <path d="M2.5 .5h7v7M.5 2.5h7v7h-7z" /> : <path d="M.5 .5h9v9h-9z" />}
+        </svg>
+      </button>
+      <button className="close" title="Close" onClick={() => appWindow().close()}>
+        <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M0 0l10 10M10 0L0 10" stroke="currentColor" /></svg>
+      </button>
+    </div>
   );
 }
 

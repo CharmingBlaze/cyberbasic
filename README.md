@@ -52,6 +52,18 @@ npm run dev
 
 Open <http://localhost:5173> in Chrome or Edge (opening and saving folders needs their File System Access API). In Chrome you can **Install** it from the address bar to get its own window.
 
+#### Desktop app
+
+The same IDE in its own frameless window (Tauri, using Edge WebView2 on Windows):
+
+```sh
+cd ide
+npm run desktop       # builds ide/dist and the app; the installer lands in target/release/bundle/nsis/
+npm run desktop:dev   # runs it against the dev server, with reload
+```
+
+The app itself is `target/release/cyberbasic-ide.exe`. Linux and macOS builds use the same commands but haven't been tested yet.
+
 - **Run** with F5. The game runs in the Game panel, scaled to fit.
 - **Debug**: click the gutter or press F9 for a breakpoint; F6 pauses, F10 steps (into functions too), F5 continues. The Debugger panel shows every variable in scope.
 - **Workspaces** (Game, Code, Debug, Learn) rearrange the panels; your changes to each are remembered. *Workspace → Reset* restores the default.

@@ -541,7 +541,7 @@ const PRESETS: Record<WorkspaceId, () => void> = {
     add("editor");
     add("game", { ref: "editor", dir: "right", size: Math.round(window.innerWidth * 0.42) });
     add("project", { ref: "editor", dir: "left", size: 240 });
-    add("outline", { ref: "project", dir: "within" });
+    add("outline", { ref: "project", dir: "below", size: Math.round(window.innerHeight * 0.4) });
     add("console", { ref: "editor", dir: "below", size: 190 });
     add("problems", { ref: "console", dir: "within" });
     add("debugger", { ref: "console", dir: "within" });

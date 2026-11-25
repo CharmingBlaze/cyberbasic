@@ -61,7 +61,8 @@ code, .mono { font-family: var(--mono); }
 }
 .titlebar > *:not(.title-center) { -webkit-app-region: no-drag; app-region: no-drag; }
 .logo { margin-right: 2px; }
-.title-center { position: absolute; left: 50%; transform: translateX(-50%); pointer-events: none; color: var(--text-2); font-size: 12px; }
+/* In the flow between menus and run controls: shrinks and truncates instead of overlapping them. */
+.title-center { flex: 1; min-width: 0; text-align: center; pointer-events: none; color: var(--text-2); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .project-title { display: inline-flex; align-items: center; gap: 6px; }
 .dirty { width: 7px; height: 7px; border-radius: 50%; background: var(--warn); display: inline-block; box-shadow: 0 0 0 3px #ffb54722; }
 
@@ -81,7 +82,7 @@ code, .mono { font-family: var(--mono); }
 .menu-keys { color: var(--muted); font-size: 11.5px; }
 @keyframes pop { from { opacity: 0; transform: translateY(-4px) scale(.98); } }
 
-.run-controls { display: flex; align-items: center; gap: 2px; margin-left: auto; padding: 3px; background: var(--bg1); border: 1px solid var(--line); border-radius: 9px; }
+.run-controls { display: flex; align-items: center; gap: 2px; padding: 3px; background: var(--bg1); border: 1px solid var(--line); border-radius: 9px; }
 .run-btn {
   display: flex; align-items: center; gap: 6px; height: 26px; padding: 0 12px 0 10px; border-radius: 6px; font-weight: 600;
   color: #06121a; background: linear-gradient(135deg, var(--accent), #6fd0ff); box-shadow: 0 1px 10px #4cc2ff40;
@@ -103,7 +104,6 @@ code, .mono { font-family: var(--mono); }
 .palette-btn { display: flex; align-items: center; gap: 8px; height: 30px; padding: 0 8px 0 10px; color: var(--muted); background: var(--bg1); border: 1px solid var(--line); border-radius: 9px; }
 .palette-btn:hover { color: var(--text-2); border-color: #30354a; }
 @media (max-width: 1280px) { .palette-btn span, .palette-btn kbd { display: none; } }
-@media (max-width: 1050px) { .title-center { display: none; } }
 
 /* ---------------------------------------------------------------- dock */
 
@@ -367,3 +367,11 @@ button.status-item:hover { background: var(--bg3); }
 .file-badge { font-size: 10.5px; font-weight: 700; color: var(--accent); background: var(--accent-soft); border-radius: 8px; padding: 0 6px; }
 .file-del { opacity: 0; }
 .row.file:hover .file-del { opacity: 1; }
+
+/* ---------------------------------------------------------------- desktop app (Tauri, frameless window) */
+
+.titlebar.desktop { padding-right: 0; }
+.window-controls { display: flex; align-self: stretch; margin-left: 4px; }
+.window-controls button { display: grid; place-items: center; width: 46px; color: var(--text-2); }
+.window-controls button:hover { background: #ffffff14; color: var(--text); }
+.window-controls button.close:hover { background: #e81123; color: #fff; }

@@ -289,7 +289,7 @@ export function DebuggerPanel() {
             {bps.length === 0 && <div className="empty">None yet.</div>}
             {bps.map((b) => {
               const model = A.getModel(b.file);
-              const text = b.line <= model.getLineCount() ? model.getLineContent(b.line).trim().slice(0, 48) : "";
+              const text = model && b.line <= model.getLineCount() ? model.getLineContent(b.line).trim().slice(0, 48) : "";
               return (
                 <div key={`${b.file}:${b.line}`} className={"row" + (paused && run.file === b.file && run.line === b.line ? " current" : "")}>
                   <span className="bp-dot" />

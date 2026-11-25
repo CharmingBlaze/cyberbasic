@@ -3,3 +3,4 @@ build/
 .claude/
 node_modules/
 ide/dist/
+ide/src-tauri/gen/

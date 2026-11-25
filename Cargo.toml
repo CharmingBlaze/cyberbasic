@@ -1,3 +1,5 @@
 [workspace]
-members = ["crates/*"]
+members = ["crates/*", "ide/src-tauri"]
+# `cargo test` / `cargo build` skip the desktop app; build it with `npm run desktop` in ide/.
+default-members = ["crates/*"]
 resolver = "2"
