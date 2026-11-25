@@ -19,6 +19,8 @@ export interface GNode {
 export interface GLink { from: string; out: string; to: string; in: string }
 export interface Graph {
   version: 1;
+  /** "behaviour": attached to objects with an Add node; its variables belong to each object. */
+  kind?: "script" | "behaviour";
   variables: { name: string; value: string }[];
   includes: string[];
   nodes: GNode[];
@@ -53,6 +55,11 @@ export function nodeCatalog(commands: Command[]): Map<string, NodeDef> {
   const defs: NodeDef[] = [
     { type: "event.start", title: "On Start", category: "Events", color: "event", doc: "Runs once when the game starts.", inputs: [], outputs: [exec("then")] },
     { type: "event.frame", title: "On Frame", category: "Events", color: "event", doc: "Runs every frame (about 60 times a second).", inputs: [], outputs: [exec("then")] },
+    { type: "behaviour.attach", title: "On Attach", category: "Behaviour", color: "event", doc: "Runs once when this behaviour is added to an object. Self is that object.", inputs: [], outputs: [exec("then"), data("self")] },
+    { type: "behaviour.update", title: "On Update", category: "Behaviour", color: "event", doc: "Runs every frame for each object that has this behaviour. Self is that object.", inputs: [], outputs: [exec("then"), data("self")] },
+    { type: "behaviour.self", title: "Self", category: "Behaviour", color: "var", doc: "The object this behaviour is attached to.", inputs: [], outputs: [data("self")] },
+    { type: "behaviour.remove", title: "Remove Behaviour", category: "Behaviour", color: "event", doc: "Takes this behaviour off its object (the object stays).", inputs: [exec()], outputs: [] },
+    { type: "behaviour.add", title: "Add Behaviour", category: "Behaviours", color: "func", doc: "Attaches a behaviour to an object.", inputs: [exec(), data("object")], outputs: [exec("then")], fields: [{ key: "name", label: "", options: [] }] },
     { type: "flow.branch", title: "Branch", category: "Flow", color: "flow", doc: "Goes down True or False depending on the condition.", inputs: [exec(), data("condition")], outputs: [exec("true", "True"), exec("false", "False")] },
     { type: "flow.sequence", title: "Sequence", category: "Flow", color: "flow", doc: "Runs Then 1, then Then 2, then Then 3.", inputs: [exec()], outputs: [exec("then1", "Then 1"), exec("then2", "Then 2"), exec("then3", "Then 3")] },
     { type: "flow.for", title: "For Loop", category: "Flow", color: "flow", doc: "Runs Body for each number from First to Last, then Done.", inputs: [exec(), data("first"), data("last")], outputs: [exec("body", "Body"), data("index"), exec("then", "Done")] },
@@ -104,7 +111,7 @@ export const emptyGraph = (main: boolean): Graph => ({
 export function parseGraph(text: string): Graph {
   try {
     const g = JSON.parse(text) as Partial<Graph>;
-    return { version: 1, variables: g.variables ?? [], includes: g.includes ?? [], nodes: g.nodes ?? [], links: g.links ?? [] };
+    return { version: 1, kind: g.kind === "behaviour" ? "behaviour" : "script", variables: g.variables ?? [], includes: g.includes ?? [], nodes: g.nodes ?? [], links: g.links ?? [] };
   } catch {
     return emptyGraph(false);
   }
@@ -126,9 +133,14 @@ export const graphFunctions = (g: Graph): FuncSig[] =>
  * A node's definition with its pins for this particular node: Function nodes get a pin per input,
  * Call nodes get the pins of the function they call. Other nodes come straight from the catalog.
  */
-export function nodeDef(n: GNode, defs: Map<string, NodeDef>, funcs: FuncSig[]): NodeDef | undefined {
+export function nodeDef(n: GNode, defs: Map<string, NodeDef>, funcs: FuncSig[], behaviours: string[] = []): NodeDef | undefined {
   const base = defs.get(n.type);
   if (!base) return undefined;
+  if (n.type === "behaviour.add") {
+    const name = (n.values.name ?? "").trim();
+    const options = [...new Set([...(name && !behaviours.includes(name) ? [name] : []), ...behaviours])];
+    return { ...base, title: name ? `Add ${name}` : "Add Behaviour", fields: [{ key: "name", label: "", options: options.length ? options : [""] }] };
+  }
   if (n.type === "func.define") {
     const name = (n.values.name ?? "").trim();
     return { ...base, title: name ? `Function ${name}` : "Function", outputs: [exec("then"), ...paramsOf(n.values.inputs).map((p) => data(p))] };
@@ -146,6 +158,14 @@ export function nodeDef(n: GNode, defs: Map<string, NodeDef>, funcs: FuncSig[]):
   return base;
 }
 
+/** `spinner.graph` -> `Spinner`: a behaviour's name. */
+export const behaviourName = (file: string) => {
+  const base = file.replace(/\.graph$/i, "").replace(/\W/g, "_");
+  return base.charAt(0).toUpperCase() + base.slice(1);
+};
+/** The function that attaches a behaviour to an object. */
+export const attachFunction = (name: string) => `Behaviour_${name}_Attach`;
+
 /** Problems the graph itself has (not compile errors): loops in wires, unknown nodes. */
 export interface GraphProblem { node: string; message: string }
 
@@ -154,7 +174,7 @@ export interface GraphProblem { node: string; message: string }
  * wires; data inputs become expressions (an unconnected input uses its typed-in value). Events run
  * top to bottom by their position. As the main file the graph also gets the game loop.
  */
-export function generateGraph(file: string, graph: Graph, isMain: boolean, defs: Map<string, NodeDef>, funcs: FuncSig[] = graphFunctions(graph)) {
+export function generateGraph(file: string, graph: Graph, isMain: boolean, defs: Map<string, NodeDef>, funcs: FuncSig[] = graphFunctions(graph), behaviours: string[] = []) {
   const lines: string[] = [];
   const map = new Map<number, string>(); // generated line -> node id
   const problems: GraphProblem[] = [];
@@ -167,13 +187,23 @@ export function generateGraph(file: string, graph: Graph, isMain: boolean, defs:
   const linkInto = (node: string, pin: string) => graph.links.find((l) => l.to === node && l.in === pin);
   const linksOut = (node: string, pin: string) => graph.links.filter((l) => l.from === node && l.out === pin);
   const loopVar = (n: GNode) => `${prefix.toLowerCase()}_i${n.id.slice(1)}`;
-  const defOf = (n: GNode) => nodeDef(n, defs, funcs);
+  const defOf = (n: GNode) => nodeDef(n, defs, funcs, behaviours);
+  // In a behaviour's events, its variables are fields of the object's behaviour record `me`.
+  const behaviour = graph.kind === "behaviour";
+  const fieldVars = new Set(graph.variables.map((v) => v.name.trim().toLowerCase()).filter(Boolean));
+  let inEvent = false;
+  const varRef = (name: string) => (behaviour && inEvent && fieldVars.has(name.toLowerCase()) ? `me.${name}` : name);
   const fname = (n: GNode) => (n.values.name ?? "").trim();
+  /** Typed-in text, with the behaviour's variables (outside strings) turned into `me.` fields. */
+  const typed = (text: string) =>
+    behaviour && inEvent
+      ? text.split(/("[^"]*"?)/).map((part, i) => (i % 2 ? part : part.replace(/(?<![.\w])[A-Za-z_]\w*/g, varRef))).join("")
+      : text;
 
   /** The expression for a data input: the wired node's value, or the typed-in value. */
   const input = (n: GNode, pin: string, seen: Set<string>): string => {
     const l = linkInto(n.id, pin);
-    if (!l) return (n.values[pin] ?? "").trim();
+    if (!l) return typed((n.values[pin] ?? "").trim());
     return value(l.from, l.out, seen);
   };
   const value = (id: string, out: string, seen: Set<string>): string => {
@@ -187,7 +217,11 @@ export function generateGraph(file: string, graph: Graph, isMain: boolean, defs:
     const v = (pin: string) => input(n, pin, next);
     switch (n.type) {
       case "var.get":
-        return (n.values.name ?? "").trim();
+        return varRef((n.values.name ?? "").trim());
+      case "behaviour.attach":
+      case "behaviour.update":
+      case "behaviour.self":
+        return "me.entity";
       case "value.expr":
         return `(${(n.values.text ?? "").trim()})`;
       case "math.op":
@@ -240,6 +274,12 @@ export function generateGraph(file: string, graph: Graph, isMain: boolean, defs:
       case "func.call":
         emit(`${pad}${[fname(n), args(n, def!, seen)].filter(Boolean).join(" ")}`, id);
         break;
+      case "behaviour.add":
+        emit(`${pad}${attachFunction(fname(n))} ${input(n, "object", seen)}`, id);
+        break;
+      case "behaviour.remove":
+        emit(`${pad}Delete me`, id);
+        return;
       case "func.return": {
         const v = input(n, "value", seen);
         emit(`${pad}Return${v ? " " + v : ""}`, id);
@@ -263,10 +303,10 @@ export function generateGraph(file: string, graph: Graph, isMain: boolean, defs:
         emit(`${pad}Next`, id);
         break;
       case "var.set":
-        emit(`${pad}${(n.values.name ?? "").trim()} ${n.values.op || "="} ${input(n, "value", seen)}`, id);
+        emit(`${pad}${varRef((n.values.name ?? "").trim())} ${n.values.op || "="} ${input(n, "value", seen)}`, id);
         break;
       case "code.line":
-        emit(`${pad}${(n.values.text ?? "").trim()}`, id);
+        emit(`${pad}${typed((n.values.text ?? "").trim())}`, id);
         break;
       default:
         if (!def?.type.startsWith("cmd.") || def.outputs.some((o) => o.kind === "data")) {
@@ -280,7 +320,7 @@ export function generateGraph(file: string, graph: Graph, isMain: boolean, defs:
 
   emit(`' Generated from ${file} by the visual editor. Edit the graph, not this code.`);
   for (const inc of graph.includes) emit(`Include "${inc}"`);
-  for (const v of graph.variables) if (v.name.trim()) emit(`Global ${v.name.trim()} = ${v.value.trim() || "0"}`);
+  if (!behaviour) for (const v of graph.variables) if (v.name.trim()) emit(`Global ${v.name.trim()} = ${v.value.trim() || "0"}`);
   for (const n of graph.nodes) if (!defs.has(n.type)) problems.push({ node: n.id, message: `Unknown node "${n.type}".` });
 
   // Functions first: CyberBasic wants them at the top level.
@@ -291,11 +331,49 @@ export function generateGraph(file: string, graph: Graph, isMain: boolean, defs:
     emit("End Function", f.id);
   }
 
+  const roots = (type: string) => graph.nodes.filter((n) => n.type === type).sort((a, b) => a.y - b.y || a.x - b.x);
+
+  if (behaviour) {
+    // Each object with this behaviour gets a record (a Type) holding the object and its own variables.
+    const b = behaviourName(file), T = `Behaviour_${b}`;
+    const vars = graph.variables.filter((v) => v.name.trim());
+    emit("");
+    emit(`Type ${T}`);
+    emit(`    Field ${["entity", ...vars.map((v) => v.name.trim())].join(", ")}`);
+    emit("End Type");
+    emit("");
+    emit(`Function ${attachFunction(b)}(entity)`);
+    emit(`    me = New ${T}`);
+    emit("    me.entity = entity");
+    for (const v of vars) emit(`    me.${v.name.trim()} = ${v.value.trim() || "0"}`);
+    emit(`    ${T}_OnAttach me`);
+    emit("    Return me");
+    emit("End Function");
+    inEvent = true;
+    for (const [event, fn] of [["behaviour.attach", "OnAttach"], ["behaviour.update", "OnUpdate"]] as const) {
+      emit("");
+      emit(`Function ${T}_${fn}(me)`);
+      for (const r of roots(event)) {
+        emit(`    ' ${defs.get(event)?.title}`, r.id);
+        chain(r.id, "then", "    ", new Set());
+      }
+      emit("End Function");
+    }
+    inEvent = false;
+    emit("");
+    emit(`Function ${T}_UpdateAll()`);
+    emit(`    For b = Each ${T}`);
+    emit(`        ${T}_OnUpdate b`);
+    emit("    Next");
+    emit("End Function");
+    emit(`EveryFrame ${T}_UpdateAll`);
+    return { code: lines.join("\n") + "\n", map, problems };
+  }
+
   for (const [event, fn] of [["event.start", "Start"], ["event.frame", "Frame"]] as const) {
     emit("");
     emit(`Function ${prefix}_${fn}()`);
-    const roots = graph.nodes.filter((n) => n.type === event).sort((a, b) => a.y - b.y || a.x - b.x);
-    for (const r of roots) {
+    for (const r of roots(event)) {
       emit(`    ' ${defs.get(event)?.title}`, r.id);
       chain(r.id, "then", "    ", new Set());
     }

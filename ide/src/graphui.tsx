@@ -2,7 +2,7 @@
 // type values into unconnected inputs. Every change is saved into the file (with undo).
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import * as A from "./actions";
-import { canLink, graphPrefix, nextNodeId, nodeDef, parseGraph, type FuncSig, type GNode, type Graph, type NodeColor, type NodeDef, type PinDef } from "./graph";
+import { attachFunction, behaviourName, canLink, graphPrefix, nextNodeId, nodeDef, parseGraph, type FuncSig, type GNode, type Graph, type NodeColor, type NodeDef, type PinDef } from "./graph";
 import { Icon } from "./icons";
 import { monaco } from "./language";
 import { get, set, useStore } from "./store";
@@ -61,7 +61,9 @@ export function GraphPanel({ file }: { file: string }) {
   // Function and Call nodes get their pins from the functions in the whole project.
   const files = useStore((s) => s.project.files);
   const funcs = useMemo(() => A.projectFunctions(files), [files]);
-  const defOf = (n: GNode) => nodeDef(n, defs, funcs);
+  const behaviours = useMemo(() => A.projectBehaviours(files), [files]);
+  const defOf = (n: GNode) => nodeDef(n, defs, funcs, behaviours);
+  const isBehaviour = graph.kind === "behaviour";
   const [mode, setMode] = useState<"graph" | "code">("graph");
   const [view, setViewState] = useState<View>(views.get(file) ?? { x: 40, y: 40, zoom: 1 });
   const setView = (v: View) => {
@@ -323,9 +325,19 @@ export function GraphPanel({ file }: { file: string }) {
         <Icon name="graph" size={15} className="vis-icon" />
         <strong>{file}</strong>
         <span className="muted small ellipsis">
-          {isMain ? "Node graph · runs the game (Esc quits)" : `Node graph · call ${graphPrefix(file)}_Frame each frame from your code`}
+          {isBehaviour
+            ? `Behaviour · add it to objects with an “Add ${behaviourName(file)}” node, or ${attachFunction(behaviourName(file))} in code`
+            : isMain
+              ? "Node graph · runs the game (Esc quits)"
+              : `Node graph · call ${graphPrefix(file)}_Frame each frame from your code`}
         </span>
         <span className="grow" />
+        {!isMain && (
+          <div className="seg small" title="A script runs on its own; a behaviour is added to objects and runs for each of them">
+            <button className={!isBehaviour ? "on" : ""} onClick={() => save({ ...latest(), kind: "script" })}>Script</button>
+            <button className={isBehaviour ? "on" : ""} onClick={() => save({ ...latest(), kind: "behaviour" })}>Behaviour</button>
+          </div>
+        )}
         {mode === "graph" && (
           <>
             <button className="tool" onClick={() => { const r = host.current!.getBoundingClientRect(); setPalette({ x: 16, y: 12, at: toCanvas(r.left + r.width / 2 - W / 2, r.top + 80) }); }}>
@@ -344,7 +356,11 @@ export function GraphPanel({ file }: { file: string }) {
       ) : (
         <>
           <div className="graph-vars">
-            <Variables variables={graph.variables} change={(variables) => save({ ...latest(), variables })} />
+            <Variables
+              label={isBehaviour ? "Each object's variables" : "Variables"}
+              variables={graph.variables}
+              change={(variables) => save({ ...latest(), variables })}
+            />
           </div>
           <div
             ref={host}
@@ -453,9 +469,11 @@ export function GraphPanel({ file }: { file: string }) {
               })}
             </div>
             {graph.nodes.length === 0 && (
-              <div className="graph-empty">Right-click, press Space, or use <b>+ Node</b> to add your first node. Start with <b>On Frame</b>.</div>
+              <div className="graph-empty">
+                Right-click, press Space, or use <b>+ Node</b> to add your first node. Start with <b>{isBehaviour ? "On Update" : "On Frame"}</b>.
+              </div>
             )}
-            {palette && <NodePalette items={paletteItems(defs, funcs)} defOf={defOf} pending={palette.pending} style={{ left: palette.x, top: palette.y }} pick={(d) => addNode(d, palette.at, palette.pending)} close={() => setPalette(undefined)} />}
+            {palette && <NodePalette items={paletteItems(defs, funcs, behaviours, isBehaviour)} defOf={defOf} pending={palette.pending} style={{ left: palette.x, top: palette.y }} pick={(d) => addNode(d, palette.at, palette.pending)} close={() => setPalette(undefined)} />}
             <div className="graph-hint muted small">Drag background to pan · wheel to zoom · drag from a pin to wire · Space adds a node · Del removes · F fits</div>
           </div>
         </>
@@ -467,8 +485,15 @@ export function GraphPanel({ file }: { file: string }) {
 /** One entry in the node palette: a node type, optionally with values filled in (a call to a known function). */
 interface PaletteItem { key: string; type: string; title: string; category: string; color: NodeColor; doc: string; values?: Record<string, string> }
 
-function paletteItems(defs: Map<string, NodeDef>, funcs: FuncSig[]): PaletteItem[] {
-  const items: PaletteItem[] = [...defs.values()].map((d) => ({ key: d.type, type: d.type, title: d.title, category: d.category, color: d.color, doc: d.doc }));
+function paletteItems(defs: Map<string, NodeDef>, funcs: FuncSig[], behaviours: string[], isBehaviour: boolean): PaletteItem[] {
+  // Behaviours have On Attach / On Update (with Self); scripts have On Start / On Frame.
+  const hidden = isBehaviour ? ["event.start", "event.frame"] : ["behaviour.attach", "behaviour.update", "behaviour.self", "behaviour.remove"];
+  const items: PaletteItem[] = [...defs.values()]
+    .filter((d) => !hidden.includes(d.type) && d.type !== "behaviour.add")
+    .map((d) => ({ key: d.type, type: d.type, title: d.title, category: d.category, color: d.color, doc: d.doc }));
+  for (const b of behaviours) {
+    items.push({ key: `add:${b}`, type: "behaviour.add", title: `Add ${b}`, category: "Behaviours", color: "func", doc: `Attaches the ${b} behaviour to an object.`, values: { name: b } });
+  }
   // Each function in the project, ready to call with its pins in place.
   for (const f of funcs) {
     const sig = `${f.name}(${f.params.join(", ")})`;
@@ -483,7 +508,7 @@ function NodePalette({ items, defOf, pending, style, pick, close }: { items: Pal
   const [q, setQ] = useState("");
   const [i, setI] = useState(0);
   const words = q.toLowerCase().split(/\s+/).filter(Boolean);
-  const order = ["Events", "Flow", "Variables", "Math & Logic", "Functions", "Code"];
+  const order = ["Events", "Behaviour", "Flow", "Variables", "Math & Logic", "Functions", "Behaviours", "Code"];
   const pinsOf = (d: PaletteItem) => defOf({ id: "", type: d.type, x: 0, y: 0, values: d.values ?? {} });
   const shown = items
     .filter((d) => {
@@ -556,12 +581,12 @@ function Field({ value, placeholder, onChange, wide }: { value: string; placehol
 
 type Vars = { name: string; value: string }[];
 
-/** The graph's variables: each becomes a Global. */
-function Variables({ variables, change }: { variables: Vars; change: (v: Vars) => void }) {
+/** The graph's variables: Globals in a script, each object's own values in a behaviour. */
+function Variables({ variables, change, label }: { variables: Vars; change: (v: Vars) => void; label: string }) {
   const setVar = (i: number, v: { name: string; value: string }) => change(variables.map((x, j) => (j === i ? v : x)));
   return (
     <section className="vis-vars">
-      <span className="col-label">Variables</span>
+      <span className="col-label">{label}</span>
       {variables.map((v, i) => (
         <span key={i} className="var-chip">
           <Field value={v.name} placeholder="name" onChange={(name) => setVar(i, { ...v, name })} />

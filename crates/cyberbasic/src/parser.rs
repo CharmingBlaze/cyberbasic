@@ -43,6 +43,8 @@ pub enum Kind {
     Seq(Vec<Stmt>),
     Exit,
     Sync,
+    /// `EveryFrame Name`: run a user function at every Sync (behaviours use it).
+    EveryFrame(String),
     End,
     Nop,
 }
@@ -307,6 +309,19 @@ impl Parser {
             }
             "include" => return self.err_at(&start, "Include goes on its own line with a quoted file name, like: Include \"enemies.cb\""),
             "sync" => Kind::Sync,
+            "everyframe" => {
+                let t = self.tok().clone();
+                let (name, orig) = self.var_name_any()?;
+                match self.fn_arity.get(&name) {
+                    None => return self.err_at(&t, format!("`{orig}` is not one of your functions")),
+                    Some(&n) if n > 0 => return self.err_at(&t, format!("`{orig}` takes inputs; EveryFrame needs a function with none")),
+                    _ => {}
+                }
+                if self.in_func {
+                    return self.err_at(&start, "EveryFrame must be used at the top level, not inside a function");
+                }
+                Kind::EveryFrame(name)
+            }
             "end" => Kind::End,
             _ => self.ident_stmt(name, &start)?,
         };

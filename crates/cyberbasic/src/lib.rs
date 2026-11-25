@@ -328,6 +328,16 @@ globalThis.requestAnimationFrame = (f) => setImmediate(() => f(performance.now()
     }
 
     #[test]
+    fn everyframe_runs_a_function_at_every_sync() {
+        check(
+            "Global n\nFunction Tick()\n  n += 1\nEnd Function\nEveryFrame Tick\nFor i = 1 To 3 : Sync : Next\nPrint n",
+            "3\nProgram ended.",
+        );
+        assert!(err("EveryFrame Nope").msg.contains("not one of your functions"));
+        assert!(err("Function F(a)\nEnd Function\nEveryFrame F").msg.contains("takes inputs"));
+    }
+
+    #[test]
     fn delay_waits_across_frames() {
         check("t = Millisecs()\nDelay 30\nPrint Millisecs() - t >= 30", "true\nProgram ended.");
     }

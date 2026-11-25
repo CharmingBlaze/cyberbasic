@@ -5,6 +5,7 @@ import type { Project } from "./store";
 
 const exampleSources = import.meta.glob("../../examples/*.cb", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
 const shooterFiles = import.meta.glob("../../examples/shooter/*.cb", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
+const behaviourFiles = import.meta.glob("../../examples/behaviours/*.graph", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
 const bouncerFiles = import.meta.glob("../../examples/bouncer/*.graph", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
 const byName = (files: Record<string, string>) => Object.fromEntries(Object.entries(files).map(([path, src]) => [path.split("/").pop()!, src]));
 const exampleAssetUrls = import.meta.glob("../../examples/assets/*", { query: "?url", import: "default", eager: true }) as Record<string, string>;
@@ -89,6 +90,13 @@ export const TEMPLATES: Template[] = [
     kind: "2D",
     description: "Made with the visual node editor: wires instead of code.",
     files: byName(bouncerFiles),
+  },
+  {
+    id: "behaviours",
+    name: "Behaviours (3D)",
+    kind: "3D",
+    description: "Two behaviour graphs, Spinner and Bobber, added to seven cubes.",
+    files: byName(behaviourFiles),
   },
   { id: "drift", name: "Drift", kind: "2D", description: "Animated sprite sheet with rotation and thrust.", files: one(example("drift")) },
   { id: "cube", name: "Spinning Cube", kind: "3D", description: "The smallest 3D program: a cube with a HUD.", files: one(example("cube")) },

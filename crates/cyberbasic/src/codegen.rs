@@ -126,7 +126,9 @@ impl Gen<'_> {
                 let args = self.list(args);
                 writeln!(self.out, "yield* f_{name}({args});").unwrap();
             }
-            Kind::Sync => self.out.push_str("yield;\n"),
+            // CB.sync ends the frame, then runs the EveryFrame functions before the program continues.
+            Kind::Sync => self.out.push_str("yield* CB.sync();\n"),
+            Kind::EveryFrame(name) => writeln!(self.out, "CB.hooks.push(f_{name});").unwrap(),
             Kind::End => self.out.push_str("throw CB.END;\n"),
             Kind::Exit => self.out.push_str("break;\n"),
             Kind::Return(e) => {
@@ -286,7 +288,7 @@ fn collect_stmt(s: &Stmt, vars: &mut BTreeSet<String>) {
         }
         Kind::Delete(e) | Kind::Return(Some(e)) => collect_expr(e, vars),
         Kind::Seq(b) => body(b, vars),
-        Kind::Return(None) | Kind::Exit | Kind::Sync | Kind::End | Kind::Nop => {}
+        Kind::Return(None) | Kind::Exit | Kind::Sync | Kind::End | Kind::Nop | Kind::EveryFrame(_) => {}
     }
 }
 

@@ -1,0 +1,99 @@
+{
+  "version": 1,
+  "kind": "behaviour",
+  "variables": [
+    {
+      "name": "speed",
+      "value": "90"
+    }
+  ],
+  "includes": [],
+  "nodes": [
+    {
+      "id": "s1",
+      "type": "behaviour.attach",
+      "x": 40,
+      "y": 40,
+      "values": {}
+    },
+    {
+      "id": "s2",
+      "type": "var.set",
+      "x": 280,
+      "y": 40,
+      "values": {
+        "name": "speed",
+        "op": "=",
+        "value": "Rnd(60, 240)"
+      }
+    },
+    {
+      "id": "s3",
+      "type": "behaviour.update",
+      "x": 40,
+      "y": 260,
+      "values": {}
+    },
+    {
+      "id": "s4",
+      "type": "cmd.TurnEntity",
+      "x": 520,
+      "y": 260,
+      "values": {
+        "pitch": "0",
+        "roll": "0"
+      }
+    },
+    {
+      "id": "s5",
+      "type": "math.op",
+      "x": 280,
+      "y": 440,
+      "values": {
+        "op": "*",
+        "b": "Delta"
+      }
+    },
+    {
+      "id": "s6",
+      "type": "var.get",
+      "x": 40,
+      "y": 480,
+      "values": {
+        "name": "speed"
+      }
+    }
+  ],
+  "links": [
+    {
+      "from": "s1",
+      "out": "then",
+      "to": "s2",
+      "in": "in"
+    },
+    {
+      "from": "s3",
+      "out": "then",
+      "to": "s4",
+      "in": "in"
+    },
+    {
+      "from": "s3",
+      "out": "self",
+      "to": "s4",
+      "in": "entity"
+    },
+    {
+      "from": "s6",
+      "out": "value",
+      "to": "s5",
+      "in": "a"
+    },
+    {
+      "from": "s5",
+      "out": "result",
+      "to": "s4",
+      "in": "yaw"
+    }
+  ]
+}

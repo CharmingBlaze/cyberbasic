@@ -129,3 +129,24 @@ test("branches, sequences and for loops nest; loops in wires are reported, not h
   const v = generateGraph("main.graph", { ...selfData, nodes: [...selfData.nodes, at("n4", "flow.branch")], links: [...selfData.links, { from: "n1", out: "then", to: "n4", in: "in" }, { from: "n3", out: "result", to: "n4", in: "condition" }] }, true, defs);
   assert.equal(v.problems[0]?.node, "n3");
 });
+
+test("behaviour graphs: each object gets its own variables, and the Behaviours example compiles", () => {
+  const read = (f: string) => readFileSync(new URL(`../../examples/behaviours/${f}`, import.meta.url), "utf8");
+  const names = ["Spinner", "Bobber"];
+  const files: Record<string, string> = {};
+  for (const [f, main] of [["main.graph", true], ["spinner.graph", false], ["bobber.graph", false]] as const) {
+    const { code, problems } = generateGraph(f, parseGraph(read(f)), main, defs, undefined, names);
+    assert.deepEqual(problems, [], f);
+    files[f] = code;
+  }
+  const spin = files["spinner.graph"];
+  assert.match(spin, /Type Behaviour_Spinner\n {4}Field entity, speed\nEnd Type/);
+  assert.match(spin, /Function Behaviour_Spinner_Attach\(entity\)\n {4}me = New Behaviour_Spinner\n {4}me.entity = entity\n {4}me.speed = 90\n {4}Behaviour_Spinner_OnAttach me/);
+  assert.match(spin, /me.speed = Rnd\(60, 240\)/);
+  assert.match(spin, /TurnEntity me.entity, 0, \(me.speed \* Delta\), 0/);
+  assert.match(spin, /EveryFrame Behaviour_Spinner_UpdateAll/);
+  assert.match(files["bobber.graph"], /PositionEntity me.entity, EntityX\(me.entity\), Sin\(me.t \+ me.phase\) \* 0.6, 0/); // typed-in names too
+  assert.match(files["main.graph"], /Behaviour_Spinner_Attach c\n\s+Behaviour_Bobber_Attach c/);
+  const r = compile(files);
+  assert.ok(r.ok, r.ok ? "" : `${r.line}: ${r.message}\n${Object.values(files).join("\n----\n")}`);
+});

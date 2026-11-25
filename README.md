@@ -69,6 +69,7 @@ The app itself is `target/release/cyberbasic-ide.exe`. Linux and macOS builds us
 - **Workspaces** (Game, Code, Debug, Learn) rearrange the panels; your changes to each are remembered. *Workspace → Reset* restores the default.
 - **Popup panels**: every panel group has buttons to float it, pop it out into its own window, or maximize it.
 - **Node graphs** (visual scripting): *File → New File…* and name it `something.graph`, or start from the **Bouncer** template. Right-click or press Space to add nodes, drag from a pin to wire them (white wires set the order, blue wires carry values), and type values into unconnected inputs. Every CyberBasic command is a node. A **Function** node defines your own function (its inputs become pins, a **Return** node gives back a value); **Call** nodes run it, from any graph, and code can call it too (graphs can likewise call functions written in code). Breakpoints work on nodes, errors show on the node, and *Code* shows the CyberBasic the graph becomes.
+- **Behaviour graphs**: switch a graph from *Script* to *Behaviour* and it becomes something you add to objects (start from the **Behaviours (3D)** template). It has **On Attach** and **On Update** events with a **Self** pin, its variables belong to each object separately, and every other graph gets an **Add &lt;Name&gt;** node for it. In code, `Behaviour_Spinner_Attach cube` does the same.
 - **Ctrl+Shift+P** opens the command palette: every action, every template, and docs for every command.
 - **File → Export Web Game** downloads one `.html` file with your game and its assets inside.
 
@@ -94,6 +95,7 @@ Then open <http://localhost:8765/playground/>. **Ctrl+Enter** runs the code.
 | [examples/drift.cb](examples/drift.cb) | Animated sprite sheet, rotation, screen wrap |
 | [examples/marble.cb](examples/marble.cb) | Havok physics, a glTF model, raycast ground check, follow camera |
 | [examples/shooter/](examples/shooter/main.cb) | A game split across files with `Include` (`cargo run --release -- run examples/shooter/main.cb`) |
+| [examples/behaviours/](examples/behaviours/main.graph) | Node graphs only: two behaviour graphs added to seven cubes (open it in the IDE) |
 
 ## How it works
 
@@ -135,6 +137,7 @@ Default
 End Select
 
 Include "enemies.cb"         ' splices in another file (once), path relative to the project folder
+EveryFrame MoveEnemies       ' runs a function (with no inputs) at every Sync
 
 Function Add(a, b)           ' can be called before it is defined
     Return a + b             ' variables inside are local unless Global

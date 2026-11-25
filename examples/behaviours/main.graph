@@ -1,0 +1,293 @@
+{
+  "version": 1,
+  "kind": "script",
+  "variables": [
+    {
+      "name": "cam",
+      "value": "0"
+    },
+    {
+      "name": "light",
+      "value": "0"
+    },
+    {
+      "name": "c",
+      "value": "0"
+    }
+  ],
+  "includes": [
+    "spinner.graph",
+    "bobber.graph"
+  ],
+  "nodes": [
+    {
+      "id": "n1",
+      "type": "event.start",
+      "x": 40,
+      "y": 40,
+      "values": {}
+    },
+    {
+      "id": "n2",
+      "type": "cmd.Graphics3D",
+      "x": 260,
+      "y": 40,
+      "values": {
+        "width": "1280",
+        "height": "720"
+      }
+    },
+    {
+      "id": "n3",
+      "type": "var.set",
+      "x": 500,
+      "y": 40,
+      "values": {
+        "name": "cam",
+        "op": "="
+      }
+    },
+    {
+      "id": "n4",
+      "type": "cmd.CreateCamera",
+      "x": 500,
+      "y": 200,
+      "values": {}
+    },
+    {
+      "id": "n5",
+      "type": "cmd.PositionEntity",
+      "x": 740,
+      "y": 40,
+      "values": {
+        "entity": "cam",
+        "x": "0",
+        "y": "3",
+        "z": "-12"
+      }
+    },
+    {
+      "id": "n6",
+      "type": "cmd.PointEntity",
+      "x": 980,
+      "y": 40,
+      "values": {
+        "entity": "cam",
+        "x": "0",
+        "y": "0",
+        "z": "0"
+      }
+    },
+    {
+      "id": "n7",
+      "type": "var.set",
+      "x": 1220,
+      "y": 40,
+      "values": {
+        "name": "light",
+        "op": "=",
+        "value": "CreateLight()"
+      }
+    },
+    {
+      "id": "n8",
+      "type": "flow.for",
+      "x": 1460,
+      "y": 40,
+      "values": {
+        "first": "1",
+        "last": "7"
+      }
+    },
+    {
+      "id": "n9",
+      "type": "var.set",
+      "x": 1700,
+      "y": 40,
+      "values": {
+        "name": "c",
+        "op": "=",
+        "value": "CreateCube()"
+      }
+    },
+    {
+      "id": "n10",
+      "type": "cmd.PositionEntity",
+      "x": 1940,
+      "y": 40,
+      "values": {
+        "entity": "c",
+        "y": "0",
+        "z": "0"
+      }
+    },
+    {
+      "id": "n11",
+      "type": "math.op",
+      "x": 1700,
+      "y": 240,
+      "values": {
+        "op": "-",
+        "b": "4"
+      }
+    },
+    {
+      "id": "n12",
+      "type": "math.op",
+      "x": 1700,
+      "y": 380,
+      "values": {
+        "op": "*",
+        "b": "1.8"
+      }
+    },
+    {
+      "id": "n13",
+      "type": "cmd.EntityColor",
+      "x": 2180,
+      "y": 40,
+      "values": {
+        "entity": "c",
+        "r": "76",
+        "g": "194",
+        "b": "255"
+      }
+    },
+    {
+      "id": "n14",
+      "type": "behaviour.add",
+      "x": 2420,
+      "y": 40,
+      "values": {
+        "name": "Spinner",
+        "object": "c"
+      }
+    },
+    {
+      "id": "n15",
+      "type": "behaviour.add",
+      "x": 2660,
+      "y": 40,
+      "values": {
+        "name": "Bobber",
+        "object": "c"
+      }
+    },
+    {
+      "id": "n16",
+      "type": "event.frame",
+      "x": 40,
+      "y": 360,
+      "values": {}
+    },
+    {
+      "id": "n17",
+      "type": "cmd.Text",
+      "x": 260,
+      "y": 360,
+      "values": {
+        "x": "10",
+        "y": "10",
+        "value": "\"7 cubes, each with a Spinner and a Bobber behaviour\""
+      }
+    }
+  ],
+  "links": [
+    {
+      "from": "n1",
+      "out": "then",
+      "to": "n2",
+      "in": "in"
+    },
+    {
+      "from": "n2",
+      "out": "then",
+      "to": "n3",
+      "in": "in"
+    },
+    {
+      "from": "n4",
+      "out": "result",
+      "to": "n3",
+      "in": "value"
+    },
+    {
+      "from": "n3",
+      "out": "then",
+      "to": "n5",
+      "in": "in"
+    },
+    {
+      "from": "n5",
+      "out": "then",
+      "to": "n6",
+      "in": "in"
+    },
+    {
+      "from": "n6",
+      "out": "then",
+      "to": "n7",
+      "in": "in"
+    },
+    {
+      "from": "n7",
+      "out": "then",
+      "to": "n8",
+      "in": "in"
+    },
+    {
+      "from": "n8",
+      "out": "body",
+      "to": "n9",
+      "in": "in"
+    },
+    {
+      "from": "n9",
+      "out": "then",
+      "to": "n10",
+      "in": "in"
+    },
+    {
+      "from": "n10",
+      "out": "then",
+      "to": "n13",
+      "in": "in"
+    },
+    {
+      "from": "n13",
+      "out": "then",
+      "to": "n14",
+      "in": "in"
+    },
+    {
+      "from": "n14",
+      "out": "then",
+      "to": "n15",
+      "in": "in"
+    },
+    {
+      "from": "n8",
+      "out": "index",
+      "to": "n11",
+      "in": "a"
+    },
+    {
+      "from": "n11",
+      "out": "result",
+      "to": "n12",
+      "in": "a"
+    },
+    {
+      "from": "n12",
+      "out": "result",
+      "to": "n10",
+      "in": "x"
+    },
+    {
+      "from": "n16",
+      "out": "then",
+      "to": "n17",
+      "in": "in"
+    }
+  ]
+}

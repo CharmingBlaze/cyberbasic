@@ -1,0 +1,108 @@
+{
+  "version": 1,
+  "kind": "behaviour",
+  "variables": [
+    {
+      "name": "t",
+      "value": "0"
+    },
+    {
+      "name": "phase",
+      "value": "0"
+    }
+  ],
+  "includes": [],
+  "nodes": [
+    {
+      "id": "b1",
+      "type": "behaviour.attach",
+      "x": 40,
+      "y": 40,
+      "values": {}
+    },
+    {
+      "id": "b2",
+      "type": "var.set",
+      "x": 280,
+      "y": 40,
+      "values": {
+        "name": "phase",
+        "op": "=",
+        "value": "Rnd(0, 360)"
+      }
+    },
+    {
+      "id": "b3",
+      "type": "behaviour.update",
+      "x": 40,
+      "y": 260,
+      "values": {}
+    },
+    {
+      "id": "b4",
+      "type": "var.set",
+      "x": 280,
+      "y": 260,
+      "values": {
+        "name": "t",
+        "op": "+=",
+        "value": "Delta * 180"
+      }
+    },
+    {
+      "id": "b5",
+      "type": "cmd.PositionEntity",
+      "x": 520,
+      "y": 260,
+      "values": {
+        "y": "Sin(t + phase) * 0.6",
+        "z": "0"
+      }
+    },
+    {
+      "id": "b6",
+      "type": "cmd.EntityX",
+      "x": 280,
+      "y": 460,
+      "values": {}
+    }
+  ],
+  "links": [
+    {
+      "from": "b1",
+      "out": "then",
+      "to": "b2",
+      "in": "in"
+    },
+    {
+      "from": "b3",
+      "out": "then",
+      "to": "b4",
+      "in": "in"
+    },
+    {
+      "from": "b4",
+      "out": "then",
+      "to": "b5",
+      "in": "in"
+    },
+    {
+      "from": "b3",
+      "out": "self",
+      "to": "b5",
+      "in": "entity"
+    },
+    {
+      "from": "b3",
+      "out": "self",
+      "to": "b6",
+      "in": "entity"
+    },
+    {
+      "from": "b6",
+      "out": "result",
+      "to": "b5",
+      "in": "x"
+    }
+  ]
+}

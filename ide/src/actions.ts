@@ -2,7 +2,7 @@
 // palette, toolbar buttons and keyboard shortcuts all call these.
 import type { DockviewApi } from "dockview-react";
 import { compile, loadCompiler, manifest } from "./compiler";
-import { emptyGraph, generateGraph, graphFunctions, graphText, nodeCatalog, nodeLine, parseGraph, type FuncSig, type Graph, type NodeDef } from "./graph";
+import { behaviourName, emptyGraph, generateGraph, graphFunctions, graphText, nodeCatalog, nodeLine, parseGraph, type FuncSig, type Graph, type NodeDef } from "./graph";
 import { monaco, registerLanguage } from "./language";
 import { EXAMPLE_ASSETS, TEMPLATES, exportGame, fromTemplate, fsSupported, gamePage, openFolder, readFolder, saveProject, writeFile, type Template } from "./project";
 import { addRecent, removeRecent, type Recent } from "./recent";
@@ -77,6 +77,10 @@ export function projectFunctions(files = get().project.files): FuncSig[] {
   );
 }
 
+/** Names of the behaviour graphs in the project ("Spinner" for spinner.graph). */
+export const projectBehaviours = (files = get().project.files) =>
+  Object.entries(files).filter(([f, t]) => isGraph(f) && parseGraph(t).kind === "behaviour").map(([f]) => behaviourName(f));
+
 /** The project as the compiler sees it: graphs turned into CyberBasic. */
 function sources() {
   const { files, fileName } = get().project;
@@ -84,7 +88,7 @@ function sources() {
   graphProblems = [];
   for (const [file, text] of Object.entries(files)) {
     if (isGraph(file)) {
-      const g = generateGraph(file, parseGraph(text), file === fileName, nodeDefs(), projectFunctions());
+      const g = generateGraph(file, parseGraph(text), file === fileName, nodeDefs(), projectFunctions(), projectBehaviours());
       graphMaps.set(file, g.map);
       graphProblems.push(...g.problems.map((p) => ({ file, ...p })));
       out[file] = g.code;

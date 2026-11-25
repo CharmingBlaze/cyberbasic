@@ -432,6 +432,13 @@ const CB = (() => {
       if (i >= 0) list.splice(i, 1);
       Object.defineProperty(o, "$dead", { value: true });
     },
+    // Functions registered with EveryFrame. Sync ends the frame, then runs them in order; they run
+    // inside the program's own generator, so breakpoints and Delay work in them too.
+    hooks: [],
+    *sync() {
+      yield;
+      for (const h of cb.hooks) yield* h();
+    },
     trap: false,
     // Debug builds call this before each statement while `trap` is set (see codegen).
     *pause(line, fn, vars) {
