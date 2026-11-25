@@ -519,3 +519,9 @@ button.status-item:hover { background: var(--bg3); }
 .num input { width: 100%; min-width: 0; }
 .tool.danger:hover { color: var(--err); border-color: #ff6b6b66; }
 .node-error.static { position: static; }
+.brushes { display: flex; flex-wrap: wrap; gap: 4px; }
+.brushes .tool { height: 22px; padding: 0 8px; font-size: 12px; }
+.tool.on { background: var(--accent-soft); border-color: #4cc2ff88; color: var(--text); }
+.swatch { width: 18px; height: 18px; border-radius: 4px; border: 1px solid #ffffff2a; }
+.k-terrain { background: #8fbf5a; border-radius: 2px 2px 5px 5px; }
+.insp-row input[type="range"] { flex: 1; min-width: 60px; }

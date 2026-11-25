@@ -129,6 +129,8 @@ pub const BUILTINS: &[Builtin] = &[
     f(D3, "EntityZ", 1, 1, "entity", "Z position."),
     f(D3, "EntityDistance", 2, 2, "a, b", "Distance between two entities."),
     f(D3, "EntityExists", 1, 1, "entity", "True if entity is an entity that hasn't been freed."),
+    f(D3, "CreateTerrain", 0, 4, "[size, divisions, heights, colors]", "A terrain: a size x size grid (default 40, 64 squares a side). The level editor sculpts and paints them."),
+    f(D3, "TerrainHeight", 3, 3, "terrain, x, z", "Height of a terrain's surface at world x, z."),
     s(D3, "NameEntity", 2, 2, "entity, name", "Names an entity so FindEntity can find it. Scenes name their objects."),
     f(D3, "FindEntity", 1, 1, "name", "The entity with this name (from a scene or NameEntity), or 0. Not case-sensitive."),
     f(D3, "EntityName", 1, 1, "entity", "The entity's name, or an empty string."),

@@ -4,7 +4,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as A from "./actions";
 import { Icon } from "./icons";
-import { KINDS, isMesh, loadFunction, newObject, parseScene, sceneText, type Scene, type SceneKind, type SceneObject, type Vec3 } from "./scene";
+import { KINDS, dab, decodeColors, decodeHeights, encodeColors, encodeHeights, isMesh, loadFunction, newObject, parseScene, sceneText, type Brush, type Scene, type SceneKind, type SceneObject, type Vec3 } from "./scene";
 import { get, set, useStore } from "./store";
 
 // shortcut: Babylon is untyped here (loaded from the CDN like the games, not bundled); type it if the editor grows.
@@ -30,6 +30,25 @@ function script(url: string) {
 const D2R = Math.PI / 180;
 const round = (n: number, step = 1e-3) => Math.round(n / step) * step;
 type Mode = "move" | "rotate" | "scale";
+const BRUSHES: { tool: Brush; label: string; tip: string }[] = [
+  { tool: "raise", label: "Raise", tip: "Pull the ground up" },
+  { tool: "lower", label: "Lower", tip: "Push the ground down" },
+  { tool: "smooth", label: "Smooth", tip: "Soften bumps and edges" },
+  { tool: "flatten", label: "Flatten", tip: "Level to the height where the stroke started" },
+  { tool: "paint", label: "Paint", tip: "Paint the ground's color" },
+];
+/** Squares per side of a terrain's grid, as the runtime clamps it. */
+const gridOf = (o: SceneObject) => Math.max(1, Math.min(256, Math.trunc(o.divisions ?? 64)));
+export interface Tools {
+  brush: Brush | null;
+  setBrush: (b: Brush | null) => void;
+  radius: number;
+  setRadius: (n: number) => void;
+  strength: number;
+  setStrength: (n: number) => void;
+  paint: Vec3;
+  setPaint: (c: Vec3) => void;
+}
 
 export function ScenePanel({ file }: { file: string }) {
   const text = useStore((s) => s.project.files[file] ?? "");
@@ -43,6 +62,13 @@ export function ScenePanel({ file }: { file: string }) {
   const [mode, setMode] = useState<Mode>("move");
   const [snap, setSnap] = useState(true);
   const [error, setError] = useState<string>();
+  const [brush, setBrush] = useState<Brush | null>(null);
+  const [radius, setRadius] = useState(4);
+  const [strength, setStrength] = useState(0.5);
+  const [paint, setPaint] = useState<Vec3>([150, 120, 85]);
+  const brushRef = useRef({ tool: "raise" as Brush, radius, strength, color: paint });
+  brushRef.current = { tool: brush ?? "raise", radius, strength, color: paint };
+  const tools: Tools = { brush, setBrush, radius, setRadius, strength, setStrength, paint, setPaint };
   const canvas = useRef<HTMLCanvasElement>(null);
   const view = useRef<{ B: Any; engine: Any; scene: Any; camera: Any; gizmos: Any; nodes: Map<string, { node: Any; key: string }> }>(null);
   const [ready, setReady] = useState(false);
@@ -54,6 +80,7 @@ export function ScenePanel({ file }: { file: string }) {
     save({ ...s, objects: s.objects.map((o) => (o.id === id ? { ...o, ...patch } : o)) });
   };
   const sel = scene.objects.find((o) => o.id === selected);
+  const sculpting = !!brush && sel?.kind === "terrain";
   const errors = new Map<string, string>();
   for (const d of diagnostics) if (d.file === file) {
     const id = d.node ?? A.graphMaps.get(file)?.get(d.line);
@@ -123,7 +150,7 @@ export function ScenePanel({ file }: { file: string }) {
     const seen = new Set<string>();
     for (const o of scene.objects) {
       seen.add(o.id);
-      const key = `${o.kind}:${o.model ?? ""}`;
+      const key = o.kind === "terrain" ? `terrain:${o.size}:${gridOf(o)}:${o.heights}:${o.colors}` : `${o.kind}:${o.model ?? ""}`;
       let entry = nodes.get(o.id);
       if (entry && entry.key !== key) {
         entry.node.dispose();
@@ -160,7 +187,7 @@ export function ScenePanel({ file }: { file: string }) {
     gizmos.positionGizmoEnabled = mode === "move";
     gizmos.rotationGizmoEnabled = mode === "rotate";
     gizmos.scaleGizmoEnabled = mode === "scale" && !!kind && isMesh(kind);
-    gizmos.attachToNode(node ?? null);
+    gizmos.attachToNode(sculpting ? null : (node ?? null));
     for (const m of nodes.values()) for (const mesh of [m.node, ...m.node.getChildMeshes()]) mesh.showBoundingBox = false;
     if (node) for (const mesh of [node, ...node.getChildMeshes()]) if (mesh.getTotalVertices?.() > 0) mesh.showBoundingBox = true;
     const g = gizmos.gizmos;
@@ -181,7 +208,62 @@ export function ScenePanel({ file }: { file: string }) {
     };
     const subs = [g.positionGizmo, g.rotationGizmo, g.scaleGizmo].filter(Boolean).map((z: Any) => [z, z.onDragEndObservable.add(done)]);
     return () => subs.forEach(([z, o]) => z.onDragEndObservable.remove(o));
-  }, [selected, mode, snap, ready, scene]);
+  }, [selected, mode, snap, ready, scene, sculpting]);
+
+  // Sculpting and painting a terrain: left-drag applies the brush; right-drag orbits, middle pans.
+  useEffect(() => {
+    const v = view.current;
+    const mesh = sculpting && selected ? v?.nodes.get(selected)?.node : undefined;
+    if (!v || !mesh) return;
+    const { B, scene: s, camera } = v;
+    const o = latest().objects.find((x) => x.id === selected)!;
+    const n = gridOf(o);
+    const rgb = decodeColors(o.colors ?? "", (n + 1) * (n + 1));
+    const pointers = camera.inputs.attached.pointers;
+    pointers.buttons = [1, 2];
+    camera._panningMouseButtonInternal = 1;
+    const ring = B.MeshBuilder.CreateTorus("editor-brush", { diameter: 2, thickness: 0.05, tessellation: 64 }, s);
+    ring.isPickable = false;
+    ring.material = new B.StandardMaterial("editor-brush", s);
+    ring.material.emissiveColor = new B.Color3(0.3, 0.76, 1);
+    ring.material.disableLighting = true;
+    ring.setEnabled(false);
+    let down = false, target = 0;
+    const hit = () => {
+      const pick = s.pick(s.pointerX, s.pointerY, (m: Any) => m === mesh);
+      if (!pick?.hit) return undefined;
+      return { world: pick.pickedPoint, local: B.Vector3.TransformCoordinates(pick.pickedPoint, mesh.getWorldMatrix().clone().invert()) };
+    };
+    const apply = (p: Any) => {
+      const pos = mesh.getVerticesData(B.VertexBuffer.PositionKind);
+      if (dab(pos, rgb, n, p.x, p.z, { ...brushRef.current, target })) refreshTerrain(B, mesh, pos, rgb);
+    };
+    const obs = s.onPointerObservable.add((info: Any) => {
+      const P = B.PointerEventTypes;
+      if (info.type === P.POINTERMOVE || info.type === P.POINTERDOWN) {
+        const h = hit();
+        ring.setEnabled(!!h);
+        if (!h) return;
+        ring.position.set(h.world.x, h.world.y + 0.05, h.world.z);
+        ring.scaling.set(brushRef.current.radius, 1, brushRef.current.radius);
+        if (info.type === P.POINTERDOWN && info.event.button === 0) {
+          down = true;
+          target = h.local.y;
+          apply(h.local);
+        } else if (down) apply(h.local);
+      } else if (info.type === P.POINTERUP && down) {
+        down = false;
+        const pos = mesh.getVerticesData(B.VertexBuffer.PositionKind);
+        change(o.id, { heights: encodeHeights(Array.from({ length: pos.length / 3 }, (_, i) => pos[i * 3 + 1])), colors: encodeColors(rgb) });
+      }
+    });
+    return () => {
+      s.onPointerObservable.remove(obs);
+      ring.dispose();
+      pointers.buttons = [0, 1, 2];
+      camera._panningMouseButtonInternal = 2;
+    };
+  }, [sculpting, selected, ready, scene]);
 
   // Jump to an object when Problems asks.
   useEffect(() => {
@@ -231,7 +313,7 @@ export function ScenePanel({ file }: { file: string }) {
     else if (k === "f" && !ctrl) frame();
     else if (k === "delete" || k === "backspace") remove();
     else if (ctrl && k === "d") duplicate();
-    else if (k === "escape") setSelected(undefined);
+    else if (k === "escape") brush ? setBrush(null) : setSelected(undefined);
     else return;
     e.preventDefault();
   };
@@ -285,11 +367,15 @@ export function ScenePanel({ file }: { file: string }) {
         <div className="scene-view">
           <canvas ref={canvas} tabIndex={0} />
           {error && <div className="graph-empty">{error}</div>}
-          <div className="scene-hint muted small">Drag to orbit · right-drag to pan · wheel to zoom · click to select · W/E/R gizmo · F frame · Ctrl+D duplicate · Del delete</div>
+          <div className="scene-hint muted small">
+            {sculpting
+              ? `${BRUSHES.find((b) => b.tool === brush)?.label}: left-drag on the terrain · right-drag orbits · middle-drag pans · Esc stops sculpting`
+              : "Drag to orbit · right-drag to pan · wheel to zoom · click to select · W/E/R gizmo · F frame · Ctrl+D duplicate · Del delete"}
+          </div>
         </div>
         <div className="scene-inspector">
           {sel ? (
-            <Inspector key={sel.id} o={sel} change={(p) => change(sel.id, p)} behaviours={behaviours} models={models} error={errors.get(sel.id)} remove={remove} duplicate={duplicate} />
+            <Inspector key={sel.id} o={sel} change={(p) => change(sel.id, p)} behaviours={behaviours} models={models} error={errors.get(sel.id)} remove={remove} duplicate={duplicate} tools={tools} />
           ) : (
             <div className="empty muted small">Select an object to edit it, or add one on the left.</div>
           )}
@@ -297,6 +383,18 @@ export function ScenePanel({ file }: { file: string }) {
       </div>
     </div>
   );
+}
+
+/** Puts new heights (in `pos`) and colors on a terrain mesh. */
+function refreshTerrain(B: Any, mesh: Any, pos: Any, rgb: Uint8Array) {
+  const count = pos.length / 3, col = new Float32Array(count * 4), normals: number[] = [];
+  for (let i = 0; i < count; i++) col.set([rgb[i * 3] / 255, rgb[i * 3 + 1] / 255, rgb[i * 3 + 2] / 255, 1], i * 4);
+  B.VertexData.ComputeNormals(pos, mesh.getIndices(), normals);
+  mesh.updateVerticesData(B.VertexBuffer.PositionKind, pos);
+  mesh.updateVerticesData(B.VertexBuffer.NormalKind, normals);
+  if (mesh.isVerticesDataPresent(B.VertexBuffer.ColorKind)) mesh.updateVerticesData(B.VertexBuffer.ColorKind, col);
+  else mesh.setVerticesData(B.VertexBuffer.ColorKind, col, true);
+  mesh.refreshBoundingInfo();
 }
 
 /** Creates the editor's stand-in for an object. Lights and cameras get small markers. */
@@ -323,6 +421,17 @@ function build(v: { B: Any; scene: Any }, o: SceneObject, assets: Record<string,
       node.material = mat([0.8, 0.8, 0.8]);
       node.material.backFaceCulling = false;
       break;
+    case "terrain": {
+      const size = o.size ?? 40, n = gridOf(o);
+      node = B.MeshBuilder.CreateGround(o.id, { width: size, height: size, subdivisions: n, updatable: true }, s);
+      const pos = node.getVerticesData(B.VertexBuffer.PositionKind), count = pos.length / 3;
+      const h = decodeHeights(o.heights ?? "", count);
+      for (let i = 0; i < count; i++) pos[i * 3 + 1] = h[i];
+      refreshTerrain(B, node, pos, decodeColors(o.colors ?? "", count));
+      node.material = mat([1, 1, 1]);
+      node.material.specularColor = new B.Color3(0.04, 0.04, 0.04);
+      break;
+    }
     case "light":
     case "pointlight": {
       node = B.MeshBuilder.CreateSphere(o.id, { diameter: 0.5 }, s);
@@ -371,7 +480,7 @@ function build(v: { B: Any; scene: Any }, o: SceneObject, assets: Record<string,
   return node;
 }
 
-function Inspector({ o, change, behaviours, models, error, remove, duplicate }: {
+function Inspector({ o, change, behaviours, models, error, remove, duplicate, tools }: {
   o: SceneObject;
   change: (p: Partial<SceneObject>) => void;
   behaviours: string[];
@@ -379,6 +488,7 @@ function Inspector({ o, change, behaviours, models, error, remove, duplicate }: 
   error?: string;
   remove: () => void;
   duplicate: () => void;
+  tools: Tools;
 }) {
   const vec = (label: string, key: "position" | "rotation" | "scale") => (
     <div className="insp-row">
@@ -409,6 +519,63 @@ function Inspector({ o, change, behaviours, models, error, remove, duplicate }: 
             {[...new Set([o.model ?? "", ...models])].map((m) => <option key={m}>{m}</option>)}
           </select>
         </div>
+      )}
+      {o.kind === "terrain" && (
+        <>
+          <div className="insp-row">
+            <span className="col-label">Size</span>
+            <Num axis="m" value={o.size ?? 40} onChange={(size) => change({ size: Math.max(1, size) })} />
+            <Num
+              axis="grid"
+              value={gridOf(o)}
+              onChange={(v) => {
+                const divisions = Math.max(1, Math.min(256, Math.round(v)));
+                const keep = !o.heights && !o.colors;
+                if (keep || confirm("Changing the grid clears this terrain's sculpting and paint. Continue?")) change({ divisions, heights: "", colors: "" });
+              }}
+            />
+          </div>
+          <div className="insp-row">
+            <span className="col-label">Physics</span>
+            <select className="field" value={o.physics === "none" ? "none" : "static"} onChange={(e) => change({ physics: e.target.value as SceneObject["physics"] })} title="Static: things stand and roll on it.">
+              <option value="none">None</option>
+              <option value="static">Static</option>
+            </select>
+          </div>
+          <div className="insp-row top">
+            <span className="col-label">Sculpt</span>
+            <div className="brushes">
+              {BRUSHES.map((b) => (
+                <button key={b.tool} className={"tool" + (tools.brush === b.tool ? " on" : "")} title={b.tip} onClick={() => tools.setBrush(tools.brush === b.tool ? null : b.tool)}>
+                  {b.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          {tools.brush && (
+            <>
+              <label className="insp-row">
+                <span className="col-label">Radius</span>
+                <input type="range" min={0.5} max={15} step={0.5} value={tools.radius} onChange={(e) => tools.setRadius(Number(e.target.value))} />
+                <span className="muted small mono">{tools.radius}</span>
+              </label>
+              <label className="insp-row">
+                <span className="col-label">Strength</span>
+                <input type="range" min={0.05} max={1} step={0.05} value={tools.strength} onChange={(e) => tools.setStrength(Number(e.target.value))} />
+                <span className="muted small mono">{tools.strength}</span>
+              </label>
+              {tools.brush === "paint" && (
+                <div className="insp-row">
+                  <span className="col-label">Paint</span>
+                  <input type="color" value={hex(tools.paint)} onChange={(e) => tools.setPaint([1, 3, 5].map((i) => parseInt(e.target.value.slice(i, i + 2), 16)) as Vec3)} />
+                  {(["#6ea05a", "#968058", "#8a8d93", "#e9ecf2", "#d8c48c"] as const).map((c) => (
+                    <button key={c} className="swatch" style={{ background: c }} title={c} onClick={() => tools.setPaint([1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16)) as Vec3)} />
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </>
       )}
       {isMesh(o.kind) && (
         <>

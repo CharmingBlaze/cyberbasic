@@ -319,6 +319,36 @@ const CB = (() => {
     },
     CreateCube(size = 1) { need3d(); return mesh(B.MeshBuilder.CreateBox("cube", { size }, scene)); },
     CreateSphere(size = 1) { need3d(); return mesh(B.MeshBuilder.CreateSphere("sphere", { diameter: size }, scene)); },
+    // A terrain: a size x size grid of divisions x divisions squares. `heights` lists each point's
+    // height ("0,0.5,..."), `colors` each point's color as 6 hex digits; the level editor writes both.
+    CreateTerrain(size = 40, divisions = 64, heights = "", colors = "") {
+      need3d();
+      const d = Math.max(1, Math.min(256, Math.trunc(divisions)));
+      const m = B.MeshBuilder.CreateGround("terrain", { width: size, height: size, subdivisions: d, updatable: true }, scene);
+      const pos = m.getVerticesData(B.VertexBuffer.PositionKind), count = pos.length / 3;
+      const hs = String(heights).split(","), cs = String(colors), col = new Float32Array(count * 4);
+      for (let i = 0; i < count; i++) {
+        pos[i * 3 + 1] = Number(hs[i]) || 0;
+        const v = parseInt(cs.substr(i * 6, 6), 16), c = Number.isNaN(v) ? 0x6ea05a : v;
+        col.set([((c >> 16) & 255) / 255, ((c >> 8) & 255) / 255, (c & 255) / 255, 1], i * 4);
+      }
+      const normals = [];
+      B.VertexData.ComputeNormals(pos, m.getIndices(), normals);
+      m.updateVerticesData(B.VertexBuffer.PositionKind, pos);
+      m.updateVerticesData(B.VertexBuffer.NormalKind, normals);
+      m.setVerticesData(B.VertexBuffer.ColorKind, col);
+      m.refreshBoundingInfo();
+      m.updateCoordinateHeights();
+      m.material = new B.StandardMaterial("terrain", scene);
+      m.material.specularColor = new B.Color3(0.04, 0.04, 0.04);
+      return m;
+    },
+    // Height of a terrain's surface under world x, z (for placing things on it).
+    TerrainHeight(t, x, z) {
+      if (!t?.getHeightAtCoordinates) throw new Error("TerrainHeight needs a terrain (from CreateTerrain or a scene)");
+      t.computeWorldMatrix(true);
+      return t.getHeightAtCoordinates(x, z);
+    },
     CreatePlane(size = 100) { need3d(); return mesh(B.MeshBuilder.CreateGround("plane", { width: size, height: size }, scene)); },
     PositionEntity(e, x, y, z) {
       e.position.set(x, y, z);
@@ -397,7 +427,9 @@ const CB = (() => {
       if (!scene.isPhysicsEnabled()) throw new Error("call EnablePhysics first");
       if (!(e instanceof B.Mesh)) throw new Error("EntityPhysics works on cubes, spheres and planes for now");
       e.physics?.dispose();
-      const shape = e.name === "sphere" ? B.PhysicsShapeType.SPHERE : B.PhysicsShapeType.BOX;
+      // Terrains collide with their real shape (and can only be static).
+      const shape = e.name === "sphere" ? B.PhysicsShapeType.SPHERE : e.name === "terrain" ? B.PhysicsShapeType.MESH : B.PhysicsShapeType.BOX;
+      if (e.name === "terrain") mass = 0;
       e.physics = new B.PhysicsAggregate(e, shape, { mass, restitution: bounce, friction: 0.6 }, scene);
       const b = e.physics.body;
       b.setCollisionCallbackEnabled(true);

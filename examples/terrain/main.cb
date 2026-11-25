@@ -1,0 +1,42 @@
+' Roll the marble over hills sculpted and painted in the level editor (open terrain.scene).
+' Arrow keys roll, Escape quits.
+Include "terrain.scene"
+
+Graphics3D 1280, 720
+ClsColor 150, 190, 230
+LoadScene_Terrain
+hills = FindEntity("Hills")
+marble = FindEntity("Marble")
+camera = FindEntity("Camera")
+
+' Scatter gems on the ground: TerrainHeight tells how high the ground is at x, z.
+Dim gems[10]
+For i = 0 To 9
+    x = Rnd(-22, 22) : z = Rnd(-22, 22)
+    gems[i] = CreateCube(0.6)
+    PositionEntity gems[i], x, TerrainHeight(hills, x, z) + 0.8, z
+    EntityColor gems[i], 255, 210, 70
+Next
+
+While Not KeyHit(KEY_ESCAPE)
+    If KeyDown(KEY_LEFT) Then ApplyImpulse marble, -6 * Delta, 0, 0
+    If KeyDown(KEY_RIGHT) Then ApplyImpulse marble, 6 * Delta, 0, 0
+    If KeyDown(KEY_UP) Then ApplyImpulse marble, 0, 0, 6 * Delta
+    If KeyDown(KEY_DOWN) Then ApplyImpulse marble, 0, 0, -6 * Delta
+
+    For i = 0 To 9
+        If gems[i] <> 0
+            TurnEntity gems[i], 0, 120 * Delta, 0
+            If EntityDistance(marble, gems[i]) < 1.2
+                FreeEntity gems[i]
+                gems[i] = 0
+                score = score + 1
+            EndIf
+        EndIf
+    Next
+
+    PositionEntity camera, EntityX(marble), EntityY(marble) + 5, EntityZ(marble) - 9
+    PointEntity camera, EntityX(marble), EntityY(marble), EntityZ(marble)
+    Text 20, 20, "Gems: " + score + " / 10"
+    Sync
+Wend

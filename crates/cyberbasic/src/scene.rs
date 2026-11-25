@@ -40,7 +40,7 @@ pub fn lower(file: &str, text: &str) -> Lowered {
     };
     let objects = scene.get("objects").arr();
     lines.push(format!("Function {}()", load_function(file)));
-    if objects.iter().any(|o| matches!(o.get("physics").str(), "static" | "dynamic")) {
+    if objects.iter().any(|o| matches!(o.get("physics").str(), "static" | "dynamic") && o.get("kind").str() != "light") {
         lines.push("    EnablePhysics".into());
     }
     for o in objects {
@@ -58,6 +58,12 @@ pub fn lower(file: &str, text: &str) -> Lowered {
             "light" => "CreateLight()".into(),
             "pointlight" => "CreateLight(LIGHT_POINT)".into(),
             "camera" => "CreateCamera()".into(),
+            "terrain" => {
+                let one = |k: &str, d: f64| num(&Json::Arr(vec![o.get(k).clone()]), 0, d);
+                let heights: String = o.get("heights").str().chars().filter(|c| c.is_ascii_digit() || matches!(c, '.' | ',' | '-' | 'e')).collect();
+                let colors: String = o.get("colors").str().chars().filter(char::is_ascii_hexdigit).collect();
+                format!("CreateTerrain({}, {}, \"{heights}\", \"{colors}\")", one("size", 40.0), one("divisions", 64.0))
+            }
             "model" => {
                 let path: String = o.get("model").str().chars().filter(|&c| c != '"').collect();
                 format!("LoadMesh(\"{path}\")")
@@ -75,6 +81,9 @@ pub fn lower(file: &str, text: &str) -> Lowered {
         emit(format!("PositionEntity e, {}", vec3(o.get("position"), 0.0)));
         emit(format!("RotateEntity e, {}", vec3(o.get("rotation"), 0.0)));
         let mesh = matches!(kind, "cube" | "sphere" | "plane" | "model");
+        if kind == "terrain" && o.get("physics").str() != "none" && !o.get("physics").str().is_empty() {
+            emit("EntityPhysics e, 0".into()); // terrains are always static
+        }
         if mesh {
             let s = vec3(o.get("scale"), 1.0);
             if s != "1, 1, 1" {
@@ -116,6 +125,8 @@ mod tests {
         assert!(l.code.contains("NameEntity e, \"Ball 1\"\n    PositionEntity e, 0, 3.3, 0\n    RotateEntity e, 0, 45, 0\n    EntityPhysics e, 2\n    Behaviour_Spinner_Attach e\n"), "{}", l.code);
         assert!(!l.code.contains("EntityColor e, 255"), "lights take no color: {}", l.code);
         assert_eq!(l.problems, vec![("o4".to_string(), "Unknown kind of object \"blob\".".to_string())]);
+        let t = lower("t.scene", r#"{"objects":[{"id":"o1","name":"Hills","kind":"terrain","size":30,"divisions":2,"heights":"0,1.5,-2\"x","colors":"ff0000zz","physics":"dynamic"}]}"#);
+        assert!(t.code.contains("    e = CreateTerrain(30, 2, \"0,1.5,-2\", \"ff0000\")\n    NameEntity e, \"Hills\"\n    PositionEntity e, 0, 0, 0\n    RotateEntity e, 0, 0, 0\n    EntityPhysics e, 0\n"), "{}", t.code);
         assert_eq!(l.map.iter().find(|m| m.1 == "o2").map(|m| l.code.lines().nth(m.0 - 1).unwrap()), Some("    ' Ball 1"));
         let main = "Include \"level.scene\"\nInclude \"spinner.graph\"\nGraphics3D 640, 480\nLoadScene_Level\nPrint EntityName(FindEntity(\"ball 1\"))";
         let spin = r#"{"kind":"behaviour","nodes":[],"links":[]}"#;

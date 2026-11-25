@@ -5,6 +5,7 @@ import type { Project } from "./store";
 
 const exampleSources = import.meta.glob("../../examples/*.cb", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
 const shooterFiles = import.meta.glob("../../examples/shooter/*.cb", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
+const terrainFiles = import.meta.glob("../../examples/terrain/*.{cb,scene}", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
 const levelFiles = import.meta.glob("../../examples/level/*.{cb,scene,graph}", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
 const behaviourFiles = import.meta.glob("../../examples/behaviours/*.graph", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
 const bouncerFiles = import.meta.glob("../../examples/bouncer/*.graph", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
@@ -98,6 +99,13 @@ export const TEMPLATES: Template[] = [
     kind: "3D",
     description: "A level made in the level editor: walls, physics crates and spinning gems to collect.",
     files: byName(levelFiles),
+  },
+  {
+    id: "terrain",
+    name: "Terrain (3D)",
+    kind: "3D",
+    description: "Roll a marble over hills sculpted and painted in the level editor; gems sit on the ground with TerrainHeight.",
+    files: byName(terrainFiles),
   },
   {
     id: "behaviours",
