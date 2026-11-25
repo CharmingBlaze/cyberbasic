@@ -60,6 +60,8 @@ export function nodeCatalog(commands: Command[]): Map<string, NodeDef> {
     { type: "event.frame", title: "On Frame", category: "Events", color: "event", doc: "Runs every frame (about 60 times a second).", inputs: [], outputs: [exec("then")] },
     { type: "behaviour.attach", title: "On Attach", category: "Behaviour", color: "event", doc: "Runs once when this behaviour is added to an object. Self is that object.", inputs: [], outputs: [exec("then"), data("self")] },
     { type: "behaviour.update", title: "On Update", category: "Behaviour", color: "event", doc: "Runs every frame for each object that has this behaviour. Self is that object.", inputs: [], outputs: [exec("then"), data("self")] },
+    { type: "behaviour.collision", title: "On Collision", category: "Behaviour", color: "event", doc: "Runs when this object starts touching another (needs physics: EnablePhysics and EntityPhysics). Other is what it hit.", inputs: [], outputs: [exec("then"), data("self"), data("other")] },
+    { type: "behaviour.removed", title: "On Remove", category: "Behaviour", color: "event", doc: "Runs when this behaviour comes off its object: a Remove Behaviour node ran, or the object was freed.", inputs: [], outputs: [exec("then"), data("self")] },
     { type: "behaviour.self", title: "Self", category: "Behaviour", color: "var", doc: "The object this behaviour is attached to.", inputs: [], outputs: [data("self")] },
     { type: "behaviour.remove", title: "Remove Behaviour", category: "Behaviour", color: "event", doc: "Takes this behaviour off its object (the object stays).", inputs: [exec()], outputs: [] },
     { type: "behaviour.add", title: "Add Behaviour", category: "Behaviours", color: "func", doc: "Attaches a behaviour to an object.", inputs: [exec(), data("object")], outputs: [exec("then")], fields: [{ key: "name", label: "", options: [] }] },
@@ -214,6 +216,7 @@ export function generateGraph(file: string, graph: Graph, isMain: boolean, defs:
   const defOf = (n: GNode) => nodeDef(n, defs, funcs, behaviours);
   // In a behaviour's events, its variables are fields of the object's behaviour record `me`.
   const behaviour = graph.kind === "behaviour";
+  const T = `Behaviour_${behaviourName(file)}`;
   const fieldVars = new Set(graph.variables.map((v) => v.name.trim().toLowerCase()).filter(Boolean));
   let inEvent = false;
   const varRef = (name: string) => (behaviour && inEvent && fieldVars.has(name.toLowerCase()) ? `me.${name}` : name);
@@ -242,8 +245,11 @@ export function generateGraph(file: string, graph: Graph, isMain: boolean, defs:
     switch (n.type) {
       case "var.get":
         return varRef((n.values.name ?? "").trim());
+      case "behaviour.collision":
+        return out === "other" ? "other" : "me.entity";
       case "behaviour.attach":
       case "behaviour.update":
+      case "behaviour.removed":
       case "behaviour.self":
         return "me.entity";
       case "value.expr":
@@ -302,6 +308,9 @@ export function generateGraph(file: string, graph: Graph, isMain: boolean, defs:
         emit(`${pad}${attachFunction(fname(n))} ${input(n, "object", seen)}`, id);
         break;
       case "behaviour.remove":
+        // entity = 0 tells UpdateAll this record is gone, even within the frame it was removed in.
+        emit(`${pad}${T}_OnRemove me`, id);
+        emit(`${pad}me.entity = 0`, id);
         emit(`${pad}Delete me`, id);
         return;
       case "func.return": {
@@ -359,7 +368,7 @@ export function generateGraph(file: string, graph: Graph, isMain: boolean, defs:
 
   if (behaviour) {
     // Each object with this behaviour gets a record (a Type) holding the object and its own variables.
-    const b = behaviourName(file), T = `Behaviour_${b}`;
+    const b = behaviourName(file);
     const vars = graph.variables.filter((v) => v.name.trim());
     emit("");
     emit(`Type ${T}`);
@@ -374,9 +383,11 @@ export function generateGraph(file: string, graph: Graph, isMain: boolean, defs:
     emit("    Return me");
     emit("End Function");
     inEvent = true;
-    for (const [event, fn] of [["behaviour.attach", "OnAttach"], ["behaviour.update", "OnUpdate"]] as const) {
+    const collides = roots("behaviour.collision").length > 0;
+    const events = [["behaviour.attach", "OnAttach"], ["behaviour.update", "OnUpdate"], ["behaviour.removed", "OnRemove"], ...(collides ? [["behaviour.collision", "OnCollision"]] : [])];
+    for (const [event, fn] of events) {
       emit("");
-      emit(`Function ${T}_${fn}(me)`);
+      emit(`Function ${T}_${fn}(${event === "behaviour.collision" ? "me, other" : "me"})`);
       for (const r of roots(event)) {
         emit(`    ' ${defs.get(event)?.title}`, r.id);
         chain(r.id, "then", "    ", new Set());
@@ -387,7 +398,18 @@ export function generateGraph(file: string, graph: Graph, isMain: boolean, defs:
     emit("");
     emit(`Function ${T}_UpdateAll()`);
     emit(`    For b = Each ${T}`);
-    emit(`        ${T}_OnUpdate b`);
+    emit("        If EntityExists(b.entity)");
+    emit(`            ${T}_OnUpdate b`);
+    if (collides) {
+      emit("            If EntityExists(b.entity)");
+      emit(`                If EntityCollided(b.entity) Then ${T}_OnCollision b, CollidedWith(b.entity)`);
+      emit("            EndIf");
+    }
+    emit("        ElseIf b.entity <> 0");
+    emit("            ' The object was freed: the behaviour comes off it.");
+    emit(`            ${T}_OnRemove b`);
+    emit("            Delete b");
+    emit("        EndIf");
     emit("    Next");
     emit("End Function");
     emit(`EveryFrame ${T}_UpdateAll`);

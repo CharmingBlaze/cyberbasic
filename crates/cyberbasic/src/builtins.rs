@@ -128,6 +128,7 @@ pub const BUILTINS: &[Builtin] = &[
     f(D3, "EntityY", 1, 1, "entity", "Y position."),
     f(D3, "EntityZ", 1, 1, "entity", "Z position."),
     f(D3, "EntityDistance", 2, 2, "a, b", "Distance between two entities."),
+    f(D3, "EntityExists", 1, 1, "entity", "True if entity is an entity that hasn't been freed."),
     s(D3, "AmbientLight", 3, 3, "r, g, b", "Sets the soft light that reaches every surface."),
     f(D3, "LinePick", 6, 6, "x, y, z, dx, dy, dz", "Casts a ray from x, y, z along dx, dy, dz. Returns the mesh hit, or 0."),
     s(D3, "EntityPickMode", 2, 2, "entity, mode", "0 makes LinePick ignore the entity, 1 makes it pickable again."),
@@ -137,6 +138,7 @@ pub const BUILTINS: &[Builtin] = &[
     s(PHYS, "ApplyImpulse", 4, 4, "entity, x, y, z", "Pushes a physics body."),
     s(PHYS, "SetVelocity", 4, 4, "entity, x, y, z", "Sets a physics body's speed and direction."),
     f(PHYS, "EntityCollided", 1, 2, "a[, b]", "True if a started touching b (or anything) in the last physics step."),
+    f(PHYS, "CollidedWith", 1, 1, "entity", "The entity it started touching in the last physics step, or 0."),
 ];
 
 // KEY_A..KEY_Z and KEY_0..KEY_9 are accepted by pattern, see `constant`.

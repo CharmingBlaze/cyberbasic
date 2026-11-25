@@ -592,7 +592,7 @@ interface PaletteItem { key: string; type: string; title: string; category: stri
 
 function paletteItems(defs: Map<string, NodeDef>, funcs: FuncSig[], behaviours: string[], isBehaviour: boolean): PaletteItem[] {
   // Behaviours have On Attach / On Update (with Self); scripts have On Start / On Frame.
-  const hidden = isBehaviour ? ["event.start", "event.frame"] : ["behaviour.attach", "behaviour.update", "behaviour.self", "behaviour.remove"];
+  const hidden = isBehaviour ? ["event.start", "event.frame"] : ["behaviour.attach", "behaviour.update", "behaviour.collision", "behaviour.removed", "behaviour.self", "behaviour.remove"];
   const items: PaletteItem[] = [...defs.values()]
     .filter((d) => !hidden.includes(d.type) && d.type !== "behaviour.add")
     .map((d) => ({ key: d.type, type: d.type, title: d.title, category: d.category, color: d.color, doc: d.doc }));

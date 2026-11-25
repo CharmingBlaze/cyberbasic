@@ -172,6 +172,7 @@ const CB = (() => {
     return e.physics.body;
   };
   const collisions = new Set(); // "a:b" and "a" keys for contacts that started during the last physics step
+  const touched = new Map(); // entity id -> the entity it started touching in the last physics step
   const pad = () => (navigator.getGamepads ? navigator.getGamepads()[0] : null);
 
   // Waits for a media element to load, keeping frames running meanwhile.
@@ -344,6 +345,7 @@ const CB = (() => {
     EntityX(e) { return e.position.x; },
     EntityY(e) { return e.position.y; },
     EntityZ(e) { return e.position.z; },
+    EntityExists(e) { return !!e && typeof e === "object" && typeof e.isDisposed === "function" && !e.isDisposed(); },
     EntityDistance(a, b) { return B.Vector3.Distance(a.getAbsolutePosition(), b.getAbsolutePosition()); },
     AmbientLight(r, g, b) {
       need3d();
@@ -398,12 +400,14 @@ const CB = (() => {
         if (ev.type === "COLLISION_FINISHED") return;
         const a = ev.collider.transformNode.uniqueId, o = ev.collidedAgainst.transformNode.uniqueId;
         collisions.add(`${a}`).add(`${o}`).add(`${a}:${o}`).add(`${o}:${a}`);
+        touched.set(a, ev.collidedAgainst.transformNode).set(o, ev.collider.transformNode);
       });
     },
     ApplyImpulse(e, x, y, z) { body(e).applyImpulse(V(x, y, z), e.getAbsolutePosition()); },
     SetVelocity(e, x, y, z) { body(e).setLinearVelocity(V(x, y, z)); },
     // True if `a` started touching `b` (or anything, without `b`) in the last physics step.
     EntityCollided(a, b) { return collisions.has(b === undefined ? `${a.uniqueId}` : `${a.uniqueId}:${b.uniqueId}`); },
+    CollidedWith(e) { return touched.get(e.uniqueId) ?? 0; },
 
     // --- Helpers used by generated code (not BASIC commands)
     dim(n, ...rest) {
@@ -489,7 +493,7 @@ const CB = (() => {
         keyHits.clear();
         buttonHits.clear();
         if (scene?.activeCamera && !paused) {
-          collisions.clear(); // the physics step inside render() refills it for the next frame's logic
+          collisions.clear(); touched.clear(); // the physics step inside render() refills them for the next frame's logic
           engine.beginFrame(); scene.render(); engine.endFrame();
         }
         if (done) { post({ type: "ended" }); return say("Program ended."); }

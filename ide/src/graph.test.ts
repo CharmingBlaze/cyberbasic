@@ -167,3 +167,32 @@ test("copy and paste keeps the wires between copied nodes and gives fresh ids", 
   const box = { id: "c1", x: 950, y: 450, w: 400, h: 200, text: "" };
   assert.deepEqual(nodesIn(graph, box, () => 100, 236), ["n8"]); // n9 sticks out on the right
 });
+
+test("behaviour events: On Collision gets the other object, On Remove runs on removal and when the object is freed", () => {
+  const g: Graph = {
+    version: 1, kind: "behaviour", variables: [{ name: "hits", value: "0" }], includes: [], links: [
+      { from: "c1", out: "then", to: "c2", in: "in" },
+      { from: "c1", out: "other", to: "c2", in: "entity" },
+      { from: "c2", out: "then", to: "c3", in: "in" },
+      { from: "r1", out: "then", to: "r2", in: "in" },
+      { from: "r1", out: "self", to: "r2", in: "entity" },
+    ],
+    nodes: [
+      { id: "c1", type: "behaviour.collision", x: 0, y: 0, values: {} },
+      { id: "c2", type: "cmd.FreeEntity", x: 0, y: 0, values: {} },
+      { id: "c3", type: "behaviour.remove", x: 0, y: 0, values: {} },
+      { id: "r1", type: "behaviour.removed", x: 0, y: 100, values: {} },
+      { id: "r2", type: "cmd.FreeEntity", x: 0, y: 0, values: {} },
+    ],
+  };
+  const { code, problems } = generateGraph("bullet.graph", g, false, defs);
+  assert.deepEqual(problems, []);
+  assert.match(code, /Function Behaviour_Bullet_OnCollision\(me, other\)\n {4}' On Collision\n {4}FreeEntity other\n {4}Behaviour_Bullet_OnRemove me\n {4}me.entity = 0\n {4}Delete me/);
+  assert.match(code, /Function Behaviour_Bullet_OnRemove\(me\)\n {4}' On Remove\n {4}FreeEntity me.entity/);
+  assert.match(code, /If EntityCollided\(b.entity\) Then Behaviour_Bullet_OnCollision b, CollidedWith\(b.entity\)/);
+  assert.match(code, /ElseIf b.entity <> 0\n.*\n\s+Behaviour_Bullet_OnRemove b\n\s+Delete b/);
+  const r = compile({ "main.cb": 'Include "bullet.graph"\nGraphics3D 640, 480\nBehaviour_Bullet_Attach CreateCube()', "bullet.graph": code });
+  assert.ok(r.ok, r.ok ? "" : `${r.line}: ${r.message}\n${code}`);
+  // Without an On Collision node no collision check is generated (no physics needed).
+  assert.doesNotMatch(generateGraph("spin.graph", { ...g, nodes: g.nodes.slice(3), links: g.links.slice(3) }, false, defs).code, /Collided/);
+});
