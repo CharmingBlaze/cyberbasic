@@ -1,7 +1,8 @@
 // Everything the UI can do: run/debug, project files, panels and workspaces. Menus, the command
 // palette, toolbar buttons and keyboard shortcuts all call these.
 import type { DockviewApi } from "dockview-react";
-import { compile, loadCompiler } from "./compiler";
+import { compile, findCommand, loadCompiler } from "./compiler";
+import { emptySheet, eventLine, generate, parseSheet, sheetText, type LineInfo, type Sheet } from "./events";
 import { monaco, registerLanguage } from "./language";
 import { EXAMPLE_ASSETS, TEMPLATES, exportGame, fromTemplate, fsSupported, gamePage, openFolder, readFolder, saveProject, writeFile, type Template } from "./project";
 import { addRecent, removeRecent, type Recent } from "./recent";
@@ -42,7 +43,7 @@ export async function init() {
   let project: Project = fromTemplate(TEMPLATES[0]);
   // Older sessions stored a single `source`; a session without its main file is ignored.
   const files = saved?.fileName ? saved.files ?? { [saved.fileName]: saved.source ?? "" } : undefined;
-  if (saved?.fileName && files?.[saved.fileName] !== undefined) {
+  if (saved?.fileName && typeof files?.[saved.fileName] === "string") {
     project = { name: saved.name ?? "Untitled", files, fileName: saved.fileName, assets: EXAMPLE_ASSETS };
   }
   firstLaunch = !saved;
@@ -57,8 +58,46 @@ export async function init() {
 function createModels(project: Project) {
   for (const m of models.values()) m.dispose();
   models.clear();
-  for (const [file, src] of Object.entries(project.files)) addModel(file, src);
+  for (const [file, src] of Object.entries(project.files)) if (!isSheet(file)) addModel(file, src);
 }
+
+// ---------------------------------------------------------------- event sheets
+
+export const isSheet = (file: string) => file.toLowerCase().endsWith(".events");
+/** Generated-line -> event map for each sheet, from the last build. */
+export const sheetMaps = new Map<string, Map<number, LineInfo>>();
+const requiredArgs = (name: string) =>
+  (findCommand(name)?.args.split("[")[0].split(",").map((a) => a.trim()).filter(Boolean).length) ?? 0;
+
+/** The project as the compiler sees it: event sheets turned into CyberBasic. */
+function sources() {
+  const { files, fileName } = get().project;
+  const out: Record<string, string> = {};
+  for (const [file, text] of Object.entries(files)) {
+    if (!isSheet(file)) {
+      out[file] = text;
+      continue;
+    }
+    const g = generate(file, parseSheet(text), file === fileName, requiredArgs);
+    sheetMaps.set(file, g.map);
+    out[file] = g.code;
+  }
+  return out;
+}
+
+export const generatedCode = (file: string) => sources()[file] ?? "";
+
+export function updateSheet(file: string, sheet: Sheet) {
+  set((s) => ({ project: { ...s.project, files: { ...s.project.files, [file]: sheetText(sheet) } }, dirty: true }));
+  clearRuntimeErrors();
+  scheduleCheck();
+  persist();
+  sources(); // refresh line maps before resending breakpoints (events may have moved)
+  sendBreakpoints();
+}
+
+/** The event each sheet has selected, for F9. */
+export const sheetSelection = new Map<string, number>();
 
 function addModel(file: string, src: string) {
   const model = monaco.editor.createModel(src, "cyberbasic", uriOf(file));
@@ -86,7 +125,8 @@ function loadProject(project: Project) {
   const mainEditor = editors.get(get().project.fileName);
   loading = true;
   createModels(project);
-  mainEditor?.setModel(models.get(project.fileName)!); // the "editor" panel always shows the main file
+  const mainModel = models.get(project.fileName);
+  if (mainModel) mainEditor?.setModel(mainModel); // the "editor" panel always shows the main file
   loading = false;
   set({ project, activeFile: project.fileName, dirty: false, breakpoints: [], logs: [], diagnostics: [] });
   bpDecorations.clear();
@@ -101,7 +141,7 @@ function loadProject(project: Project) {
 /** Shows a file in its editor tab: the main file in "editor", others in "file:<name>" tabs. */
 export function openFile(file: string) {
   const api = refs.dock;
-  if (!api || !models.has(file)) return;
+  if (!api || !(file in get().project.files)) return;
   const id = file === get().project.fileName ? "editor" : `file:${file}`;
   const panel = api.getPanel(id);
   if (panel) return panel.api.setActive();
@@ -119,22 +159,30 @@ const validName = (name: string) => /^[\w-]+\.cb$/i.test(name);
 
 /** Adds a file and an `Include` for it at the top of the main file, then opens it. */
 export function newFile() {
-  const input = prompt("Name of the new file (for example enemies.cb):", "");
+  const input = prompt("Name of the new file: enemies.cb for code, or enemies.events for an event sheet:", "");
   if (!input) return;
-  const file = input.trim().toLowerCase().endsWith(".cb") ? input.trim() : `${input.trim()}.cb`;
-  if (!validName(file)) return toast("Use letters, numbers, - or _ and end with .cb", "error");
+  const name = input.trim();
+  const file = /\.(cb|events)$/i.test(name) ? name : `${name}.cb`;
+  if (!validName(file)) return toast("Use letters, numbers, - or _ and end with .cb or .events", "error");
   if (Object.keys(get().project.files).some((f) => f.toLowerCase() === file.toLowerCase())) return toast(`${file} already exists`, "error");
-  addModel(file, `' ${file}\n`);
-  set((s) => ({ project: { ...s.project, files: { ...s.project.files, [file]: `' ${file}\n` } }, dirty: true }));
-  // Put the Include after the main file's leading comment lines.
-  const main = getModel(get().project.fileName);
-  const lines = main.getLinesContent();
-  let at = 0;
-  while (at < lines.length && /^\s*'/.test(lines[at])) at++;
-  main.pushEditOperations([], [{ range: new monaco.Range(at + 1, 1, at + 1, 1), text: `Include "${file}"\n` }], () => null);
+  const text = isSheet(file) ? sheetText(emptySheet(false)) : `' ${file}\n`;
+  if (!isSheet(file)) addModel(file, text);
+  set((s) => ({ project: { ...s.project, files: { ...s.project.files, [file]: text } }, dirty: true }));
+  const mainFile = get().project.fileName;
+  if (isSheet(mainFile)) {
+    const sheet = parseSheet(get().project.files[mainFile]);
+    updateSheet(mainFile, { ...sheet, includes: [...sheet.includes, file] });
+  } else {
+    // Put the Include after the main file's leading comment lines.
+    const main = getModel(mainFile);
+    const lines = main.getLinesContent();
+    let at = 0;
+    while (at < lines.length && /^\s*'/.test(lines[at])) at++;
+    main.pushEditOperations([], [{ range: new monaco.Range(at + 1, 1, at + 1, 1), text: `Include "${file}"\n` }], () => null);
+  }
   persist();
   openFile(file);
-  toast(`Created ${file} and added Include "${file}" to ${get().project.fileName}`, "success");
+  toast(`Created ${file} and included it from ${mainFile}${isSheet(file) ? `. Call ${file.replace(/\.events$/i, "")} events with Sheet_${file.replace(/\.events$/i, "").replace(/\W/g, "_")}_Frame each frame.` : ""}`, "success");
 }
 
 export async function deleteFile(file: string) {
@@ -160,6 +208,11 @@ export async function deleteFile(file: string) {
       .filter((e): e is { range: monaco.Range; text: string } => !!e);
     if (edits.length) m.pushEditOperations([], edits, () => null);
   }
+  const mainFile = project.fileName;
+  if (isSheet(mainFile)) {
+    const sheet = parseSheet(get().project.files[mainFile]);
+    if (sheet.includes.includes(file)) updateSheet(mainFile, { ...sheet, includes: sheet.includes.filter((f) => f !== file) });
+  }
   bpDecorations.delete(file);
   set((s) => ({ project: { ...s.project, files: Object.fromEntries(Object.entries(s.project.files).filter(([f]) => f !== file)) }, activeFile: s.activeFile === file ? s.project.fileName : s.activeFile, breakpoints: s.breakpoints.filter((b) => b.file !== file) }));
   persist();
@@ -177,7 +230,7 @@ const scheduleCheck = () => {
 
 export function check() {
   const { project } = get();
-  const r = compile(project.files, project.fileName, false);
+  const r = compile(sources(), project.fileName, false);
   const runtime = get().diagnostics.filter((d) => d.kind === "runtime");
   set({ diagnostics: r.ok ? runtime : [{ file: r.file, line: r.line, col: r.col, message: r.message, kind: "compile" }, ...runtime] });
   for (const [file, model] of models) {
@@ -222,6 +275,7 @@ export const pendingReveal = new Map<string, { line: number; col: number; focus:
 
 export function revealLine(line: number, col = 1, focus = true, file = get().activeFile) {
   openFile(file);
+  if (isSheet(file)) return void set((s) => ({ sheetFocus: { file, line, n: (s.sheetFocus?.n ?? 0) + 1 } }));
   const e = editors.get(file);
   if (!e) return void pendingReveal.set(file, { line, col, focus }); // its editor mounts on the next render
   e.revealLineInCenterIfOutsideViewport(line);
@@ -238,17 +292,32 @@ const decode = (loc: number) => ({ file: get().run.files[Math.floor(loc / 1e6)] 
 const encode = (bps: Breakpoint[], files = get().run.files) =>
   bps.filter((b) => files.includes(b.file)).map((b) => files.indexOf(b.file) * 1e6 + b.line);
 
+/** Code breakpoints plus events marked as breakpoints in sheets, as runtime locations. */
+function allBreakpoints(files = get().run.files) {
+  const fromSheets: Breakpoint[] = [];
+  for (const [file, text] of Object.entries(get().project.files)) {
+    if (!isSheet(file)) continue;
+    const map = sheetMaps.get(file);
+    for (const e of parseSheet(text).events) {
+      const line = e.breakpoint && map ? eventLine(map, e.id) : undefined;
+      if (line) fromSheets.push({ file, line });
+    }
+  }
+  return encode([...get().breakpoints, ...fromSheets], files);
+}
+const sendBreakpoints = () => send({ type: "breakpoints", lines: allBreakpoints() });
+
 export function run() {
   const { run: r, project } = get();
   if (r.state === "paused") return cont();
-  const result = compile(project.files, project.fileName, true); // debug build: breakpoints always work in the IDE
+  const result = compile(sources(), project.fileName, true); // debug build: breakpoints always work in the IDE
   if (!result.ok) {
     check();
     toast(`Can't run: ${result.file} line ${result.line}: ${result.message}`, "error");
     revealLine(result.line, result.col, true, result.file);
     return;
   }
-  const page = gamePage(result.js, { assets: project.assets, breakpoints: encode(get().breakpoints, result.files) });
+  const page = gamePage(result.js, { assets: project.assets, breakpoints: allBreakpoints(result.files) });
   clearRuntimeErrors();
   check();
   set((s) => ({ run: { state: "starting", session: s.run.session + 1, page, files: result.files } }));
@@ -334,6 +403,14 @@ export function onGameMessage(m: { type: string; [k: string]: unknown }) {
 const bpDecorations = new Map<string, string[]>();
 
 export function toggleBreakpoint(line = refs.editor?.getPosition()?.lineNumber, file = get().activeFile) {
+  if (isSheet(file)) {
+    // In a sheet, F9 toggles the selected event.
+    const id = sheetSelection.get(file);
+    const sheet = parseSheet(get().project.files[file] ?? "");
+    const ev = sheet.events.find((e) => e.id === id);
+    if (ev) updateSheet(file, { ...sheet, events: sheet.events.map((e) => (e === ev ? { ...e, breakpoint: !e.breakpoint } : e)) });
+    return;
+  }
   if (!line) return;
   const bps = get().breakpoints;
   const on = bps.some((b) => b.file === file && b.line === line);
@@ -371,7 +448,7 @@ function syncBreakpoints() {
   const key = (l: Breakpoint[]) => l.map((b) => `${b.file}:${b.line}`).join();
   if (key(bps) === key(get().breakpoints)) return;
   set({ breakpoints: bps });
-  send({ type: "breakpoints", lines: encode(bps) });
+  sendBreakpoints();
 }
 
 // ---------------------------------------------------------------- project commands
@@ -470,7 +547,7 @@ export async function save(saveAs = false) {
 
 export async function exportWeb() {
   const { project } = get();
-  const r = compile(project.files, project.fileName, false);
+  const r = compile(sources(), project.fileName, false);
   if (!r.ok) {
     toast(`Fix ${r.file} line ${r.line} before exporting: ${r.message}`, "error");
     return revealLine(r.line, r.col, true, r.file);
