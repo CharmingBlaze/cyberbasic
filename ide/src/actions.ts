@@ -181,7 +181,7 @@ export function onGameMessage(m: { type: string; [k: string]: unknown }) {
     case "paused":
       set((s) => ({ run: { ...s.run, state: "paused", line: m.line as number, fn: m.fn as string, vars: m.vars as Record<string, string> } }));
       revealLine(m.line as number, 1, false);
-      openPanel("debugger", { focus: false });
+      openPanel("debugger"); // bring its tab to the front so the variables are in view
       break;
     case "resumed":
       set((s) => ({ run: { ...s.run, state: "running", line: undefined, fn: undefined, vars: undefined } }));
@@ -346,7 +346,7 @@ const PRESETS: Record<WorkspaceId, () => void> = {
   game() {
     add("editor");
     add("game", { ref: "editor", dir: "right", size: Math.round(window.innerWidth * 0.42) });
-    add("project", { ref: "editor", dir: "left", size: 220 });
+    add("project", { ref: "editor", dir: "left", size: 240 });
     add("console", { ref: "editor", dir: "below", size: 190 });
     add("problems", { ref: "console", dir: "within" });
     add("debugger", { ref: "console", dir: "within" });
@@ -354,11 +354,12 @@ const PRESETS: Record<WorkspaceId, () => void> = {
   code() {
     add("editor");
     add("reference", { ref: "editor", dir: "right", size: 340 });
-    add("project", { ref: "editor", dir: "left", size: 220 });
+    add("project", { ref: "editor", dir: "left", size: 240 });
     add("console", { ref: "editor", dir: "below", size: 170 });
     add("problems", { ref: "console", dir: "within" });
-    const w = 420, h = 280;
-    add("game", "float", { x: window.innerWidth - 340 - w - 40, y: 60, width: w, height: h });
+    // Float the game in the editor's bottom-right corner, above the console, clear of the code.
+    const w = 440, h = 290;
+    add("game", "float", { x: window.innerWidth - 340 - w - 30, y: window.innerHeight - 26 - 170 - h - 60, width: w, height: h });
   },
   debug() {
     add("editor");

@@ -3,7 +3,7 @@ import { DockviewReact, themeAbyssSpaced, type IDockviewHeaderActionsProps } fro
 import * as A from "./actions";
 import { manifest } from "./compiler";
 import { Icon, type IconName } from "./icons";
-import { COMPONENTS } from "./panels";
+import { COMPONENTS, Tab } from "./panels";
 import { TEMPLATES, fsSupported } from "./project";
 import { get, set, useStore, type WorkspaceId } from "./store";
 
@@ -85,6 +85,7 @@ export default function App() {
   }, []);
 
   useShortcuts();
+  useWindowTitle();
 
   if (error) return <div className="boot error"><Icon name="alert" size={28} /><p>{error}</p></div>;
   if (!ready) return <div className="boot"><img src="/icon.svg" width={48} alt="" /><p>Starting CyberBasic…</p></div>;
@@ -97,9 +98,11 @@ export default function App() {
           className="cb-dock"
           theme={themeAbyssSpaced}
           components={COMPONENTS}
+          defaultTabComponent={Tab}
           rightHeaderActionsComponent={GroupActions}
           watermarkComponent={Watermark}
           floatingGroupBounds="boundedWithinViewport"
+          floatingGroupDragHandle="tabbar"
           popoutUrl="/popout.html"
           onReady={(e) => {
             A.refs.dock = e.api;
@@ -244,21 +247,35 @@ function MenuBar() {
   );
 }
 
+/** One main button whose job follows the state: Run, Restart while running, Continue while paused. */
 function RunControls() {
   const state = useStore((s) => s.run.state);
   const active = state === "running" || state === "paused" || state === "starting";
+  const main =
+    state === "paused"
+      ? { label: "Continue", icon: "play" as const, cls: " resume", title: "Continue (F5)", run: A.cont }
+      : active
+        ? { label: "Restart", icon: "restart" as const, cls: " live", title: "Restart with your latest code (Ctrl+Shift+F5)", run: A.restart }
+        : { label: "Run", icon: "play" as const, cls: "", title: "Run (F5)", run: A.run };
   return (
     <div className="run-controls">
-      <button className={"run-btn" + (state === "paused" ? " resume" : "")} onClick={A.run} title={state === "paused" ? "Continue (F5)" : "Run (F5)"}>
-        <Icon name="play" size={14} />
-        <span>{state === "paused" ? "Continue" : active ? "Running" : "Run"}</span>
+      <button className={"run-btn" + main.cls} onClick={main.run} title={main.title}>
+        <Icon name={main.icon} size={14} />
+        <span>{main.label}</span>
       </button>
       <button className="ctl" disabled={state !== "running"} onClick={A.pause} title="Pause (F6)"><Icon name="pause" size={15} /></button>
-      <button className="ctl" onClick={A.step} title="Step (F10)"><Icon name="step" size={15} /></button>
-      <button className="ctl" disabled={!active} onClick={A.restart} title="Restart (Ctrl+Shift+F5)"><Icon name="restart" size={15} /></button>
+      <button className="ctl" onClick={A.step} title={active ? "Step (F10)" : "Start paused on the first line (F10)"}><Icon name="step" size={15} /></button>
       <button className="ctl stop" disabled={!active} onClick={A.stop} title="Stop (Shift+F5)"><Icon name="stop" size={13} /></button>
     </div>
   );
+}
+
+function useWindowTitle() {
+  const name = useStore((s) => s.project.name);
+  const dirty = useStore((s) => s.dirty);
+  useEffect(() => {
+    document.title = `${dirty ? "● " : ""}${name} — CyberBasic`;
+  }, [name, dirty]);
 }
 
 function WorkspaceTabs() {

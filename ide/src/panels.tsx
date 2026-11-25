@@ -1,9 +1,9 @@
 // Dockable panels. Each reads what it needs from the store; actions do the work.
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { IDockviewPanelProps } from "dockview-react";
+import type { IDockviewPanelHeaderProps, IDockviewPanelProps } from "dockview-react";
 import * as A from "./actions";
 import { manifest, type Command } from "./compiler";
-import { Icon } from "./icons";
+import { Icon, type IconName } from "./icons";
 import { callSnippet, monaco, signature } from "./language";
 import { TEMPLATES, fsSupported } from "./project";
 import { get, set, useStore } from "./store";
@@ -64,7 +64,8 @@ export function EditorPanel() {
   useEffect(() => {
     decorations.current?.set(
       runLine
-        ? [{ range: new monaco.Range(runLine, 1, runLine, 1), options: { isWholeLine: true, className: "exec-line", glyphMarginClassName: "exec-glyph" } }]
+        ? // The arrow sits beside the line numbers so a breakpoint dot on the same line stays visible.
+          [{ range: new monaco.Range(runLine, 1, runLine, 1), options: { isWholeLine: true, className: "exec-line", linesDecorationsClassName: "exec-arrow" } }]
         : [],
     );
   }, [runLine]);
@@ -192,7 +193,7 @@ export function DebuggerPanel() {
   const paused = run.state === "paused";
   const vars = Object.entries(run.vars ?? {}).filter(([k]) => k.includes(q.toLowerCase()));
   return (
-    <div className="panel">
+    <div className="panel debugger">
       <div className="panel-bar">
         <button className="tool" disabled={!paused} onClick={A.cont} title="Continue (F5)"><Icon name="play" size={13} /> Continue</button>
         <button className="tool" disabled={!paused} onClick={A.step} title="Step (F10)"><Icon name="step" size={14} /> Step</button>
@@ -200,39 +201,48 @@ export function DebuggerPanel() {
         <span className="grow" />
         {paused && <span className="where">line {run.line} · {run.fn === "main" ? "main program" : `in ${run.fn}`}</span>}
       </div>
-      <div className="section-title">Variables</div>
-      {paused ? (
-        <>
-          <input className="filter" placeholder="Filter variables" value={q} onChange={(e) => setQ(e.target.value)} />
-          <div className="vars mono">
-            {vars.length === 0 && <div className="empty">No variables in scope.</div>}
-            {vars.map(([k, v]) => (
-              <div key={k} className="var">
-                <span className="var-name">{k}</span>
-                <span className="var-value" title={v}>{v}</span>
+      {/* Side by side when the panel is wide, stacked when it's narrow (container query in CSS). */}
+      <div className="debug-body">
+        <section className="debug-vars">
+          <div className="section-title">
+            Variables {paused && <span className="count">{vars.length}</span>}
+            <span className="grow" />
+            {paused && <input className="filter inline" placeholder="Filter" value={q} onChange={(e) => setQ(e.target.value)} />}
+          </div>
+          {paused ? (
+            <div className="vars mono">
+              {vars.length === 0 && <div className="empty">No variables in scope.</div>}
+              {vars.map(([k, v]) => (
+                <div key={k} className="var">
+                  <span className="var-name">{k}</span>
+                  <span className="var-value" title={v}>{v}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="empty">
+              Click the gutter (or press <kbd>F9</kbd>) to add a breakpoint, or press <kbd>F6</kbd> while the game runs. Variables show up here when it pauses.
+            </div>
+          )}
+        </section>
+        <section className="debug-bps">
+          <div className="section-title">
+            Breakpoints <span className="count">{bps.length}</span>
+            <span className="grow" />
+            {bps.length > 0 && <button className="link" onClick={() => A.setBreakpoints([])}>Remove all</button>}
+          </div>
+          <div className="list">
+            {bps.length === 0 && <div className="empty">None yet.</div>}
+            {bps.map((l) => (
+              <div key={l} className={"row" + (paused && run.line === l ? " current" : "")}>
+                <span className="bp-dot" />
+                <button className="link left" onClick={() => A.revealLine(l)}>Line {l}</button>
+                <span className="muted mono line-preview grow">{A.getModel().getLineContent(l).trim().slice(0, 48)}</span>
+                <button className="icon-btn" title="Remove" onClick={() => A.toggleBreakpoint(l)}><Icon name="close" size={12} /></button>
               </div>
             ))}
           </div>
-        </>
-      ) : (
-        <div className="empty">
-          Click the gutter (or press <kbd>F9</kbd>) to add a breakpoint, or press <kbd>F6</kbd> while the game runs. Variables show up here when it pauses.
-        </div>
-      )}
-      <div className="section-title">
-        Breakpoints <span className="count">{bps.length}</span>
-        <span className="grow" />
-        {bps.length > 0 && <button className="link" onClick={() => A.setBreakpoints([])}>Remove all</button>}
-      </div>
-      <div className="list">
-        {bps.map((l) => (
-          <div key={l} className="row">
-            <span className="bp-dot" />
-            <button className="link grow left" onClick={() => A.revealLine(l)}>Line {l}</button>
-            <span className="muted mono line-preview">{A.getModel().getLineContent(l).trim().slice(0, 40)}</span>
-            <button className="icon-btn" title="Remove" onClick={() => A.toggleBreakpoint(l)}><Icon name="close" size={12} /></button>
-          </div>
-        ))}
+        </section>
       </div>
     </div>
   );
@@ -388,6 +398,45 @@ export function StartPanel() {
           </aside>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ------------------------------------------------------------------ tabs
+
+const TAB_ICON: Record<string, IconName> = {
+  start: "sparkle", editor: "code", game: "gamepad", console: "terminal", problems: "alert",
+  debugger: "bug", reference: "book", project: "folder", asset: "image",
+};
+
+/** Tab with an icon and live status: unsaved dot (editor), running dot (game), error count (problems). */
+export function Tab({ api }: IDockviewPanelHeaderProps) {
+  const [title, setTitle] = useState(api.title);
+  useEffect(() => {
+    const d = api.onDidTitleChange((e) => setTitle(e.title));
+    return () => d.dispose();
+  }, [api]);
+  const kind = api.id.startsWith("asset:") ? "asset" : api.id;
+  const dirty = useStore((s) => kind === "editor" && s.dirty);
+  const live = useStore((s) => (kind === "game" ? s.run.state : ""));
+  const errors = useStore((s) => (kind === "problems" ? s.diagnostics.length : 0));
+  return (
+    <div className="tab" title={title}>
+      <Icon name={TAB_ICON[kind] ?? "file"} size={14} className="tab-icon" />
+      <span className="tab-title">{title}</span>
+      {(live === "running" || live === "paused") && <span className={"tab-live " + live} />}
+      {errors > 0 && <span className="tab-count">{errors}</span>}
+      <button
+        className={"tab-close" + (dirty ? " unsaved" : "")}
+        title={dirty ? "Unsaved changes" : "Close"}
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.stopPropagation();
+          api.close();
+        }}
+      >
+        <Icon name="close" size={12} />
+      </button>
     </div>
   );
 }
