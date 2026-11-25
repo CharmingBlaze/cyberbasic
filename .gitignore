@@ -1,3 +1,5 @@
 /target
 build/
 .claude/
+node_modules/
+ide/dist/

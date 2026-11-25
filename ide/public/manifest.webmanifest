@@ -1,0 +1,11 @@
+{
+  "name": "CyberBasic",
+  "short_name": "CyberBasic",
+  "description": "Make 2D and 3D games in a modern BASIC.",
+  "start_url": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "background_color": "#0b0c12",
+  "theme_color": "#0b0c12",
+  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

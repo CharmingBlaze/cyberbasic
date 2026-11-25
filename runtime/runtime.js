@@ -22,10 +22,52 @@ const CB = (() => {
     if (!e.repeat) keyHits.add(e.code);
     keys.add(e.code);
     if (e.code.startsWith("Arrow") || e.code === "Space") e.preventDefault();
+    // Inside the IDE, its shortcuts (F5 run, Ctrl+S save...) must work while the game has focus.
+    if (ide && (/^F\d+$/.test(e.code) || ((e.ctrlKey || e.metaKey) && /^(Key[SKOENP]|Digit[1-4])$/.test(e.code)))) {
+      e.preventDefault();
+      post({ type: "key", key: e.key, ctrl: e.ctrlKey || e.metaKey, shift: e.shiftKey });
+    }
   });
   addEventListener("keyup", (e) => keys.delete(e.code));
   addEventListener("mouseup", (e) => buttons.delete(e.button));
   addEventListener("blur", () => { keys.clear(); buttons.clear(); });
+
+  // Asset paths can be remapped (IDE projects and single-file exports use blob/data URLs).
+  const ASSETS = globalThis.CB_ASSETS || {};
+  const asset = (p) => ASSETS[String(p)] ?? String(p);
+
+  // --- IDE bridge: when running inside the IDE's preview frame, report output and obey the
+  // debugger. Outside the IDE `ide` is null and all of this is inert.
+  const ide = typeof window !== "undefined" && window.parent !== window ? window.parent : null;
+  const post = (m) => ide?.postMessage({ cyberbasic: true, ...m }, "*");
+  const breakpoints = new Set();
+  let stepping = false, pauseRequested = false, paused = false;
+  const updateTrap = () => { cb.trap = breakpoints.size > 0 || stepping || pauseRequested; };
+  addEventListener("message", (e) => {
+    const m = e.data;
+    if (e.source !== ide || !m?.cyberbasic) return;
+    if (m.type === "breakpoints") { breakpoints.clear(); m.lines.forEach((l) => breakpoints.add(l)); }
+    if (m.type === "continue") paused = false;
+    if (m.type === "step") { stepping = true; paused = false; }
+    if (m.type === "pause") pauseRequested = true;
+    updateTrap();
+  });
+  // Debugger view of a value: short, readable, and safe to postMessage.
+  const fmt = (v, nested = false) => {
+    if (v === null || v === undefined) return "0";
+    if (typeof v === "number") return String(Math.round(v * 1e4) / 1e4);
+    if (typeof v === "string") return JSON.stringify(v);
+    if (typeof v === "boolean") return String(v);
+    if (Array.isArray(v)) {
+      if (nested) return `Array(${v.length})`;
+      return `[${v.slice(0, 10).map((x) => fmt(x, true)).join(", ")}${v.length > 10 ? ", …" : ""}] (${v.length})`;
+    }
+    if (v.$type) return nested ? "{…}" : `{ ${v.$type.map((f) => `${f}: ${fmt(v[f], true)}`).join(", ")} }`;
+    if (v.sheet || v instanceof HTMLImageElement) return `Image ${v.width}×${v.height}`;
+    if (v instanceof HTMLAudioElement) return "Sound";
+    if (v.getClassName) return `${v.getClassName()} "${v.name}"`;
+    return String(v);
+  };
 
   const BUTTON = [0, 0, 2, 1]; // BASIC 1=left 2=right 3=middle -> DOM button numbers
   const rgb = (r, g, b) => `rgb(${r},${g},${b})`;
@@ -76,9 +118,19 @@ const CB = (() => {
     ctx.font = "16px ui-monospace, Consolas, monospace";
     ctx.fillStyle = ctx.strokeStyle = "#fff";
     box.addEventListener("mousemove", (e) => {
-      const r = box.getBoundingClientRect();
-      mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top;
+      const r = box.getBoundingClientRect(); // in screen pixels, so divide out any fit scaling
+      mouse.x = ((e.clientX - r.left) * w) / r.width; mouse.y = ((e.clientY - r.top) * h) / r.height;
     });
+    if (globalThis.CB_FIT) {
+      // Scale the game to fill the window (IDE preview, exported page), keeping its aspect ratio.
+      const fit = () => {
+        const s = Math.min(innerWidth / w, innerHeight / h);
+        box.style.cssText = `position:fixed;width:${w}px;height:${h}px;transform-origin:0 0;` +
+          `transform:scale(${s});left:${(innerWidth - w * s) / 2}px;top:${(innerHeight - h * s) / 2}px`;
+      };
+      addEventListener("resize", fit);
+      fit();
+    }
     box.addEventListener("mousedown", (e) => { buttons.add(e.button); buttonHits.add(e.button); });
     box.addEventListener("contextmenu", (e) => e.preventDefault());
     mode = three ? 3 : 2;
@@ -122,7 +174,7 @@ const CB = (() => {
     let state = 0;
     el.addEventListener(okEvent, () => { state = 1; }, { once: true });
     el.addEventListener("error", () => { state = 2; }, { once: true });
-    el.src = String(path);
+    el.src = asset(path);
     const giveUp = performance.now() + 10000;
     while (state === 0 && performance.now() < giveUp) yield;
     if (state !== 1) throw new Error(`could not load ${what} "${path}"`);
@@ -207,7 +259,7 @@ const CB = (() => {
     // --- Time and output
     *Delay(ms) { const until = performance.now() + ms; while (performance.now() < until) yield; },
     Millisecs() { return Math.floor(performance.now()); },
-    Print(v) { console.log(String(v)); },
+    Print(v) { console.log(String(v)); post({ type: "log", text: String(v), line: cb.ln }); },
 
     // --- Math (angles in degrees, as in Blitz)
     Abs: Math.abs,
@@ -296,8 +348,11 @@ const CB = (() => {
     *LoadMesh(path) {
       need3d();
       yield* script(CDN + "loaders/babylonjs.loaders.min.js");
-      const p = String(path), cut = p.lastIndexOf("/") + 1;
-      const result = yield* settle(B.SceneLoader.ImportMeshAsync("", p.slice(0, cut), p.slice(cut), scene));
+      const p = String(path), url = asset(p), cut = p.lastIndexOf("/") + 1;
+      const result = yield* settle(url === p
+        ? B.SceneLoader.ImportMeshAsync("", p.slice(0, cut), p.slice(cut), scene)
+        // remapped (blob/data URL): the extension tells the loader the format
+        : B.SceneLoader.ImportMeshAsync("", "", url, scene, null, p.slice(p.lastIndexOf("."))));
       const n = node("model");
       result.meshes[0].parent = n; // the glTF root carries the handedness flip; keep it underneath
       return n;
@@ -371,6 +426,19 @@ const CB = (() => {
       if (i >= 0) list.splice(i, 1);
       Object.defineProperty(o, "$dead", { value: true });
     },
+    trap: false,
+    // Debug builds call this before each statement while `trap` is set (see codegen).
+    *pause(line, fn, vars) {
+      if (!(stepping || pauseRequested || breakpoints.has(line))) return;
+      stepping = pauseRequested = false;
+      updateTrap();
+      paused = true;
+      const shown = {};
+      for (const [k, v] of Object.entries(vars())) shown[k] = fmt(v);
+      post({ type: "paused", line, fn, vars: shown });
+      while (paused) yield; // the frame loop keeps running but skips rendering, so the world freezes
+      post({ type: "resumed" });
+    },
     // Called in every loop body: stops a loop with no Sync from freezing the page forever.
     guard() {
       if ((++ops & 0xffff) === 0 && performance.now() - frameStart > 5000) {
@@ -380,9 +448,16 @@ const CB = (() => {
 
     // Drives the compiled generator: one resume per frame, `Sync` = yield (PLAN.md §4.3).
     run(main) {
+      for (const l of globalThis.CB_BREAKPOINTS || []) breakpoints.add(l); // set before line 1 runs
+      updateTrap();
       const prog = main();
-      let last = performance.now();
+      let last = performance.now(), frames = 0, fpsStart = last;
+      post({ type: "started" });
       const frame = (now) => {
+        if (++frames, now - fpsStart >= 1000) {
+          post({ type: "fps", fps: Math.round((frames * 1000) / (now - fpsStart)) });
+          frames = 0; fpsStart = now;
+        }
         cb.delta = Math.min((now - last) / 1000, 0.1); // clamp so a stalled tab doesn't teleport objects
         last = now;
         frameStart = performance.now();
@@ -393,17 +468,18 @@ const CB = (() => {
         } catch (err) {
           if (err !== END) {
             console.error(err);
+            post({ type: "error", line: cb.ln, message: err.message });
             return say(`Runtime error on line ${cb.ln}: ${err.message}`, true);
           }
           done = true;
         }
         keyHits.clear();
         buttonHits.clear();
-        if (scene?.activeCamera) {
+        if (scene?.activeCamera && !paused) {
           collisions.clear(); // the physics step inside render() refills it for the next frame's logic
           engine.beginFrame(); scene.render(); engine.endFrame();
         }
-        if (done) return say("Program ended.");
+        if (done) { post({ type: "ended" }); return say("Program ended."); }
         requestAnimationFrame(frame);
       };
       requestAnimationFrame(frame);

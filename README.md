@@ -39,6 +39,26 @@ This compiles `examples/pong.cb` into `examples/build/pong/` and opens it. Use `
 
 > Games load Babylon.js from its CDN, so for now they need an internet connection.
 
+### IDE
+
+A desktop-style editor with a game preview, debugger and workspaces. Needs [Node.js](https://nodejs.org) and Rust with the WebAssembly target.
+
+```sh
+rustup target add wasm32-unknown-unknown
+cd ide
+npm install
+npm run dev
+```
+
+Open <http://localhost:5173> in Chrome or Edge (opening and saving folders needs their File System Access API). In Chrome you can **Install** it from the address bar to get its own window.
+
+- **Run** with F5. The game runs in the Game panel, scaled to fit.
+- **Debug**: click the gutter or press F9 for a breakpoint; F6 pauses, F10 steps (into functions too), F5 continues. The Debugger panel shows every variable in scope.
+- **Workspaces** (Game, Code, Debug, Learn) rearrange the panels; your changes to each are remembered. *Workspace → Reset* restores the default.
+- **Popup panels**: every panel group has buttons to float it, pop it out into its own window, or maximize it.
+- **Ctrl+Shift+P** opens the command palette: every action, every template, and docs for every command.
+- **File → Export Web Game** downloads one `.html` file with your game and its assets inside.
+
 ### Playground
 
 Edit and run CyberBasic in the browser; the compiler runs there as WebAssembly.
@@ -144,7 +164,8 @@ Keys: `KEY_A`–`KEY_Z`, `KEY_0`–`KEY_9`, `KEY_ESCAPE`, `KEY_SPACE`, `KEY_ENTE
 ```
 crates/cyberbasic/   compiler + CLI (Rust, no dependencies); also builds to WASM
 runtime/             runtime.js and the index.html page template
-playground/          in-browser editor using the WASM compiler
+ide/                 desktop-style IDE (React, Monaco, dockview) using the WASM compiler
+playground/          minimal in-browser editor
 examples/            sample games
 PLAN.md              product plan, roadmap and progress
 ```

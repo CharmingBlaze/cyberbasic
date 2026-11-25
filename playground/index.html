@@ -59,7 +59,7 @@ function compile(src) {
   const bytes = new TextEncoder().encode(src);
   const p = wasm.cb_alloc(bytes.length);
   new Uint8Array(wasm.memory.buffer, p, bytes.length).set(bytes);
-  const ok = wasm.cb_compile(p, bytes.length);
+  const ok = wasm.cb_compile(p, bytes.length, 0);
   wasm.cb_free(p, bytes.length);
   const out = new TextDecoder().decode(new Uint8Array(wasm.memory.buffer, wasm.cb_out_ptr(), wasm.cb_out_len()));
   return { ok: ok === 1, out };

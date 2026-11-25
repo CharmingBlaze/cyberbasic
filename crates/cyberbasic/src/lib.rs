@@ -25,9 +25,14 @@ impl Error {
 }
 
 pub fn compile(src: &str) -> Result<String, Error> {
+    compile_with(src, false)
+}
+
+/// `debug` adds breakpoint/step hooks and variable snapshots for the IDE debugger.
+pub fn compile_with(src: &str, debug: bool) -> Result<String, Error> {
     let toks = lexer::lex(src)?;
     let prog = parser::Parser::new(toks).program()?;
-    Ok(codegen::generate(&prog))
+    Ok(codegen::generate(&prog, debug))
 }
 
 #[cfg(test)]
@@ -223,6 +228,27 @@ globalThis.requestAnimationFrame = (f) => setImmediate(() => f(performance.now()
     #[test]
     fn end_inside_a_function_stops_the_program() {
         check("Stop\nPrint \"never\"\nFunction Stop()\n  Print \"bye\"\n  End\nEnd Function", "bye\nProgram ended.");
+    }
+
+    #[test]
+    fn manifest_is_documented_and_json_safe() {
+        for b in builtins::BUILTINS {
+            assert!(!b.doc.is_empty(), "{} has no doc", b.name);
+            for s in [b.doc, b.args, b.category] {
+                assert!(s.is_ascii() && !s.contains(['"', '\\']), "{}: unsafe text {s:?}", b.name);
+            }
+        }
+        let json = builtins::manifest_json();
+        assert!(json.contains(r#"{"name":"Rect","category":"2D Drawing","args":"x, y, width, height[, fill]""#));
+        assert!(json.contains(r#""KEY_Z""#));
+    }
+
+    #[test]
+    fn debug_builds_pause_with_a_variable_snapshot() {
+        let js = compile_with("Global g\nx = 1\nF 2\nFunction F(a)\n  b = a\nEnd Function", true).unwrap();
+        assert!(js.contains(r#"if (CB.trap) yield* CB.pause(2, "main", () => ({ g: g_g, x: v_x }));"#), "{js}");
+        assert!(js.contains(r#"CB.pause(5, "f", () => ({ a: v_a, b: v_b, g: g_g }))"#), "{js}");
+        assert!(!compile("x = 1").unwrap().contains("CB.pause"));
     }
 
     #[test]

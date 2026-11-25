@@ -1,5 +1,5 @@
 //! Plain C-ABI exports so the browser playground can call the compiler without wasm-bindgen.
-//! JS: cb_alloc(n) -> copy UTF-8 source in -> cb_compile(ptr, n) returns 1 (ok) or 0 (error);
+//! JS: cb_alloc(n) -> copy UTF-8 source in -> cb_compile(ptr, n, debug) returns 1 (ok) or 0 (error);
 //! then read cb_out_len() bytes at cb_out_ptr(): the JS, or "line:col:message".
 
 use std::cell::RefCell;
@@ -26,14 +26,20 @@ pub unsafe extern "C" fn cb_free(p: *mut u8, len: usize) {
 /// # Safety
 /// `p` must point to `len` initialized bytes (from `cb_alloc`).
 #[no_mangle]
-pub unsafe extern "C" fn cb_compile(p: *const u8, len: usize) -> u32 {
+pub unsafe extern "C" fn cb_compile(p: *const u8, len: usize, debug: u32) -> u32 {
     let src = String::from_utf8_lossy(std::slice::from_raw_parts(p, len));
-    let (ok, text) = match crate::compile(&src) {
+    let (ok, text) = match crate::compile_with(&src, debug != 0) {
         Ok(js) => (1, js),
         Err(e) => (0, format!("{}:{}:{}", e.line, e.col, e.msg)),
     };
     OUT.with(|o| *o.borrow_mut() = text.into_bytes());
     ok
+}
+
+/// Puts the command manifest (JSON) in the output buffer.
+#[no_mangle]
+pub extern "C" fn cb_manifest() {
+    OUT.with(|o| *o.borrow_mut() = crate::builtins::manifest_json().into_bytes());
 }
 
 #[no_mangle]
