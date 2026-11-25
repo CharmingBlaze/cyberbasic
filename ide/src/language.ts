@@ -3,7 +3,13 @@ import * as monaco from "./monaco";
 import EditorWorker from "monaco-editor/editor/editor.worker?worker";
 import { manifest, findCommand, type Command } from "./compiler";
 import { get } from "./store";
-import { definition, format, occurrences, scan, type Occurrence } from "./symbols";
+import { definition, format, isGlobalName, occurrences, scan, type Occurrence } from "./symbols";
+
+/** Every CyberBasic file open in the project (one Monaco model each). */
+const projectModels = () => monaco.editor.getModels().filter((m) => m.getLanguageId() === "cyberbasic");
+const allText = () => projectModels().map((m) => m.getValue()).join("\n");
+/** Functions, types, Globals and Consts are visible from every file (Include splices files together). */
+const globalInProject = (name: string) => projectModels().some((m) => isGlobalName(scan(m.getValue()), name));
 
 self.MonacoEnvironment = { getWorker: () => new EditorWorker() };
 
@@ -93,7 +99,7 @@ export function registerLanguage() {
     provideCompletionItems(model, pos) {
       const word = model.getWordUntilPosition(pos);
       const range = new monaco.Range(pos.lineNumber, word.startColumn, pos.lineNumber, word.endColumn);
-      const user = userSymbols(model.getValue());
+      const user = userSymbols(allText()); // names from every file
       const items: monaco.languages.CompletionItem[] = [
         ...manifest.commands.map((c) => ({
           label: { label: c.name, description: c.category },
@@ -148,7 +154,7 @@ export function registerLanguage() {
       if (value !== undefined) {
         return { range, contents: [{ value: "```cyberbasic\n" + word.word + " = " + value + "\n```" }, { value: `*value on line ${run.line}*` }] };
       }
-      const params = userSymbols(model.getValue()).funcs.get(word.word);
+      const params = userSymbols(allText()).funcs.get(word.word);
       if (params !== undefined) return { range, contents: [{ value: "```cyberbasic\nFunction " + word.word + "(" + params + ")\n```" }] };
       return null;
     },
@@ -162,6 +168,11 @@ export function registerLanguage() {
     return w;
   };
   const toRange = (o: Occurrence) => new monaco.Range(o.line, o.col, o.line, o.col + o.length);
+  /** Uses of a name: in every file if it's global anywhere in the project, else just its scope here. */
+  const projectOccurrences = (model: monaco.editor.ITextModel, name: string, line: number): [monaco.editor.ITextModel, Occurrence][] =>
+    globalInProject(name)
+      ? projectModels().flatMap((m) => occurrences(m.getValue(), name, 1, true).map((o) => [m, o] as [monaco.editor.ITextModel, Occurrence]))
+      : occurrences(model.getValue(), name, line).map((o) => [model, o]);
 
   monaco.languages.registerDocumentSymbolProvider(LANG, {
     provideDocumentSymbols(model) {
@@ -182,7 +193,16 @@ export function registerLanguage() {
   monaco.languages.registerDefinitionProvider(LANG, {
     provideDefinition(model, pos) {
       const w = userWord(model, pos);
-      const d = w && definition(model.getValue(), w.word, pos.lineNumber);
+      if (!w) return null;
+      // A function, type or Global may be declared in another file.
+      if (globalInProject(w.word)) {
+        for (const m of [model, ...projectModels().filter((x) => x !== model)]) {
+          if (!isGlobalName(scan(m.getValue()), w.word)) continue;
+          const d = definition(m.getValue(), w.word, 1);
+          if (d) return { uri: m.uri, range: new monaco.Range(d.line, d.col, d.line, d.col) };
+        }
+      }
+      const d = definition(model.getValue(), w.word, pos.lineNumber);
       return d ? { uri: model.uri, range: new monaco.Range(d.line, d.col, d.line, d.col) } : null;
     },
   });
@@ -190,14 +210,14 @@ export function registerLanguage() {
   monaco.languages.registerReferenceProvider(LANG, {
     provideReferences(model, pos) {
       const w = userWord(model, pos);
-      return w ? occurrences(model.getValue(), w.word, pos.lineNumber).map((o) => ({ uri: model.uri, range: toRange(o) })) : [];
+      return w ? projectOccurrences(model, w.word, pos.lineNumber).map(([m, o]) => ({ uri: m.uri, range: toRange(o) })) : [];
     },
   });
 
   monaco.languages.registerDocumentHighlightProvider(LANG, {
     provideDocumentHighlights(model, pos) {
       const w = userWord(model, pos);
-      return w ? occurrences(model.getValue(), w.word, pos.lineNumber).map((o) => ({ range: toRange(o) })) : [];
+      return w ? occurrences(model.getValue(), w.word, pos.lineNumber, globalInProject(w.word) || undefined).map((o) => ({ range: toRange(o) })) : [];
     },
   });
 
@@ -211,9 +231,12 @@ export function registerLanguage() {
       const w = userWord(model, pos)!;
       if (!/^[A-Za-z_]\w*$/.test(newName)) return { edits: [], rejectReason: `“${newName}” isn't a valid name.` };
       if (findCommand(newName) || manifest.keywords.includes(newName.toLowerCase())) return { edits: [], rejectReason: `“${newName}” is a built-in name.` };
-      const versionId = model.getVersionId();
       return {
-        edits: occurrences(model.getValue(), w.word, pos.lineNumber).map((o) => ({ resource: model.uri, versionId, textEdit: { range: toRange(o), text: newName } })),
+        edits: projectOccurrences(model, w.word, pos.lineNumber).map(([m, o]) => ({
+          resource: m.uri,
+          versionId: m.getVersionId(),
+          textEdit: { range: toRange(o), text: newName },
+        })),
       };
     },
   });

@@ -1,0 +1,32 @@
+' The player's ship and its bullets.
+Global px = 400, py = 540
+Const SHIP_SPEED = 360, BULLET_SPEED = 600
+
+Type Bullet
+    Field x, y
+End Type
+
+Function UpdatePlayer()
+    If KeyDown(KEY_LEFT) Then px -= SHIP_SPEED * Delta
+    If KeyDown(KEY_RIGHT) Then px += SHIP_SPEED * Delta
+    px = Max(20, Min(780, px))
+    If KeyHit(KEY_SPACE)
+        b = New Bullet
+        b.x = px : b.y = py - 18
+    EndIf
+    For b = Each Bullet
+        b.y -= BULLET_SPEED * Delta
+        If b.y < -10 Then Delete b
+    Next
+End Function
+
+Function DrawPlayer()
+    Color 76, 194, 255
+    Line px, py - 18, px - 14, py + 12
+    Line px, py - 18, px + 14, py + 12
+    Line px - 14, py + 12, px + 14, py + 12
+    Color 255, 230, 120
+    For b = Each Bullet
+        Rect b.x - 2, b.y - 8, 4, 10
+    Next
+End Function

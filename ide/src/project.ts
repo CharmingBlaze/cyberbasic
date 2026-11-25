@@ -4,6 +4,7 @@ import pageTemplate from "../../runtime/index.html?raw";
 import type { Project } from "./store";
 
 const exampleSources = import.meta.glob("../../examples/*.cb", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
+const shooterFiles = import.meta.glob("../../examples/shooter/*.cb", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
 const exampleAssetUrls = import.meta.glob("../../examples/assets/*", { query: "?url", import: "default", eager: true }) as Record<string, string>;
 
 /** The example assets, keyed the way code refers to them ("assets/ship.svg"). */
@@ -63,22 +64,31 @@ export interface Template {
   name: string;
   kind: "2D" | "3D";
   description: string;
-  source: string;
+  /** Source files by name; main.cb runs. */
+  files: Record<string, string>;
 }
+const one = (source: string) => ({ "main.cb": source });
 
 export const TEMPLATES: Template[] = [
-  { id: "empty2d", name: "Empty 2D", kind: "2D", description: "A screen, a game loop and a box you can move.", source: EMPTY_2D },
-  { id: "empty3d", name: "Empty 3D", kind: "3D", description: "Camera, light, floor and a cube you can drive.", source: EMPTY_3D },
-  { id: "pong", name: "Pong", kind: "2D", description: "Two-player classic: functions, globals, collision.", source: example("pong") },
-  { id: "breakout", name: "Breakout", kind: "2D", description: "Types, For Each, arrays and mouse control.", source: example("breakout") },
-  { id: "drift", name: "Drift", kind: "2D", description: "Animated sprite sheet with rotation and thrust.", source: example("drift") },
-  { id: "cube", name: "Spinning Cube", kind: "3D", description: "The smallest 3D program: a cube with a HUD.", source: example("cube") },
-  { id: "marble", name: "Marble Run", kind: "3D", description: "Havok physics, a glTF model and a follow camera.", source: example("marble") },
+  { id: "empty2d", name: "Empty 2D", kind: "2D", description: "A screen, a game loop and a box you can move.", files: one(EMPTY_2D) },
+  { id: "empty3d", name: "Empty 3D", kind: "3D", description: "Camera, light, floor and a cube you can drive.", files: one(EMPTY_3D) },
+  { id: "pong", name: "Pong", kind: "2D", description: "Two-player classic: functions, globals, collision.", files: one(example("pong")) },
+  { id: "breakout", name: "Breakout", kind: "2D", description: "Types, For Each, arrays and mouse control.", files: one(example("breakout")) },
+  {
+    id: "shooter",
+    name: "Star Shooter",
+    kind: "2D",
+    description: "A game split across files with Include: player, enemies, main loop.",
+    files: Object.fromEntries(Object.entries(shooterFiles).map(([path, src]) => [path.split("/").pop()!, src])),
+  },
+  { id: "drift", name: "Drift", kind: "2D", description: "Animated sprite sheet with rotation and thrust.", files: one(example("drift")) },
+  { id: "cube", name: "Spinning Cube", kind: "3D", description: "The smallest 3D program: a cube with a HUD.", files: one(example("cube")) },
+  { id: "marble", name: "Marble Run", kind: "3D", description: "Havok physics, a glTF model and a follow camera.", files: one(example("marble")) },
 ];
 
 export const fromTemplate = (t: Template): Project => ({
   name: t.name,
-  source: t.source,
+  files: { ...t.files },
   assets: EXAMPLE_ASSETS,
   fileName: "main.cb",
 });
@@ -108,22 +118,23 @@ export const fsSupported = typeof window !== "undefined" && "showDirectoryPicker
 
 export const openFolder = async () => readFolder(await window.showDirectoryPicker({ mode: "readwrite" }));
 
-/** Loads a project from a folder: its main .cb file plus everything under assets/. */
+/** Loads a project from a folder: its .cb files plus everything under assets/. main.cb runs. */
+// shortcut: only .cb files directly in the folder are loaded; add subfolders if projects need them.
 export async function readFolder(dir: FileSystemDirectoryHandle): Promise<Project> {
-  const cbFiles: string[] = [];
+  const files: Record<string, string> = {};
   for await (const [name, handle] of dir.entries()) {
-    if (handle.kind === "file" && name.toLowerCase().endsWith(".cb")) cbFiles.push(name);
+    if (handle.kind === "file" && name.toLowerCase().endsWith(".cb")) files[name] = await (await (handle as FileSystemFileHandle).getFile()).text();
   }
-  if (!cbFiles.length) throw new Error(`"${dir.name}" has no .cb file`);
-  const fileName = cbFiles.includes("main.cb") ? "main.cb" : cbFiles.sort()[0];
-  const source = await (await (await dir.getFileHandle(fileName)).getFile()).text();
+  const names = Object.keys(files).sort();
+  if (!names.length) throw new Error(`"${dir.name}" has no .cb file`);
+  const fileName = names.includes("main.cb") ? "main.cb" : names[0];
   const assets: Record<string, string> = {};
   try {
     await collect(await dir.getDirectoryHandle("assets"), "assets", assets);
   } catch {
     // no assets folder
   }
-  return { name: dir.name, source, assets, dir, fileName };
+  return { name: dir.name, files, assets, dir, fileName };
 }
 
 async function collect(dir: FileSystemDirectoryHandle, prefix: string, out: Record<string, string>) {
@@ -139,13 +150,13 @@ export async function saveProject(p: Project, saveAs = false): Promise<Project> 
   let dir = saveAs ? undefined : p.dir;
   if (!dir) {
     if (!fsSupported) {
-      download(p.fileName, p.source, "text/plain");
+      for (const [name, src] of Object.entries(p.files)) download(name, src, "text/plain");
       return p;
     }
     dir = await window.showDirectoryPicker({ mode: "readwrite" });
     for (const [path, url] of usedAssets(p)) await writeFile(dir, path, await (await fetch(url)).blob());
   }
-  await writeFile(dir, p.fileName, p.source);
+  for (const [name, src] of Object.entries(p.files)) await writeFile(dir, name, src);
   return { ...p, dir, name: dir.name };
 }
 
@@ -158,7 +169,7 @@ export async function writeFile(dir: FileSystemDirectoryHandle, path: string, da
   await w.close();
 }
 
-const usedAssets = (p: Project) => Object.entries(p.assets).filter(([path]) => p.source.includes(path));
+const usedAssets = (p: Project) => Object.entries(p.assets).filter(([path]) => Object.values(p.files).some((src) => src.includes(path)));
 
 /** Downloads the game as one HTML file with the runtime and every used asset embedded. */
 export async function exportGame(p: Project, js: string) {

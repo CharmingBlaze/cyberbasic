@@ -362,3 +362,8 @@ button.status-item:hover { background: var(--bg3); }
 .game:hover .game-tools { opacity: 1; }
 .game-tools button { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 6px; color: var(--text-2); }
 .game-tools button:hover { background: var(--bg3); color: var(--text); }
+
+.file-open { display: flex; align-items: center; gap: 8px; text-align: left; color: inherit; }
+.file-badge { font-size: 10.5px; font-weight: 700; color: var(--accent); background: var(--accent-soft); border-radius: 8px; padding: 0 6px; }
+.file-del { opacity: 0; }
+.row.file:hover .file-del { opacity: 1; }

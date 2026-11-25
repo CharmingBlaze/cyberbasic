@@ -6,15 +6,17 @@ export type WorkspaceId = "game" | "code" | "debug" | "learn";
 
 export interface Project {
   name: string;
-  source: string;
+  /** Source files by name ("main.cb", "enemies.cb"). `fileName` is the one that runs. */
+  files: Record<string, string>;
   /** Asset path as used in code ("assets/ship.svg") -> URL the browser can load. */
   assets: Record<string, string>;
   /** Linked folder on disk, when opened or saved with the File System Access API. */
   dir?: FileSystemDirectoryHandle;
   fileName: string;
 }
-export interface Diagnostic { line: number; col: number; message: string; kind: "compile" | "runtime" }
-export interface LogEntry { id: number; kind: "log" | "error" | "info"; text: string; line?: number; time: string }
+export interface Diagnostic { file: string; line: number; col: number; message: string; kind: "compile" | "runtime" }
+export interface LogEntry { id: number; kind: "log" | "error" | "info"; text: string; file?: string; line?: number; time: string }
+export interface Breakpoint { file: string; line: number }
 export interface Toast { id: number; text: string; kind: "info" | "error" | "success" }
 
 export interface Settings {
@@ -46,13 +48,17 @@ export interface State {
     state: RunState;
     session: number; // bumps on every run; the game panel reloads when it changes
     page: string; // the HTML page currently running
+    files: string[]; // file order of the running build: locations are file index * 1e6 + line
+    file?: string;
     line?: number;
     fn?: string;
     vars?: Record<string, string>;
     fps?: number;
   };
   logs: LogEntry[];
-  breakpoints: number[];
+  breakpoints: Breakpoint[];
+  /** The file in the editor that last had focus. */
+  activeFile: string;
   workspace: WorkspaceId;
   cursor: { line: number; col: number };
   toasts: Toast[];
@@ -63,12 +69,13 @@ export interface State {
 
 let state: State = {
   ready: false,
-  project: { name: "Untitled", source: "", assets: {}, fileName: "main.cb" },
+  project: { name: "Untitled", files: { "main.cb": "" }, assets: {}, fileName: "main.cb" },
   dirty: false,
   diagnostics: [],
-  run: { state: "stopped", session: 0, page: "" },
+  run: { state: "stopped", session: 0, page: "", files: [] },
   logs: [],
   breakpoints: [],
+  activeFile: "main.cb",
   workspace: "game",
   cursor: { line: 1, col: 1 },
   toasts: [],

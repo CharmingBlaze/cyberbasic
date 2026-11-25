@@ -66,10 +66,11 @@ export function isGlobalName(s: Scan, name: string) {
 
 export interface Occurrence { line: number; col: number; length: number }
 
-/** Every use of `name` as an identifier (not inside strings, comments, or after a `.`), limited to its scope. */
-export function occurrences(text: string, name: string, atLine: number): Occurrence[] {
+/** Every use of `name` as an identifier (not inside strings, comments, or after a `.`), limited to
+ * its scope. `forceGlobal` is for names declared in another file of the project. */
+export function occurrences(text: string, name: string, atLine: number, forceGlobal?: boolean): Occurrence[] {
   const s = scan(text);
-  const global = isGlobalName(s, name);
+  const global = forceGlobal ?? isGlobalName(s, name);
   const scope = global ? null : scopeAt(s, atLine);
   const inScope = (line: number) => {
     if (s.types.some((t) => line > t.line && line < t.endLine)) return false; // Field names are not variables

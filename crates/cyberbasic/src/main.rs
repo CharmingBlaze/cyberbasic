@@ -9,9 +9,13 @@ fn main() {
         [c, f, ..] if c == "build" || c == "run" => (c.as_str(), f.as_str()),
         _ => die(USAGE),
     };
-    let src = fs::read_to_string(file).unwrap_or_else(|e| die(&format!("cannot read {file}: {e}")));
-    let js = cyberbasic_core::compile(&src).unwrap_or_else(|e| {
-        report(file, &src, &e);
+    fs::metadata(file).unwrap_or_else(|e| die(&format!("cannot read {file}: {e}")));
+    // Included files are found relative to the main file's folder (the project folder).
+    let dir = Path::new(file).parent().unwrap_or(Path::new(".")).to_path_buf();
+    let main_name = Path::new(file).file_name().unwrap_or_default().to_string_lossy().into_owned();
+    let load = |name: &str| fs::read_to_string(dir.join(name)).ok();
+    let js = cyberbasic_core::compile_project(&main_name, &load, false).unwrap_or_else(|e| {
+        report(&dir, &e, &load);
         process::exit(1)
     });
 
@@ -70,9 +74,10 @@ fn open(path: &Path) {
     }
 }
 
-fn report(file: &str, src: &str, e: &cyberbasic_core::Error) {
-    eprintln!("{file}:{}:{}: error: {}", e.line, e.col, e.msg);
-    if let Some(text) = src.lines().nth(e.line - 1) {
+fn report(dir: &Path, e: &cyberbasic_core::Error, load: &dyn Fn(&str) -> Option<String>) {
+    eprintln!("{}:{}:{}: error: {}", dir.join(&e.file).display(), e.line, e.col, e.msg);
+    let src = load(&e.file).unwrap_or_default();
+    if let Some(text) = src.lines().nth(e.line.saturating_sub(1)) {
         eprintln!("  {:>4} | {text}", e.line);
         eprintln!("       | {}^", " ".repeat(e.col.saturating_sub(1)));
     }

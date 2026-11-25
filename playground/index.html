@@ -56,7 +56,7 @@ const [wasmBytes, runtime, page] = await Promise.all([
 const wasm = (await WebAssembly.instantiate(wasmBytes)).instance.exports;
 
 function compile(src) {
-  const bytes = new TextEncoder().encode(src);
+  const bytes = new TextEncoder().encode("main.cb\0" + src); // a one-file project, see wasm.rs
   const p = wasm.cb_alloc(bytes.length);
   new Uint8Array(wasm.memory.buffer, p, bytes.length).set(bytes);
   const ok = wasm.cb_compile(p, bytes.length, 0);
@@ -74,7 +74,7 @@ function run() {
   const t0 = performance.now();
   const { ok, out } = compile(src);
   if (!ok) {
-    const [line, col, ...msg] = out.split(":");
+    const [, line, col, ...msg] = out.split("\t"); // file, line, col, message
     $("err").textContent = `Line ${line}, column ${col}: ${msg.join(":")}`;
     status("Compile error");
     // Put the cursor on the error.

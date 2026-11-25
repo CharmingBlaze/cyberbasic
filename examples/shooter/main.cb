@@ -1,0 +1,29 @@
+' Star Shooter: a game split across three files.
+' main.cb runs the game loop; player.cb and enemies.cb hold the rest.
+' Left/Right moves, Space shoots, Escape quits.
+Game "Star Shooter"
+Graphics 800, 600
+ClsColor 6, 8, 18
+
+Include "player.cb"
+Include "enemies.cb"
+
+Global score, lives = 3
+
+While Not KeyHit(KEY_ESCAPE) And lives > 0
+    UpdatePlayer
+    UpdateEnemies
+
+    Cls
+    DrawEnemies
+    DrawPlayer
+    Color 255, 255, 255
+    Text 10, 10, "Score: " + score + "   Lives: " + lives
+    Sync
+Wend
+
+Cls
+Text 300, 290, "Game over! Score: " + score
+Sync
+Delay 2500
+End

@@ -80,6 +80,7 @@ Then open <http://localhost:8765/playground/>. **Ctrl+Enter** runs the code.
 | [examples/breakout.cb](examples/breakout.cb) | `Type`s, `For … Each`, `Delete`, arrays, mouse control |
 | [examples/drift.cb](examples/drift.cb) | Animated sprite sheet, rotation, screen wrap |
 | [examples/marble.cb](examples/marble.cb) | Havok physics, a glTF model, raycast ground check, follow camera |
+| [examples/shooter/](examples/shooter/main.cb) | A game split across files with `Include` (`cargo run --release -- run examples/shooter/main.cb`) |
 
 ## How it works
 
@@ -119,6 +120,8 @@ Case 1, 2
 Default
     ...
 End Select
+
+Include "enemies.cb"         ' splices in another file (once), path relative to the project folder
 
 Function Add(a, b)           ' can be called before it is defined
     Return a + b             ' variables inside are local unless Global

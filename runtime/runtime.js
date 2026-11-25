@@ -83,6 +83,11 @@ const CB = (() => {
     const { width: w, height: h } = img;
     ctx.drawImage(img.sheet, (f % img.cols) * w, Math.floor(f / img.cols) * h, w, h, x, y, w, h);
   };
+  // "line 12", or "enemies.cb line 12" once a program spans several files.
+  const where = (loc) => {
+    const f = Math.floor(loc / 1e6), line = loc % 1e6;
+    return cb.files.length > 1 ? `${cb.files[f]} line ${line}` : `line ${line}`;
+  };
   const say = (text, err) => {
     const p = document.createElement("pre");
     p.className = err ? "cb-msg err" : "cb-msg";
@@ -183,7 +188,8 @@ const CB = (() => {
 
   const cb = {
     delta: 0, // seconds since the last frame
-    ln: 0,    // current BASIC line, set by generated code
+    ln: 0,    // current location, set by generated code: file index * 1e6 + line
+    files: ["main.cb"], // set by generated code
     END,
 
     KEY_ESCAPE: "Escape", KEY_SPACE: "Space", KEY_ENTER: "Enter",
@@ -469,7 +475,7 @@ const CB = (() => {
           if (err !== END) {
             console.error(err);
             post({ type: "error", line: cb.ln, message: err.message });
-            return say(`Runtime error on line ${cb.ln}: ${err.message}`, true);
+            return say(`Runtime error on ${where(cb.ln)}: ${err.message}`, true);
           }
           done = true;
         }

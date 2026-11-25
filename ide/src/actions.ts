@@ -6,7 +6,7 @@ import { monaco, registerLanguage } from "./language";
 import { EXAMPLE_ASSETS, TEMPLATES, exportGame, fromTemplate, fsSupported, gamePage, openFolder, readFolder, saveProject, writeFile, type Template } from "./project";
 import { addRecent, removeRecent, type Recent } from "./recent";
 import { format } from "./symbols";
-import { get, set, type Project, type WorkspaceId } from "./store";
+import { get, set, type Breakpoint, type Project, type WorkspaceId } from "./store";
 
 export const refs: {
   editor?: monaco.editor.IStandaloneCodeEditor;
@@ -14,9 +14,12 @@ export const refs: {
   frame?: HTMLIFrameElement;
 } = {};
 
-let model: monaco.editor.ITextModel;
-let loading = false; // true while replacing the model text, so it isn't marked dirty
-export const getModel = () => model;
+// One Monaco model per source file; editors show them. Model URIs are inmemory://project/<file>.
+const models = new Map<string, monaco.editor.ITextModel>();
+let loading = false; // true while replacing model text, so it isn't marked dirty
+export const getModel = (file = get().activeFile) => models.get(file) ?? models.get(get().project.fileName)!;
+export const fileOf = (model: monaco.editor.ITextModel) => decodeURIComponent(model.uri.path.slice(1));
+const uriOf = (file: string) => monaco.Uri.parse(`inmemory://project/${encodeURIComponent(file)}`);
 
 // ---------------------------------------------------------------- startup
 
@@ -27,43 +30,141 @@ export let firstLaunch = false;
 export async function init() {
   await loadCompiler();
   registerLanguage();
-  const saved = JSON.parse(localStorage.getItem(SESSION) || "null") as Pick<Project, "name" | "source" | "fileName"> | null;
-  const project: Project = saved ? { ...saved, assets: EXAMPLE_ASSETS } : fromTemplate(TEMPLATES[0]);
-  model = monaco.editor.createModel(project.source, "cyberbasic", monaco.Uri.parse("inmemory://project/main.cb"));
-  model.updateOptions({ tabSize: 4, insertSpaces: true });
-  model.onDidChangeContent(() => {
-    syncBreakpoints();
-    if (loading) return;
-    set((s) => ({ project: { ...s.project, source: model.getValue() }, dirty: true }));
-    clearRuntimeErrors();
-    scheduleCheck();
-    persist();
+  monaco.editor.registerEditorOpener({
+    // Go to definition / references in another file: open that file's editor tab.
+    openCodeEditor(_source, resource, selection) {
+      const line = selection && "startLineNumber" in selection ? selection.startLineNumber : selection?.lineNumber ?? 1;
+      revealLine(line, 1, true, fileOf(monaco.editor.getModel(resource)!));
+      return true;
+    },
   });
+  const saved = JSON.parse(localStorage.getItem(SESSION) || "null") as (Partial<Project> & { source?: string }) | null;
+  let project: Project = fromTemplate(TEMPLATES[0]);
+  // Older sessions stored a single `source`; a session without its main file is ignored.
+  const files = saved?.fileName ? saved.files ?? { [saved.fileName]: saved.source ?? "" } : undefined;
+  if (saved?.fileName && files?.[saved.fileName] !== undefined) {
+    project = { name: saved.name ?? "Untitled", files, fileName: saved.fileName, assets: EXAMPLE_ASSETS };
+  }
   firstLaunch = !saved;
   window.addEventListener("beforeunload", (e) => {
     if (get().dirty && get().project.dir) e.preventDefault(); // unsaved changes to a folder on disk
   });
-  set({ project, ready: true });
+  createModels(project);
+  set({ project, activeFile: project.fileName, ready: true });
   check();
 }
 
+function createModels(project: Project) {
+  for (const m of models.values()) m.dispose();
+  models.clear();
+  for (const [file, src] of Object.entries(project.files)) addModel(file, src);
+}
+
+function addModel(file: string, src: string) {
+  const model = monaco.editor.createModel(src, "cyberbasic", uriOf(file));
+  model.updateOptions({ tabSize: 4, insertSpaces: true });
+  model.onDidChangeContent(() => {
+    syncBreakpoints();
+    if (loading) return;
+    set((s) => ({ project: { ...s.project, files: { ...s.project.files, [file]: model.getValue() } }, dirty: true }));
+    clearRuntimeErrors();
+    scheduleCheck();
+    persist();
+  });
+  models.set(file, model);
+  return model;
+}
+
 const persist = () => {
-  const { name, source, fileName } = get().project;
-  localStorage.setItem(SESSION, JSON.stringify({ name, source, fileName }));
+  const { name, files, fileName } = get().project;
+  localStorage.setItem(SESSION, JSON.stringify({ name, files, fileName }));
 };
 
 function loadProject(project: Project) {
   stop();
+  for (const p of [...(refs.dock?.panels ?? [])]) if (p.id.startsWith("file:")) p.api.close();
+  const mainEditor = editors.get(get().project.fileName);
   loading = true;
-  model.setValue(project.source);
+  createModels(project);
+  mainEditor?.setModel(models.get(project.fileName)!); // the "editor" panel always shows the main file
   loading = false;
-  set({ project, dirty: false, breakpoints: [], logs: [] });
-  bpDecorations = model.deltaDecorations(bpDecorations, []);
+  set({ project, activeFile: project.fileName, dirty: false, breakpoints: [], logs: [], diagnostics: [] });
+  bpDecorations.clear();
   check();
   persist();
   refs.dock?.getPanel("editor")?.api.setTitle(project.fileName);
-  openPanel("editor");
-  refs.editor?.focus();
+  openFile(project.fileName);
+}
+
+// ---------------------------------------------------------------- files
+
+/** Shows a file in its editor tab: the main file in "editor", others in "file:<name>" tabs. */
+export function openFile(file: string) {
+  const api = refs.dock;
+  if (!api || !models.has(file)) return;
+  const id = file === get().project.fileName ? "editor" : `file:${file}`;
+  const panel = api.getPanel(id);
+  if (panel) return panel.api.setActive();
+  const anchor = api.getPanel("editor") ?? api.panels.find((p) => p.id.startsWith("file:"));
+  api.addPanel({
+    id,
+    component: "editor",
+    title: file,
+    params: { file },
+    ...(anchor ? { position: { referencePanel: anchor.id, direction: "within" as const } } : {}),
+  });
+}
+
+const validName = (name: string) => /^[\w-]+\.cb$/i.test(name);
+
+/** Adds a file and an `Include` for it at the top of the main file, then opens it. */
+export function newFile() {
+  const input = prompt("Name of the new file (for example enemies.cb):", "");
+  if (!input) return;
+  const file = input.trim().toLowerCase().endsWith(".cb") ? input.trim() : `${input.trim()}.cb`;
+  if (!validName(file)) return toast("Use letters, numbers, - or _ and end with .cb", "error");
+  if (Object.keys(get().project.files).some((f) => f.toLowerCase() === file.toLowerCase())) return toast(`${file} already exists`, "error");
+  addModel(file, `' ${file}\n`);
+  set((s) => ({ project: { ...s.project, files: { ...s.project.files, [file]: `' ${file}\n` } }, dirty: true }));
+  // Put the Include after the main file's leading comment lines.
+  const main = getModel(get().project.fileName);
+  const lines = main.getLinesContent();
+  let at = 0;
+  while (at < lines.length && /^\s*'/.test(lines[at])) at++;
+  main.pushEditOperations([], [{ range: new monaco.Range(at + 1, 1, at + 1, 1), text: `Include "${file}"\n` }], () => null);
+  persist();
+  openFile(file);
+  toast(`Created ${file} and added Include "${file}" to ${get().project.fileName}`, "success");
+}
+
+export async function deleteFile(file: string) {
+  const { project } = get();
+  if (file === project.fileName) return toast("The main file can't be deleted.", "error");
+  if (!confirm(`Delete ${file}${project.dir ? ` from ${project.dir.name} on disk` : ""}? This can't be undone.`)) return;
+  if (project.dir) {
+    try {
+      await project.dir.removeEntry(file);
+    } catch (e) {
+      return toast(`Couldn't delete ${file}: ${(e as Error).message}`, "error");
+    }
+  }
+  refs.dock?.getPanel(`file:${file}`)?.api.close();
+  models.get(file)?.dispose();
+  models.delete(file);
+  // Remove `Include "<file>"` lines that would now fail.
+  const include = new RegExp(`^\\s*Include\\s+"${file.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"\\s*$`, "i");
+  for (const m of models.values()) {
+    const edits = m
+      .getLinesContent()
+      .map((l, i) => (include.test(l) ? { range: new monaco.Range(i + 1, 1, i + 2, 1), text: "" } : null))
+      .filter((e): e is { range: monaco.Range; text: string } => !!e);
+    if (edits.length) m.pushEditOperations([], edits, () => null);
+  }
+  bpDecorations.delete(file);
+  set((s) => ({ project: { ...s.project, files: Object.fromEntries(Object.entries(s.project.files).filter(([f]) => f !== file)) }, activeFile: s.activeFile === file ? s.project.fileName : s.activeFile, breakpoints: s.breakpoints.filter((b) => b.file !== file) }));
+  persist();
+  check();
+  toast(`Deleted ${file} and its Include line`, "info");
 }
 
 // ---------------------------------------------------------------- diagnostics
@@ -75,21 +176,26 @@ const scheduleCheck = () => {
 };
 
 export function check() {
-  const r = compile(get().project.source, false);
+  const { project } = get();
+  const r = compile(project.files, project.fileName, false);
   const runtime = get().diagnostics.filter((d) => d.kind === "runtime");
-  set({ diagnostics: r.ok ? runtime : [{ line: r.line, col: r.col, message: r.message, kind: "compile" }, ...runtime] });
-  monaco.editor.setModelMarkers(
-    model,
-    "cyberbasic",
-    get().diagnostics.map((d) => ({
-      severity: monaco.MarkerSeverity.Error,
-      message: d.kind === "runtime" ? `Runtime error: ${d.message}` : d.message,
-      startLineNumber: d.line,
-      startColumn: d.col,
-      endLineNumber: d.line,
-      endColumn: d.kind === "runtime" ? model.getLineMaxColumn(d.line) : model.getWordAtPosition({ lineNumber: d.line, column: d.col })?.endColumn ?? d.col + 1,
-    })),
-  );
+  set({ diagnostics: r.ok ? runtime : [{ file: r.file, line: r.line, col: r.col, message: r.message, kind: "compile" }, ...runtime] });
+  for (const [file, model] of models) {
+    monaco.editor.setModelMarkers(
+      model,
+      "cyberbasic",
+      get()
+        .diagnostics.filter((d) => d.file === file && d.line <= model.getLineCount())
+        .map((d) => ({
+          severity: monaco.MarkerSeverity.Error,
+          message: d.kind === "runtime" ? `Runtime error: ${d.message}` : d.message,
+          startLineNumber: d.line,
+          startColumn: d.col,
+          endLineNumber: d.line,
+          endColumn: d.kind === "runtime" ? model.getLineMaxColumn(d.line) : model.getWordAtPosition({ lineNumber: d.line, column: d.col })?.endColumn ?? d.col + 1,
+        })),
+    );
+  }
 }
 
 const clearRuntimeErrors = () => {
@@ -105,14 +211,19 @@ export function toast(text: string, kind: "info" | "error" | "success" = "info")
   setTimeout(() => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })), kind === "error" ? 6000 : 3000);
 }
 
-export function log(kind: "log" | "error" | "info", text: string, line?: number) {
+export function log(kind: "log" | "error" | "info", text: string, at?: { file: string; line: number }) {
   const time = new Date().toLocaleTimeString([], { hour12: false });
-  set((s) => ({ logs: [...s.logs.slice(-999), { id: ++nextId, kind, text, line, time }] }));
+  set((s) => ({ logs: [...s.logs.slice(-999), { id: ++nextId, kind, text, file: at?.file, line: at?.line, time }] }));
 }
 
-export function revealLine(line: number, col = 1, focus = true) {
-  const e = refs.editor;
-  if (!e) return;
+/** Editors by file, registered by EditorPanel; and where to jump once a just-opened editor exists. */
+export const editors = new Map<string, monaco.editor.IStandaloneCodeEditor>();
+export const pendingReveal = new Map<string, { line: number; col: number; focus: boolean }>();
+
+export function revealLine(line: number, col = 1, focus = true, file = get().activeFile) {
+  openFile(file);
+  const e = editors.get(file);
+  if (!e) return void pendingReveal.set(file, { line, col, focus }); // its editor mounts on the next render
   e.revealLineInCenterIfOutsideViewport(line);
   e.setPosition({ lineNumber: line, column: col });
   if (focus) e.focus();
@@ -122,27 +233,32 @@ export function revealLine(line: number, col = 1, focus = true) {
 
 const send = (m: object) => refs.frame?.contentWindow?.postMessage({ cyberbasic: true, ...m }, "*");
 
+/** Runtime locations are file index * 1e6 + line, indexed by the running build's file order. */
+const decode = (loc: number) => ({ file: get().run.files[Math.floor(loc / 1e6)] ?? get().project.fileName, line: loc % 1e6 });
+const encode = (bps: Breakpoint[], files = get().run.files) =>
+  bps.filter((b) => files.includes(b.file)).map((b) => files.indexOf(b.file) * 1e6 + b.line);
+
 export function run() {
   const { run: r, project } = get();
   if (r.state === "paused") return cont();
-  const result = compile(project.source, true); // debug build: breakpoints always work in the IDE
+  const result = compile(project.files, project.fileName, true); // debug build: breakpoints always work in the IDE
   if (!result.ok) {
     check();
-    toast(`Can't run: line ${result.line}: ${result.message}`, "error");
-    revealLine(result.line, result.col);
+    toast(`Can't run: ${result.file} line ${result.line}: ${result.message}`, "error");
+    revealLine(result.line, result.col, true, result.file);
     return;
   }
-  const page = gamePage(result.js, { assets: project.assets, breakpoints: get().breakpoints });
+  const page = gamePage(result.js, { assets: project.assets, breakpoints: encode(get().breakpoints, result.files) });
   clearRuntimeErrors();
   check();
-  set((s) => ({ run: { state: "starting", session: s.run.session + 1, page } }));
+  set((s) => ({ run: { state: "starting", session: s.run.session + 1, page, files: result.files } }));
   log("info", `▶ Running ${project.name}`);
   openPanel("game", { focus: false });
 }
 
 export function stop() {
   if (get().run.state === "stopped" && !get().run.page) return;
-  set((s) => ({ run: { state: "stopped", session: s.run.session, page: "" } }));
+  set((s) => ({ run: { state: "stopped", session: s.run.session, page: "", files: s.run.files } }));
 }
 
 export function restart() {
@@ -175,29 +291,31 @@ export function onGameMessage(m: { type: string; [k: string]: unknown }) {
       }
       break;
     case "log":
-      log("log", String(m.text), m.line as number);
+      log("log", String(m.text), decode(m.line as number));
       break;
     case "fps":
       set((s) => ({ run: { ...s.run, fps: m.fps as number } }));
       break;
-    case "paused":
-      set((s) => ({ run: { ...s.run, state: "paused", line: m.line as number, fn: m.fn as string, vars: m.vars as Record<string, string> } }));
-      revealLine(m.line as number, 1, false);
+    case "paused": {
+      const at = decode(m.line as number);
+      set((s) => ({ run: { ...s.run, state: "paused", ...at, fn: m.fn as string, vars: m.vars as Record<string, string> } }));
+      revealLine(at.line, 1, false, at.file);
       openPanel("debugger"); // bring its tab to the front so the variables are in view
       break;
+    }
     case "resumed":
-      set((s) => ({ run: { ...s.run, state: "running", line: undefined, fn: undefined, vars: undefined } }));
+      set((s) => ({ run: { ...s.run, state: "running", file: undefined, line: undefined, fn: undefined, vars: undefined } }));
       break;
     case "error": {
-      const line = m.line as number, message = String(m.message);
+      const at = decode(m.line as number), message = String(m.message);
       set((s) => ({
         run: { ...s.run, state: "error", fps: undefined },
-        diagnostics: [...s.diagnostics.filter((d) => d.kind !== "runtime"), { line, col: 1, message, kind: "runtime" }],
+        diagnostics: [...s.diagnostics.filter((d) => d.kind !== "runtime"), { ...at, col: 1, message, kind: "runtime" }],
       }));
       check();
-      log("error", message, line);
-      toast(`Runtime error on line ${line}: ${message}`, "error");
-      revealLine(line);
+      log("error", message, at);
+      toast(`Runtime error in ${at.file} line ${at.line}: ${message}`, "error");
+      revealLine(at.line, 1, true, at.file);
       break;
     }
     case "ended":
@@ -213,35 +331,47 @@ export function onGameMessage(m: { type: string; [k: string]: unknown }) {
 // ---------------------------------------------------------------- breakpoints
 // Breakpoints live as model decorations so they follow their line while you edit.
 
-let bpDecorations: string[] = [];
+const bpDecorations = new Map<string, string[]>();
 
-export function toggleBreakpoint(line = refs.editor?.getPosition()?.lineNumber) {
+export function toggleBreakpoint(line = refs.editor?.getPosition()?.lineNumber, file = get().activeFile) {
   if (!line) return;
-  const lines = new Set(get().breakpoints);
-  lines.has(line) ? lines.delete(line) : lines.add(line);
-  setBreakpoints([...lines]);
+  const bps = get().breakpoints;
+  const on = bps.some((b) => b.file === file && b.line === line);
+  setBreakpoints(on ? bps.filter((b) => !(b.file === file && b.line === line)) : [...bps, { file, line }]);
 }
 
-export function setBreakpoints(lines: number[]) {
-  bpDecorations = model.deltaDecorations(
-    bpDecorations,
-    lines.map((l) => ({
-      range: new monaco.Range(l, 1, l, 1),
-      options: {
-        glyphMarginClassName: "bp-glyph",
-        glyphMarginHoverMessage: { value: "Breakpoint (F9 or click to remove)" },
-        stickiness: monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
-      },
-    })),
-  );
+export function setBreakpoints(bps: Breakpoint[]) {
+  for (const [file, model] of models) {
+    bpDecorations.set(
+      file,
+      model.deltaDecorations(
+        bpDecorations.get(file) ?? [],
+        bps
+          .filter((b) => b.file === file)
+          .map((b) => ({
+            range: new monaco.Range(b.line, 1, b.line, 1),
+            options: {
+              glyphMarginClassName: "bp-glyph",
+              glyphMarginHoverMessage: { value: "Breakpoint (F9 or click to remove)" },
+              stickiness: monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
+            },
+          })),
+      ),
+    );
+  }
   syncBreakpoints();
 }
 
 function syncBreakpoints() {
-  const lines = [...new Set(bpDecorations.map((id) => model.getDecorationRange(id)?.startLineNumber).filter((l): l is number => !!l))].sort((a, b) => a - b);
-  if (lines.join() === get().breakpoints.join()) return;
-  set({ breakpoints: lines });
-  send({ type: "breakpoints", lines });
+  const bps: Breakpoint[] = [];
+  for (const [file, ids] of bpDecorations) {
+    const lines = new Set(ids.map((id) => models.get(file)?.getDecorationRange(id)?.startLineNumber).filter((l): l is number => !!l));
+    for (const line of [...lines].sort((a, b) => a - b)) bps.push({ file, line });
+  }
+  const key = (l: Breakpoint[]) => l.map((b) => `${b.file}:${b.line}`).join();
+  if (key(bps) === key(get().breakpoints)) return;
+  set({ breakpoints: bps });
+  send({ type: "breakpoints", lines: encode(bps) });
 }
 
 // ---------------------------------------------------------------- project commands
@@ -298,7 +428,7 @@ export async function importAssets(files: File[]) {
   toast(`Added ${ok.map((f) => f.name).join(", ")}${project.dir ? "" : " (saved with the project)"}`, "success");
 }
 
-export function formatDocument() {
+export function formatDocument(model = getModel()) {
   const text = model.getValue();
   const tidy = format(text, " ".repeat(model.getOptions().indentSize));
   if (tidy !== text) model.pushEditOperations([], [{ range: model.getFullModelRange(), text: tidy }], () => null);
@@ -324,13 +454,14 @@ export function screenshot() {
 export const fullscreen = () => refs.frame?.requestFullscreen().catch(() => toast("Fullscreen isn't available here.", "error"));
 
 export async function save(saveAs = false) {
-  if (get().settings.formatOnSave) formatDocument();
+  if (get().settings.formatOnSave) for (const m of models.values()) formatDocument(m);
   try {
     const p = await saveProject(get().project, saveAs);
     set({ project: p, dirty: false });
     if (p.dir) addRecent(p.dir);
     persist();
-    toast(p.dir ? `Saved to ${p.dir.name}/${p.fileName}` : `Downloaded ${p.fileName}`, "success");
+    const count = Object.keys(p.files).length;
+    toast(p.dir ? `Saved ${count} file${count > 1 ? "s" : ""} to ${p.dir.name}` : `Downloaded ${count} file${count > 1 ? "s" : ""}`, "success");
     if (get().run.state === "running" || get().run.state === "paused") restart(); // save = see it
   } catch (e) {
     if ((e as Error).name !== "AbortError") toast(`Save failed: ${(e as Error).message}`, "error");
@@ -338,12 +469,13 @@ export async function save(saveAs = false) {
 }
 
 export async function exportWeb() {
-  const r = compile(get().project.source, false);
+  const { project } = get();
+  const r = compile(project.files, project.fileName, false);
   if (!r.ok) {
-    toast(`Fix line ${r.line} before exporting: ${r.message}`, "error");
-    return revealLine(r.line, r.col);
+    toast(`Fix ${r.file} line ${r.line} before exporting: ${r.message}`, "error");
+    return revealLine(r.line, r.col, true, r.file);
   }
-  const file = await exportGame(get().project, r.js);
+  const file = await exportGame(project, r.js);
   toast(`Exported ${file}: one file, runs in any browser`, "success");
 }
 
@@ -456,6 +588,8 @@ export function applyWorkspace(ws: WorkspaceId, reset = false) {
     delete data.popoutGroups; // never reopen windows on their own
     api.fromJSON(data);
     if (!api.getPanel("editor")) throw new Error("layout lost the editor");
+    // Tabs for files that aren't in this project (saved with another one) would be empty.
+    for (const p of [...api.panels]) if (p.id.startsWith("file:") && !models.has(p.id.slice(5))) p.api.close();
   } catch {
     api.clear();
     sizes = [];

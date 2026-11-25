@@ -1,0 +1,42 @@
+' Enemies fall from the top. A bullet destroys one; one that gets past costs a life.
+Type Enemy
+    Field x, y, speed
+End Type
+
+Global spawnTimer
+
+Function UpdateEnemies()
+    spawnTimer -= Delta
+    If spawnTimer <= 0
+        e = New Enemy
+        e.x = Rnd(30, 770) : e.y = -20 : e.speed = Rnd(80, 180)
+        spawnTimer = Rnd(0.4, 1.0)
+    EndIf
+    For e = Each Enemy
+        e.y += e.speed * Delta
+        If e.y > 620
+            lives -= 1
+            Delete e
+        ElseIf HitByBullet(e)
+            score += 10
+            Delete e
+        EndIf
+    Next
+End Function
+
+Function HitByBullet(e)
+    For b = Each Bullet
+        If RectsOverlap(b.x - 2, b.y - 8, 4, 10, e.x - 14, e.y - 14, 28, 28)
+            Delete b
+            Return 1
+        EndIf
+    Next
+    Return 0
+End Function
+
+Function DrawEnemies()
+    Color 255, 107, 107
+    For e = Each Enemy
+        Oval e.x - 14, e.y - 14, 28, 28
+    Next
+End Function

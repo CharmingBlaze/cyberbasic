@@ -12,14 +12,16 @@ import { scan } from "./symbols";
 
 // ------------------------------------------------------------------ editor
 
-export function EditorPanel() {
+/** An editor for one file: the main file in the "editor" panel, others in "file:<name>" tabs. */
+export function EditorPanel({ params, api }: IDockviewPanelProps<{ file?: string }>) {
   const host = useRef<HTMLDivElement>(null);
-  const runLine = useStore((s) => (s.run.state === "paused" ? s.run.line : undefined));
+  const [file, setFile] = useState(params?.file ?? get().project.fileName);
+  const runLine = useStore((s) => (s.run.state === "paused" && s.run.file === file ? s.run.line : undefined));
   const decorations = useRef<monaco.editor.IEditorDecorationsCollection>(null);
 
   useEffect(() => {
     const editor = monaco.editor.create(host.current!, {
-      model: A.getModel(),
+      model: A.getModel(file),
       theme: "cyberbasic",
       automaticLayout: true,
       glyphMargin: true,
@@ -40,24 +42,52 @@ export function EditorPanel() {
       suggest: { showStatusBar: true, preview: true },
       stickyScroll: { enabled: false },
     });
-    A.refs.editor = editor;
+    // The file this editor shows; changes when a new project replaces the main file's model.
+    let key = file;
+    A.editors.set(key, editor);
+    const activate = () => {
+      A.refs.editor = editor;
+      set({ activeFile: key });
+    };
+    activate();
+    editor.onDidFocusEditorText(activate);
+    const active = api.onDidActiveChange((e) => e.isActive && activate());
+    editor.onDidChangeModel(() => {
+      const m = editor.getModel();
+      if (!m) return;
+      if (A.editors.get(key) === editor) A.editors.delete(key);
+      key = A.fileOf(m);
+      A.editors.set(key, editor);
+      setFile(key);
+      if (A.refs.editor === editor) set({ activeFile: key });
+    });
     decorations.current = editor.createDecorationsCollection();
     const hint = editor.createDecorationsCollection();
     editor.onDidChangeCursorPosition((e) => set({ cursor: { line: e.position.lineNumber, col: e.position.column } }));
     const GLYPH = monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN;
     const LINE_NO = monaco.editor.MouseTargetType.GUTTER_LINE_NUMBERS;
     editor.onMouseDown((e) => {
-      if (e.target.type === GLYPH && e.target.position) A.toggleBreakpoint(e.target.position.lineNumber);
+      if (e.target.type === GLYPH && e.target.position) A.toggleBreakpoint(e.target.position.lineNumber, key);
     });
     // Faint dot under the mouse in the gutter: shows where a click adds a breakpoint.
     editor.onMouseMove((e) => {
       const l = (e.target.type === GLYPH || e.target.type === LINE_NO) && e.target.position?.lineNumber;
-      hint.set(l && !get().breakpoints.includes(l) ? [{ range: new monaco.Range(l, 1, l, 1), options: { glyphMarginClassName: "bp-hint" } }] : []);
+      const has = get().breakpoints.some((b) => b.file === key && b.line === l);
+      hint.set(l && !has ? [{ range: new monaco.Range(l, 1, l, 1), options: { glyphMarginClassName: "bp-hint" } }] : []);
     });
     editor.onMouseLeave(() => hint.clear());
-    editor.focus();
+    // A reveal asked for before this editor existed (e.g. go to definition in an unopened file).
+    const pending = A.pendingReveal.get(key);
+    A.pendingReveal.delete(key);
+    if (pending) {
+      editor.revealLineInCenter(pending.line);
+      editor.setPosition({ lineNumber: pending.line, column: pending.col });
+    }
+    if (!pending || pending.focus) editor.focus();
     return () => {
+      active.dispose();
       editor.dispose();
+      if (A.editors.get(key) === editor) A.editors.delete(key);
       if (A.refs.editor === editor) A.refs.editor = undefined;
     };
   }, []);
@@ -93,6 +123,7 @@ export function GamePanel() {
   const session = useStore((s) => s.run.session);
   const state = useStore((s) => s.run.state);
   const line = useStore((s) => s.run.line);
+  const where = useStore((s) => (s.run.file && s.run.file !== s.project.fileName ? `${s.run.file} ` : ""));
 
   useEffect(() => {
     const f = frame.current!;
@@ -134,7 +165,7 @@ export function GamePanel() {
       )}
       {state === "paused" && (
         <div className="game-badge">
-          <Icon name="pause" size={13} /> Paused on line {line}
+          <Icon name="pause" size={13} /> Paused on {where}line {line}
           <button onClick={A.cont}>Continue</button>
         </div>
       )}
@@ -146,6 +177,7 @@ export function GamePanel() {
 
 export function ConsolePanel() {
   const logs = useStore((s) => s.logs);
+  const multi = useStore((s) => Object.keys(s.project.files).length > 1);
   const [filter, setFilter] = useState<"all" | "log" | "error">("all");
   const list = useRef<HTMLDivElement>(null);
   const shown = filter === "all" ? logs : logs.filter((l) => l.kind === filter);
@@ -174,7 +206,11 @@ export function ConsolePanel() {
           <div key={l.id} className={"log " + l.kind}>
             <span className="log-time">{l.time}</span>
             <span className="log-text">{l.text}</span>
-            {l.line && <button className="link" onClick={() => A.revealLine(l.line!)}>line {l.line}</button>}
+            {l.line && (
+              <button className="link" onClick={() => A.revealLine(l.line!, 1, true, l.file)}>
+                {multi ? `${l.file}:${l.line}` : `line ${l.line}`}
+              </button>
+            )}
           </div>
         ))}
       </div>
@@ -184,7 +220,6 @@ export function ConsolePanel() {
 
 export function ProblemsPanel() {
   const diags = useStore((s) => s.diagnostics);
-  const file = useStore((s) => s.project.fileName);
   return (
     <div className="panel">
       <div className="list">
@@ -192,10 +227,10 @@ export function ProblemsPanel() {
           <div className="empty ok"><Icon name="check" size={16} /> No problems. Your code compiles.</div>
         )}
         {diags.map((d, i) => (
-          <button key={i} className="row problem" onClick={() => A.revealLine(d.line, d.col)}>
+          <button key={i} className="row problem" onClick={() => A.revealLine(d.line, d.col, true, d.file)}>
             <Icon name="alert" size={15} className="err" />
             <span className="grow">{d.kind === "runtime" ? `Runtime error: ${d.message}` : d.message}</span>
-            <span className="muted mono">{file}:{d.line}:{d.col}</span>
+            <span className="muted mono">{d.file}:{d.line}:{d.col}</span>
           </button>
         ))}
       </div>
@@ -218,7 +253,7 @@ export function DebuggerPanel() {
         <button className="tool" disabled={!paused} onClick={A.step} title="Step (F10)"><Icon name="step" size={14} /> Step</button>
         <button className="tool" disabled={run.state !== "running"} onClick={A.pause} title="Pause (F6)"><Icon name="pause" size={14} /> Pause</button>
         <span className="grow" />
-        {paused && <span className="where">line {run.line} · {run.fn === "main" ? "main program" : `in ${run.fn}`}</span>}
+        {paused && <span className="where">{run.file} line {run.line} · {run.fn === "main" ? "main program" : `in ${run.fn}`}</span>}
       </div>
       {/* Side by side when the panel is wide, stacked when it's narrow (container query in CSS). */}
       <div className="debug-body">
@@ -252,14 +287,18 @@ export function DebuggerPanel() {
           </div>
           <div className="list">
             {bps.length === 0 && <div className="empty">None yet.</div>}
-            {bps.map((l) => (
-              <div key={l} className={"row" + (paused && run.line === l ? " current" : "")}>
-                <span className="bp-dot" />
-                <button className="link left" onClick={() => A.revealLine(l)}>Line {l}</button>
-                <span className="muted mono line-preview grow">{A.getModel().getLineContent(l).trim().slice(0, 48)}</span>
-                <button className="icon-btn" title="Remove" onClick={() => A.toggleBreakpoint(l)}><Icon name="close" size={12} /></button>
-              </div>
-            ))}
+            {bps.map((b) => {
+              const model = A.getModel(b.file);
+              const text = b.line <= model.getLineCount() ? model.getLineContent(b.line).trim().slice(0, 48) : "";
+              return (
+                <div key={`${b.file}:${b.line}`} className={"row" + (paused && run.file === b.file && run.line === b.line ? " current" : "")}>
+                  <span className="bp-dot" />
+                  <button className="link left" onClick={() => A.revealLine(b.line, 1, true, b.file)}>{b.file}:{b.line}</button>
+                  <span className="muted mono line-preview grow">{text}</span>
+                  <button className="icon-btn" title="Remove" onClick={() => A.toggleBreakpoint(b.line, b.file)}><Icon name="close" size={12} /></button>
+                </div>
+              );
+            })}
           </div>
         </section>
       </div>
@@ -314,6 +353,8 @@ export function ProjectPanel() {
   const project = useStore((s) => s.project);
   const dirty = useStore((s) => s.dirty);
   const assets = Object.keys(project.assets).sort();
+  const activeFile = useStore((s) => s.activeFile);
+  const files = [project.fileName, ...Object.keys(project.files).filter((f) => f !== project.fileName).sort()];
   const [dragging, setDragging] = useState(false);
   const picker = useRef<HTMLInputElement>(null);
   return (
@@ -345,9 +386,27 @@ export function ProjectPanel() {
         </div>
       </div>
       <div className="tree">
-        <button className="row file active" onClick={() => A.openPanel("editor")}>
-          <Icon name="code" size={14} /> {project.fileName}
-        </button>
+        <div className="tree-label">
+          <Icon name="code" size={14} /> files
+          <span className="grow" />
+          <button className="icon-btn" title="New file (adds an Include to the main file)" onClick={A.newFile}>
+            <Icon name="plus" size={13} />
+          </button>
+        </div>
+        {files.map((f) => (
+          <div key={f} className={"row file nested" + (f === activeFile ? " active" : "")}>
+            <button className="grow left file-open" onClick={() => A.openFile(f)}>
+              <Icon name="code" size={14} /> {f}
+            </button>
+            {f === project.fileName ? (
+              <span className="file-badge" title="This file runs; it Includes the others">main</span>
+            ) : (
+              <button className="icon-btn file-del" title={`Delete ${f}`} onClick={() => A.deleteFile(f)}>
+                <Icon name="trash" size={12} />
+              </button>
+            )}
+          </div>
+        ))}
         <div className="tree-label">
           <Icon name="folder" size={14} /> assets
           <span className="grow" />
@@ -402,13 +461,14 @@ export function AssetPanel({ params }: IDockviewPanelProps<{ path: string }>) {
 // ------------------------------------------------------------------ outline
 
 export function OutlinePanel() {
-  const source = useStore((s) => s.project.source);
+  const file = useStore((s) => s.activeFile);
+  const source = useStore((s) => s.project.files[s.activeFile] ?? "");
   const line = useStore((s) => s.cursor.line);
   const [q, setQ] = useState("");
   const s = useMemo(() => scan(source), [source]);
   const hit = (n: string) => n.toLowerCase().includes(q.toLowerCase());
   const item = (key: string, icon: IconName, name: string, at: number, end = at, detail = "") => (
-    <button key={key} className={"row sym" + (line >= at && line <= end ? " here" : "")} onClick={() => A.revealLine(at)}>
+    <button key={key} className={"row sym" + (line >= at && line <= end ? " here" : "")} onClick={() => A.revealLine(at, 1, true, file)}>
       <Icon name={icon} size={14} className="sym-icon" />
       <span className="grow ellipsis">
         {name}
@@ -425,7 +485,7 @@ export function OutlinePanel() {
       <div className="panel-bar">
         <div className="search">
           <Icon name="search" size={14} />
-          <input placeholder="Filter symbols" value={q} onChange={(e) => setQ(e.target.value)} />
+          <input placeholder={`Filter symbols in ${file}`} value={q} onChange={(e) => setQ(e.target.value)} />
         </div>
       </div>
       <div className="list outline">
@@ -589,7 +649,7 @@ export function Tab({ api }: IDockviewPanelHeaderProps) {
     const d = api.onDidTitleChange((e) => setTitle(e.title));
     return () => d.dispose();
   }, [api]);
-  const kind = api.id.startsWith("asset:") ? "asset" : api.id;
+  const kind = api.id.startsWith("asset:") ? "asset" : api.id.startsWith("file:") ? "editor" : api.id;
   const dirty = useStore((s) => kind === "editor" && s.dirty);
   const live = useStore((s) => (kind === "game" ? s.run.state : ""));
   const errors = useStore((s) => (kind === "problems" ? s.diagnostics.length : 0));

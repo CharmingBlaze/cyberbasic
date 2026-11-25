@@ -1,6 +1,7 @@
 //! Plain C-ABI exports so the browser playground can call the compiler without wasm-bindgen.
-//! JS: cb_alloc(n) -> copy UTF-8 source in -> cb_compile(ptr, n, debug) returns 1 (ok) or 0 (error);
-//! then read cb_out_len() bytes at cb_out_ptr(): the JS, or "line:col:message".
+//! JS: cb_alloc(n) -> copy the project in as UTF-8 "name\0source\0name\0source..." (main file
+//! first) -> cb_compile(ptr, n, debug) returns 1 (ok) or 0 (error); then read cb_out_len() bytes
+//! at cb_out_ptr(): the JS, or "file\tline\tcol\tmessage".
 
 use std::cell::RefCell;
 
@@ -27,10 +28,14 @@ pub unsafe extern "C" fn cb_free(p: *mut u8, len: usize) {
 /// `p` must point to `len` initialized bytes (from `cb_alloc`).
 #[no_mangle]
 pub unsafe extern "C" fn cb_compile(p: *const u8, len: usize, debug: u32) -> u32 {
-    let src = String::from_utf8_lossy(std::slice::from_raw_parts(p, len));
-    let (ok, text) = match crate::compile_with(&src, debug != 0) {
+    let input = String::from_utf8_lossy(std::slice::from_raw_parts(p, len));
+    let parts: Vec<&str> = input.split('\0').collect();
+    let files: Vec<(&str, &str)> = parts.chunks(2).filter_map(|c| Some((c[0], *c.get(1)?))).collect();
+    let main = files.first().map_or("main.cb", |f| f.0);
+    let load = |name: &str| files.iter().find(|f| f.0.eq_ignore_ascii_case(name)).map(|f| f.1.to_string());
+    let (ok, text) = match crate::compile_project(main, &load, debug != 0) {
         Ok(js) => (1, js),
-        Err(e) => (0, format!("{}:{}:{}", e.line, e.col, e.msg)),
+        Err(e) => (0, format!("{}\t{}\t{}\t{}", e.file, e.line, e.col, e.msg)),
     };
     OUT.with(|o| *o.borrow_mut() = text.into_bytes());
     ok

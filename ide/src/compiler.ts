@@ -15,8 +15,8 @@ export interface Manifest {
   keywords: string[];
 }
 export type CompileResult =
-  | { ok: true; js: string }
-  | { ok: false; line: number; col: number; message: string };
+  | { ok: true; js: string; files: string[] }
+  | { ok: false; file: string; line: number; col: number; message: string };
 
 interface Exports {
   memory: WebAssembly.Memory;
@@ -44,16 +44,22 @@ export async function loadCompiler() {
 const output = () =>
   new TextDecoder().decode(new Uint8Array(wasm.memory.buffer, wasm.cb_out_ptr(), wasm.cb_out_len()));
 
-export function compile(src: string, debug: boolean): CompileResult {
-  const bytes = new TextEncoder().encode(src);
+/** Compiles a project; `main` runs and may `Include` the others. */
+export function compile(files: Record<string, string>, main: string, debug: boolean): CompileResult {
+  const order = [main, ...Object.keys(files).filter((f) => f !== main)];
+  const bytes = new TextEncoder().encode(order.map((f) => `${f}\0${files[f]}`).join("\0"));
   const p = wasm.cb_alloc(bytes.length);
   new Uint8Array(wasm.memory.buffer, p, bytes.length).set(bytes);
   const ok = wasm.cb_compile(p, bytes.length, debug ? 1 : 0);
   wasm.cb_free(p, bytes.length);
   const out = output();
-  if (ok) return { ok: true, js: out };
-  const [line, col, ...msg] = out.split(":");
-  return { ok: false, line: Number(line), col: Number(col), message: msg.join(":") };
+  if (ok) {
+    // The generated code lists its files in index order (see codegen.rs): `CB.files = [...];`
+    const list = out.match(/^CB\.files = (\[.*\]);$/m);
+    return { ok: true, js: out, files: list ? JSON.parse(list[1]) : [main] };
+  }
+  const [file, line, col, ...msg] = out.split("\t");
+  return { ok: false, file: file || main, line: Number(line), col: Number(col), message: msg.join("\t") };
 }
 
 export const findCommand = (name: string) =>

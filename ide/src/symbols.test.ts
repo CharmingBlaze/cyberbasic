@@ -43,6 +43,8 @@ test("references respect scope: main's x, F's x and the field x are different", 
   assert.deepEqual(lines("x", 2), [2, 3]); // main program (field e.x on line 11 excluded)
   assert.deepEqual(lines("x", 5), [5, 6]); // inside F
   assert.deepEqual(lines("score", 3), [1, 3, 6]); // Global: everywhere
+  // Declared Global in another file: every use in this file counts, even inside functions.
+  assert.deepEqual(occurrences("Function G()\n  lives -= 1\nEnd Function\nPrint lives", "lives", 4, true).map((o) => o.line), [2, 4]);
 });
 
 test("go to definition", () => {

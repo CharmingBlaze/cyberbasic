@@ -25,6 +25,7 @@ const has = (id: A.PanelId) => () => !!A.refs.dock?.getPanel(id);
 
 const COMMANDS: Cmd[] = [
   { id: "new", group: "File", label: "New Project…", keys: "Ctrl+N", icon: "plus", run: A.newProject },
+  { id: "newfile", group: "File", label: "New File…", icon: "code", run: A.newFile },
   { id: "open", group: "File", label: "Open Folder…", keys: "Ctrl+O", icon: "folder", run: A.openProject, enabled: () => fsSupported },
   { id: "save", group: "File", label: "Save", keys: "Ctrl+S", icon: "save", run: () => A.save() },
   { id: "saveas", group: "File", label: "Save As…", keys: "Ctrl+Shift+S", run: () => A.save(true) },
@@ -320,7 +321,7 @@ function StatusBar() {
   const ws = useStore((s) => s.workspace);
   return (
     <footer className={"statusbar " + run.state}>
-      <span className="status-item state"><span className="state-dot" />{STATE_LABEL[run.state]}{run.state === "paused" && ` on line ${run.line}`}</span>
+      <span className="status-item state"><span className="state-dot" />{STATE_LABEL[run.state]}{run.state === "paused" && ` in ${run.file} on line ${run.line}`}</span>
       <button className={"status-item" + (diags ? " bad" : "")} onClick={() => A.openPanel("problems")}>
         <Icon name={diags ? "alert" : "check"} size={13} /> {diags ? `${diags} problem` : "No problems"}
       </button>

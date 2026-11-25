@@ -13,6 +13,8 @@ pub const INDEX_HTML: &str = include_str!("../../../runtime/index.html");
 
 #[derive(Debug, PartialEq)]
 pub struct Error {
+    /// Source file the error is in ("" until known).
+    pub file: String,
     pub line: usize,
     pub col: usize,
     pub msg: String,
@@ -20,9 +22,15 @@ pub struct Error {
 
 impl Error {
     pub fn new(line: usize, col: usize, msg: impl Into<String>) -> Self {
-        Error { line, col, msg: msg.into() }
+        Error { file: String::new(), line, col, msg: msg.into() }
+    }
+    pub fn in_file(mut self, file: &str) -> Self {
+        self.file = file.to_string();
+        self
     }
 }
+
+pub use lexer::LOC_FILE;
 
 pub fn compile(src: &str) -> Result<String, Error> {
     compile_with(src, false)
@@ -30,8 +38,14 @@ pub fn compile(src: &str) -> Result<String, Error> {
 
 /// `debug` adds breakpoint/step hooks and variable snapshots for the IDE debugger.
 pub fn compile_with(src: &str, debug: bool) -> Result<String, Error> {
-    let toks = lexer::lex(src)?;
-    let prog = parser::Parser::new(toks).program()?;
+    compile_project("main.cb", &|name| (name == "main.cb").then(|| src.to_string()), debug)
+}
+
+/// Compiles a program that may `Include` other files. `load` returns a file's source by its
+/// project-relative name. The generated code lists the files in `CB.files`, in index order.
+pub fn compile_project(main: &str, load: &dyn Fn(&str) -> Option<String>, debug: bool) -> Result<String, Error> {
+    let (toks, files) = lexer::lex_project(main, load)?;
+    let prog = parser::Parser::new(toks, files).program()?;
     Ok(codegen::generate(&prog, debug))
 }
 
@@ -47,7 +61,16 @@ mod tests {
     /// Compiles `src`, runs it under Node with the real runtime (DOM and Babylon stubbed), and
     /// returns everything it printed plus the final status line. None if Node isn't installed.
     fn run(src: &str) -> Option<String> {
-        let js = compile(src).unwrap_or_else(|e| panic!("compile error {e:?}"));
+        run_js(&compile(src).unwrap_or_else(|e| panic!("compile error {e:?}")))
+    }
+
+    /// Compiles a multi-file project; the first file is the main one.
+    fn project(files: &[(&str, &str)], debug: bool) -> Result<String, Error> {
+        let load = |name: &str| files.iter().find(|f| f.0 == name).map(|f| f.1.to_string());
+        compile_project(files[0].0, &load, debug)
+    }
+
+    fn run_js(js: &str) -> Option<String> {
         let stub = r#"
 globalThis.BABYLON = {};
 globalThis.addEventListener = () => {};
@@ -94,6 +117,10 @@ globalThis.requestAnimationFrame = (f) => setImmediate(() => f(performance.now()
         ] {
             compile(src).unwrap_or_else(|e| panic!("{name}.cb: {e:?}"));
         }
+        // The multi-file example, loaded from disk the way the CLI does it.
+        let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../examples/shooter");
+        let js = compile_project("main.cb", &|n| std::fs::read_to_string(dir.join(n)).ok(), false).unwrap_or_else(|e| panic!("shooter: {e:?}"));
+        assert!(js.contains(r#"CB.files = ["main.cb", "player.cb", "enemies.cb"];"#));
     }
 
     #[test]
@@ -249,6 +276,55 @@ globalThis.requestAnimationFrame = (f) => setImmediate(() => f(performance.now()
         assert!(js.contains(r#"if (CB.trap) yield* CB.pause(2, "main", () => ({ g: g_g, x: v_x }));"#), "{js}");
         assert!(js.contains(r#"CB.pause(5, "f", () => ({ a: v_a, b: v_b, g: g_g }))"#), "{js}");
         assert!(!compile("x = 1").unwrap().contains("CB.pause"));
+    }
+
+    // ---- Multi-file projects
+
+    const UTIL: &str = "Function Double(n)\n  Return n * 2\nEnd Function\nGlobal ready = 1";
+
+    #[test]
+    fn include_splices_files_in_place_once() {
+        let main = "Print Double(2)\nInclude \"util.cb\"\nInclude \"util.cb\"\nPrint ready";
+        let js = project(&[("main.cb", main), ("util.cb", UTIL)], false).unwrap();
+        assert!(js.contains(r#"CB.files = ["main.cb", "util.cb"];"#), "{js}");
+        assert_eq!(js.matches("function* f_double").count(), 1, "included twice");
+        // A function from an included file can be called above the Include line.
+        if let Some(out) = run_js(&js) {
+            assert_eq!(out, "4\n1\nProgram ended.");
+        }
+    }
+
+    #[test]
+    fn include_cycles_and_nesting() {
+        let a = "Include \"b.cb\"\nPrint \"a\"";
+        let b = "Include \"a.cb\"\nInclude \"c.cb\"\nPrint \"b\"";
+        let js = project(&[("a.cb", a), ("b.cb", b), ("c.cb", "Print \"c\"")], false).unwrap();
+        if let Some(out) = run_js(&js) {
+            assert_eq!(out, "c\nb\na\nProgram ended.");
+        }
+    }
+
+    #[test]
+    fn errors_name_the_file_they_are_in() {
+        let e = project(&[("main.cb", "Include \"util.cb\""), ("util.cb", "x = 1\nRecct 1, 2, 3, 4")], false).unwrap_err();
+        assert_eq!((e.file.as_str(), e.line, e.col), ("util.cb", 2, 1));
+        let e = project(&[("main.cb", "x = 1\nInclude \"missing.cb\"")], false).unwrap_err();
+        assert_eq!((e.file.as_str(), e.line), ("main.cb", 2));
+        assert!(e.msg.contains("can't find \"missing.cb\""), "{}", e.msg);
+        let e = project(&[("main.cb", "If 1 Then Include \"util.cb\"")], false).unwrap_err();
+        assert!(e.msg.contains("own line"), "{}", e.msg);
+        assert_eq!(compile("Recct 1, 2, 3, 4").unwrap_err().file, "main.cb");
+    }
+
+    #[test]
+    fn statements_carry_their_file_in_debug_hooks_and_runtime_errors() {
+        let js = project(&[("main.cb", "Include \"util.cb\"\nx = Double(1)"), ("util.cb", UTIL)], true).unwrap();
+        assert!(js.contains(&format!("CB.pause({}, \"double\"", LOC_FILE + 2)), "{js}");
+        assert!(js.contains("CB.pause(2, \"main\""), "{js}");
+        let js = project(&[("main.cb", "Include \"util.cb\"\nBoom"), ("util.cb", "Function Boom()\n  Dim a[1]\n  a[5] = 1\nEnd Function")], false).unwrap();
+        if let Some(out) = run_js(&js) {
+            assert_eq!(out, "ERR Runtime error on util.cb line 3: array index 5 is out of range (0 to 0)");
+        }
     }
 
     #[test]

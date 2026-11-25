@@ -60,6 +60,7 @@ pub struct TypeDef {
 
 pub struct Program {
     pub main: Vec<Stmt>,
+    pub files: Vec<String>,
     pub funcs: Vec<Func>,
     pub types: Vec<TypeDef>,
     pub globals: BTreeSet<String>,
@@ -69,6 +70,7 @@ type R<T> = Result<T, Error>;
 
 pub struct Parser {
     toks: Vec<Token>,
+    files: Vec<String>, // names, for error messages
     pos: usize,
     fn_arity: BTreeMap<String, usize>, // pre-scanned so functions can be called before they're defined
     type_names: BTreeSet<String>,
@@ -92,16 +94,14 @@ fn describe(t: &Tok) -> String {
     }
 }
 
-fn err_at<T>(t: &Token, msg: impl Into<String>) -> R<T> {
-    Err(Error::new(t.line, t.col, msg))
-}
+
 
 const TERMINATORS: &[&str] = &["else", "elseif", "endif", "wend", "next", "until", "forever", "case", "default"];
 const END_PAIRS: &[&str] = &["if", "function", "select", "type"];
 
 impl Parser {
     /// `toks` must end with `Tok::Eof` (the lexer guarantees it).
-    pub fn new(toks: Vec<Token>) -> Self {
+    pub fn new(toks: Vec<Token>, files: Vec<String>) -> Self {
         let mut fn_arity = BTreeMap::new();
         let mut type_names = BTreeSet::new();
         for i in 0..toks.len() {
@@ -132,6 +132,7 @@ impl Parser {
         }
         Parser {
             toks,
+            files,
             pos: 0,
             fn_arity,
             type_names,
@@ -143,6 +144,18 @@ impl Parser {
             depth: 0,
             loops: 0,
         }
+    }
+
+    fn err_at<T>(&self, t: &Token, msg: impl Into<String>) -> R<T> {
+        Err(Error::new(t.line, t.col, msg).in_file(&self.files[t.file]))
+    }
+
+    fn check_arity(&self, b: &Builtin, n: usize, at: &Token) -> R<()> {
+        if (b.min..=b.max).contains(&n) {
+            return Ok(());
+        }
+        let want = if b.min == b.max { b.min.to_string() } else { format!("{} to {}", b.min, b.max) };
+        self.err_at(at, format!("`{}` expects {want} argument{}, got {n}", b.name, plural(b.max)))
     }
 
     fn tok(&self) -> &Token {
@@ -169,7 +182,7 @@ impl Parser {
     }
     fn eat_end(&mut self, what: &str, start: &Token, opener: &str) -> R<()> {
         if !self.end_kw(what) {
-            return err_at(start, format!("missing `End {opener}` for this `{opener}`"));
+            return self.err_at(start, format!("missing `End {opener}` for this `{opener}`"));
         }
         if !self.kw("endif") {
             self.bump();
@@ -191,7 +204,7 @@ impl Parser {
         if self.eat_op(op) {
             return Ok(());
         }
-        err_at(self.tok(), format!("expected `{op}`, found {}", describe(self.peek_at(0))))
+        self.err_at(self.tok(), format!("expected `{op}`, found {}", describe(self.peek_at(0))))
     }
     fn at_line_end(&self) -> bool {
         matches!(self.peek_at(0), Tok::Nl | Tok::Eof)
@@ -209,9 +222,9 @@ impl Parser {
         let main = self.block()?;
         if !matches!(self.peek_at(0), Tok::Eof) {
             let what = describe(self.peek_at(0));
-            return err_at(self.tok(), format!("unexpected {what} with no matching block start"));
+            return self.err_at(self.tok(), format!("unexpected {what} with no matching block start"));
         }
-        Ok(Program { main, funcs: self.funcs, types: self.types, globals: self.globals })
+        Ok(Program { main, funcs: self.funcs, types: self.types, globals: self.globals, files: self.files })
     }
 
     /// Statements until end of file or a block terminator; the caller checks which one.
@@ -228,7 +241,7 @@ impl Parser {
             }
             out.push(self.statement()?);
             if !self.at_line_end() && !self.op(":") {
-                return err_at(self.tok(), format!("unexpected {}", describe(self.peek_at(0))));
+                return self.err_at(self.tok(), format!("unexpected {}", describe(self.peek_at(0))));
             }
         }
     }
@@ -243,7 +256,7 @@ impl Parser {
     fn statement(&mut self) -> R<Stmt> {
         let start = self.tok().clone();
         let Tok::Ident(name) = &start.tok else {
-            return err_at(&start, format!("expected a statement, found {}", describe(&start.tok)));
+            return self.err_at(&start, format!("expected a statement, found {}", describe(&start.tok)));
         };
         self.bump();
         let kind = match name.to_ascii_lowercase().as_str() {
@@ -252,7 +265,7 @@ impl Parser {
                 let cond = self.expr()?;
                 let body = self.loop_block()?;
                 if !self.kw("wend") {
-                    return err_at(&start, "missing `Wend` for this `While`");
+                    return self.err_at(&start, "missing `Wend` for this `While`");
                 }
                 self.bump();
                 Kind::While(cond, body)
@@ -266,7 +279,7 @@ impl Parser {
                     self.bump();
                     Kind::Repeat(body, None)
                 } else {
-                    return err_at(&start, "missing `Until` or `Forever` for this `Repeat`");
+                    return self.err_at(&start, "missing `Until` or `Forever` for this `Repeat`");
                 }
             }
             "for" => self.for_rest(&start)?,
@@ -288,15 +301,16 @@ impl Parser {
             "return" => Kind::Return(if self.at_stmt_end() { None } else { Some(self.expr()?) }),
             "exit" => {
                 if self.loops == 0 {
-                    return err_at(&start, "`Exit` can only be used inside a loop");
+                    return self.err_at(&start, "`Exit` can only be used inside a loop");
                 }
                 Kind::Exit
             }
+            "include" => return self.err_at(&start, "Include goes on its own line with a quoted file name, like: Include \"enemies.cb\""),
             "sync" => Kind::Sync,
             "end" => Kind::End,
             _ => self.ident_stmt(name, &start)?,
         };
-        Ok(Stmt { line: start.line, kind })
+        Ok(Stmt { line: start.loc(), kind })
     }
 
     fn if_rest(&mut self, start: &Token) -> R<Kind> {
@@ -304,7 +318,7 @@ impl Parser {
         if self.kw("then") {
             self.bump();
         } else if !self.at_line_end() {
-            return err_at(self.tok(), "expected `Then` or end of line after the `If` condition");
+            return self.err_at(self.tok(), "expected `Then` or end of line after the `If` condition");
         }
         if !self.at_line_end() {
             // Single-line form: everything up to the end of the line belongs to the If, as in Blitz.
@@ -320,7 +334,7 @@ impl Parser {
         let then = self.block()?;
         let els = if self.kw("elseif") {
             let t = self.bump();
-            vec![Stmt { line: t.line, kind: self.if_rest(start)? }] // nested If consumes the EndIf
+            vec![Stmt { line: t.loc(), kind: self.if_rest(start)? }] // nested If consumes the EndIf
         } else if self.kw("else") {
             self.bump();
             let b = self.block()?;
@@ -354,7 +368,7 @@ impl Parser {
         }
         let from = self.expr()?;
         if !self.kw("to") {
-            return err_at(self.tok(), format!("expected `To`, found {}", describe(self.peek_at(0))));
+            return self.err_at(self.tok(), format!("expected `To`, found {}", describe(self.peek_at(0))));
         }
         self.bump();
         let to = self.expr()?;
@@ -371,12 +385,12 @@ impl Parser {
 
     fn eat_next(&mut self, start: &Token, var: &str) -> R<()> {
         if !self.kw("next") {
-            return err_at(start, "missing `Next` for this `For`");
+            return self.err_at(start, "missing `Next` for this `For`");
         }
         self.bump();
         if let Tok::Ident(n) = self.peek_at(0).clone() {
             if !n.eq_ignore_ascii_case(var) {
-                return err_at(self.tok(), format!("`Next {n}` doesn't match `For {var}`"));
+                return self.err_at(self.tok(), format!("`Next {n}` doesn't match `For {var}`"));
             }
             self.bump();
         }
@@ -401,19 +415,19 @@ impl Parser {
                 self.eat_end("select", start, "Select")?;
                 return Ok(Kind::Select(subject, cases, default));
             } else {
-                return err_at(self.tok(), format!("expected `Case`, `Default` or `End Select`, found {}", describe(self.peek_at(0))));
+                return self.err_at(self.tok(), format!("expected `Case`, `Default` or `End Select`, found {}", describe(self.peek_at(0))));
             }
         }
     }
 
     fn function(&mut self, start: &Token) -> R<Kind> {
         if self.in_func || self.depth > 1 {
-            return err_at(start, "functions must be defined at the top level, not inside another block");
+            return self.err_at(start, "functions must be defined at the top level, not inside another block");
         }
         let t = self.tok().clone();
         let (name, orig) = self.var_name()?;
         if self.funcs.iter().any(|f| f.name == name) {
-            return err_at(&t, format!("function `{orig}` is defined twice"));
+            return self.err_at(&t, format!("function `{orig}` is defined twice"));
         }
         let mut params = vec![];
         if self.eat_op("(") && !self.eat_op(")") {
@@ -435,7 +449,7 @@ impl Parser {
 
     fn type_def(&mut self, start: &Token) -> R<Kind> {
         if self.in_func || self.depth > 1 {
-            return err_at(start, "types must be defined at the top level");
+            return self.err_at(start, "types must be defined at the top level");
         }
         let (name, _) = self.var_name_any()?;
         let mut fields = vec![];
@@ -456,7 +470,7 @@ impl Parser {
                 self.types.push(TypeDef { name, fields });
                 return Ok(Kind::Nop);
             } else {
-                return err_at(self.tok(), format!("expected `Field` or `End Type`, found {}", describe(self.peek_at(0))));
+                return self.err_at(self.tok(), format!("expected `Field` or `End Type`, found {}", describe(self.peek_at(0))));
             }
         }
     }
@@ -464,7 +478,7 @@ impl Parser {
     fn global(&mut self, start: &Token, is_const: bool) -> R<Kind> {
         let word = if is_const { "Const" } else { "Global" };
         if self.in_func {
-            return err_at(start, format!("`{word}` must be used at the top level, not inside a function"));
+            return self.err_at(start, format!("`{word}` must be used at the top level, not inside a function"));
         }
         let mut out = vec![];
         loop {
@@ -474,9 +488,9 @@ impl Parser {
                 self.consts.insert(name.clone());
             }
             if self.eat_op("=") {
-                out.push(Stmt { line: start.line, kind: Kind::Assign(Expr::Var(name), "=", self.expr()?) });
+                out.push(Stmt { line: start.loc(), kind: Kind::Assign(Expr::Var(name), "=", self.expr()?) });
             } else if is_const {
-                return err_at(self.tok(), format!("`Const {name}` needs a value: `Const {name} = ...`"));
+                return self.err_at(self.tok(), format!("`Const {name}` needs a value: `Const {name} = ...`"));
             }
             if !self.eat_op(",") {
                 return Ok(Kind::Seq(out));
@@ -489,7 +503,7 @@ impl Parser {
         let t = self.tok().clone();
         let (low, orig) = self.var_name_any()?;
         if builtins::find(&orig).is_some() || builtins::constant(&orig).is_some() {
-            return err_at(&t, format!("`{orig}` is a built-in name and can't be used as a variable"));
+            return self.err_at(&t, format!("`{orig}` is a built-in name and can't be used as a variable"));
         }
         Ok((low, orig))
     }
@@ -499,7 +513,7 @@ impl Parser {
         let t = self.bump();
         match &t.tok {
             Tok::Ident(s) if !is_keyword(s) => Ok((s.to_ascii_lowercase(), s.clone())),
-            other => err_at(&t, format!("expected a name, found {}", describe(other))),
+            other => self.err_at(&t, format!("expected a name, found {}", describe(other))),
         }
     }
 
@@ -507,7 +521,7 @@ impl Parser {
         let t = self.tok().clone();
         let (name, orig) = self.var_name_any()?;
         if !self.type_names.contains(&name) {
-            return err_at(&t, format!("`{orig}` is not a Type"));
+            return self.err_at(&t, format!("`{orig}` is not a Type"));
         }
         Ok(name)
     }
@@ -516,7 +530,7 @@ impl Parser {
         let low = name.to_ascii_lowercase();
         if ["=", "+=", "-=", ".", "["].iter().any(|o| self.op(o)) {
             if builtins::find(name).is_some() || builtins::constant(name).is_some() || is_keyword(name) || self.fn_arity.contains_key(&low) {
-                return err_at(start, format!("`{name}` is a built-in or function name and can't be used as a variable"));
+                return self.err_at(start, format!("`{name}` is a built-in or function name and can't be used as a variable"));
             }
             let mut target = Expr::Var(low.clone());
             loop {
@@ -532,31 +546,31 @@ impl Parser {
                 }
             }
             if matches!(target, Expr::Var(_)) && self.consts.contains(&low) {
-                return err_at(start, format!("`{name}` is a Const and can't be changed"));
+                return self.err_at(start, format!("`{name}` is a Const and can't be changed"));
             }
             let op = match self.peek_at(0) {
                 Tok::Op(o @ ("=" | "+=" | "-=")) => *o,
-                t => return err_at(self.tok(), format!("expected `=`, found {}", describe(t))),
+                t => return self.err_at(self.tok(), format!("expected `=`, found {}", describe(t))),
             };
             self.bump();
             return Ok(Kind::Assign(target, op, self.expr()?));
         }
         if is_keyword(name) {
-            return err_at(start, format!("unexpected `{name}`"));
+            return self.err_at(start, format!("unexpected `{name}`"));
         }
         if let Some(&n) = self.fn_arity.get(&low) {
             let args = self.stmt_args()?;
             if args.len() != n {
-                return err_at(start, format!("`{name}` expects {n} argument{}, got {}", plural(n), args.len()));
+                return self.err_at(start, format!("`{name}` expects {n} argument{}, got {}", plural(n), args.len()));
             }
             return Ok(Kind::UserCall(low, args));
         }
         let Some(b) = builtins::find(name) else {
             let hint = builtins::suggest(name).map(|s| format!(". Did you mean `{s}`?")).unwrap_or_default();
-            return err_at(start, format!("`{name}` is not a command or function{hint}"));
+            return self.err_at(start, format!("`{name}` is not a command or function{hint}"));
         };
         let args = self.stmt_args()?;
-        check_arity(b, args.len(), start)?;
+        self.check_arity(b, args.len(), start)?;
         Ok(Kind::Cmd(b, args))
     }
 
@@ -573,7 +587,7 @@ impl Parser {
                 self.expect_op(")")?;
             }
             if !self.at_stmt_end() {
-                return err_at(self.tok(), format!("unexpected {} after the argument list", describe(self.peek_at(0))));
+                return self.err_at(self.tok(), format!("unexpected {} after the argument list", describe(self.peek_at(0))));
             }
             return Ok(args);
         }
@@ -693,7 +707,7 @@ impl Parser {
                 Ok(e)
             }
             Tok::Ident(s) => self.name_expr(s, &t),
-            other => err_at(&t, format!("expected an expression, found {}", describe(other))),
+            other => self.err_at(&t, format!("expected an expression, found {}", describe(other))),
         }
     }
 
@@ -702,7 +716,7 @@ impl Parser {
         match low.as_str() {
             "delta" => return Ok(Expr::Delta),
             "new" => return Ok(Expr::New(self.type_name()?)),
-            _ if is_keyword(name) => return err_at(t, format!("expected an expression, found `{name}`")),
+            _ if is_keyword(name) => return self.err_at(t, format!("expected an expression, found `{name}`")),
             _ => {}
         }
         if let Some(c) = builtins::constant(name) {
@@ -711,7 +725,7 @@ impl Parser {
         if let Some(&n) = self.fn_arity.get(&low) {
             let args = self.call_args(name, t)?;
             if args.len() != n {
-                return err_at(t, format!("`{name}` expects {n} argument{}, got {}", plural(n), args.len()));
+                return self.err_at(t, format!("`{name}` expects {n} argument{}, got {}", plural(n), args.len()));
             }
             return Ok(Expr::UserCall(low, args));
         }
@@ -719,16 +733,16 @@ impl Parser {
             return Ok(Expr::Var(low));
         };
         if !b.returns {
-            return err_at(t, format!("`{}` doesn't return a value, so it can't be used in an expression", b.name));
+            return self.err_at(t, format!("`{}` doesn't return a value, so it can't be used in an expression", b.name));
         }
         let args = self.call_args(b.name, t)?;
-        check_arity(b, args.len(), t)?;
+        self.check_arity(b, args.len(), t)?;
         Ok(Expr::Call(b, args))
     }
 
     fn call_args(&mut self, name: &str, t: &Token) -> R<Vec<Expr>> {
         if !self.eat_op("(") {
-            return err_at(t, format!("`{name}` needs parentheses here: `{name}(...)`"));
+            return self.err_at(t, format!("`{name}` needs parentheses here: `{name}(...)`"));
         }
         if self.eat_op(")") {
             return Ok(vec![]);
@@ -743,10 +757,4 @@ fn plural(n: usize) -> &'static str {
     if n == 1 { "" } else { "s" }
 }
 
-fn check_arity(b: &Builtin, n: usize, at: &Token) -> R<()> {
-    if (b.min..=b.max).contains(&n) {
-        return Ok(());
-    }
-    let want = if b.min == b.max { b.min.to_string() } else { format!("{} to {}", b.min, b.max) };
-    err_at(at, format!("`{}` expects {want} argument{}, got {n}", b.name, plural(b.max)))
-}
+

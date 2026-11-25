@@ -148,7 +148,7 @@ pub const CONSTANTS: &[&str] = &[
 pub const KEYWORDS: &[&str] = &[
     "if", "then", "else", "elseif", "endif", "end", "while", "wend", "for", "to", "step", "next", "each",
     "repeat", "until", "forever", "exit", "select", "case", "default", "function", "return", "global",
-    "const", "dim", "type", "field", "new", "delete", "sync", "and", "or", "not", "mod", "delta",
+    "const", "dim", "type", "field", "new", "delete", "sync", "include", "and", "or", "not", "mod", "delta",
 ];
 
 pub fn find(name: &str) -> Option<&'static Builtin> {
