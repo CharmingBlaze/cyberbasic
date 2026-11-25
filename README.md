@@ -37,6 +37,8 @@ cargo run --release -- run examples/pong.cb
 
 This compiles `examples/pong.cb` into `examples/build/pong/` and opens it. Use `build` instead of `run` to only write the files. The output folder is a standalone web game (`index.html`, `runtime.js`, `game.js`, plus an `assets/` folder if one sits next to your `.cb` file).
 
+Projects made with nodes build the same way: `cargo run --release -- run examples/behaviours/main.graph`. The main file's folder is the project, so graphs and code in it can call each other's functions.
+
 > Games load Babylon.js from its CDN, so for now they need an internet connection.
 
 ### IDE

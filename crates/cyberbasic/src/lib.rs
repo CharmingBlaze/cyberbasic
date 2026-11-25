@@ -2,6 +2,8 @@
 
 pub mod builtins;
 mod codegen;
+pub mod graph;
+mod json;
 mod lexer;
 mod parser;
 #[cfg(target_arch = "wasm32")]
@@ -47,6 +49,24 @@ pub fn compile_project(main: &str, load: &dyn Fn(&str) -> Option<String>, debug:
     let (toks, files) = lexer::lex_project(main, load)?;
     let prog = parser::Parser::new(toks, files).program()?;
     Ok(codegen::generate(&prog, debug))
+}
+
+/// Compiles a whole project folder (`files[0]` is the main file), node graphs included. A wiring
+/// problem in a graph is an error on the first line generated for that node.
+pub fn compile_files(files: &[(&str, &str)], debug: bool) -> Result<String, Error> {
+    let lowered = graph::lower_project(files);
+    for (f, l) in &lowered {
+        if let Some((node, msg)) = l.problems.first() {
+            let line = l.map.iter().find(|(_, n)| n == node).map_or(0, |m| m.0);
+            let at = if node.is_empty() { String::new() } else { format!("node {node}: ") };
+            return Err(Error::new(line, 1, format!("{at}{msg}")).in_file(f));
+        }
+    }
+    let load = |name: &str| {
+        let low = lowered.iter().find(|(f, _)| f.eq_ignore_ascii_case(name)).map(|(_, l)| l.code.clone());
+        low.or_else(|| files.iter().find(|f| f.0.eq_ignore_ascii_case(name)).map(|f| f.1.to_string()))
+    };
+    compile_project(files[0].0, &load, debug)
 }
 
 #[cfg(test)]

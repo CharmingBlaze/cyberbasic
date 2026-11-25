@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 use std::{env, fs, process};
 
-const USAGE: &str = "usage: cyberbasic <build|run> <file.cb> [-o <out_dir>]";
+const USAGE: &str = "usage: cyberbasic <build|run> <file.cb|file.graph> [-o <out_dir>]";
 
 fn main() {
     let args: Vec<String> = env::args().skip(1).collect();
@@ -14,7 +14,17 @@ fn main() {
     let dir = Path::new(file).parent().unwrap_or(Path::new(".")).to_path_buf();
     let main_name = Path::new(file).file_name().unwrap_or_default().to_string_lossy().into_owned();
     let load = |name: &str| fs::read_to_string(dir.join(name)).ok();
-    let js = cyberbasic_core::compile_project(&main_name, &load, false).unwrap_or_else(|e| {
+    // The project is the folder (as in the IDE): graphs can call functions from any file in it.
+    let mut files = vec![(main_name.clone(), load(&main_name).unwrap_or_else(|| die(&format!("cannot read {file}"))))];
+    for e in fs::read_dir(&dir).unwrap_or_else(|e| die(&format!("cannot read {}: {e}", dir.display()))).flatten() {
+        let name = e.file_name().to_string_lossy().into_owned();
+        let ext = Path::new(&name).extension().map(|x| x.to_ascii_lowercase());
+        if name != main_name && (ext.as_deref() == Some("cb".as_ref()) || ext.as_deref() == Some("graph".as_ref())) {
+            files.push((name.clone(), fs::read_to_string(e.path()).unwrap_or_default()));
+        }
+    }
+    let refs: Vec<(&str, &str)> = files.iter().map(|(n, t)| (n.as_str(), t.as_str())).collect();
+    let js = cyberbasic_core::compile_files(&refs, false).unwrap_or_else(|e| {
         report(&dir, &e, &load);
         process::exit(1)
     });
@@ -76,6 +86,9 @@ fn open(path: &Path) {
 
 fn report(dir: &Path, e: &cyberbasic_core::Error, load: &dyn Fn(&str) -> Option<String>) {
     eprintln!("{}:{}:{}: error: {}", dir.join(&e.file).display(), e.line, e.col, e.msg);
+    if cyberbasic_core::graph::is_graph(&e.file) {
+        return; // the line is in the generated code, not the JSON; open the graph in the IDE to see the node
+    }
     let src = load(&e.file).unwrap_or_default();
     if let Some(text) = src.lines().nth(e.line.saturating_sub(1)) {
         eprintln!("  {:>4} | {text}", e.line);

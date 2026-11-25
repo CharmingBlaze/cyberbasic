@@ -24,6 +24,7 @@ interface Exports {
   cb_free(ptr: number, len: number): void;
   cb_compile(ptr: number, len: number, debug: number): number;
   cb_manifest(): void;
+  cb_lower(ptr: number, len: number): void;
   cb_out_ptr(): number;
   cb_out_len(): number;
 }
@@ -44,14 +45,34 @@ export async function loadCompiler() {
 const output = () =>
   new TextDecoder().decode(new Uint8Array(wasm.memory.buffer, wasm.cb_out_ptr(), wasm.cb_out_len()));
 
-/** Compiles a project; `main` runs and may `Include` the others. */
-export function compile(files: Record<string, string>, main: string, debug: boolean): CompileResult {
-  const order = [main, ...Object.keys(files).filter((f) => f !== main)];
-  const bytes = new TextEncoder().encode(order.map((f) => `${f}\0${files[f]}`).join("\0"));
+/** Copies the project into WASM memory (main file first), as the exports expect, and runs `f` on it. */
+function withProject<T>(files: Record<string, string>, main: string, f: (p: number, len: number) => T): T {
+  const order = [main, ...Object.keys(files).filter((n) => n !== main)];
+  const bytes = new TextEncoder().encode(order.map((n) => `${n}\0${files[n]}`).join("\0"));
   const p = wasm.cb_alloc(bytes.length);
   new Uint8Array(wasm.memory.buffer, p, bytes.length).set(bytes);
-  const ok = wasm.cb_compile(p, bytes.length, debug ? 1 : 0);
-  wasm.cb_free(p, bytes.length);
+  try {
+    return f(p, bytes.length);
+  } finally {
+    wasm.cb_free(p, bytes.length);
+  }
+}
+
+/** A node graph as CyberBasic: the code, generated line -> node id, and wiring problems. */
+export interface Lowered { code: string; map: Map<number, string>; problems: { node: string; message: string }[] }
+
+/** Turns every node graph in the project into CyberBasic (the compiler does it, as the CLI does). */
+export function lowerGraphs(files: Record<string, string>, main: string): Record<string, Lowered> {
+  withProject(files, main, (p, len) => wasm.cb_lower(p, len));
+  const raw = JSON.parse(output()) as Record<string, { code: string; map: [number, string][]; problems: [string, string][] }>;
+  return Object.fromEntries(
+    Object.entries(raw).map(([f, l]) => [f, { code: l.code, map: new Map(l.map), problems: l.problems.map(([node, message]) => ({ node, message })) }]),
+  );
+}
+
+/** Compiles a project; `main` runs and may `Include` the others. */
+export function compile(files: Record<string, string>, main: string, debug: boolean): CompileResult {
+  const ok = withProject(files, main, (p, len) => wasm.cb_compile(p, len, debug ? 1 : 0));
   const out = output();
   if (ok) {
     // The generated code lists its files in index order (see codegen.rs): `CB.files = [...];`

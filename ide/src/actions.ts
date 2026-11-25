@@ -1,8 +1,8 @@
 // Everything the UI can do: run/debug, project files, panels and workspaces. Menus, the command
 // palette, toolbar buttons and keyboard shortcuts all call these.
 import type { DockviewApi } from "dockview-react";
-import { compile, loadCompiler, manifest } from "./compiler";
-import { behaviourName, emptyGraph, generateGraph, graphFunctions, graphText, nodeCatalog, nodeLine, parseGraph, type FuncSig, type Graph, type NodeDef } from "./graph";
+import { compile, loadCompiler, lowerGraphs, manifest } from "./compiler";
+import { behaviourName, emptyGraph, graphFunctions, graphText, nodeCatalog, nodeLine, parseGraph, type FuncSig, type Graph, type NodeDef } from "./graph";
 import { monaco, registerLanguage } from "./language";
 import { EXAMPLE_ASSETS, TEMPLATES, exportGame, fromTemplate, fsSupported, gamePage, openFolder, readFolder, saveProject, writeFile, type Template } from "./project";
 import { addRecent, removeRecent, type Recent } from "./recent";
@@ -86,15 +86,13 @@ function sources() {
   const { files, fileName } = get().project;
   const out: Record<string, string> = {};
   graphProblems = [];
+  const lowered = lowerGraphs(files, fileName);
   for (const [file, text] of Object.entries(files)) {
-    if (isGraph(file)) {
-      const g = generateGraph(file, parseGraph(text), file === fileName, nodeDefs(), projectFunctions(), projectBehaviours());
-      graphMaps.set(file, g.map);
-      graphProblems.push(...g.problems.map((p) => ({ file, ...p })));
-      out[file] = g.code;
-      continue;
-    }
-    out[file] = text;
+    const g = lowered[file];
+    out[file] = g?.code ?? text;
+    if (!g) continue;
+    graphMaps.set(file, g.map);
+    graphProblems.push(...g.problems.map((p) => ({ file, ...p })));
   }
   return out;
 }
