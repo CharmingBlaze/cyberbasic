@@ -1,0 +1,32 @@
+' A robot from the modeller (robot.model) walking around a level (level.scene).
+' Open robot.model and switch to Animate to see or change its "walk" and "idle" animations.
+' Left/Right turn, Up/Down walk, Escape quits.
+Include "level.scene"
+
+Graphics3D 1280, 720
+ClsColor 120, 160, 210
+LoadScene_Level                 ' the level places the robot model
+robot = FindEntity("Robot")
+camera = FindEntity("Camera")
+heading = 0
+
+While Not KeyHit(KEY_ESCAPE)
+    If KeyDown(KEY_LEFT) Then heading = heading - 150 * Delta
+    If KeyDown(KEY_RIGHT) Then heading = heading + 150 * Delta
+    RotateEntity robot, 0, heading, 0
+
+    speed = 0
+    If KeyDown(KEY_UP) Then speed = 3
+    If KeyDown(KEY_DOWN) Then speed = -2
+    If speed <> 0
+        MoveEntity robot, 0, 0, speed * Delta
+        AnimateEntity robot, "walk", Abs(speed) / 3   ' faster walking, faster steps
+    Else
+        AnimateEntity robot, "idle"
+    EndIf
+
+    PositionEntity camera, EntityX(robot), 5, EntityZ(robot) - 9
+    PointEntity camera, EntityX(robot), 1.2, EntityZ(robot)
+    Text 20, 20, "Animation: " + EntityAnimation(robot)
+    Sync
+Wend

@@ -124,6 +124,8 @@ pub fn project_functions(files: &[(&str, &str)]) -> Vec<FuncSig> {
                 parse(t).map(|g| graph_functions(&g)).unwrap_or_default()
             } else if crate::scene::is_scene(f) {
                 vec![FuncSig { name: crate::scene::load_function(f), params: vec![] }]
+            } else if crate::model::is_model(f) {
+                vec![FuncSig { name: crate::model::create_function(f), params: vec![] }]
             } else {
                 code_functions(t)
             }
@@ -527,10 +529,13 @@ pub fn lower_project(files: &[(&str, &str)]) -> Vec<(String, Lowered)> {
     files
         .iter()
         .enumerate()
-        .filter(|(_, (f, _))| is_graph(f) || crate::scene::is_scene(f))
+        .filter(|(_, (f, _))| is_graph(f) || crate::scene::is_scene(f) || crate::model::is_model(f))
         .map(|(i, (f, t))| {
             if crate::scene::is_scene(f) {
                 return (f.to_string(), crate::scene::lower(f, t));
+            }
+            if crate::model::is_model(f) {
+                return (f.to_string(), crate::model::lower(f, t));
             }
             let low = match parse(t) {
                 Ok(g) => lower(f, &g, i == 0, &funcs),

@@ -39,6 +39,12 @@ pub fn lower(file: &str, text: &str) -> Lowered {
         }
     };
     let objects = scene.get("objects").arr();
+    // Models from the modeller come with the scene, so the game needn't Include them itself.
+    let mut models: Vec<String> = objects.iter().map(|o| o.get("model").str()).filter(|m| crate::model::is_model(m)).map(|m| m.replace('"', "")).collect();
+    models.dedup();
+    for (i, m) in models.iter().enumerate() {
+        lines.insert(1 + i, format!("Include \"{m}\""));
+    }
     lines.push(format!("Function {}()", load_function(file)));
     if objects.iter().any(|o| matches!(o.get("physics").str(), "static" | "dynamic") && o.get("kind").str() != "light") {
         lines.push("    EnablePhysics".into());
@@ -66,7 +72,11 @@ pub fn lower(file: &str, text: &str) -> Lowered {
             }
             "model" => {
                 let path: String = o.get("model").str().chars().filter(|&c| c != '"').collect();
-                format!("LoadMesh(\"{path}\")")
+                if crate::model::is_model(&path) {
+                    format!("{}()", crate::model::create_function(&path))
+                } else {
+                    format!("LoadMesh(\"{path}\")")
+                }
             }
             other => {
                 problems.push((id.to_string(), format!("Unknown kind of object \"{other}\".")));

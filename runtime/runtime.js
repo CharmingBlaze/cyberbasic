@@ -174,6 +174,46 @@ const CB = (() => {
   const collisions = new Set(); // "a:b" and "a" keys for contacts that started during the last physics step
   const touched = new Map(); // entity id -> the entity it started touching in the last physics step
   const named = new Map(); // lower-case name -> entity (NameEntity, scenes)
+  const animated = new Set(); // models from the modeller playing a clip
+
+  // --- Models from the modeller: parts (meshes) and joints under a root node, plus animation clips
+  // whose keys hold a part's position, rotation (degrees) and scale at a time in seconds.
+  const PART = {
+    box: () => B.MeshBuilder.CreateBox("part", { size: 1 }, scene),
+    sphere: () => B.MeshBuilder.CreateSphere("part", { diameter: 1, segments: 16 }, scene),
+    cylinder: () => B.MeshBuilder.CreateCylinder("part", { height: 1, diameter: 1, tessellation: 24 }, scene),
+    cone: () => B.MeshBuilder.CreateCylinder("part", { height: 1, diameterTop: 0, diameterBottom: 1, tessellation: 24 }, scene),
+  };
+  const pose = (n, k) => {
+    const p = k.position ?? [0, 0, 0], r = k.rotation ?? [0, 0, 0], s = k.scale ?? [1, 1, 1];
+    n.position.set(p[0], p[1], p[2]);
+    n.rotation.set(r[0] * D2R, r[1] * D2R, r[2] * D2R);
+    n.scaling.set(s[0], s[1], s[2]);
+  };
+  // shortcut: rotations blend as Euler angles (fine for limbs swinging < 180°); use quaternions if clips need big turns.
+  const lerp3 = (a = [0, 0, 0], b = a, f) => [0, 1, 2].map((i) => a[i] + (b[i] - a[i]) * f);
+  const sampleKeys = (keys, t) => {
+    if (t <= keys[0].t) return keys[0];
+    for (let i = 0; i < keys.length - 1; i++) {
+      const a = keys[i], b = keys[i + 1];
+      if (t < b.t) {
+        const f = (t - a.t) / (b.t - a.t || 1);
+        return { position: lerp3(a.position, b.position, f), rotation: lerp3(a.rotation, b.rotation, f), scale: lerp3(a.scale ?? [1, 1, 1], b.scale ?? [1, 1, 1], f) };
+      }
+    }
+    return keys[keys.length - 1];
+  };
+  const restPose = (md) => { for (const [id, p] of md.rest) pose(md.parts.get(id), p); };
+  const stepModel = (md, dt) => {
+    const c = md.clip, len = c.length > 0 ? c.length : 1;
+    md.time += dt * md.speed;
+    if (c.loop) md.time = ((md.time % len) + len) % len;
+    else if (md.time >= len) { md.time = len; md.done = true; }
+    for (const [id, keys] of Object.entries(c.tracks ?? {})) {
+      const n = md.parts.get(id);
+      if (n && keys.length) pose(n, sampleKeys(keys, md.time));
+    }
+  };
   const pad = () => (navigator.getGamepads ? navigator.getGamepads()[0] : null);
 
   // Waits for a media element to load, keeping frames running meanwhile.
@@ -343,6 +383,58 @@ const CB = (() => {
       m.material.specularColor = new B.Color3(0.04, 0.04, 0.04);
       return m;
     },
+    CreateModel(data) {
+      need3d();
+      let m;
+      try {
+        m = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(String(data)), (c) => c.charCodeAt(0))));
+      } catch {
+        throw new Error("that model's data is damaged");
+      }
+      const root = node("model"), parts = new Map(), rest = new Map();
+      for (const p of m.parts ?? []) {
+        const make = PART[p.kind];
+        const n = make ? mesh(make()) : new B.TransformNode("joint", scene);
+        if (make) {
+          const c = p.color ?? [200, 200, 210];
+          n.material.diffuseColor = new B.Color3(c[0] / 255, c[1] / 255, c[2] / 255);
+        }
+        n.cbName = p.name;
+        parts.set(p.id, n);
+        rest.set(p.id, p);
+      }
+      for (const p of m.parts ?? []) {
+        parts.get(p.id).parent = parts.get(p.parent) ?? root;
+        pose(parts.get(p.id), p);
+      }
+      root.cbModel = { parts, rest, clips: m.animations ?? [], clip: null, time: 0, speed: 1, done: false };
+      return root;
+    },
+    AnimateEntity(e, name, speed = 1) {
+      const want = String(name).toLowerCase();
+      if (e.cbGroups) { // a glTF model's own animations
+        const g = e.cbGroups.find((x) => x.name.toLowerCase() === want);
+        if (!g) throw new Error(`this model has no animation called "${name}" (it has: ${e.cbGroups.map((x) => x.name).join(", ") || "none"})`);
+        if (e.cbPlaying !== g) { e.cbPlaying?.stop(); g.start(true, speed); e.cbPlaying = g; } else g.speedRatio = speed;
+        return;
+      }
+      const md = e.cbModel;
+      if (!md) throw new Error("AnimateEntity needs a model from the modeller or a glTF model with animations");
+      const c = md.clips.find((x) => String(x.name).toLowerCase() === want);
+      if (!c) throw new Error(`this model has no animation called "${name}" (it has: ${md.clips.map((x) => x.name).join(", ") || "none"})`);
+      if (md.clip !== c || md.done) { restPose(md); md.clip = c; md.time = 0; md.done = false; }
+      md.speed = speed;
+      animated.add(e);
+    },
+    StopAnimating(e) {
+      if (e.cbGroups) { e.cbPlaying?.stop(); e.cbPlaying = null; return; }
+      if (e.cbModel) { e.cbModel.clip = null; restPose(e.cbModel); animated.delete(e); }
+    },
+    EntityAnimation(e) {
+      if (e.cbGroups) return e.cbPlaying?.name ?? "";
+      const md = e.cbModel;
+      return md?.clip && !md.done ? md.clip.name : "";
+    },
     // Height of a terrain's surface under world x, z (for placing things on it).
     TerrainHeight(t, x, z) {
       if (!t?.getHeightAtCoordinates) throw new Error("TerrainHeight needs a terrain (from CreateTerrain or a scene)");
@@ -398,6 +490,8 @@ const CB = (() => {
         : B.SceneLoader.ImportMeshAsync("", "", url, scene, null, p.slice(p.lastIndexOf("."))));
       const n = node("model");
       result.meshes[0].parent = n; // the glTF root carries the handedness flip; keep it underneath
+      n.cbGroups = result.animationGroups; // for AnimateEntity; glTF files may autoplay their first one
+      for (const g of n.cbGroups) g.stop();
       return n;
     },
     // Casts a ray from x,y,z along dx,dy,dz (its length is the reach). Returns the mesh hit, or 0.
@@ -531,6 +625,7 @@ const CB = (() => {
         buttonHits.clear();
         if (scene?.activeCamera && !paused) {
           collisions.clear(); touched.clear(); // the physics step inside render() refills them for the next frame's logic
+          for (const e of animated) e.isDisposed() || !e.cbModel.clip ? animated.delete(e) : stepModel(e.cbModel, cb.delta);
           engine.beginFrame(); scene.render(); engine.endFrame();
         }
         if (done) { post({ type: "ended" }); return say("Program ended."); }

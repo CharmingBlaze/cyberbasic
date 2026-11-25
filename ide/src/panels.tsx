@@ -11,6 +11,7 @@ import { get, set, setSettings, useStore } from "./store";
 import { GraphPanel } from "./graphui";
 import { parseScene } from "./scene";
 import { ScenePanel } from "./sceneui";
+import { ModelPanel } from "./modelui";
 import { scan } from "./symbols";
 
 // ------------------------------------------------------------------ editor
@@ -20,6 +21,7 @@ export function FilePanel(props: IDockviewPanelProps<{ file?: string }>) {
   const main = useStore((s) => s.project.fileName);
   const file = props.params?.file ?? main;
   if (A.isScene(file)) return <ScenePanel key={file} file={file} />;
+  if (A.isModel(file)) return <ModelPanel key={file} file={file} />;
   return A.isGraph(file) ? <GraphPanel key={file} file={file} /> : <EditorPanel key={file} {...props} />;
 }
 
@@ -418,7 +420,7 @@ export function ProjectPanel() {
         {files.map((f) => (
           <div key={f} className={"row file nested" + (f === activeFile ? " active" : "")}>
             <button className="grow left file-open" onClick={() => A.openFile(f)}>
-              <Icon name={A.isGraph(f) ? "graph" : A.isScene(f) ? "cube" : "code"} size={14} /> {f}
+              <Icon name={A.isGraph(f) ? "graph" : A.isScene(f) || A.isModel(f) ? "cube" : "code"} size={14} /> {f}
             </button>
             {f === project.fileName ? (
               <span className="file-badge" title="This file runs; it Includes the others">main</span>

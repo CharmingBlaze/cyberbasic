@@ -4,6 +4,7 @@ pub mod builtins;
 mod codegen;
 pub mod graph;
 mod json;
+pub mod model;
 pub mod scene;
 mod lexer;
 mod parser;

@@ -5,31 +5,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import * as A from "./actions";
 import { Icon } from "./icons";
 import { KINDS, dab, decodeColors, decodeHeights, encodeColors, encodeHeights, isMesh, loadFunction, newObject, parseScene, sceneText, type Brush, type Scene, type SceneKind, type SceneObject, type Vec3 } from "./scene";
+import { buildModel, parseModel } from "./model";
 import { get, set, useStore } from "./store";
+import { pickable, round, setTransform, transformOf, useGizmo, useViewport, type Any, type GizmoMode } from "./viewport";
 
-// shortcut: Babylon is untyped here (loaded from the CDN like the games, not bundled); type it if the editor grows.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Any = any;
-const CDN = "https://cdn.babylonjs.com/";
-const scripts = new Map<string, Promise<void>>();
-function script(url: string) {
-  if (!scripts.has(url)) {
-    scripts.set(
-      url,
-      new Promise((ok, fail) => {
-        const s = document.createElement("script");
-        s.src = url;
-        s.onload = () => ok();
-        s.onerror = () => fail(new Error(`Couldn't load ${url} (the level editor needs internet for now)`));
-        document.head.append(s);
-      }),
-    );
-  }
-  return scripts.get(url)!;
-}
-const D2R = Math.PI / 180;
-const round = (n: number, step = 1e-3) => Math.round(n / step) * step;
-type Mode = "move" | "rotate" | "scale";
 const BRUSHES: { tool: Brush; label: string; tip: string }[] = [
   { tool: "raise", label: "Raise", tip: "Pull the ground up" },
   { tool: "lower", label: "Lower", tip: "Push the ground down" },
@@ -50,6 +29,8 @@ export interface Tools {
   setPaint: (c: Vec3) => void;
 }
 
+type Mode = GizmoMode;
+
 export function ScenePanel({ file }: { file: string }) {
   const text = useStore((s) => s.project.files[file] ?? "");
   const assets = useStore((s) => s.project.assets);
@@ -61,7 +42,6 @@ export function ScenePanel({ file }: { file: string }) {
   const [selected, setSelected] = useState<string>();
   const [mode, setMode] = useState<Mode>("move");
   const [snap, setSnap] = useState(true);
-  const [error, setError] = useState<string>();
   const [brush, setBrush] = useState<Brush | null>(null);
   const [radius, setRadius] = useState(4);
   const [strength, setStrength] = useState(0.5);
@@ -70,8 +50,8 @@ export function ScenePanel({ file }: { file: string }) {
   brushRef.current = { tool: brush ?? "raise", radius, strength, color: paint };
   const tools: Tools = { brush, setBrush, radius, setRadius, strength, setStrength, paint, setPaint };
   const canvas = useRef<HTMLCanvasElement>(null);
-  const view = useRef<{ B: Any; engine: Any; scene: Any; camera: Any; gizmos: Any; nodes: Map<string, { node: Any; key: string }> }>(null);
-  const [ready, setReady] = useState(false);
+  const { view, ready, error } = useViewport(canvas, setSelected);
+  const nodes = useRef(new Map<string, { node: Any; key: string }>()).current;
 
   const latest = () => parseScene(get().project.files[file] ?? "");
   const save = (s: Scene) => A.updateVisual(file, sceneText(s));
@@ -89,83 +69,26 @@ export function ScenePanel({ file }: { file: string }) {
 
   // ------------------------------------------------------------ the 3D view
 
-  useEffect(() => {
-    let disposed = false, observer: ResizeObserver | undefined;
-    (async () => {
-      try {
-        await script(CDN + "babylon.js");
-        await script(CDN + "loaders/babylonjs.loaders.min.js");
-      } catch (e) {
-        return setError((e as Error).message);
-      }
-      if (disposed || !canvas.current) return;
-      const B = (window as Any).BABYLON;
-      const engine = new B.Engine(canvas.current, true, { preserveDrawingBuffer: true });
-      const s = new B.Scene(engine);
-      s.clearColor = new B.Color4(0.07, 0.08, 0.11, 1);
-      const camera = new B.ArcRotateCamera("editor", -Math.PI / 2.4, 1.05, 24, B.Vector3.Zero(), s);
-      camera.attachControl(canvas.current, true);
-      camera.wheelPrecision = 30;
-      camera.panningSensibility = 60;
-      camera.minZ = 0.05;
-      new B.HemisphericLight("editor-light", new B.Vector3(0.3, 1, -0.4), s).intensity = 1.1;
-      // Ground grid: a line every unit, brighter every 5.
-      const lines: Any[] = [], colors: Any[] = [];
-      for (let i = -30; i <= 30; i++) {
-        const c = i === 0 ? new B.Color4(0.35, 0.55, 0.8, 1) : i % 5 ? new B.Color4(0.18, 0.2, 0.26, 1) : new B.Color4(0.26, 0.29, 0.37, 1);
-        lines.push([new B.Vector3(i, 0, -30), new B.Vector3(i, 0, 30)], [new B.Vector3(-30, 0, i), new B.Vector3(30, 0, i)]);
-        colors.push([c, c], [c, c]);
-      }
-      const grid = B.MeshBuilder.CreateLineSystem("editor-grid", { lines, colors }, s);
-      grid.isPickable = false;
-      const gizmos = new B.GizmoManager(s);
-      gizmos.usePointerToAttachGizmos = false;
-      gizmos.clearGizmoOnEmptyPointerEvent = false;
-      view.current = { B, engine, scene: s, camera, gizmos, nodes: new Map() };
-      engine.runRenderLoop(() => s.render());
-      observer = new ResizeObserver(() => engine.resize());
-      observer.observe(canvas.current);
-      // Click an object to select it; click empty space to deselect.
-      s.onPointerObservable.add((info: Any) => {
-        if (info.type !== B.PointerEventTypes.POINTERTAP || info.event.button !== 0) return;
-        let m = info.pickInfo?.pickedMesh;
-        while (m && !m.metadata?.sceneId) m = m.parent;
-        setSelected(m?.metadata?.sceneId);
-      });
-      setReady(true);
-    })();
-    return () => {
-      disposed = true;
-      observer?.disconnect();
-      view.current?.engine.dispose();
-      view.current = null;
-    };
-  }, []);
-
   // Make the 3D view match the file: create, replace or update each object's node.
   useEffect(() => {
     const v = view.current;
     if (!v) return;
-    const { B, nodes } = v;
+    const { B } = v;
     const seen = new Set<string>();
     for (const o of scene.objects) {
       seen.add(o.id);
-      const key = o.kind === "terrain" ? `terrain:${o.size}:${gridOf(o)}:${o.heights}:${o.colors}` : `${o.kind}:${o.model ?? ""}`;
+      const key = o.kind === "terrain" ? `terrain:${o.size}:${gridOf(o)}:${o.heights}:${o.colors}` : `${o.kind}:${o.model ?? ""}:${o.model?.endsWith(".model") ? files[o.model] : ""}`;
       let entry = nodes.get(o.id);
       if (entry && entry.key !== key) {
         entry.node.dispose();
         entry = undefined;
       }
       if (!entry) {
-        entry = { node: build(v, o, assets), key };
+        entry = { node: build(v, o, assets, files), key };
         nodes.set(o.id, entry);
       }
       const n = entry.node;
-      n.position.set(...o.position);
-      const r = o.rotation.map((d) => d * D2R) as Vec3;
-      if (n.rotationQuaternion) n.rotationQuaternion = B.Quaternion.FromEulerAngles(...r);
-      else n.rotation.set(...r);
-      if (isMesh(o.kind)) n.scaling.set(...o.scale);
+      setTransform(B, n, o.position, o.rotation, isMesh(o.kind) ? o.scale : undefined);
       const c = o.color ?? [200, 200, 210];
       for (const m of [n, ...n.getChildMeshes()]) {
         if (m.material && isMesh(o.kind)) "albedoColor" in m.material ? (m.material.albedoColor = new B.Color3(c[0] / 255, c[1] / 255, c[2] / 255)) : (m.material.diffuseColor = new B.Color3(c[0] / 255, c[1] / 255, c[2] / 255));
@@ -175,45 +98,19 @@ export function ScenePanel({ file }: { file: string }) {
       e.node.dispose();
       nodes.delete(id);
     }
-  }, [scene, ready, assets]);
+  }, [scene, ready, assets, files]);
 
   // Gizmo on the selected object; saves when a drag ends.
-  useEffect(() => {
-    const v = view.current;
-    if (!v) return;
-    const { gizmos, nodes } = v;
-    const node = selected ? nodes.get(selected)?.node : undefined;
-    const kind = scene.objects.find((o) => o.id === selected)?.kind;
-    gizmos.positionGizmoEnabled = mode === "move";
-    gizmos.rotationGizmoEnabled = mode === "rotate";
-    gizmos.scaleGizmoEnabled = mode === "scale" && !!kind && isMesh(kind);
-    gizmos.attachToNode(sculpting ? null : (node ?? null));
-    for (const m of nodes.values()) for (const mesh of [m.node, ...m.node.getChildMeshes()]) mesh.showBoundingBox = false;
-    if (node) for (const mesh of [node, ...node.getChildMeshes()]) if (mesh.getTotalVertices?.() > 0) mesh.showBoundingBox = true;
-    const g = gizmos.gizmos;
-    if (g.positionGizmo) g.positionGizmo.snapDistance = snap ? 0.5 : 0;
-    if (g.rotationGizmo) {
-      g.rotationGizmo.snapDistance = snap ? 15 * D2R : 0;
-      g.rotationGizmo.updateGizmoRotationToMatchAttachedMesh = false;
-    }
-    if (g.scaleGizmo) g.scaleGizmo.snapDistance = snap ? 0.25 : 0;
-    const done = () => {
-      if (!node || !selected) return;
-      const r = node.rotationQuaternion ? node.rotationQuaternion.toEulerAngles() : node.rotation;
-      change(selected, {
-        position: [round(node.position.x), round(node.position.y), round(node.position.z)],
-        rotation: [round(r.x / D2R, 0.1), round(r.y / D2R, 0.1), round(r.z / D2R, 0.1)],
-        ...(kind && isMesh(kind) ? { scale: [round(node.scaling.x), round(node.scaling.y), round(node.scaling.z)] as Vec3 } : {}),
-      });
-    };
-    const subs = [g.positionGizmo, g.rotationGizmo, g.scaleGizmo].filter(Boolean).map((z: Any) => [z, z.onDragEndObservable.add(done)]);
-    return () => subs.forEach(([z, o]) => z.onDragEndObservable.remove(o));
-  }, [selected, mode, snap, ready, scene, sculpting]);
+  const selNode = selected && !sculpting ? nodes.get(selected)?.node : undefined;
+  useGizmo(view, selNode, { mode, snap, canScale: !!sel && isMesh(sel.kind) }, (node) => {
+    const t = transformOf(node);
+    change(selected!, { position: t.position, rotation: t.rotation, ...(sel && isMesh(sel.kind) ? { scale: t.scale } : {}) });
+  }, [ready, scene]);
 
   // Sculpting and painting a terrain: left-drag applies the brush; right-drag orbits, middle pans.
   useEffect(() => {
     const v = view.current;
-    const mesh = sculpting && selected ? v?.nodes.get(selected)?.node : undefined;
+    const mesh = sculpting && selected ? nodes.get(selected)?.node : undefined;
     if (!v || !mesh) return;
     const { B, scene: s, camera } = v;
     const o = latest().objects.find((x) => x.id === selected)!;
@@ -301,7 +198,7 @@ export function ScenePanel({ file }: { file: string }) {
     setSelected(copy.id);
   };
   const frame = () => {
-    const n = selected && view.current?.nodes.get(selected)?.node;
+    const n = selected && nodes.get(selected)?.node;
     if (n) view.current!.camera.setTarget(n.getAbsolutePosition().clone());
   };
   const onKeyDown = (e: React.KeyboardEvent) => {
@@ -317,7 +214,7 @@ export function ScenePanel({ file }: { file: string }) {
     else return;
     e.preventDefault();
   };
-  const models = Object.keys(assets).filter((a) => /\.(glb|gltf)$/i.test(a));
+  const models = [...Object.keys(files).filter(A.isModel), ...Object.keys(assets).filter((a) => /\.(glb|gltf)$/i.test(a))];
 
   return (
     <div className="panel scene-panel" onMouseDown={() => set({ activeFile: file })} onKeyDown={onKeyDown}>
@@ -398,7 +295,7 @@ function refreshTerrain(B: Any, mesh: Any, pos: Any, rgb: Uint8Array) {
 }
 
 /** Creates the editor's stand-in for an object. Lights and cameras get small markers. */
-function build(v: { B: Any; scene: Any }, o: SceneObject, assets: Record<string, string>): Any {
+function build(v: { B: Any; scene: Any }, o: SceneObject, assets: Record<string, string>, files: Record<string, string>): Any {
   const { B, scene: s } = v;
   const mat = (c: [number, number, number], emissive = false) => {
     const m = new B.StandardMaterial("m", s);
@@ -457,26 +354,29 @@ function build(v: { B: Any; scene: Any }, o: SceneObject, assets: Record<string,
       break;
     }
     case "model": {
+      if (o.model && A.isModel(o.model) && o.model in files) {
+        node = buildModel(B, s, parseModel(files[o.model]), o.id, false).root;
+        break;
+      }
       node = new B.TransformNode(o.id, s);
       const path = o.model ?? "", url = assets[path] ?? path;
       B.SceneLoader.ImportMeshAsync("", "", url, s, null, path.slice(path.lastIndexOf(".")))
         .then((r: Any) => {
           if (node.isDisposed()) return r.meshes.forEach((m: Any) => m.dispose());
           r.meshes[0].parent = node;
-          for (const m of r.meshes) m.metadata = { sceneId: o.id };
+          pickable(node, o.id);
         })
         .catch(() => {
           const box = B.MeshBuilder.CreateBox(o.id + "-missing", { size: 1 }, s);
           box.material = mat([0.9, 0.3, 0.3]);
           box.material.wireframe = true;
           box.parent = node;
-          box.metadata = { sceneId: o.id };
+          pickable(node, o.id);
         });
       break;
     }
   }
-  node.metadata = { sceneId: o.id };
-  for (const m of node.getChildMeshes?.() ?? []) m.metadata = { sceneId: o.id };
+  pickable(node, o.id);
   return node;
 }
 

@@ -1,0 +1,191 @@
+{
+  "version": 1,
+  "objects": [
+    {
+      "id": "o1",
+      "name": "Ground",
+      "kind": "plane",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        30,
+        1,
+        30
+      ],
+      "color": [
+        70,
+        120,
+        95
+      ]
+    },
+    {
+      "id": "o2",
+      "name": "Robot",
+      "kind": "model",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "model": "robot.model"
+    },
+    {
+      "id": "o3",
+      "name": "Sun",
+      "kind": "light",
+      "position": [
+        0,
+        10,
+        0
+      ],
+      "rotation": [
+        50,
+        30,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "id": "o4",
+      "name": "Camera",
+      "kind": "camera",
+      "position": [
+        0,
+        5,
+        -9
+      ],
+      "rotation": [
+        22,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "id": "o5",
+      "name": "Block 1",
+      "kind": "cube",
+      "position": [
+        -4,
+        0.75,
+        3
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1.5,
+        1.5,
+        1.5
+      ],
+      "color": [
+        200,
+        150,
+        90
+      ]
+    },
+    {
+      "id": "o6",
+      "name": "Block 2",
+      "kind": "cube",
+      "position": [
+        5,
+        0.75,
+        6
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1.5,
+        1.5,
+        1.5
+      ],
+      "color": [
+        200,
+        150,
+        90
+      ]
+    },
+    {
+      "id": "o7",
+      "name": "Block 3",
+      "kind": "cube",
+      "position": [
+        -7,
+        0.75,
+        -5
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1.5,
+        1.5,
+        1.5
+      ],
+      "color": [
+        200,
+        150,
+        90
+      ]
+    },
+    {
+      "id": "o8",
+      "name": "Block 4",
+      "kind": "cube",
+      "position": [
+        6,
+        0.75,
+        -4
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1.5,
+        1.5,
+        1.5
+      ],
+      "color": [
+        200,
+        150,
+        90
+      ]
+    }
+  ]
+}

@@ -525,3 +525,16 @@ button.status-item:hover { background: var(--bg3); }
 .swatch { width: 18px; height: 18px; border-radius: 4px; border: 1px solid #ffffff2a; }
 .k-terrain { background: #8fbf5a; border-radius: 2px 2px 5px 5px; }
 .insp-row input[type="range"] { flex: 1; min-width: 60px; }
+.model-view { display: flex; flex-direction: column; }
+.model-view canvas { flex: 1; min-height: 0; height: auto; }
+.model-view .scene-hint { bottom: auto; top: 8px; }
+.timeline { border-top: 1px solid var(--line-soft); background: var(--bg1); padding: 6px 10px 10px; display: flex; flex-direction: column; gap: 6px; }
+.timeline-bar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.timeline-bar .tool { height: 24px; padding: 0 8px; font-size: 12px; }
+.timeline-bar .sep { width: 1px; height: 18px; background: var(--line); }
+.timeline-bar .time { min-width: 46px; color: var(--text-2); }
+.timeline-bar .len { width: 46px; margin: 0 3px; }
+.timeline-track { position: relative; height: 26px; }
+.timeline-track input[type="range"] { width: 100%; margin: 0; position: relative; z-index: 1; }
+.key-mark { position: absolute; top: 16px; width: 10px; height: 10px; transform: rotate(45deg); background: #ffb547; border: 1px solid #0007; border-radius: 2px; z-index: 2; }
+.key-mark.at { background: #fff; box-shadow: 0 0 0 2px #ffb547; }

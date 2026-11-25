@@ -5,6 +5,7 @@ import type { Project } from "./store";
 
 const exampleSources = import.meta.glob("../../examples/*.cb", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
 const shooterFiles = import.meta.glob("../../examples/shooter/*.cb", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
+const robotFiles = import.meta.glob("../../examples/robot/*.{cb,scene,model}", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
 const terrainFiles = import.meta.glob("../../examples/terrain/*.{cb,scene}", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
 const levelFiles = import.meta.glob("../../examples/level/*.{cb,scene,graph}", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
 const behaviourFiles = import.meta.glob("../../examples/behaviours/*.graph", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
@@ -108,6 +109,13 @@ export const TEMPLATES: Template[] = [
     files: byName(terrainFiles),
   },
   {
+    id: "robot",
+    name: "Robot (3D)",
+    kind: "3D",
+    description: "A robot from the modeller walking around a level, switching between its walk and idle animations.",
+    files: byName(robotFiles),
+  },
+  {
     id: "behaviours",
     name: "Behaviours (3D)",
     kind: "3D",
@@ -159,7 +167,7 @@ export const mainOf = (files: Record<string, string>) => ["main.cb", "main.graph
 export async function readFolder(dir: FileSystemDirectoryHandle): Promise<Project> {
   const files: Record<string, string> = {};
   for await (const [name, handle] of dir.entries()) {
-    if (handle.kind === "file" && /\.(cb|graph|scene)$/i.test(name)) files[name] = await (await (handle as FileSystemFileHandle).getFile()).text();
+    if (handle.kind === "file" && /\.(cb|graph|scene|model)$/i.test(name)) files[name] = await (await (handle as FileSystemFileHandle).getFile()).text();
   }
   const names = Object.keys(files).sort();
   if (!names.length) throw new Error(`"${dir.name}" has no .cb or .graph file`);

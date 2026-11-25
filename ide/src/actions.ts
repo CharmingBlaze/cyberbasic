@@ -6,6 +6,7 @@ import { behaviourName, emptyGraph, graphFunctions, graphText, nodeCatalog, node
 import { monaco, registerLanguage } from "./language";
 import { EXAMPLE_ASSETS, TEMPLATES, exportGame, fromTemplate, fsSupported, gamePage, openFolder, readFolder, saveProject, writeFile, type Template } from "./project";
 import { addRecent, removeRecent, type Recent } from "./recent";
+import { createFunction, emptyModel, modelText } from "./model";
 import { emptyScene, loadFunction, sceneText } from "./scene";
 import { format, scan } from "./symbols";
 import { get, set, type Breakpoint, type Project, type WorkspaceId } from "./store";
@@ -68,8 +69,10 @@ function createModels(project: Project) {
 export const isGraph = (file: string) => file.toLowerCase().endsWith(".graph");
 /** Levels from the level editor. */
 export const isScene = (file: string) => file.toLowerCase().endsWith(".scene");
-/** Files edited visually (no Monaco model): graphs and scenes. */
-export const isVisual = (file: string) => isGraph(file) || isScene(file);
+/** Models from the modeller. */
+export const isModel = (file: string) => file.toLowerCase().endsWith(".model");
+/** Files edited visually (no Monaco model): graphs, scenes and models. */
+export const isVisual = (file: string) => isGraph(file) || isScene(file) || isModel(file);
 /** Generated-line -> node id for each graph, and problems in the graphs' wiring, from the last build. */
 export const graphMaps = new Map<string, Map<number, string>>();
 let graphProblems: { file: string; node: string; message: string }[] = [];
@@ -82,7 +85,9 @@ export function projectFunctions(files = get().project.files): FuncSig[] {
       ? graphFunctions(parseGraph(text))
       : isScene(file)
         ? [{ name: loadFunction(file), params: [] }]
-        : scan(text).funcs.map((f) => ({ name: f.name, params: f.params })),
+        : isModel(file)
+          ? [{ name: createFunction(file), params: [] }]
+          : scan(text).funcs.map((f) => ({ name: f.name, params: f.params })),
   );
 }
 
@@ -208,17 +213,17 @@ export function openFile(file: string) {
   });
 }
 
-const validName = (name: string) => /^[\w-]+\.(cb|graph|scene)$/i.test(name);
+const validName = (name: string) => /^[\w-]+\.(cb|graph|scene|model)$/i.test(name);
 
 /** Adds a file and an `Include` for it at the top of the main file, then opens it. */
 export function newFile() {
-  const input = prompt("Name of the new file: enemies.cb for code, enemies.graph for a node graph, level.scene for a level:", "");
+  const input = prompt("Name of the new file: enemies.cb for code, enemies.graph for a node graph, level.scene for a level, hero.model for a model:", "");
   if (!input) return;
   const name = input.trim();
-  const file = /\.(cb|graph|scene)$/i.test(name) ? name : `${name}.cb`;
-  if (!validName(file)) return toast("Use letters, numbers, - or _ and end with .cb, .graph or .scene", "error");
+  const file = /\.(cb|graph|scene|model)$/i.test(name) ? name : `${name}.cb`;
+  if (!validName(file)) return toast("Use letters, numbers, - or _ and end with .cb, .graph, .scene or .model", "error");
   if (Object.keys(get().project.files).some((f) => f.toLowerCase() === file.toLowerCase())) return toast(`${file} already exists`, "error");
-  const text = isGraph(file) ? graphText(emptyGraph(false)) : isScene(file) ? sceneText(emptyScene()) : `' ${file}\n`;
+  const text = isGraph(file) ? graphText(emptyGraph(false)) : isScene(file) ? sceneText(emptyScene()) : isModel(file) ? modelText(emptyModel()) : `' ${file}\n`;
   if (!isVisual(file)) addModel(file, text);
   set((s) => ({ project: { ...s.project, files: { ...s.project.files, [file]: text } }, dirty: true }));
   const mainFile = get().project.fileName;
@@ -237,6 +242,8 @@ export function newFile() {
   openFile(file);
   const hint = isScene(file)
     ? `. Call ${loadFunction(file)} after Graphics3D to build it.`
+    : isModel(file)
+      ? `. Make one with ${createFunction(file)}() after Graphics3D, or add it to a level.`
     : isGraph(file) && !isGraph(mainFile)
       ? `. Call Graph_${file.replace(/\.\w+$/i, "").replace(/\W/g, "_")}_Frame each frame from your loop.`
       : "";
@@ -465,7 +472,7 @@ export function onGameMessage(m: { type: string; [k: string]: unknown }) {
 const bpDecorations = new Map<string, string[]>();
 
 export function toggleBreakpoint(line = refs.editor?.getPosition()?.lineNumber, file = get().activeFile) {
-  if (isScene(file)) return; // scenes only build objects; put breakpoints in the code that loads them
+  if (isScene(file) || isModel(file)) return; // these only build objects; put breakpoints in the code that uses them
   if (isGraph(file)) {
     const ids = graphSelection.get(file) ?? [];
     const g = parseGraph(get().project.files[file] ?? "");
