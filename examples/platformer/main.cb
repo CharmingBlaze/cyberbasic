@@ -1,0 +1,64 @@
+' A small 3D platformer. The level is level.scene (built in the level editor), the player is
+' robot.model (from the modeller), the coins spin with the Spinner behaviour graph, and the rules
+' are this code. Arrow keys move, Space jumps, R goes back to the start, Escape quits.
+Include "level.scene"
+
+Graphics3D 1280, 720
+ClsColor 130, 175, 225
+LoadScene_Level
+body = FindEntity("Player body")   ' a hidden physics box that stays upright: this is what moves
+robot = FindEntity("Robot")        ' the model you see, which follows the box
+goal = FindEntity("Goal")
+camera = FindEntity("Camera")
+EntityPickMode body, 0              ' so the ground check below doesn't hit the player itself
+EntityPickMode robot, 0
+startX = EntityX(body) : startY = EntityY(body) : startZ = EntityZ(body)
+facing = 0 : coins = 0 : won = 0
+
+While Not KeyHit(KEY_ESCAPE)
+    ' Walk: set the speed along the ground, keep the speed up or down
+    vx = 0 : vz = 0
+    If KeyDown(KEY_LEFT) Then vx = -4
+    If KeyDown(KEY_RIGHT) Then vx = 4
+    If KeyDown(KEY_UP) Then vz = 4
+    If KeyDown(KEY_DOWN) Then vz = -4
+    If won Then vx = 0 : vz = 0
+    SetVelocity body, vx, VelocityY(body), vz
+
+    ' Jump when standing on something
+    onGround = LinePick(EntityX(body), EntityY(body), EntityZ(body), 0, -1.05, 0) <> 0
+    If KeyHit(KEY_SPACE) And onGround Then SetVelocity body, vx, 7, vz
+
+    ' The robot follows the box, faces where it's going and animates
+    If vx <> 0 Or vz <> 0 Then facing = ATan2(vx, vz)
+    PositionEntity robot, EntityX(body), EntityY(body) - 0.9, EntityZ(body)
+    RotateEntity robot, 0, facing, 0
+    If Not onGround
+        AnimateEntity robot, "jump"
+    ElseIf vx <> 0 Or vz <> 0
+        AnimateEntity robot, "walk"
+    Else
+        AnimateEntity robot, "idle"
+    EndIf
+
+    ' Coins and the goal
+    For i = 1 To 6
+        c = FindEntity("Coin " + i)
+        If c <> 0
+            If EntityDistance(body, c) < 1.1 Then FreeEntity c : coins = coins + 1
+        EndIf
+    Next
+    If EntityDistance(body, goal) < 1.8 Then won = 1
+
+    ' Fell off, or R: back to the start
+    If EntityY(body) < -8 Or KeyHit(KEY_R)
+        PositionEntity body, startX, startY, startZ
+        won = 0
+    EndIf
+
+    PositionEntity camera, EntityX(body), EntityY(body) + 4, EntityZ(body) - 8
+    PointEntity camera, EntityX(body), EntityY(body) + 0.5, EntityZ(body) + 2
+    Text 20, 20, "Coins: " + coins + " / 6"
+    If won Then Text 20, 46, "You reached the goal! Press R to play again."
+    Sync
+Wend

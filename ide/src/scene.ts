@@ -18,6 +18,10 @@ export interface SceneObject {
   physics?: "none" | "static" | "dynamic";
   mass?: number;
   behaviours?: string[];
+  /** Invisible in the game (still collides): e.g. a player's physics box under its model. */
+  hidden?: boolean;
+  /** Dynamic bodies that mustn't tip over (players). */
+  upright?: boolean;
   /** Terrains: width and depth, squares per side, each point's height ("0,0.5,...") and color (6 hex digits each). */
   size?: number;
   divisions?: number;

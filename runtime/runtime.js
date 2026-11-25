@@ -465,6 +465,9 @@ const CB = (() => {
       for (const m of mats) "albedoColor" in m ? (m.albedoColor = c) : (m.diffuseColor = c); // glTF models use PBR
     },
     FreeEntity(e) { e.dispose(); },
+    // Hidden things still move and collide; LinePick skips them.
+    HideEntity(e) { for (const m of [e, ...(e.getChildMeshes?.() ?? [])]) if ("isVisible" in m) m.isVisible = false; },
+    ShowEntity(e) { for (const m of [e, ...(e.getChildMeshes?.() ?? [])]) if ("isVisible" in m) m.isVisible = true; },
     EntityX(e) { return e.position.x; },
     EntityY(e) { return e.position.y; },
     EntityZ(e) { return e.position.z; },
@@ -536,6 +539,11 @@ const CB = (() => {
     },
     ApplyImpulse(e, x, y, z) { body(e).applyImpulse(V(x, y, z), e.getAbsolutePosition()); },
     SetVelocity(e, x, y, z) { body(e).setLinearVelocity(V(x, y, z)); },
+    // No inertia: forces move the body but never turn it.
+    KeepUpright(e) { body(e).setMassProperties({ inertia: V(0, 0, 0) }); e.rotationQuaternion?.set(0, 0, 0, 1); },
+    VelocityX(e) { return body(e).getLinearVelocity().x; },
+    VelocityY(e) { return body(e).getLinearVelocity().y; },
+    VelocityZ(e) { return body(e).getLinearVelocity().z; },
     // True if `a` started touching `b` (or anything, without `b`) in the last physics step.
     EntityCollided(a, b) { return collisions.has(b === undefined ? `${a.uniqueId}` : `${a.uniqueId}:${b.uniqueId}`); },
     CollidedWith(e) { return touched.get(e.uniqueId) ?? 0; },

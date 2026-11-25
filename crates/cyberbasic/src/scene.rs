@@ -27,7 +27,8 @@ pub fn is_scene(file: &str) -> bool {
     file.to_ascii_lowercase().ends_with(".scene")
 }
 
-pub fn lower(file: &str, text: &str) -> Lowered {
+/// `project` lists the project's files, so the scene can Include the behaviour graphs it uses.
+pub fn lower(file: &str, text: &str, project: &[&str]) -> Lowered {
     let mut lines: Vec<String> = vec![format!("' Generated from {file} by the level editor. Edit the scene, not this code."), String::new()];
     let mut map = vec![];
     let mut problems = vec![];
@@ -39,10 +40,16 @@ pub fn lower(file: &str, text: &str) -> Lowered {
         }
     };
     let objects = scene.get("objects").arr();
-    // Models from the modeller come with the scene, so the game needn't Include them itself.
-    let mut models: Vec<String> = objects.iter().map(|o| o.get("model").str()).filter(|m| crate::model::is_model(m)).map(|m| m.replace('"', "")).collect();
-    models.dedup();
-    for (i, m) in models.iter().enumerate() {
+    // Models and behaviour graphs come with the scene, so the game needn't Include them itself.
+    let mut includes: Vec<String> = objects.iter().map(|o| o.get("model").str()).filter(|m| crate::model::is_model(m)).map(|m| m.replace('"', "")).collect();
+    for b in objects.iter().flat_map(|o| o.get("behaviours").arr()) {
+        if let Some(g) = project.iter().find(|f| crate::graph::is_graph(f) && crate::graph::behaviour_name(f) == b.str()) {
+            includes.push(g.to_string());
+        }
+    }
+    includes.sort();
+    includes.dedup();
+    for (i, m) in includes.iter().enumerate() {
         lines.insert(1 + i, format!("Include \"{m}\""));
     }
     lines.push(format!("Function {}()", load_function(file)));
@@ -104,8 +111,16 @@ pub fn lower(file: &str, text: &str) -> Lowered {
             }
             match o.get("physics").str() {
                 "static" => emit("EntityPhysics e, 0".into()),
-                "dynamic" => emit(format!("EntityPhysics e, {}", num(&Json::Arr(vec![o.get("mass").clone()]), 0, 1.0))),
+                "dynamic" => {
+                    emit(format!("EntityPhysics e, {}", num(&Json::Arr(vec![o.get("mass").clone()]), 0, 1.0)));
+                    if matches!(o.get("upright"), Json::Bool(true)) {
+                        emit("KeepUpright e".into());
+                    }
+                }
                 _ => {}
+            }
+            if matches!(o.get("hidden"), Json::Bool(true)) {
+                emit("HideEntity e".into());
             }
         }
         for b in o.get("behaviours").arr() {
@@ -130,17 +145,21 @@ mod tests {
             {"id":"o2","name":"Ball \"1\"","kind":"sphere","position":[0,3.30000000001,0],"rotation":[0,45,0],"scale":[1,1,1],"physics":"dynamic","mass":2,"behaviours":["Spinner"]},
             {"id":"o3","name":"Sun","kind":"light","position":[0,10,0],"rotation":[50,30,0],"color":[255,255,255]},
             {"id":"o4","kind":"blob"}]}"#;
-        let l = lower("level.scene", s);
+        let l = lower("level.scene", s, &[]);
         assert!(l.code.contains("Function LoadScene_Level()\n    EnablePhysics\n    ' Ground\n    e = CreatePlane(1)\n    NameEntity e, \"Ground\"\n    PositionEntity e, 0, 0, 0\n    RotateEntity e, 0, 0, 0\n    ScaleEntity e, 20, 1, 20\n    EntityColor e, 60, 180, 90\n    EntityPhysics e, 0\n"), "{}", l.code);
         assert!(l.code.contains("NameEntity e, \"Ball 1\"\n    PositionEntity e, 0, 3.3, 0\n    RotateEntity e, 0, 45, 0\n    EntityPhysics e, 2\n    Behaviour_Spinner_Attach e\n"), "{}", l.code);
         assert!(!l.code.contains("EntityColor e, 255"), "lights take no color: {}", l.code);
+        let p = lower("p.scene", r#"{"objects":[{"id":"o1","name":"Body","kind":"cube","physics":"dynamic","upright":true,"hidden":true}]}"#, &[]);
+        assert!(p.code.contains("    EntityPhysics e, 1\n    KeepUpright e\n    HideEntity e\n"), "{}", p.code);
         assert_eq!(l.problems, vec![("o4".to_string(), "Unknown kind of object \"blob\".".to_string())]);
-        let t = lower("t.scene", r#"{"objects":[{"id":"o1","name":"Hills","kind":"terrain","size":30,"divisions":2,"heights":"0,1.5,-2\"x","colors":"ff0000zz","physics":"dynamic"}]}"#);
+        let t = lower("t.scene", r#"{"objects":[{"id":"o1","name":"Hills","kind":"terrain","size":30,"divisions":2,"heights":"0,1.5,-2\"x","colors":"ff0000zz","physics":"dynamic"}]}"#, &[]);
         assert!(t.code.contains("    e = CreateTerrain(30, 2, \"0,1.5,-2\", \"ff0000\")\n    NameEntity e, \"Hills\"\n    PositionEntity e, 0, 0, 0\n    RotateEntity e, 0, 0, 0\n    EntityPhysics e, 0\n"), "{}", t.code);
         assert_eq!(l.map.iter().find(|m| m.1 == "o2").map(|m| l.code.lines().nth(m.0 - 1).unwrap()), Some("    ' Ball 1"));
-        let main = "Include \"level.scene\"\nInclude \"spinner.graph\"\nGraphics3D 640, 480\nLoadScene_Level\nPrint EntityName(FindEntity(\"ball 1\"))";
+        let main = "Include \"level.scene\"\nGraphics3D 640, 480\nLoadScene_Level\nPrint EntityName(FindEntity(\"ball 1\"))";
         let spin = r#"{"kind":"behaviour","nodes":[],"links":[]}"#;
         let ok = r#"{"objects":[{"id":"o1","name":"Ball 1","kind":"sphere","behaviours":["Spinner"]}]}"#;
+        // The scene Includes the behaviour graphs its objects use, so main.cb needn't.
+        assert!(lower("level.scene", ok, &["main.cb", "spinner.graph"]).code.contains("\nInclude \"spinner.graph\"\n"));
         crate::compile_files(&[("main.cb", main), ("level.scene", ok), ("spinner.graph", spin)], false).unwrap();
     }
 }

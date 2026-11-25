@@ -532,7 +532,8 @@ pub fn lower_project(files: &[(&str, &str)]) -> Vec<(String, Lowered)> {
         .filter(|(_, (f, _))| is_graph(f) || crate::scene::is_scene(f) || crate::model::is_model(f))
         .map(|(i, (f, t))| {
             if crate::scene::is_scene(f) {
-                return (f.to_string(), crate::scene::lower(f, t));
+                let names: Vec<&str> = files.iter().map(|f| f.0).collect();
+                return (f.to_string(), crate::scene::lower(f, t, &names));
             }
             if crate::model::is_model(f) {
                 return (f.to_string(), crate::model::lower(f, t));

@@ -89,6 +89,7 @@ export function ScenePanel({ file }: { file: string }) {
       }
       const n = entry.node;
       setTransform(B, n, o.position, o.rotation, isMesh(o.kind) ? o.scale : undefined);
+      for (const m of [n, ...n.getChildMeshes()]) m.visibility = o.hidden ? 0.3 : 1; // hidden things show faintly
       const c = o.color ?? [200, 200, 210];
       for (const m of [n, ...n.getChildMeshes()]) {
         if (m.material && isMesh(o.kind)) "albedoColor" in m.material ? (m.material.albedoColor = new B.Color3(c[0] / 255, c[1] / 255, c[2] / 255)) : (m.material.diffuseColor = new B.Color3(c[0] / 255, c[1] / 255, c[2] / 255));
@@ -491,6 +492,17 @@ function Inspector({ o, change, behaviours, models, error, remove, duplicate, to
               <option value="dynamic">Dynamic</option>
             </select>
             {o.physics === "dynamic" && <Num axis="kg" value={o.mass ?? 1} onChange={(mass) => change({ mass: Math.max(0.01, mass) })} />}
+          </div>
+          <div className="insp-row">
+            <span className="col-label" />
+            {o.physics === "dynamic" && (
+              <label className="check small" title="It won't tip over or spin: for players and characters">
+                <input type="checkbox" checked={!!o.upright} onChange={(e) => change({ upright: e.target.checked || undefined })} /> Keep upright
+              </label>
+            )}
+            <label className="check small" title="Invisible in the game but still there: e.g. a player's physics box under its model">
+              <input type="checkbox" checked={!!o.hidden} onChange={(e) => change({ hidden: e.target.checked || undefined })} /> Hidden
+            </label>
           </div>
         </>
       )}

@@ -53,7 +53,7 @@ mod tests {
         assert!(!lower("bad.model", "{").problems.is_empty());
         // A scene places a model by including it and calling its create function.
         let scene = r#"{"objects":[{"id":"o1","name":"Hero","kind":"model","model":"hero.model"}]}"#;
-        let s = crate::scene::lower("level.scene", scene);
+        let s = crate::scene::lower("level.scene", scene, &[]);
         assert!(s.code.starts_with("' Generated from level.scene by the level editor. Edit the scene, not this code.\nInclude \"hero.model\"\n"), "{}", s.code);
         assert!(s.code.contains("e = CreateModel_Hero()"), "{}", s.code);
         let main = "Include \"level.scene\"\nGraphics3D 640, 480\nLoadScene_Level\nAnimateEntity FindEntity(\"Hero\"), \"walk\", 2\nPrint EntityAnimation(FindEntity(\"Hero\"))";

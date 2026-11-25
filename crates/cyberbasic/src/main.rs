@@ -86,8 +86,8 @@ fn open(path: &Path) {
 
 fn report(dir: &Path, e: &cyberbasic_core::Error, load: &dyn Fn(&str) -> Option<String>) {
     eprintln!("{}:{}:{}: error: {}", dir.join(&e.file).display(), e.line, e.col, e.msg);
-    if cyberbasic_core::graph::is_graph(&e.file) {
-        return; // the line is in the generated code, not the JSON; open the graph in the IDE to see the node
+    if !e.file.to_ascii_lowercase().ends_with(".cb") {
+        return; // graphs, scenes and models: the line is in their generated code, not the JSON; open the file in the IDE
     }
     let src = load(&e.file).unwrap_or_default();
     if let Some(text) = src.lines().nth(e.line.saturating_sub(1)) {

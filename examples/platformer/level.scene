@@ -1,0 +1,470 @@
+{
+  "version": 1,
+  "objects": [
+    {
+      "id": "o1",
+      "name": "Start",
+      "kind": "cube",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        6,
+        1,
+        6
+      ],
+      "color": [
+        96,
+        150,
+        120
+      ],
+      "physics": "static"
+    },
+    {
+      "id": "o2",
+      "name": "Step 1",
+      "kind": "cube",
+      "position": [
+        0,
+        0.6,
+        6.5
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        3,
+        1,
+        3
+      ],
+      "color": [
+        120,
+        112,
+        160
+      ],
+      "physics": "static"
+    },
+    {
+      "id": "o3",
+      "name": "Step 2",
+      "kind": "cube",
+      "position": [
+        3,
+        1.3,
+        10.5
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        2.5,
+        1,
+        2.5
+      ],
+      "color": [
+        96,
+        150,
+        120
+      ],
+      "physics": "static"
+    },
+    {
+      "id": "o4",
+      "name": "Step 3",
+      "kind": "cube",
+      "position": [
+        0,
+        2,
+        14.5
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        2.5,
+        1,
+        2.5
+      ],
+      "color": [
+        120,
+        112,
+        160
+      ],
+      "physics": "static"
+    },
+    {
+      "id": "o5",
+      "name": "Step 4",
+      "kind": "cube",
+      "position": [
+        -3,
+        2.8,
+        18.5
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        2.5,
+        1,
+        2.5
+      ],
+      "color": [
+        96,
+        150,
+        120
+      ],
+      "physics": "static"
+    },
+    {
+      "id": "o6",
+      "name": "Step 5",
+      "kind": "cube",
+      "position": [
+        -0.5,
+        3.4,
+        23
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        3,
+        1,
+        3
+      ],
+      "color": [
+        120,
+        112,
+        160
+      ],
+      "physics": "static"
+    },
+    {
+      "id": "o7",
+      "name": "Goal platform",
+      "kind": "cube",
+      "position": [
+        0,
+        3.8,
+        28.5
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        6,
+        1,
+        6
+      ],
+      "color": [
+        96,
+        150,
+        120
+      ],
+      "physics": "static"
+    },
+    {
+      "id": "o8",
+      "name": "Coin 1",
+      "kind": "cube",
+      "position": [
+        0,
+        1.9,
+        6.5
+      ],
+      "rotation": [
+        45,
+        0,
+        45
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
+      ],
+      "color": [
+        255,
+        210,
+        70
+      ],
+      "behaviours": [
+        "Spinner"
+      ]
+    },
+    {
+      "id": "o9",
+      "name": "Coin 2",
+      "kind": "cube",
+      "position": [
+        3,
+        2.6,
+        10.5
+      ],
+      "rotation": [
+        45,
+        0,
+        45
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
+      ],
+      "color": [
+        255,
+        210,
+        70
+      ],
+      "behaviours": [
+        "Spinner"
+      ]
+    },
+    {
+      "id": "o10",
+      "name": "Coin 3",
+      "kind": "cube",
+      "position": [
+        0,
+        3.3,
+        14.5
+      ],
+      "rotation": [
+        45,
+        0,
+        45
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
+      ],
+      "color": [
+        255,
+        210,
+        70
+      ],
+      "behaviours": [
+        "Spinner"
+      ]
+    },
+    {
+      "id": "o11",
+      "name": "Coin 4",
+      "kind": "cube",
+      "position": [
+        -3,
+        4.1,
+        18.5
+      ],
+      "rotation": [
+        45,
+        0,
+        45
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
+      ],
+      "color": [
+        255,
+        210,
+        70
+      ],
+      "behaviours": [
+        "Spinner"
+      ]
+    },
+    {
+      "id": "o12",
+      "name": "Coin 5",
+      "kind": "cube",
+      "position": [
+        -0.5,
+        4.7,
+        23
+      ],
+      "rotation": [
+        45,
+        0,
+        45
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
+      ],
+      "color": [
+        255,
+        210,
+        70
+      ],
+      "behaviours": [
+        "Spinner"
+      ]
+    },
+    {
+      "id": "o13",
+      "name": "Coin 6",
+      "kind": "cube",
+      "position": [
+        0,
+        5.1,
+        28.5
+      ],
+      "rotation": [
+        45,
+        0,
+        45
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
+      ],
+      "color": [
+        255,
+        210,
+        70
+      ],
+      "behaviours": [
+        "Spinner"
+      ]
+    },
+    {
+      "id": "o14",
+      "name": "Goal",
+      "kind": "cube",
+      "position": [
+        0,
+        5.3,
+        30
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.4,
+        2.5,
+        0.4
+      ],
+      "color": [
+        80,
+        230,
+        120
+      ]
+    },
+    {
+      "id": "o15",
+      "name": "Player body",
+      "kind": "cube",
+      "position": [
+        0,
+        1.5,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.7,
+        1.8,
+        0.7
+      ],
+      "color": [
+        76,
+        194,
+        255
+      ],
+      "physics": "dynamic",
+      "mass": 1,
+      "upright": true,
+      "hidden": true
+    },
+    {
+      "id": "o16",
+      "name": "Robot",
+      "kind": "model",
+      "position": [
+        0,
+        0.6,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "model": "robot.model"
+    },
+    {
+      "id": "o17",
+      "name": "Sun",
+      "kind": "light",
+      "position": [
+        0,
+        12,
+        0
+      ],
+      "rotation": [
+        55,
+        25,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "id": "o18",
+      "name": "Camera",
+      "kind": "camera",
+      "position": [
+        0,
+        5,
+        -8
+      ],
+      "rotation": [
+        25,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    }
+  ]
+}
