@@ -33,6 +33,54 @@ test("the Bouncer example graph compiles and its wires become expressions", () =
   assert.match(code, /Oval x, y, 20, 20/);
 });
 
+test("visual functions: the Bouncer defines Flip and CountBounce and calls them", () => {
+  const g = parseGraph(readFileSync(new URL("../../examples/bouncer/main.graph", import.meta.url), "utf8"));
+  const { code } = generateGraph("main.graph", g, true, defs);
+  assert.match(code, /Function Flip\(v\)\n {4}Return \(v \* -1\)\nEnd Function/);
+  assert.match(code, /Function CountBounce\(\)\n {4}bounces \+= 1\nEnd Function/);
+  assert.match(code, /dx = Flip\(dx\)\n\s+CountBounce\n/);
+  assert.match(code, /dy = Flip\(dy\)/);
+});
+
+test("graphs call functions written in code, and code calls functions built in graphs", () => {
+  const funcs = [{ name: "Twice", params: ["n"] }, { name: "Hello", params: ["who"] }];
+  const lib: Graph = {
+    version: 1, variables: [], includes: [], links: [
+      { from: "n1", out: "then", to: "n2", in: "in" },
+      { from: "n1", out: "n", to: "n3", in: "a" },
+      { from: "n3", out: "result", to: "n2", in: "value" },
+      { from: "n4", out: "then", to: "n5", in: "in" },
+    ],
+    nodes: [
+      { id: "n1", type: "func.define", x: 0, y: 0, values: { name: "Twice", inputs: "n" } },
+      { id: "n2", type: "func.return", x: 0, y: 0, values: {} },
+      { id: "n3", type: "math.op", x: 0, y: 0, values: { op: "*", b: "2" } },
+      { id: "n4", type: "event.frame", x: 0, y: 0, values: {} },
+      { id: "n5", type: "func.call", x: 0, y: 0, values: { name: "Hello", who: '"graph"' } },
+    ],
+  };
+  const sub = generateGraph("lib.graph", lib, false, defs, funcs).code;
+  assert.match(sub, /Function Twice\(n\)\n {4}Return \(n \* 2\)/);
+  assert.match(sub, /Hello "graph"/);
+  const main = 'Include "lib.graph"\nPrint Twice(3)\nGraph_lib_Frame\nFunction Hello(who)\n  Print "hi " + who\nEnd Function';
+  assert.ok(compile({ "main.cb": main, "lib.graph": sub }).ok);
+});
+
+test("function mistakes are reported on the Function node", () => {
+  const g: Graph = {
+    version: 1, variables: [], includes: [], links: [{ from: "n1", out: "gone", to: "n2", in: "value" }, { from: "n1", out: "then", to: "n2", in: "in" }],
+    nodes: [
+      { id: "n1", type: "func.define", x: 0, y: 0, values: { name: "Rect", inputs: "a" } },
+      { id: "n2", type: "func.return", x: 0, y: 0, values: {} },
+    ],
+  };
+  const { code, map, problems } = generateGraph("main.graph", g, true, defs);
+  assert.equal(problems[0]?.node, "n1"); // the wire from an input that no longer exists
+  const r = compile({ "main.graph": code });
+  assert.equal(r.ok, false);
+  if (!r.ok) assert.equal(map.get(r.line), "n1", r.message); // "Rect" is a built-in name
+});
+
 test("new graphs compile as main and when included from code", () => {
   assert.ok(compile({ "main.graph": generateGraph("main.graph", emptyGraph(true), true, defs).code }).ok);
   const sub = generateGraph("enemies.graph", emptyGraph(false), false, defs).code;

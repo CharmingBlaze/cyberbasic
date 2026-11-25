@@ -28,7 +28,10 @@ export interface Graph {
 export type PinKind = "exec" | "data";
 export interface PinDef { key: string; label: string; kind: PinKind }
 export interface FieldDef { key: string; label: string; options?: string[]; placeholder?: string }
-export type NodeColor = "event" | "flow" | "var" | "math" | "command" | "value" | "code";
+export type NodeColor = "event" | "flow" | "var" | "math" | "command" | "value" | "code" | "func";
+
+/** A callable function: defined by a Function node in any graph, or by `Function` in code. */
+export interface FuncSig { name: string; params: string[] }
 export interface NodeDef {
   type: string;
   title: string;
@@ -61,6 +64,10 @@ export function nodeCatalog(commands: Command[]): Map<string, NodeDef> {
     { type: "logic.or", title: "Or", category: "Math & Logic", color: "math", doc: "True when either is true.", inputs: [data("a", "A"), data("b", "B")], outputs: [data("result")] },
     { type: "logic.not", title: "Not", category: "Math & Logic", color: "math", doc: "True when the input is false.", inputs: [data("a", "A")], outputs: [data("result")] },
     { type: "value.expr", title: "Value", category: "Math & Logic", color: "value", doc: "Any CyberBasic expression, e.g. Delta * 300 or \"Score: \" + score.", inputs: [], outputs: [data("value")], fields: [{ key: "text", label: "", placeholder: "expression" }] },
+    { type: "func.define", title: "Function", category: "Functions", color: "func", doc: "Defines a function you can call from any graph or code. Its inputs become pins; its white wire is the body.", inputs: [], outputs: [exec("then")], fields: [{ key: "name", label: "name", placeholder: "Spawn" }, { key: "inputs", label: "inputs", placeholder: "x, y" }] },
+    { type: "func.return", title: "Return", category: "Functions", color: "func", doc: "Ends the function, giving back a value (optional).", inputs: [exec(), data("value")], outputs: [] },
+    { type: "func.call", title: "Call", category: "Functions", color: "func", doc: "Runs one of your functions.", inputs: [exec()], outputs: [exec("then")], fields: [{ key: "name", label: "", options: [] }] },
+    { type: "func.value", title: "Call (value)", category: "Functions", color: "func", doc: "Calls one of your functions and gives back what it returns.", inputs: [], outputs: [data("result")], fields: [{ key: "name", label: "", options: [] }] },
     { type: "code.line", title: "Code", category: "Code", color: "code", doc: "Runs a line of CyberBasic, e.g. a call to one of your own functions.", inputs: [exec()], outputs: [exec("then")], fields: [{ key: "text", label: "", placeholder: "SpawnEnemy 3" }] },
   ];
   for (const c of commands) {
@@ -107,6 +114,38 @@ export const graphText = (g: Graph) => JSON.stringify(g, null, 2) + "\n";
 export const graphPrefix = (file: string) => "Graph_" + file.replace(/\.graph$/i, "").replace(/\W/g, "_");
 export const nextNodeId = (g: Graph) => `n${Math.max(0, ...g.nodes.map((n) => Number(n.id.slice(1)) || 0)) + 1}`;
 
+/** The names typed into a Function node's "inputs" field. */
+export const paramsOf = (text = "") =>
+  text.split(",").map((p) => p.trim().replace(/[#%$]$/, "")).filter((p) => /^[A-Za-z_]\w*$/.test(p));
+
+/** Functions defined by Function nodes in a graph. */
+export const graphFunctions = (g: Graph): FuncSig[] =>
+  g.nodes.filter((n) => n.type === "func.define" && (n.values.name ?? "").trim()).map((n) => ({ name: n.values.name.trim(), params: paramsOf(n.values.inputs) }));
+
+/**
+ * A node's definition with its pins for this particular node: Function nodes get a pin per input,
+ * Call nodes get the pins of the function they call. Other nodes come straight from the catalog.
+ */
+export function nodeDef(n: GNode, defs: Map<string, NodeDef>, funcs: FuncSig[]): NodeDef | undefined {
+  const base = defs.get(n.type);
+  if (!base) return undefined;
+  if (n.type === "func.define") {
+    const name = (n.values.name ?? "").trim();
+    return { ...base, title: name ? `Function ${name}` : "Function", outputs: [exec("then"), ...paramsOf(n.values.inputs).map((p) => data(p))] };
+  }
+  if (n.type === "func.call" || n.type === "func.value") {
+    const name = (n.values.name ?? "").trim();
+    const sig = funcs.find((f) => f.name.toLowerCase() === name.toLowerCase());
+    const options = [...new Set([...(name && !sig ? [name] : []), ...funcs.map((f) => f.name)])];
+    const fields = [{ key: "name", label: "", options: options.length ? options : [""] }];
+    const params = (sig?.params ?? []).map((p) => data(p));
+    return n.type === "func.call"
+      ? { ...base, title: name ? `Call ${name}` : "Call", inputs: [exec(), ...params], fields }
+      : { ...base, title: name ? `${name}()` : "Call (value)", inputs: params, fields };
+  }
+  return base;
+}
+
 /** Problems the graph itself has (not compile errors): loops in wires, unknown nodes. */
 export interface GraphProblem { node: string; message: string }
 
@@ -115,7 +154,7 @@ export interface GraphProblem { node: string; message: string }
  * wires; data inputs become expressions (an unconnected input uses its typed-in value). Events run
  * top to bottom by their position. As the main file the graph also gets the game loop.
  */
-export function generateGraph(file: string, graph: Graph, isMain: boolean, defs: Map<string, NodeDef>) {
+export function generateGraph(file: string, graph: Graph, isMain: boolean, defs: Map<string, NodeDef>, funcs: FuncSig[] = graphFunctions(graph)) {
   const lines: string[] = [];
   const map = new Map<number, string>(); // generated line -> node id
   const problems: GraphProblem[] = [];
@@ -128,6 +167,8 @@ export function generateGraph(file: string, graph: Graph, isMain: boolean, defs:
   const linkInto = (node: string, pin: string) => graph.links.find((l) => l.to === node && l.in === pin);
   const linksOut = (node: string, pin: string) => graph.links.filter((l) => l.from === node && l.out === pin);
   const loopVar = (n: GNode) => `${prefix.toLowerCase()}_i${n.id.slice(1)}`;
+  const defOf = (n: GNode) => nodeDef(n, defs, funcs);
+  const fname = (n: GNode) => (n.values.name ?? "").trim();
 
   /** The expression for a data input: the wired node's value, or the typed-in value. */
   const input = (n: GNode, pin: string, seen: Set<string>): string => {
@@ -135,7 +176,7 @@ export function generateGraph(file: string, graph: Graph, isMain: boolean, defs:
     if (!l) return (n.values[pin] ?? "").trim();
     return value(l.from, l.out, seen);
   };
-  const value = (id: string, _out: string, seen: Set<string>): string => { // every node has one value output
+  const value = (id: string, out: string, seen: Set<string>): string => {
     const n = nodes.get(id);
     if (!n) return "0";
     if (seen.has(id)) {
@@ -161,8 +202,15 @@ export function generateGraph(file: string, graph: Graph, isMain: boolean, defs:
         return `(Not ${v("a")})`;
       case "flow.for":
         return loopVar(n); // its "index" output
+      case "func.define":
+        // A Function node's data outputs are its inputs (parameters).
+        if (paramsOf(n.values.inputs).includes(out)) return out;
+        problems.push({ node: id, message: `This function has no input called "${out}" any more.` });
+        return "0";
+      case "func.value":
+        return `${fname(n)}(${args(n, defOf(n)!, next)})`;
     }
-    const def = defs.get(n.type);
+    const def = defOf(n);
     if (def?.type.startsWith("cmd.")) return `${def.title}(${args(n, def, next)})`;
     problems.push({ node: id, message: `This node has no value to give.` });
     return "0";
@@ -187,8 +235,16 @@ export function generateGraph(file: string, graph: Graph, isMain: boolean, defs:
     }
     const p = new Set(path).add(id);
     const seen = new Set<string>();
-    const def = defs.get(n.type);
+    const def = defOf(n);
     switch (n.type) {
+      case "func.call":
+        emit(`${pad}${[fname(n), args(n, def!, seen)].filter(Boolean).join(" ")}`, id);
+        break;
+      case "func.return": {
+        const v = input(n, "value", seen);
+        emit(`${pad}Return${v ? " " + v : ""}`, id);
+        return; // nothing runs after a Return
+      }
       case "flow.branch":
         emit(`${pad}If ${input(n, "condition", seen) || "0"}`, id);
         chain(id, "true", pad + "    ", p);
@@ -226,6 +282,14 @@ export function generateGraph(file: string, graph: Graph, isMain: boolean, defs:
   for (const inc of graph.includes) emit(`Include "${inc}"`);
   for (const v of graph.variables) if (v.name.trim()) emit(`Global ${v.name.trim()} = ${v.value.trim() || "0"}`);
   for (const n of graph.nodes) if (!defs.has(n.type)) problems.push({ node: n.id, message: `Unknown node "${n.type}".` });
+
+  // Functions first: CyberBasic wants them at the top level.
+  for (const f of graph.nodes.filter((n) => n.type === "func.define").sort((a, b) => a.y - b.y || a.x - b.x)) {
+    emit("");
+    emit(`Function ${fname(f)}(${paramsOf(f.values.inputs).join(", ")})`, f.id);
+    chain(f.id, "then", "    ", new Set());
+    emit("End Function", f.id);
+  }
 
   for (const [event, fn] of [["event.start", "Start"], ["event.frame", "Frame"]] as const) {
     emit("");

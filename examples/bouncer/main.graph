@@ -206,19 +206,25 @@
       "y": 600,
       "values": {
         "name": "dx",
-        "op": "=",
-        "value": "-dx"
+        "op": "="
       }
     },
     {
       "id": "n21",
-      "type": "var.set",
+      "type": "func.call",
       "x": 1200,
       "y": 600,
       "values": {
-        "name": "bounces",
-        "op": "+=",
-        "value": "1"
+        "name": "CountBounce"
+      }
+    },
+    {
+      "id": "n28",
+      "type": "func.value",
+      "x": 960,
+      "y": 760,
+      "values": {
+        "name": "Flip"
       }
     },
     {
@@ -237,15 +243,69 @@
       "y": 920,
       "values": {
         "name": "dy",
-        "op": "=",
-        "value": "-dy"
+        "op": "="
       }
     },
     {
       "id": "n24",
-      "type": "var.set",
+      "type": "func.call",
       "x": 1200,
       "y": 920,
+      "values": {
+        "name": "CountBounce"
+      }
+    },
+    {
+      "id": "n29",
+      "type": "func.value",
+      "x": 960,
+      "y": 1060,
+      "values": {
+        "name": "Flip",
+        "v": "dy"
+      }
+    },
+    {
+      "id": "n25",
+      "type": "func.define",
+      "x": 40,
+      "y": 1220,
+      "values": {
+        "name": "Flip",
+        "inputs": "v"
+      }
+    },
+    {
+      "id": "n26",
+      "type": "func.return",
+      "x": 520,
+      "y": 1220,
+      "values": {}
+    },
+    {
+      "id": "n27",
+      "type": "math.op",
+      "x": 280,
+      "y": 1300,
+      "values": {
+        "op": "*",
+        "b": "-1"
+      }
+    },
+    {
+      "id": "n30",
+      "type": "func.define",
+      "x": 40,
+      "y": 1460,
+      "values": {
+        "name": "CountBounce"
+      }
+    },
+    {
+      "id": "n31",
+      "type": "var.set",
+      "x": 300,
+      "y": 1460,
       "values": {
         "name": "bounces",
         "op": "+=",
@@ -375,6 +435,18 @@
       "in": "a"
     },
     {
+      "from": "n9",
+      "out": "value",
+      "to": "n28",
+      "in": "v"
+    },
+    {
+      "from": "n28",
+      "out": "result",
+      "to": "n20",
+      "in": "value"
+    },
+    {
       "from": "n6",
       "out": "then3",
       "to": "n22",
@@ -390,6 +462,36 @@
       "from": "n23",
       "out": "then",
       "to": "n24",
+      "in": "in"
+    },
+    {
+      "from": "n29",
+      "out": "result",
+      "to": "n23",
+      "in": "value"
+    },
+    {
+      "from": "n25",
+      "out": "then",
+      "to": "n26",
+      "in": "in"
+    },
+    {
+      "from": "n25",
+      "out": "v",
+      "to": "n27",
+      "in": "a"
+    },
+    {
+      "from": "n27",
+      "out": "result",
+      "to": "n26",
+      "in": "value"
+    },
+    {
+      "from": "n30",
+      "out": "then",
+      "to": "n31",
       "in": "in"
     }
   ]

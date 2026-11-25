@@ -2,11 +2,11 @@
 // palette, toolbar buttons and keyboard shortcuts all call these.
 import type { DockviewApi } from "dockview-react";
 import { compile, loadCompiler, manifest } from "./compiler";
-import { emptyGraph, generateGraph, graphText, nodeCatalog, nodeLine, parseGraph, type Graph, type NodeDef } from "./graph";
+import { emptyGraph, generateGraph, graphFunctions, graphText, nodeCatalog, nodeLine, parseGraph, type FuncSig, type Graph, type NodeDef } from "./graph";
 import { monaco, registerLanguage } from "./language";
 import { EXAMPLE_ASSETS, TEMPLATES, exportGame, fromTemplate, fsSupported, gamePage, openFolder, readFolder, saveProject, writeFile, type Template } from "./project";
 import { addRecent, removeRecent, type Recent } from "./recent";
-import { format } from "./symbols";
+import { format, scan } from "./symbols";
 import { get, set, type Breakpoint, type Project, type WorkspaceId } from "./store";
 
 export const refs: {
@@ -70,6 +70,13 @@ export const graphMaps = new Map<string, Map<number, string>>();
 let graphProblems: { file: string; node: string; message: string }[] = [];
 let catalog: Map<string, NodeDef> | undefined;
 export const nodeDefs = () => (catalog ??= nodeCatalog(manifest.commands));
+/** Every function in the project: Function nodes in graphs and `Function`s in code. Any graph can call them. */
+export function projectFunctions(files = get().project.files): FuncSig[] {
+  return Object.entries(files).flatMap(([file, text]) =>
+    isGraph(file) ? graphFunctions(parseGraph(text)) : scan(text).funcs.map((f) => ({ name: f.name, params: f.params })),
+  );
+}
+
 /** The project as the compiler sees it: graphs turned into CyberBasic. */
 function sources() {
   const { files, fileName } = get().project;
@@ -77,7 +84,7 @@ function sources() {
   graphProblems = [];
   for (const [file, text] of Object.entries(files)) {
     if (isGraph(file)) {
-      const g = generateGraph(file, parseGraph(text), file === fileName, nodeDefs());
+      const g = generateGraph(file, parseGraph(text), file === fileName, nodeDefs(), projectFunctions());
       graphMaps.set(file, g.map);
       graphProblems.push(...g.problems.map((p) => ({ file, ...p })));
       out[file] = g.code;
@@ -387,6 +394,8 @@ export function step() {
 let pauseOnStart = false;
 
 export function onGameMessage(m: { type: string; [k: string]: unknown }) {
+  // A game that was just stopped can still send a last message (e.g. "resumed"); don't let it revive the run state.
+  if (!get().run.page && m.type !== "key") return;
   switch (m.type) {
     case "started":
       set((s) => ({ run: { ...s.run, state: "running" } }));

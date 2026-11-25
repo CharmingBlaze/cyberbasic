@@ -473,3 +473,4 @@ button.status-item:hover { background: var(--bg3); }
 .graph-hint { position: absolute; left: 12px; bottom: 8px; pointer-events: none; opacity: .7; }
 .node-palette { position: absolute; z-index: 20; top: 0; }
 .swatch { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 7px; background: var(--c); vertical-align: 1px; }
+.c-func { --c: #ff7fd0; }

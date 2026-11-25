@@ -2,7 +2,7 @@
 // type values into unconnected inputs. Every change is saved into the file (with undo).
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import * as A from "./actions";
-import { canLink, graphPrefix, nextNodeId, parseGraph, type GNode, type Graph, type NodeDef, type PinDef } from "./graph";
+import { canLink, graphPrefix, nextNodeId, nodeDef, parseGraph, type FuncSig, type GNode, type Graph, type NodeColor, type NodeDef, type PinDef } from "./graph";
 import { Icon } from "./icons";
 import { monaco } from "./language";
 import { get, set, useStore } from "./store";
@@ -58,6 +58,10 @@ export function GraphPanel({ file }: { file: string }) {
   const focus = useStore((s) => s.graphFocus);
   const graph = useMemo(() => parseGraph(text), [text]);
   const defs = A.nodeDefs();
+  // Function and Call nodes get their pins from the functions in the whole project.
+  const files = useStore((s) => s.project.files);
+  const funcs = useMemo(() => A.projectFunctions(files), [files]);
+  const defOf = (n: GNode) => nodeDef(n, defs, funcs);
   const [mode, setMode] = useState<"graph" | "code">("graph");
   const [view, setViewState] = useState<View>(views.get(file) ?? { x: 40, y: 40, zoom: 1 });
   const setView = (v: View) => {
@@ -102,7 +106,7 @@ export function GraphPanel({ file }: { file: string }) {
     const r = host.current?.getBoundingClientRect();
     if (!r || !nodes.length) return setView({ x: 40, y: 40, zoom: 1 });
     const x0 = Math.min(...nodes.map((n) => n.x)), y0 = Math.min(...nodes.map((n) => n.y));
-    const x1 = Math.max(...nodes.map((n) => n.x + W)), y1 = Math.max(...nodes.map((n) => n.y + layoutOf(defs.get(n.type)).height));
+    const x1 = Math.max(...nodes.map((n) => n.x + W)), y1 = Math.max(...nodes.map((n) => n.y + layoutOf(defOf(n)).height));
     const zoom = Math.min(1.2, Math.max(0.3, Math.min((r.width - 80) / (x1 - x0), (r.height - 80) / (y1 - y0))));
     setView({ zoom, x: (r.width - (x1 - x0) * zoom) / 2 - x0 * zoom, y: (r.height - (y1 - y0) * zoom) / 2 - y0 * zoom });
   };
@@ -205,7 +209,7 @@ export function GraphPanel({ file }: { file: string }) {
       const target = (document.elementFromPoint(ev.clientX, ev.clientY) as HTMLElement | null)?.closest<HTMLElement>("[data-pin]");
       if (target) {
         const n = graph.nodes.find((x) => x.id === target.dataset.node);
-        const def = n && defs.get(n.type);
+        const def = n && defOf(n);
         const side = target.dataset.side as "in" | "out";
         const pin = def && (side === "in" ? def.inputs : def.outputs).find((p) => p.key === target.dataset.pin);
         if (pin && n) save(link(ref, { node: n.id, pin, side }));
@@ -221,12 +225,13 @@ export function GraphPanel({ file }: { file: string }) {
     window.addEventListener("pointerup", up);
   };
 
-  const addNode = (def: NodeDef, at: { x: number; y: number }, pending?: PinRef) => {
+  const addNode = (item: PaletteItem, at: { x: number; y: number }, pending?: PinRef) => {
     let g = latest();
     const id = nextNodeId(g);
-    const n: GNode = { id, type: def.type, x: Math.round(at.x - (pending?.side === "in" ? W : 0)), y: Math.round(at.y - HEAD / 2), values: {} };
-    if (def.type === "math.op" || def.type === "var.set") n.values.op = def.type === "math.op" ? "+" : "=";
-    if (def.type === "math.compare") n.values.op = "=";
+    const n: GNode = { id, type: item.type, x: Math.round(at.x - (pending?.side === "in" ? W : 0)), y: Math.round(at.y - HEAD / 2), values: { ...item.values } };
+    if (item.type === "math.op" || item.type === "var.set") n.values.op = item.type === "math.op" ? "+" : "=";
+    if (item.type === "math.compare") n.values.op = "=";
+    const def = defOf(n)!;
     g = { ...g, nodes: [...g.nodes, n] };
     if (pending) {
       // Wire the new node's first compatible pin to the one the wire was dragged from.
@@ -292,7 +297,9 @@ export function GraphPanel({ file }: { file: string }) {
   const wires = graph.links.map((l, i) => {
     const a = graph.nodes.find((n) => n.id === l.from), b = graph.nodes.find((n) => n.id === l.to);
     if (!a || !b) return null;
-    const da = defs.get(a.type), db = defs.get(b.type);
+    const da = defOf(a), db = defOf(b);
+    // A wire to a pin that's gone (a function input was renamed) isn't drawn; the compiler reports it.
+    if (!da?.outputs.some((p) => p.key === l.out) || !db?.inputs.some((p) => p.key === l.in)) return null;
     const kind = da?.outputs.find((p) => p.key === l.out)?.kind ?? "data";
     const pa = pinPos(node(a.id), layoutOf(da), "out", l.out), pb = pinPos(node(b.id), layoutOf(db), "in", l.in);
     const d = wirePath(pa, pb);
@@ -306,7 +313,7 @@ export function GraphPanel({ file }: { file: string }) {
   let draft = null;
   if (wire) {
     const n = graph.nodes.find((x) => x.id === wire.from.node)!;
-    const p = pinPos(node(n.id), layoutOf(defs.get(n.type)), wire.from.side, wire.from.pin.key);
+    const p = pinPos(node(n.id), layoutOf(defOf(n)), wire.from.side, wire.from.pin.key);
     draft = <path className={"wire-line draft " + wire.from.pin.kind} d={wire.from.side === "out" ? wirePath(p, wire.to) : wirePath(wire.to, p)} />;
   }
 
@@ -360,7 +367,7 @@ export function GraphPanel({ file }: { file: string }) {
               </svg>
               {graph.nodes.map((raw) => {
                 const n = node(raw.id);
-                const def = defs.get(n.type);
+                const def = defOf(n);
                 const l = layoutOf(def);
                 const err = errors.get(n.id);
                 const pin = (p: PinDef, side: "in" | "out", y: number) => (
@@ -448,7 +455,7 @@ export function GraphPanel({ file }: { file: string }) {
             {graph.nodes.length === 0 && (
               <div className="graph-empty">Right-click, press Space, or use <b>+ Node</b> to add your first node. Start with <b>On Frame</b>.</div>
             )}
-            {palette && <NodePalette defs={defs} pending={palette.pending} style={{ left: palette.x, top: palette.y }} pick={(d) => addNode(d, palette.at, palette.pending)} close={() => setPalette(undefined)} />}
+            {palette && <NodePalette items={paletteItems(defs, funcs)} defOf={defOf} pending={palette.pending} style={{ left: palette.x, top: palette.y }} pick={(d) => addNode(d, palette.at, palette.pending)} close={() => setPalette(undefined)} />}
             <div className="graph-hint muted small">Drag background to pan · wheel to zoom · drag from a pin to wire · Space adds a node · Del removes · F fits</div>
           </div>
         </>
@@ -457,14 +464,32 @@ export function GraphPanel({ file }: { file: string }) {
   );
 }
 
+/** One entry in the node palette: a node type, optionally with values filled in (a call to a known function). */
+interface PaletteItem { key: string; type: string; title: string; category: string; color: NodeColor; doc: string; values?: Record<string, string> }
+
+function paletteItems(defs: Map<string, NodeDef>, funcs: FuncSig[]): PaletteItem[] {
+  const items: PaletteItem[] = [...defs.values()].map((d) => ({ key: d.type, type: d.type, title: d.title, category: d.category, color: d.color, doc: d.doc }));
+  // Each function in the project, ready to call with its pins in place.
+  for (const f of funcs) {
+    const sig = `${f.name}(${f.params.join(", ")})`;
+    items.push({ key: `call:${f.name}`, type: "func.call", title: `Call ${f.name}`, category: "Functions", color: "func", doc: `Runs ${sig}.`, values: { name: f.name } });
+    items.push({ key: `value:${f.name}`, type: "func.value", title: `${f.name}()`, category: "Functions", color: "func", doc: `Calls ${sig} and gives back its result.`, values: { name: f.name } });
+  }
+  return items;
+}
+
 /** Searchable list of nodes; when a wire is being dragged, only nodes it can connect to. */
-function NodePalette({ defs, pending, style, pick, close }: { defs: Map<string, NodeDef>; pending?: PinRef; style: React.CSSProperties; pick: (d: NodeDef) => void; close: () => void }) {
+function NodePalette({ items, defOf, pending, style, pick, close }: { items: PaletteItem[]; defOf: (n: GNode) => NodeDef | undefined; pending?: PinRef; style: React.CSSProperties; pick: (d: PaletteItem) => void; close: () => void }) {
   const [q, setQ] = useState("");
   const [i, setI] = useState(0);
   const words = q.toLowerCase().split(/\s+/).filter(Boolean);
-  const order = ["Events", "Flow", "Variables", "Math & Logic", "Code"];
-  const shown = [...defs.values()]
-    .filter((d) => !pending || (pending.side === "out" ? d.inputs : d.outputs).some((p) => p.kind === pending.pin.kind))
+  const order = ["Events", "Flow", "Variables", "Math & Logic", "Functions", "Code"];
+  const pinsOf = (d: PaletteItem) => defOf({ id: "", type: d.type, x: 0, y: 0, values: d.values ?? {} });
+  const shown = items
+    .filter((d) => {
+      const def = pinsOf(d);
+      return !pending || (def && (pending.side === "out" ? def.inputs : def.outputs).some((p) => p.kind === pending.pin.kind));
+    })
     .filter((d) => words.every((w) => `${d.title} ${d.category} ${d.doc}`.toLowerCase().includes(w)))
     .sort((a, b) => {
       const ia = order.indexOf(a.category), ib = order.indexOf(b.category);
@@ -498,7 +523,7 @@ function NodePalette({ defs, pending, style, pick, close }: { defs: Map<string, 
         {shown.map((d, n) => {
           const head = d.category !== group ? <div className="picker-group">{(group = d.category)}</div> : null;
           return (
-            <div key={d.type}>
+            <div key={d.key}>
               {head}
               <button className={"picker-item" + (n === i ? " on" : "")} onMouseEnter={() => setI(n)} onClick={() => pick(d)}>
                 <span className="mono"><i className={`swatch c-${d.color}`} />{d.title}</span>
