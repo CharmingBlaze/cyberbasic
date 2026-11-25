@@ -173,6 +173,7 @@ const CB = (() => {
   };
   const collisions = new Set(); // "a:b" and "a" keys for contacts that started during the last physics step
   const touched = new Map(); // entity id -> the entity it started touching in the last physics step
+  const named = new Map(); // lower-case name -> entity (NameEntity, scenes)
   const pad = () => (navigator.getGamepads ? navigator.getGamepads()[0] : null);
 
   // Waits for a media element to load, keeping frames running meanwhile.
@@ -345,8 +346,12 @@ const CB = (() => {
     EntityX(e) { return e.position.x; },
     EntityY(e) { return e.position.y; },
     EntityZ(e) { return e.position.z; },
+    NameEntity(e, name) { e.cbName = String(name); named.set(e.cbName.toLowerCase(), e); },
+    FindEntity(name) { const e = named.get(String(name).toLowerCase()); return e && !e.isDisposed() ? e : 0; },
+    EntityName(e) { return e.cbName ?? ""; },
     EntityExists(e) { return !!e && typeof e === "object" && typeof e.isDisposed === "function" && !e.isDisposed(); },
-    EntityDistance(a, b) { return B.Vector3.Distance(a.getAbsolutePosition(), b.getAbsolutePosition()); },
+    // computeWorldMatrix: positions set this frame aren't in the world matrix until the next render.
+    EntityDistance(a, b) { return B.Vector3.Distance(a.computeWorldMatrix(true) && a.getAbsolutePosition(), b.computeWorldMatrix(true) && b.getAbsolutePosition()); },
     AmbientLight(r, g, b) {
       need3d();
       ambient.diffuse = ambient.groundColor = new B.Color3(r / 255, g / 255, b / 255);

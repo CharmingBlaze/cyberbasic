@@ -1,0 +1,29 @@
+' A level built in the level editor (level.scene). Open it to move things around, then run.
+Include "level.scene"
+Include "spinner.graph"
+
+Graphics3D 1280, 720
+LoadScene_Level                 ' builds everything in level.scene
+player = FindEntity("Player")   ' objects are found by the names you gave them
+
+While Not KeyHit(KEY_ESCAPE)
+    speed = 6 * Delta
+    If KeyDown(KEY_LEFT) Then MoveEntity player, -speed, 0, 0
+    If KeyDown(KEY_RIGHT) Then MoveEntity player, speed, 0, 0
+    If KeyDown(KEY_UP) Then MoveEntity player, 0, 0, speed
+    If KeyDown(KEY_DOWN) Then MoveEntity player, 0, 0, -speed
+
+    ' Collect the gems
+    For i = 1 To 4
+        gem = FindEntity("Gem " + i)
+        If gem <> 0
+            If EntityDistance(player, gem) < 1
+                FreeEntity gem
+                score = score + 1
+            EndIf
+        EndIf
+    Next
+
+    Text 10, 10, "Arrow keys move the Player. Gems: " + score + " / 4"
+    Sync
+Wend

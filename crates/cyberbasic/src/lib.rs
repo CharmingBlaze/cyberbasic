@@ -4,6 +4,7 @@ pub mod builtins;
 mod codegen;
 pub mod graph;
 mod json;
+pub mod scene;
 mod lexer;
 mod parser;
 #[cfg(target_arch = "wasm32")]

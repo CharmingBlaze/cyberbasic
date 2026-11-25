@@ -5,6 +5,7 @@ import type { Project } from "./store";
 
 const exampleSources = import.meta.glob("../../examples/*.cb", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
 const shooterFiles = import.meta.glob("../../examples/shooter/*.cb", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
+const levelFiles = import.meta.glob("../../examples/level/*.{cb,scene,graph}", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
 const behaviourFiles = import.meta.glob("../../examples/behaviours/*.graph", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
 const bouncerFiles = import.meta.glob("../../examples/bouncer/*.graph", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
 const byName = (files: Record<string, string>) => Object.fromEntries(Object.entries(files).map(([path, src]) => [path.split("/").pop()!, src]));
@@ -92,6 +93,13 @@ export const TEMPLATES: Template[] = [
     files: byName(bouncerFiles),
   },
   {
+    id: "level",
+    name: "Level (3D)",
+    kind: "3D",
+    description: "A level made in the level editor: walls, physics crates and spinning gems to collect.",
+    files: byName(levelFiles),
+  },
+  {
     id: "behaviours",
     name: "Behaviours (3D)",
     kind: "3D",
@@ -143,7 +151,7 @@ export const mainOf = (files: Record<string, string>) => ["main.cb", "main.graph
 export async function readFolder(dir: FileSystemDirectoryHandle): Promise<Project> {
   const files: Record<string, string> = {};
   for await (const [name, handle] of dir.entries()) {
-    if (handle.kind === "file" && /\.(cb|graph)$/i.test(name)) files[name] = await (await (handle as FileSystemFileHandle).getFile()).text();
+    if (handle.kind === "file" && /\.(cb|graph|scene)$/i.test(name)) files[name] = await (await (handle as FileSystemFileHandle).getFile()).text();
   }
   const names = Object.keys(files).sort();
   if (!names.length) throw new Error(`"${dir.name}" has no .cb or .graph file`);

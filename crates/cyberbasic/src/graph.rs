@@ -119,12 +119,20 @@ pub fn is_graph(file: &str) -> bool {
 pub fn project_functions(files: &[(&str, &str)]) -> Vec<FuncSig> {
     files
         .iter()
-        .flat_map(|(f, t)| if is_graph(f) { parse(t).map(|g| graph_functions(&g)).unwrap_or_default() } else { code_functions(t) })
+        .flat_map(|(f, t)| {
+            if is_graph(f) {
+                parse(t).map(|g| graph_functions(&g)).unwrap_or_default()
+            } else if crate::scene::is_scene(f) {
+                vec![FuncSig { name: crate::scene::load_function(f), params: vec![] }]
+            } else {
+                code_functions(t)
+            }
+        })
         .collect()
 }
 
 fn stem(file: &str) -> String {
-    let base = if is_graph(file) { &file[..file.len() - 6] } else { file };
+    let base = file.rfind('.').map_or(file, |i| &file[..i]);
     base.chars().map(|c| if c.is_alphanumeric() || c == '_' { c } else { '_' }).collect()
 }
 pub fn graph_prefix(file: &str) -> String {
@@ -512,15 +520,18 @@ pub fn lower(file: &str, g: &Graph, is_main: bool, funcs: &[FuncSig]) -> Lowered
     Lowered { code: l.lines.join("\n") + "\n", map: l.map, problems: l.problems }
 }
 
-/// Lowers every graph in a project (`files[0]` is the main file). A graph that isn't valid JSON
-/// becomes an empty program with one problem.
+/// Lowers every graph and scene in a project (`files[0]` is the main file). A file that isn't
+/// valid JSON becomes an empty program with one problem.
 pub fn lower_project(files: &[(&str, &str)]) -> Vec<(String, Lowered)> {
     let funcs = project_functions(files);
     files
         .iter()
         .enumerate()
-        .filter(|(_, (f, _))| is_graph(f))
+        .filter(|(_, (f, _))| is_graph(f) || crate::scene::is_scene(f))
         .map(|(i, (f, t))| {
+            if crate::scene::is_scene(f) {
+                return (f.to_string(), crate::scene::lower(f, t));
+            }
             let low = match parse(t) {
                 Ok(g) => lower(f, &g, i == 0, &funcs),
                 Err(e) => Lowered { code: "\n".into(), map: vec![], problems: vec![(String::new(), format!("This graph file is damaged: {e}"))] },

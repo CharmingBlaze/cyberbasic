@@ -1,0 +1,421 @@
+{
+  "version": 1,
+  "objects": [
+    {
+      "id": "o1",
+      "name": "Ground",
+      "kind": "plane",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        24,
+        1,
+        24
+      ],
+      "color": [
+        70,
+        140,
+        90
+      ],
+      "physics": "static"
+    },
+    {
+      "id": "o2",
+      "name": "Player",
+      "kind": "cube",
+      "position": [
+        0,
+        0.5,
+        -4
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "color": [
+        76,
+        194,
+        255
+      ]
+    },
+    {
+      "id": "o3",
+      "name": "West wall",
+      "kind": "cube",
+      "position": [
+        -11.5,
+        1,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        2,
+        24
+      ],
+      "color": [
+        120,
+        110,
+        150
+      ],
+      "physics": "static"
+    },
+    {
+      "id": "o4",
+      "name": "East wall",
+      "kind": "cube",
+      "position": [
+        11.5,
+        1,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        2,
+        24
+      ],
+      "color": [
+        120,
+        110,
+        150
+      ],
+      "physics": "static"
+    },
+    {
+      "id": "o5",
+      "name": "North wall",
+      "kind": "cube",
+      "position": [
+        0,
+        1,
+        11.5
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        24,
+        2,
+        1
+      ],
+      "color": [
+        120,
+        110,
+        150
+      ],
+      "physics": "static"
+    },
+    {
+      "id": "o6",
+      "name": "Crate 1",
+      "kind": "cube",
+      "position": [
+        -3,
+        0.5,
+        4
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "color": [
+        196,
+        140,
+        80
+      ],
+      "physics": "dynamic",
+      "mass": 1
+    },
+    {
+      "id": "o7",
+      "name": "Crate 2",
+      "kind": "cube",
+      "position": [
+        -1.9,
+        0.5,
+        4
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "color": [
+        196,
+        140,
+        80
+      ],
+      "physics": "dynamic",
+      "mass": 1
+    },
+    {
+      "id": "o8",
+      "name": "Crate 3",
+      "kind": "cube",
+      "position": [
+        -0.7999999999999998,
+        0.5,
+        4
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "color": [
+        196,
+        140,
+        80
+      ],
+      "physics": "dynamic",
+      "mass": 1
+    },
+    {
+      "id": "o9",
+      "name": "Crate 4",
+      "kind": "cube",
+      "position": [
+        -3,
+        2.1,
+        4
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "color": [
+        196,
+        140,
+        80
+      ],
+      "physics": "dynamic",
+      "mass": 1
+    },
+    {
+      "id": "o10",
+      "name": "Crate 5",
+      "kind": "cube",
+      "position": [
+        -1.9,
+        2.1,
+        4
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "color": [
+        196,
+        140,
+        80
+      ],
+      "physics": "dynamic",
+      "mass": 1
+    },
+    {
+      "id": "o11",
+      "name": "Gem 1",
+      "kind": "cube",
+      "position": [
+        -6,
+        1.2,
+        -1
+      ],
+      "rotation": [
+        45,
+        0,
+        45
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "color": [
+        255,
+        210,
+        70
+      ],
+      "behaviours": [
+        "Spinner"
+      ]
+    },
+    {
+      "id": "o12",
+      "name": "Gem 2",
+      "kind": "cube",
+      "position": [
+        -2,
+        1.2,
+        -1
+      ],
+      "rotation": [
+        45,
+        0,
+        45
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "color": [
+        255,
+        210,
+        70
+      ],
+      "behaviours": [
+        "Spinner"
+      ]
+    },
+    {
+      "id": "o13",
+      "name": "Gem 3",
+      "kind": "cube",
+      "position": [
+        2,
+        1.2,
+        -1
+      ],
+      "rotation": [
+        45,
+        0,
+        45
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "color": [
+        255,
+        210,
+        70
+      ],
+      "behaviours": [
+        "Spinner"
+      ]
+    },
+    {
+      "id": "o14",
+      "name": "Gem 4",
+      "kind": "cube",
+      "position": [
+        6,
+        1.2,
+        -1
+      ],
+      "rotation": [
+        45,
+        0,
+        45
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "color": [
+        255,
+        210,
+        70
+      ],
+      "behaviours": [
+        "Spinner"
+      ]
+    },
+    {
+      "id": "o15",
+      "name": "Sun",
+      "kind": "light",
+      "position": [
+        0,
+        8,
+        0
+      ],
+      "rotation": [
+        50,
+        30,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "id": "o16",
+      "name": "Camera",
+      "kind": "camera",
+      "position": [
+        0,
+        9,
+        -16
+      ],
+      "rotation": [
+        30,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    }
+  ]
+}

@@ -19,7 +19,7 @@ fn main() {
     for e in fs::read_dir(&dir).unwrap_or_else(|e| die(&format!("cannot read {}: {e}", dir.display()))).flatten() {
         let name = e.file_name().to_string_lossy().into_owned();
         let ext = Path::new(&name).extension().map(|x| x.to_ascii_lowercase());
-        if name != main_name && (ext.as_deref() == Some("cb".as_ref()) || ext.as_deref() == Some("graph".as_ref())) {
+        if name != main_name && (ext.as_deref() == Some("cb".as_ref()) || ext.as_deref() == Some("graph".as_ref()) || ext.as_deref() == Some("scene".as_ref())) {
             files.push((name.clone(), fs::read_to_string(e.path()).unwrap_or_default()));
         }
     }

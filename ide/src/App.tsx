@@ -478,7 +478,7 @@ function useShortcuts() {
       };
       // Undo/redo in graphs (Monaco keeps its own history for code).
       const undo = k === "Ctrl+Z" ? false : k === "Ctrl+Y" || k === "Ctrl+Shift+Z" ? true : undefined;
-      if (undo !== undefined && A.isGraph(get().activeFile) && !(document.activeElement as HTMLElement | null)?.closest(".monaco-editor")) {
+      if (undo !== undefined && A.isVisual(get().activeFile) && !(document.activeElement as HTMLElement | null)?.closest(".monaco-editor")) {
         e.preventDefault();
         e.stopPropagation();
         A.undoVisual(undo);

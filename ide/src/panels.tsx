@@ -9,6 +9,8 @@ import { TEMPLATES, fsSupported } from "./project";
 import { listRecent, type Recent } from "./recent";
 import { get, set, setSettings, useStore } from "./store";
 import { GraphPanel } from "./graphui";
+import { parseScene } from "./scene";
+import { ScenePanel } from "./sceneui";
 import { scan } from "./symbols";
 
 // ------------------------------------------------------------------ editor
@@ -17,6 +19,7 @@ import { scan } from "./symbols";
 export function FilePanel(props: IDockviewPanelProps<{ file?: string }>) {
   const main = useStore((s) => s.project.fileName);
   const file = props.params?.file ?? main;
+  if (A.isScene(file)) return <ScenePanel key={file} file={file} />;
   return A.isGraph(file) ? <GraphPanel key={file} file={file} /> : <EditorPanel key={file} {...props} />;
 }
 
@@ -227,6 +230,11 @@ export function ConsolePanel() {
 }
 
 /** "Rect node" for a graph problem. */
+function scenePlace(file: string, id?: string) {
+  const o = parseScene(get().project.files[file] ?? "").objects.find((x) => x.id === id);
+  return o ? `object "${o.name}"` : "scene";
+}
+
 function graphPlace(file: string, node?: string) {
   const n = (JSON.parse(get().project.files[file] ?? "{}").nodes as { id: string; type: string }[] | undefined)?.find((x) => x.id === node);
   return n ? `${A.nodeDefs().get(n.type)?.title ?? n.type} node` : "graph";
@@ -244,7 +252,7 @@ export function ProblemsPanel() {
           <button key={i} className="row problem" onClick={() => A.revealLine(d.line, d.col, true, d.file)}>
             <Icon name="alert" size={15} className="err" />
             <span className="grow">{d.kind === "runtime" ? `Runtime error: ${d.message}` : d.message}</span>
-            <span className="muted mono">{A.isGraph(d.file) ? `${d.file} · ${graphPlace(d.file, d.node ?? A.graphMaps.get(d.file)?.get(d.line))}` : `${d.file}:${d.line}:${d.col}`}</span>
+            <span className="muted mono">{A.isScene(d.file) ? `${d.file} · ${scenePlace(d.file, d.node ?? A.graphMaps.get(d.file)?.get(d.line))}` : A.isGraph(d.file) ? `${d.file} · ${graphPlace(d.file, d.node ?? A.graphMaps.get(d.file)?.get(d.line))}` : `${d.file}:${d.line}:${d.col}`}</span>
           </button>
         ))}
       </div>
@@ -410,7 +418,7 @@ export function ProjectPanel() {
         {files.map((f) => (
           <div key={f} className={"row file nested" + (f === activeFile ? " active" : "")}>
             <button className="grow left file-open" onClick={() => A.openFile(f)}>
-              <Icon name={A.isGraph(f) ? "graph" : "code"} size={14} /> {f}
+              <Icon name={A.isGraph(f) ? "graph" : A.isScene(f) ? "cube" : "code"} size={14} /> {f}
             </button>
             {f === project.fileName ? (
               <span className="file-badge" title="This file runs; it Includes the others">main</span>

@@ -6,6 +6,7 @@ import { behaviourName, emptyGraph, graphFunctions, graphText, nodeCatalog, node
 import { monaco, registerLanguage } from "./language";
 import { EXAMPLE_ASSETS, TEMPLATES, exportGame, fromTemplate, fsSupported, gamePage, openFolder, readFolder, saveProject, writeFile, type Template } from "./project";
 import { addRecent, removeRecent, type Recent } from "./recent";
+import { emptyScene, loadFunction, sceneText } from "./scene";
 import { format, scan } from "./symbols";
 import { get, set, type Breakpoint, type Project, type WorkspaceId } from "./store";
 
@@ -58,13 +59,17 @@ export async function init() {
 function createModels(project: Project) {
   for (const m of models.values()) m.dispose();
   models.clear();
-  for (const [file, src] of Object.entries(project.files)) if (!isGraph(file)) addModel(file, src);
+  for (const [file, src] of Object.entries(project.files)) if (!isVisual(file)) addModel(file, src);
 }
 
 // ---------------------------------------------------------------- node graphs
 
 /** Node graphs are edited visually (no Monaco model) and compiled to CyberBasic. */
 export const isGraph = (file: string) => file.toLowerCase().endsWith(".graph");
+/** Levels from the level editor. */
+export const isScene = (file: string) => file.toLowerCase().endsWith(".scene");
+/** Files edited visually (no Monaco model): graphs and scenes. */
+export const isVisual = (file: string) => isGraph(file) || isScene(file);
 /** Generated-line -> node id for each graph, and problems in the graphs' wiring, from the last build. */
 export const graphMaps = new Map<string, Map<number, string>>();
 let graphProblems: { file: string; node: string; message: string }[] = [];
@@ -73,7 +78,11 @@ export const nodeDefs = () => (catalog ??= nodeCatalog(manifest.commands));
 /** Every function in the project: Function nodes in graphs and `Function`s in code. Any graph can call them. */
 export function projectFunctions(files = get().project.files): FuncSig[] {
   return Object.entries(files).flatMap(([file, text]) =>
-    isGraph(file) ? graphFunctions(parseGraph(text)) : scan(text).funcs.map((f) => ({ name: f.name, params: f.params })),
+    isGraph(file)
+      ? graphFunctions(parseGraph(text))
+      : isScene(file)
+        ? [{ name: loadFunction(file), params: [] }]
+        : scan(text).funcs.map((f) => ({ name: f.name, params: f.params })),
   );
 }
 
@@ -100,6 +109,7 @@ function sources() {
 export const generatedCode = (file: string) => sources()[file] ?? "";
 
 export const updateGraph = (file: string, graph: Graph) => editVisual(file, graphText(graph));
+export const updateVisual = (file: string, text: string) => editVisual(file, text);
 
 // Undo history for graphs (code files use Monaco's own). Quick successive edits, like
 // typing in a field, merge into one step.
@@ -124,10 +134,10 @@ function editVisual(file: string, text: string, record = true) {
   sendBreakpoints();
 }
 
-/** Undo/redo in the active graph. Returns false when the active file isn't a graph. */
+/** Undo/redo in the active graph or scene. Returns false when the active file is code. */
 export function undoVisual(redo = false) {
   const file = get().activeFile;
-  if (!isGraph(file)) return false;
+  if (!isVisual(file)) return false;
   const h = history.get(file);
   const from = redo ? h?.future : h?.past;
   const text = from?.pop();
@@ -198,18 +208,18 @@ export function openFile(file: string) {
   });
 }
 
-const validName = (name: string) => /^[\w-]+\.(cb|graph)$/i.test(name);
+const validName = (name: string) => /^[\w-]+\.(cb|graph|scene)$/i.test(name);
 
 /** Adds a file and an `Include` for it at the top of the main file, then opens it. */
 export function newFile() {
-  const input = prompt("Name of the new file: enemies.cb for code, or enemies.graph for a node graph:", "");
+  const input = prompt("Name of the new file: enemies.cb for code, enemies.graph for a node graph, level.scene for a level:", "");
   if (!input) return;
   const name = input.trim();
-  const file = /\.(cb|graph)$/i.test(name) ? name : `${name}.cb`;
-  if (!validName(file)) return toast("Use letters, numbers, - or _ and end with .cb or .graph", "error");
+  const file = /\.(cb|graph|scene)$/i.test(name) ? name : `${name}.cb`;
+  if (!validName(file)) return toast("Use letters, numbers, - or _ and end with .cb, .graph or .scene", "error");
   if (Object.keys(get().project.files).some((f) => f.toLowerCase() === file.toLowerCase())) return toast(`${file} already exists`, "error");
-  const text = isGraph(file) ? graphText(emptyGraph(false)) : `' ${file}\n`;
-  if (!isGraph(file)) addModel(file, text);
+  const text = isGraph(file) ? graphText(emptyGraph(false)) : isScene(file) ? sceneText(emptyScene()) : `' ${file}\n`;
+  if (!isVisual(file)) addModel(file, text);
   set((s) => ({ project: { ...s.project, files: { ...s.project.files, [file]: text } }, dirty: true }));
   const mainFile = get().project.fileName;
   if (isGraph(mainFile)) {
@@ -225,7 +235,12 @@ export function newFile() {
   }
   persist();
   openFile(file);
-  toast(`Created ${file} and included it from ${mainFile}${isGraph(file) && !isGraph(mainFile) ? `. Call Graph_${file.replace(/\.\w+$/i, "").replace(/\W/g, "_")}_Frame each frame from your loop.` : ""}`, "success");
+  const hint = isScene(file)
+    ? `. Call ${loadFunction(file)} after Graphics3D to build it.`
+    : isGraph(file) && !isGraph(mainFile)
+      ? `. Call Graph_${file.replace(/\.\w+$/i, "").replace(/\W/g, "_")}_Frame each frame from your loop.`
+      : "";
+  toast(`Created ${file} and included it from ${mainFile}${hint}`, "success");
 }
 
 export async function deleteFile(file: string) {
@@ -319,7 +334,7 @@ export const pendingReveal = new Map<string, { line: number; col: number; focus:
 
 export function revealLine(line: number, col = 1, focus = true, file = get().activeFile) {
   openFile(file);
-  if (isGraph(file)) return void set((s) => ({ graphFocus: { file, line, n: (s.graphFocus?.n ?? 0) + 1 } }));
+  if (isVisual(file)) return void set((s) => ({ graphFocus: { file, line, n: (s.graphFocus?.n ?? 0) + 1 } }));
   const e = editors.get(file);
   if (!e) return void pendingReveal.set(file, { line, col, focus }); // its editor mounts on the next render
   e.revealLineInCenterIfOutsideViewport(line);
@@ -450,6 +465,7 @@ export function onGameMessage(m: { type: string; [k: string]: unknown }) {
 const bpDecorations = new Map<string, string[]>();
 
 export function toggleBreakpoint(line = refs.editor?.getPosition()?.lineNumber, file = get().activeFile) {
+  if (isScene(file)) return; // scenes only build objects; put breakpoints in the code that loads them
   if (isGraph(file)) {
     const ids = graphSelection.get(file) ?? [];
     const g = parseGraph(get().project.files[file] ?? "");

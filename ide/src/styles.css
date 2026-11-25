@@ -487,3 +487,35 @@ button.status-item:hover { background: var(--bg3); }
 .node-palette { position: absolute; z-index: 20; top: 0; }
 .swatch { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 7px; background: var(--c); vertical-align: 1px; }
 .c-func { --c: #ff7fd0; }
+
+/* ---------------------------------------------------------------- level editor */
+.scene-panel { outline: none; }
+.scene-body { flex: 1; min-height: 0; display: grid; grid-template-columns: 200px 1fr 250px; }
+.scene-side { display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--line-soft); }
+.scene-add { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px; border-bottom: 1px solid var(--line-soft); }
+.scene-add .tool { height: 22px; padding: 0 7px; font-size: 12px; }
+.scene-add select { width: 100%; }
+.scene-list { flex: 1; min-height: 0; }
+.scene-row { padding: 4px 10px; font-size: 13px; }
+.scene-row.active { background: #4cc2ff1f; }
+.scene-row.has-error { box-shadow: inset 2px 0 0 var(--err); }
+.kind-dot { width: 9px; height: 9px; border-radius: 3px; flex: none; background: #9aa3bd; }
+.k-light, .k-pointlight { background: #ffd25a; border-radius: 50%; }
+.k-camera { background: #a58bff; }
+.k-plane { background: #5cc48a; }
+.k-model { background: #ff9a5a; }
+.scene-view { position: relative; min-width: 0; min-height: 0; }
+.scene-view canvas { width: 100%; height: 100%; display: block; outline: none; touch-action: none; }
+.scene-hint { position: absolute; left: 10px; bottom: 8px; pointer-events: none; text-shadow: 0 1px 2px #000; }
+.scene-inspector { border-left: 1px solid var(--line-soft); overflow: auto; }
+.inspector { display: flex; flex-direction: column; gap: 9px; padding: 10px; }
+.insp-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.insp-row.top { align-items: flex-start; }
+.insp-row .col-label { width: 64px; flex: none; }
+.insp-kind { margin: -4px 0 2px 72px; }
+.insp-checks { display: flex; flex-direction: column; gap: 3px; }
+.vec { display: flex; gap: 4px; flex: 1; min-width: 0; }
+.num { display: flex; align-items: center; gap: 3px; flex: 1; min-width: 0; font-size: 11px; color: var(--muted); }
+.num input { width: 100%; min-width: 0; }
+.tool.danger:hover { color: var(--err); border-color: #ff6b6b66; }
+.node-error.static { position: static; }

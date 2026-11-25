@@ -1,0 +1,469 @@
+// The level editor for .scene files: a 3D view with move/rotate/scale gizmos, a list of the
+// scene's objects and an inspector. Every change is saved into the file (with undo); the compiler
+// turns the file into LoadScene_<Name>, which the game calls.
+import { useEffect, useMemo, useRef, useState } from "react";
+import * as A from "./actions";
+import { Icon } from "./icons";
+import { KINDS, isMesh, loadFunction, newObject, parseScene, sceneText, type Scene, type SceneKind, type SceneObject, type Vec3 } from "./scene";
+import { get, set, useStore } from "./store";
+
+// shortcut: Babylon is untyped here (loaded from the CDN like the games, not bundled); type it if the editor grows.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Any = any;
+const CDN = "https://cdn.babylonjs.com/";
+const scripts = new Map<string, Promise<void>>();
+function script(url: string) {
+  if (!scripts.has(url)) {
+    scripts.set(
+      url,
+      new Promise((ok, fail) => {
+        const s = document.createElement("script");
+        s.src = url;
+        s.onload = () => ok();
+        s.onerror = () => fail(new Error(`Couldn't load ${url} (the level editor needs internet for now)`));
+        document.head.append(s);
+      }),
+    );
+  }
+  return scripts.get(url)!;
+}
+const D2R = Math.PI / 180;
+const round = (n: number, step = 1e-3) => Math.round(n / step) * step;
+type Mode = "move" | "rotate" | "scale";
+
+export function ScenePanel({ file }: { file: string }) {
+  const text = useStore((s) => s.project.files[file] ?? "");
+  const assets = useStore((s) => s.project.assets);
+  const files = useStore((s) => s.project.files);
+  const diagnostics = useStore((s) => s.diagnostics);
+  const focus = useStore((s) => s.graphFocus);
+  const scene = useMemo(() => parseScene(text), [text]);
+  const behaviours = useMemo(() => A.projectBehaviours(files), [files]);
+  const [selected, setSelected] = useState<string>();
+  const [mode, setMode] = useState<Mode>("move");
+  const [snap, setSnap] = useState(true);
+  const [error, setError] = useState<string>();
+  const canvas = useRef<HTMLCanvasElement>(null);
+  const view = useRef<{ B: Any; engine: Any; scene: Any; camera: Any; gizmos: Any; nodes: Map<string, { node: Any; key: string }> }>(null);
+  const [ready, setReady] = useState(false);
+
+  const latest = () => parseScene(get().project.files[file] ?? "");
+  const save = (s: Scene) => A.updateVisual(file, sceneText(s));
+  const change = (id: string, patch: Partial<SceneObject>) => {
+    const s = latest();
+    save({ ...s, objects: s.objects.map((o) => (o.id === id ? { ...o, ...patch } : o)) });
+  };
+  const sel = scene.objects.find((o) => o.id === selected);
+  const errors = new Map<string, string>();
+  for (const d of diagnostics) if (d.file === file) {
+    const id = d.node ?? A.graphMaps.get(file)?.get(d.line);
+    if (id && !errors.has(id)) errors.set(id, d.message);
+  }
+
+  // ------------------------------------------------------------ the 3D view
+
+  useEffect(() => {
+    let disposed = false, observer: ResizeObserver | undefined;
+    (async () => {
+      try {
+        await script(CDN + "babylon.js");
+        await script(CDN + "loaders/babylonjs.loaders.min.js");
+      } catch (e) {
+        return setError((e as Error).message);
+      }
+      if (disposed || !canvas.current) return;
+      const B = (window as Any).BABYLON;
+      const engine = new B.Engine(canvas.current, true, { preserveDrawingBuffer: true });
+      const s = new B.Scene(engine);
+      s.clearColor = new B.Color4(0.07, 0.08, 0.11, 1);
+      const camera = new B.ArcRotateCamera("editor", -Math.PI / 2.4, 1.05, 24, B.Vector3.Zero(), s);
+      camera.attachControl(canvas.current, true);
+      camera.wheelPrecision = 30;
+      camera.panningSensibility = 60;
+      camera.minZ = 0.05;
+      new B.HemisphericLight("editor-light", new B.Vector3(0.3, 1, -0.4), s).intensity = 1.1;
+      // Ground grid: a line every unit, brighter every 5.
+      const lines: Any[] = [], colors: Any[] = [];
+      for (let i = -30; i <= 30; i++) {
+        const c = i === 0 ? new B.Color4(0.35, 0.55, 0.8, 1) : i % 5 ? new B.Color4(0.18, 0.2, 0.26, 1) : new B.Color4(0.26, 0.29, 0.37, 1);
+        lines.push([new B.Vector3(i, 0, -30), new B.Vector3(i, 0, 30)], [new B.Vector3(-30, 0, i), new B.Vector3(30, 0, i)]);
+        colors.push([c, c], [c, c]);
+      }
+      const grid = B.MeshBuilder.CreateLineSystem("editor-grid", { lines, colors }, s);
+      grid.isPickable = false;
+      const gizmos = new B.GizmoManager(s);
+      gizmos.usePointerToAttachGizmos = false;
+      gizmos.clearGizmoOnEmptyPointerEvent = false;
+      view.current = { B, engine, scene: s, camera, gizmos, nodes: new Map() };
+      engine.runRenderLoop(() => s.render());
+      observer = new ResizeObserver(() => engine.resize());
+      observer.observe(canvas.current);
+      // Click an object to select it; click empty space to deselect.
+      s.onPointerObservable.add((info: Any) => {
+        if (info.type !== B.PointerEventTypes.POINTERTAP || info.event.button !== 0) return;
+        let m = info.pickInfo?.pickedMesh;
+        while (m && !m.metadata?.sceneId) m = m.parent;
+        setSelected(m?.metadata?.sceneId);
+      });
+      setReady(true);
+    })();
+    return () => {
+      disposed = true;
+      observer?.disconnect();
+      view.current?.engine.dispose();
+      view.current = null;
+    };
+  }, []);
+
+  // Make the 3D view match the file: create, replace or update each object's node.
+  useEffect(() => {
+    const v = view.current;
+    if (!v) return;
+    const { B, nodes } = v;
+    const seen = new Set<string>();
+    for (const o of scene.objects) {
+      seen.add(o.id);
+      const key = `${o.kind}:${o.model ?? ""}`;
+      let entry = nodes.get(o.id);
+      if (entry && entry.key !== key) {
+        entry.node.dispose();
+        entry = undefined;
+      }
+      if (!entry) {
+        entry = { node: build(v, o, assets), key };
+        nodes.set(o.id, entry);
+      }
+      const n = entry.node;
+      n.position.set(...o.position);
+      const r = o.rotation.map((d) => d * D2R) as Vec3;
+      if (n.rotationQuaternion) n.rotationQuaternion = B.Quaternion.FromEulerAngles(...r);
+      else n.rotation.set(...r);
+      if (isMesh(o.kind)) n.scaling.set(...o.scale);
+      const c = o.color ?? [200, 200, 210];
+      for (const m of [n, ...n.getChildMeshes()]) {
+        if (m.material && isMesh(o.kind)) "albedoColor" in m.material ? (m.material.albedoColor = new B.Color3(c[0] / 255, c[1] / 255, c[2] / 255)) : (m.material.diffuseColor = new B.Color3(c[0] / 255, c[1] / 255, c[2] / 255));
+      }
+    }
+    for (const [id, e] of nodes) if (!seen.has(id)) {
+      e.node.dispose();
+      nodes.delete(id);
+    }
+  }, [scene, ready, assets]);
+
+  // Gizmo on the selected object; saves when a drag ends.
+  useEffect(() => {
+    const v = view.current;
+    if (!v) return;
+    const { gizmos, nodes } = v;
+    const node = selected ? nodes.get(selected)?.node : undefined;
+    const kind = scene.objects.find((o) => o.id === selected)?.kind;
+    gizmos.positionGizmoEnabled = mode === "move";
+    gizmos.rotationGizmoEnabled = mode === "rotate";
+    gizmos.scaleGizmoEnabled = mode === "scale" && !!kind && isMesh(kind);
+    gizmos.attachToNode(node ?? null);
+    for (const m of nodes.values()) for (const mesh of [m.node, ...m.node.getChildMeshes()]) mesh.showBoundingBox = false;
+    if (node) for (const mesh of [node, ...node.getChildMeshes()]) if (mesh.getTotalVertices?.() > 0) mesh.showBoundingBox = true;
+    const g = gizmos.gizmos;
+    if (g.positionGizmo) g.positionGizmo.snapDistance = snap ? 0.5 : 0;
+    if (g.rotationGizmo) {
+      g.rotationGizmo.snapDistance = snap ? 15 * D2R : 0;
+      g.rotationGizmo.updateGizmoRotationToMatchAttachedMesh = false;
+    }
+    if (g.scaleGizmo) g.scaleGizmo.snapDistance = snap ? 0.25 : 0;
+    const done = () => {
+      if (!node || !selected) return;
+      const r = node.rotationQuaternion ? node.rotationQuaternion.toEulerAngles() : node.rotation;
+      change(selected, {
+        position: [round(node.position.x), round(node.position.y), round(node.position.z)],
+        rotation: [round(r.x / D2R, 0.1), round(r.y / D2R, 0.1), round(r.z / D2R, 0.1)],
+        ...(kind && isMesh(kind) ? { scale: [round(node.scaling.x), round(node.scaling.y), round(node.scaling.z)] as Vec3 } : {}),
+      });
+    };
+    const subs = [g.positionGizmo, g.rotationGizmo, g.scaleGizmo].filter(Boolean).map((z: Any) => [z, z.onDragEndObservable.add(done)]);
+    return () => subs.forEach(([z, o]) => z.onDragEndObservable.remove(o));
+  }, [selected, mode, snap, ready, scene]);
+
+  // Jump to an object when Problems asks.
+  useEffect(() => {
+    if (focus?.file !== file) return;
+    const id = A.graphMaps.get(file)?.get(focus.line);
+    if (id) setSelected(id);
+  }, [focus, file]);
+
+  // ------------------------------------------------------------ editing
+
+  const target = (): Vec3 => {
+    const t = view.current?.camera.target;
+    return t ? [round(t.x, 0.5), 0.5, round(t.z, 0.5)] : [0, 0.5, 0];
+  };
+  const add = (kind: SceneKind, model?: string) => {
+    const s = latest();
+    const at = target();
+    const o = newObject(s, kind, kind === "plane" ? [at[0], 0, at[2]] : kind === "light" || kind === "pointlight" ? [at[0], 4, at[2]] : at, model);
+    save({ ...s, objects: [...s.objects, o] });
+    setSelected(o.id);
+  };
+  const remove = () => {
+    if (!selected) return;
+    const s = latest();
+    save({ ...s, objects: s.objects.filter((o) => o.id !== selected) });
+    setSelected(undefined);
+  };
+  const duplicate = () => {
+    const s = latest();
+    const o = s.objects.find((x) => x.id === selected);
+    if (!o) return;
+    const fresh = newObject(s, o.kind);
+    const copy: SceneObject = { ...structuredClone(o), id: fresh.id, name: fresh.name, position: [o.position[0] + 1, o.position[1], o.position[2] + 1] };
+    save({ ...s, objects: [...s.objects, copy] });
+    setSelected(copy.id);
+  };
+  const frame = () => {
+    const n = selected && view.current?.nodes.get(selected)?.node;
+    if (n) view.current!.camera.setTarget(n.getAbsolutePosition().clone());
+  };
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if ((e.target as HTMLElement).closest("input, select, textarea")) return;
+    const k = e.key.toLowerCase(), ctrl = e.ctrlKey || e.metaKey;
+    if (k === "w" && !ctrl) setMode("move");
+    else if (k === "e" && !ctrl) setMode("rotate");
+    else if (k === "r" && !ctrl) setMode("scale");
+    else if (k === "f" && !ctrl) frame();
+    else if (k === "delete" || k === "backspace") remove();
+    else if (ctrl && k === "d") duplicate();
+    else if (k === "escape") setSelected(undefined);
+    else return;
+    e.preventDefault();
+  };
+  const models = Object.keys(assets).filter((a) => /\.(glb|gltf)$/i.test(a));
+
+  return (
+    <div className="panel scene-panel" onMouseDown={() => set({ activeFile: file })} onKeyDown={onKeyDown}>
+      <div className="panel-bar vis-bar">
+        <Icon name="cube" size={15} className="vis-icon" />
+        <strong>{file}</strong>
+        <span className="muted small ellipsis">Level · build it in code with {loadFunction(file)} (after Graphics3D), then FindEntity("Name")</span>
+        <span className="grow" />
+        <div className="seg small" title="Gizmo: W move, E rotate, R scale">
+          {(["move", "rotate", "scale"] as Mode[]).map((m) => (
+            <button key={m} className={mode === m ? "on" : ""} onClick={() => setMode(m)}>{m[0].toUpperCase() + m.slice(1)}</button>
+          ))}
+        </div>
+        <label className="check small" title="Snap moves to 0.5, turns to 15° and scaling to 0.25">
+          <input type="checkbox" checked={snap} onChange={(e) => setSnap(e.target.checked)} /> Snap
+        </label>
+      </div>
+      <div className="scene-body">
+        <div className="scene-side">
+          <div className="scene-add">
+            {KINDS.filter((k) => k.kind !== "model").map((k) => (
+              <button key={k.kind} className="tool" onClick={() => add(k.kind)}>+ {k.label}</button>
+            ))}
+            {models.length > 0 && (
+              <select className="field" value="" onChange={(e) => e.target.value && add("model", e.target.value)} title="Add a model from assets/">
+                <option value="">+ Model…</option>
+                {models.map((m) => <option key={m}>{m}</option>)}
+              </select>
+            )}
+          </div>
+          <div className="list scene-list">
+            {scene.objects.map((o) => (
+              <button
+                key={o.id}
+                className={"row scene-row" + (o.id === selected ? " active" : "") + (errors.has(o.id) ? " has-error" : "")}
+                title={errors.get(o.id) ?? o.kind}
+                onClick={() => setSelected(o.id)}
+                onDoubleClick={() => { setSelected(o.id); setTimeout(frame); }}
+              >
+                <span className={`kind-dot k-${o.kind}`} />
+                <span className="ellipsis">{o.name || "(no name)"}</span>
+                {o.behaviours?.length ? <span className="muted small">{o.behaviours.join(", ")}</span> : null}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="scene-view">
+          <canvas ref={canvas} tabIndex={0} />
+          {error && <div className="graph-empty">{error}</div>}
+          <div className="scene-hint muted small">Drag to orbit · right-drag to pan · wheel to zoom · click to select · W/E/R gizmo · F frame · Ctrl+D duplicate · Del delete</div>
+        </div>
+        <div className="scene-inspector">
+          {sel ? (
+            <Inspector key={sel.id} o={sel} change={(p) => change(sel.id, p)} behaviours={behaviours} models={models} error={errors.get(sel.id)} remove={remove} duplicate={duplicate} />
+          ) : (
+            <div className="empty muted small">Select an object to edit it, or add one on the left.</div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Creates the editor's stand-in for an object. Lights and cameras get small markers. */
+function build(v: { B: Any; scene: Any }, o: SceneObject, assets: Record<string, string>): Any {
+  const { B, scene: s } = v;
+  const mat = (c: [number, number, number], emissive = false) => {
+    const m = new B.StandardMaterial("m", s);
+    m.diffuseColor = new B.Color3(...c);
+    if (emissive) m.emissiveColor = new B.Color3(...c);
+    return m;
+  };
+  let node: Any;
+  switch (o.kind) {
+    case "cube":
+      node = B.MeshBuilder.CreateBox(o.id, { size: 1 }, s);
+      node.material = mat([0.8, 0.8, 0.8]);
+      break;
+    case "sphere":
+      node = B.MeshBuilder.CreateSphere(o.id, { diameter: 1 }, s);
+      node.material = mat([0.8, 0.8, 0.8]);
+      break;
+    case "plane":
+      node = B.MeshBuilder.CreateGround(o.id, { width: 1, height: 1 }, s);
+      node.material = mat([0.8, 0.8, 0.8]);
+      node.material.backFaceCulling = false;
+      break;
+    case "light":
+    case "pointlight": {
+      node = B.MeshBuilder.CreateSphere(o.id, { diameter: 0.5 }, s);
+      node.material = mat([1, 0.85, 0.3], true);
+      if (o.kind === "light") {
+        // Shows the way a directional light shines (+Z, like the runtime's light).
+        const ray = B.MeshBuilder.CreateCylinder(o.id + "-ray", { height: 1.6, diameterTop: 0, diameterBottom: 0.25 }, s);
+        ray.rotation.x = Math.PI / 2;
+        ray.position.z = 1;
+        ray.material = node.material;
+        ray.parent = node;
+      }
+      break;
+    }
+    case "camera": {
+      node = B.MeshBuilder.CreateBox(o.id, { width: 0.6, height: 0.45, depth: 0.7 }, s);
+      node.material = mat([0.55, 0.6, 0.75]);
+      const lens = B.MeshBuilder.CreateCylinder(o.id + "-lens", { height: 0.5, diameterTop: 0.7, diameterBottom: 0.25 }, s);
+      lens.rotation.x = Math.PI / 2;
+      lens.position.z = 0.55;
+      lens.material = node.material;
+      lens.parent = node;
+      break;
+    }
+    case "model": {
+      node = new B.TransformNode(o.id, s);
+      const path = o.model ?? "", url = assets[path] ?? path;
+      B.SceneLoader.ImportMeshAsync("", "", url, s, null, path.slice(path.lastIndexOf(".")))
+        .then((r: Any) => {
+          if (node.isDisposed()) return r.meshes.forEach((m: Any) => m.dispose());
+          r.meshes[0].parent = node;
+          for (const m of r.meshes) m.metadata = { sceneId: o.id };
+        })
+        .catch(() => {
+          const box = B.MeshBuilder.CreateBox(o.id + "-missing", { size: 1 }, s);
+          box.material = mat([0.9, 0.3, 0.3]);
+          box.material.wireframe = true;
+          box.parent = node;
+          box.metadata = { sceneId: o.id };
+        });
+      break;
+    }
+  }
+  node.metadata = { sceneId: o.id };
+  for (const m of node.getChildMeshes?.() ?? []) m.metadata = { sceneId: o.id };
+  return node;
+}
+
+function Inspector({ o, change, behaviours, models, error, remove, duplicate }: {
+  o: SceneObject;
+  change: (p: Partial<SceneObject>) => void;
+  behaviours: string[];
+  models: string[];
+  error?: string;
+  remove: () => void;
+  duplicate: () => void;
+}) {
+  const vec = (label: string, key: "position" | "rotation" | "scale") => (
+    <div className="insp-row">
+      <span className="col-label">{label}</span>
+      <div className="vec">
+        {[0, 1, 2].map((i) => (
+          <Num key={i} axis={"xyz"[i]} value={o[key][i]} onChange={(n) => change({ [key]: o[key].map((x, j) => (j === i ? n : x)) as Vec3 })} />
+        ))}
+      </div>
+    </div>
+  );
+  const hex = (c: Vec3) => "#" + c.map((x) => Math.round(x).toString(16).padStart(2, "0")).join("");
+  return (
+    <div className="inspector">
+      <div className="insp-row">
+        <span className="col-label">Name</span>
+        <input className="field wide" value={o.name} spellCheck={false} onChange={(e) => change({ name: e.target.value })} title='FindEntity("…") finds the object by this name' />
+      </div>
+      <div className="muted small insp-kind">{KINDS.find((k) => k.kind === o.kind)?.label}{o.kind === "model" ? ` · ${o.model}` : ""}</div>
+      {error && <div className="node-error static">{error}</div>}
+      {vec("Position", "position")}
+      {vec("Rotation", "rotation")}
+      {isMesh(o.kind) && vec("Scale", "scale")}
+      {o.kind === "model" && (
+        <div className="insp-row">
+          <span className="col-label">Model</span>
+          <select className="field wide" value={o.model} onChange={(e) => change({ model: e.target.value })}>
+            {[...new Set([o.model ?? "", ...models])].map((m) => <option key={m}>{m}</option>)}
+          </select>
+        </div>
+      )}
+      {isMesh(o.kind) && (
+        <>
+          <div className="insp-row">
+            <span className="col-label">Color</span>
+            <input type="color" value={hex(o.color ?? [200, 200, 210])} onChange={(e) => change({ color: [1, 3, 5].map((i) => parseInt(e.target.value.slice(i, i + 2), 16)) as Vec3 })} />
+          </div>
+          <div className="insp-row">
+            <span className="col-label">Physics</span>
+            <select className="field" value={o.physics ?? "none"} onChange={(e) => change({ physics: e.target.value as SceneObject["physics"] })} title="Static: floors and walls. Dynamic: falls and gets pushed.">
+              <option value="none">None</option>
+              <option value="static">Static</option>
+              <option value="dynamic">Dynamic</option>
+            </select>
+            {o.physics === "dynamic" && <Num axis="kg" value={o.mass ?? 1} onChange={(mass) => change({ mass: Math.max(0.01, mass) })} />}
+          </div>
+        </>
+      )}
+      <div className="insp-row top">
+        <span className="col-label">Behaviours</span>
+        <div className="insp-checks">
+          {behaviours.length === 0 && <span className="muted small">Make a graph a Behaviour to attach it here.</span>}
+          {behaviours.map((b) => (
+            <label key={b} className="check small">
+              <input
+                type="checkbox"
+                checked={o.behaviours?.includes(b) ?? false}
+                onChange={(e) => change({ behaviours: e.target.checked ? [...(o.behaviours ?? []), b] : (o.behaviours ?? []).filter((x) => x !== b) })}
+              />{" "}
+              {b}
+            </label>
+          ))}
+        </div>
+      </div>
+      <div className="insp-row">
+        <button className="tool" onClick={duplicate}>Duplicate</button>
+        <button className="tool danger" onClick={remove}><Icon name="trash" size={13} /> Delete</button>
+      </div>
+    </div>
+  );
+}
+
+/** A number field that saves when you leave it or press Enter. */
+function Num({ value, onChange, axis }: { value: number; onChange: (n: number) => void; axis: string }) {
+  const [text, setText] = useState(String(value));
+  useEffect(() => setText(String(value)), [value]);
+  const commit = () => {
+    const n = Number(text);
+    if (Number.isFinite(n) && n !== value) onChange(n);
+    else setText(String(value));
+  };
+  return (
+    <label className="num">
+      <span>{axis}</span>
+      <input className="field mono" value={text} onChange={(e) => setText(e.target.value)} onBlur={commit} onKeyDown={(e) => e.key === "Enter" && commit()} />
+    </label>
+  );
+}
