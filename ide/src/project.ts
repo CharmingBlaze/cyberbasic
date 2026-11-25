@@ -6,7 +6,6 @@ import type { Project } from "./store";
 const exampleSources = import.meta.glob("../../examples/*.cb", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
 const shooterFiles = import.meta.glob("../../examples/shooter/*.cb", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
 const bouncerFiles = import.meta.glob("../../examples/bouncer/*.graph", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
-const coinsFiles = import.meta.glob("../../examples/coins/*.events", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
 const byName = (files: Record<string, string>) => Object.fromEntries(Object.entries(files).map(([path, src]) => [path.split("/").pop()!, src]));
 const exampleAssetUrls = import.meta.glob("../../examples/assets/*", { query: "?url", import: "default", eager: true }) as Record<string, string>;
 
@@ -91,13 +90,6 @@ export const TEMPLATES: Template[] = [
     description: "Made with the visual node editor: wires instead of code.",
     files: byName(bouncerFiles),
   },
-  {
-    id: "coins",
-    name: "Coin Catcher",
-    kind: "2D",
-    description: "Made only of event sheet events: no code. Move, catch coins, speed up.",
-    files: byName(coinsFiles),
-  },
   { id: "drift", name: "Drift", kind: "2D", description: "Animated sprite sheet with rotation and thrust.", files: one(example("drift")) },
   { id: "cube", name: "Spinning Cube", kind: "3D", description: "The smallest 3D program: a cube with a HUD.", files: one(example("cube")) },
   { id: "marble", name: "Marble Run", kind: "3D", description: "Havok physics, a glTF model and a follow camera.", files: one(example("marble")) },
@@ -135,18 +127,18 @@ export const fsSupported = typeof window !== "undefined" && "showDirectoryPicker
 
 export const openFolder = async () => readFolder(await window.showDirectoryPicker({ mode: "readwrite" }));
 
-/** The file that runs: main.cb or main.events, else the first one. */
-export const mainOf = (files: Record<string, string>) => ["main.cb", "main.graph", "main.events"].find((f) => f in files) ?? Object.keys(files).sort()[0];
+/** The file that runs: main.cb or main.graph, else the first one. */
+export const mainOf = (files: Record<string, string>) => ["main.cb", "main.graph"].find((f) => f in files) ?? Object.keys(files).sort()[0];
 
-/** Loads a project from a folder: its .cb and .events files plus everything under assets/. */
+/** Loads a project from a folder: its .cb and .graph files plus everything under assets/. */
 // shortcut: only .cb files directly in the folder are loaded; add subfolders if projects need them.
 export async function readFolder(dir: FileSystemDirectoryHandle): Promise<Project> {
   const files: Record<string, string> = {};
   for await (const [name, handle] of dir.entries()) {
-    if (handle.kind === "file" && /\.(cb|events|graph)$/i.test(name)) files[name] = await (await (handle as FileSystemFileHandle).getFile()).text();
+    if (handle.kind === "file" && /\.(cb|graph)$/i.test(name)) files[name] = await (await (handle as FileSystemFileHandle).getFile()).text();
   }
   const names = Object.keys(files).sort();
-  if (!names.length) throw new Error(`"${dir.name}" has no .cb, .graph or .events file`);
+  if (!names.length) throw new Error(`"${dir.name}" has no .cb or .graph file`);
   const fileName = mainOf(files);
   const assets: Record<string, string> = {};
   try {

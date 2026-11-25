@@ -1,8 +1,7 @@
 // Everything the UI can do: run/debug, project files, panels and workspaces. Menus, the command
 // palette, toolbar buttons and keyboard shortcuts all call these.
 import type { DockviewApi } from "dockview-react";
-import { compile, findCommand, loadCompiler, manifest } from "./compiler";
-import { emptySheet, eventLine, generate, parseSheet, sheetText, type LineInfo, type Sheet } from "./events";
+import { compile, loadCompiler, manifest } from "./compiler";
 import { emptyGraph, generateGraph, graphText, nodeCatalog, nodeLine, parseGraph, type Graph, type NodeDef } from "./graph";
 import { monaco, registerLanguage } from "./language";
 import { EXAMPLE_ASSETS, TEMPLATES, exportGame, fromTemplate, fsSupported, gamePage, openFolder, readFolder, saveProject, writeFile, type Template } from "./project";
@@ -59,26 +58,19 @@ export async function init() {
 function createModels(project: Project) {
   for (const m of models.values()) m.dispose();
   models.clear();
-  for (const [file, src] of Object.entries(project.files)) if (!isVisual(file)) addModel(file, src);
+  for (const [file, src] of Object.entries(project.files)) if (!isGraph(file)) addModel(file, src);
 }
 
-// ---------------------------------------------------------------- event sheets
+// ---------------------------------------------------------------- node graphs
 
-export const isSheet = (file: string) => file.toLowerCase().endsWith(".events");
+/** Node graphs are edited visually (no Monaco model) and compiled to CyberBasic. */
 export const isGraph = (file: string) => file.toLowerCase().endsWith(".graph");
-/** Files edited visually (no Monaco model): event sheets and node graphs. */
-export const isVisual = (file: string) => isSheet(file) || isGraph(file);
 /** Generated-line -> node id for each graph, and problems in the graphs' wiring, from the last build. */
 export const graphMaps = new Map<string, Map<number, string>>();
 let graphProblems: { file: string; node: string; message: string }[] = [];
 let catalog: Map<string, NodeDef> | undefined;
 export const nodeDefs = () => (catalog ??= nodeCatalog(manifest.commands));
-/** Generated-line -> event map for each sheet, from the last build. */
-export const sheetMaps = new Map<string, Map<number, LineInfo>>();
-const requiredArgs = (name: string) =>
-  (findCommand(name)?.args.split("[")[0].split(",").map((a) => a.trim()).filter(Boolean).length) ?? 0;
-
-/** The project as the compiler sees it: event sheets turned into CyberBasic. */
+/** The project as the compiler sees it: graphs turned into CyberBasic. */
 function sources() {
   const { files, fileName } = get().project;
   const out: Record<string, string> = {};
@@ -91,23 +83,16 @@ function sources() {
       out[file] = g.code;
       continue;
     }
-    if (!isSheet(file)) {
-      out[file] = text;
-      continue;
-    }
-    const g = generate(file, parseSheet(text), file === fileName, requiredArgs);
-    sheetMaps.set(file, g.map);
-    out[file] = g.code;
+    out[file] = text;
   }
   return out;
 }
 
 export const generatedCode = (file: string) => sources()[file] ?? "";
 
-export const updateSheet = (file: string, sheet: Sheet) => editVisual(file, sheetText(sheet));
 export const updateGraph = (file: string, graph: Graph) => editVisual(file, graphText(graph));
 
-// Undo history for visual files (code files use Monaco's own). Quick successive edits, like
+// Undo history for graphs (code files use Monaco's own). Quick successive edits, like
 // typing in a field, merge into one step.
 const history = new Map<string, { past: string[]; future: string[]; at: number }>();
 
@@ -130,10 +115,10 @@ function editVisual(file: string, text: string, record = true) {
   sendBreakpoints();
 }
 
-/** Undo/redo in the active visual file. Returns false when the active file isn't visual. */
+/** Undo/redo in the active graph. Returns false when the active file isn't a graph. */
 export function undoVisual(redo = false) {
   const file = get().activeFile;
-  if (!isVisual(file)) return false;
+  if (!isGraph(file)) return false;
   const h = history.get(file);
   const from = redo ? h?.future : h?.past;
   const text = from?.pop();
@@ -144,8 +129,7 @@ export function undoVisual(redo = false) {
   return true;
 }
 
-/** The event each sheet has selected, and the nodes each graph has selected, for F9. */
-export const sheetSelection = new Map<string, number>();
+/** The nodes each graph has selected, for F9. */
 export const graphSelection = new Map<string, string[]>();
 
 function addModel(file: string, src: string) {
@@ -205,26 +189,23 @@ export function openFile(file: string) {
   });
 }
 
-const validName = (name: string) => /^[\w-]+\.cb$/i.test(name);
+const validName = (name: string) => /^[\w-]+\.(cb|graph)$/i.test(name);
 
 /** Adds a file and an `Include` for it at the top of the main file, then opens it. */
 export function newFile() {
-  const input = prompt("Name of the new file: enemies.cb for code, enemies.graph for a node graph, or enemies.events for an event sheet:", "");
+  const input = prompt("Name of the new file: enemies.cb for code, or enemies.graph for a node graph:", "");
   if (!input) return;
   const name = input.trim();
-  const file = /\.(cb|events|graph)$/i.test(name) ? name : `${name}.cb`;
-  if (!validName(file)) return toast("Use letters, numbers, - or _ and end with .cb, .graph or .events", "error");
+  const file = /\.(cb|graph)$/i.test(name) ? name : `${name}.cb`;
+  if (!validName(file)) return toast("Use letters, numbers, - or _ and end with .cb or .graph", "error");
   if (Object.keys(get().project.files).some((f) => f.toLowerCase() === file.toLowerCase())) return toast(`${file} already exists`, "error");
-  const text = isGraph(file) ? graphText(emptyGraph(false)) : isSheet(file) ? sheetText(emptySheet(false)) : `' ${file}\n`;
-  if (!isVisual(file)) addModel(file, text);
+  const text = isGraph(file) ? graphText(emptyGraph(false)) : `' ${file}\n`;
+  if (!isGraph(file)) addModel(file, text);
   set((s) => ({ project: { ...s.project, files: { ...s.project.files, [file]: text } }, dirty: true }));
   const mainFile = get().project.fileName;
   if (isGraph(mainFile)) {
     const g = parseGraph(get().project.files[mainFile]);
     updateGraph(mainFile, { ...g, includes: [...g.includes, file] });
-  } else if (isSheet(mainFile)) {
-    const sheet = parseSheet(get().project.files[mainFile]);
-    updateSheet(mainFile, { ...sheet, includes: [...sheet.includes, file] });
   } else {
     // Put the Include after the main file's leading comment lines.
     const main = getModel(mainFile);
@@ -235,7 +216,7 @@ export function newFile() {
   }
   persist();
   openFile(file);
-  toast(`Created ${file} and included it from ${mainFile}${isVisual(file) && !isVisual(mainFile) ? `. Call ${isGraph(file) ? "Graph" : "Sheet"}_${file.replace(/\.\w+$/i, "").replace(/\W/g, "_")}_Frame each frame from your loop.` : ""}`, "success");
+  toast(`Created ${file} and included it from ${mainFile}${isGraph(file) && !isGraph(mainFile) ? `. Call Graph_${file.replace(/\.\w+$/i, "").replace(/\W/g, "_")}_Frame each frame from your loop.` : ""}`, "success");
 }
 
 export async function deleteFile(file: string) {
@@ -262,10 +243,6 @@ export async function deleteFile(file: string) {
     if (edits.length) m.pushEditOperations([], edits, () => null);
   }
   const mainFile = project.fileName;
-  if (isSheet(mainFile)) {
-    const sheet = parseSheet(get().project.files[mainFile]);
-    if (sheet.includes.includes(file)) updateSheet(mainFile, { ...sheet, includes: sheet.includes.filter((f) => f !== file) });
-  }
   if (isGraph(mainFile)) {
     const g = parseGraph(get().project.files[mainFile]);
     if (g.includes.includes(file)) updateGraph(mainFile, { ...g, includes: g.includes.filter((f) => f !== file) });
@@ -333,7 +310,7 @@ export const pendingReveal = new Map<string, { line: number; col: number; focus:
 
 export function revealLine(line: number, col = 1, focus = true, file = get().activeFile) {
   openFile(file);
-  if (isVisual(file)) return void set((s) => ({ sheetFocus: { file, line, n: (s.sheetFocus?.n ?? 0) + 1 } }));
+  if (isGraph(file)) return void set((s) => ({ graphFocus: { file, line, n: (s.graphFocus?.n ?? 0) + 1 } }));
   const e = editors.get(file);
   if (!e) return void pendingReveal.set(file, { line, col, focus }); // its editor mounts on the next render
   e.revealLineInCenterIfOutsideViewport(line);
@@ -350,26 +327,19 @@ const decode = (loc: number) => ({ file: get().run.files[Math.floor(loc / 1e6)] 
 const encode = (bps: Breakpoint[], files = get().run.files) =>
   bps.filter((b) => files.includes(b.file)).map((b) => files.indexOf(b.file) * 1e6 + b.line);
 
-/** Code breakpoints plus events marked as breakpoints in sheets, as runtime locations. */
+/** Code breakpoints plus nodes marked as breakpoints in graphs, as runtime locations. */
 function allBreakpoints(files = get().run.files) {
-  const fromSheets: Breakpoint[] = [];
+  const fromGraphs: Breakpoint[] = [];
   for (const [file, text] of Object.entries(get().project.files)) {
     if (isGraph(file)) {
       const map = graphMaps.get(file);
       for (const n of parseGraph(text).nodes) {
         const line = n.breakpoint && map ? nodeLine(map, n.id) : undefined;
-        if (line) fromSheets.push({ file, line });
+        if (line) fromGraphs.push({ file, line });
       }
-      continue;
-    }
-    if (!isSheet(file)) continue;
-    const map = sheetMaps.get(file);
-    for (const e of parseSheet(text).events) {
-      const line = e.breakpoint && map ? eventLine(map, e.id) : undefined;
-      if (line) fromSheets.push({ file, line });
     }
   }
-  return encode([...get().breakpoints, ...fromSheets], files);
+  return encode([...get().breakpoints, ...fromGraphs], files);
 }
 const sendBreakpoints = () => send({ type: "breakpoints", lines: allBreakpoints() });
 
@@ -473,14 +443,6 @@ export function toggleBreakpoint(line = refs.editor?.getPosition()?.lineNumber, 
     const ids = graphSelection.get(file) ?? [];
     const g = parseGraph(get().project.files[file] ?? "");
     if (ids.length) updateGraph(file, { ...g, nodes: g.nodes.map((n) => (ids.includes(n.id) ? { ...n, breakpoint: !n.breakpoint } : n)) });
-    return;
-  }
-  if (isSheet(file)) {
-    // In a sheet, F9 toggles the selected event.
-    const id = sheetSelection.get(file);
-    const sheet = parseSheet(get().project.files[file] ?? "");
-    const ev = sheet.events.find((e) => e.id === id);
-    if (ev) updateSheet(file, { ...sheet, events: sheet.events.map((e) => (e === ev ? { ...e, breakpoint: !e.breakpoint } : e)) });
     return;
   }
   if (!line) return;

@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import * as A from "./actions";
 import { canLink, graphPrefix, nextNodeId, parseGraph, type GNode, type Graph, type NodeDef, type PinDef } from "./graph";
 import { Icon } from "./icons";
-import { CodeView, Field, Variables } from "./sheet";
+import { monaco } from "./language";
 import { get, set, useStore } from "./store";
 
 // Node geometry. Rows are absolutely positioned with these numbers, so wires always meet the pins.
@@ -55,7 +55,7 @@ export function GraphPanel({ file }: { file: string }) {
   const isMain = useStore((s) => s.project.fileName === file);
   const diagnostics = useStore((s) => s.diagnostics);
   const run = useStore((s) => s.run);
-  const focus = useStore((s) => s.sheetFocus);
+  const focus = useStore((s) => s.graphFocus);
   const graph = useMemo(() => parseGraph(text), [text]);
   const defs = A.nodeDefs();
   const [mode, setMode] = useState<"graph" | "code">("graph");
@@ -312,8 +312,8 @@ export function GraphPanel({ file }: { file: string }) {
 
   return (
     <div className="panel graph-panel" onMouseDown={() => set({ activeFile: file })}>
-      <div className="panel-bar sheet-bar">
-        <Icon name="graph" size={15} className="sheet-icon" />
+      <div className="panel-bar vis-bar">
+        <Icon name="graph" size={15} className="vis-icon" />
         <strong>{file}</strong>
         <span className="muted small ellipsis">
           {isMain ? "Node graph · runs the game (Esc quits)" : `Node graph · call ${graphPrefix(file)}_Frame each frame from your code`}
@@ -512,3 +512,59 @@ function NodePalette({ defs, pending, style, pick, close }: { defs: Map<string, 
   );
 }
 
+
+// ---------------------------------------------------------------- small shared pieces
+
+/** An input that grows with its text; shows its placeholder until filled. */
+function Field({ value, placeholder, onChange, wide }: { value: string; placeholder: string; onChange: (v: string) => void; wide?: boolean }) {
+  return (
+    <input
+      className={"field mono" + (wide ? " wide" : "")}
+      value={value}
+      placeholder={placeholder}
+      size={Math.max(value.length, placeholder.length, 2)}
+      spellCheck={false}
+      onChange={(e) => onChange(e.target.value)}
+    />
+  );
+}
+
+type Vars = { name: string; value: string }[];
+
+/** The graph's variables: each becomes a Global. */
+function Variables({ variables, change }: { variables: Vars; change: (v: Vars) => void }) {
+  const setVar = (i: number, v: { name: string; value: string }) => change(variables.map((x, j) => (j === i ? v : x)));
+  return (
+    <section className="vis-vars">
+      <span className="col-label">Variables</span>
+      {variables.map((v, i) => (
+        <span key={i} className="var-chip">
+          <Field value={v.name} placeholder="name" onChange={(name) => setVar(i, { ...v, name })} />
+          <span className="muted">=</span>
+          <Field value={v.value} placeholder="0" onChange={(value) => setVar(i, { ...v, value })} />
+          <button className="row-del" title="Remove" onClick={() => change(variables.filter((_, j) => j !== i))}>
+            <Icon name="close" size={11} />
+          </button>
+        </span>
+      ))}
+      <button className="add-row" onClick={() => change([...variables, { name: "", value: "0" }])}>
+        <Icon name="plus" size={12} /> Variable
+      </button>
+    </section>
+  );
+}
+
+/** The CyberBasic a graph becomes, read only and highlighted. */
+function CodeView({ file }: { file: string }) {
+  const text = useStore((s) => s.project.files[file]);
+  const [html, setHtml] = useState("");
+  useEffect(() => {
+    monaco.editor.colorize(A.generatedCode(file), "cyberbasic", { tabSize: 4 }).then(setHtml);
+  }, [file, text]);
+  return (
+    <div className="vis-code">
+      <div className="muted small vis-code-note">Read only: this is the CyberBasic this graph becomes. Edit the graph to change it.</div>
+      <pre className="mono" dangerouslySetInnerHTML={{ __html: html }} />
+    </div>
+  );
+}

@@ -59,8 +59,8 @@ export interface State {
   breakpoints: Breakpoint[];
   /** The file in the editor that last had focus. */
   activeFile: string;
-  /** Asks an event sheet to scroll to and flash the event behind a generated line. */
-  sheetFocus?: { file: string; line: number; n: number };
+  /** Asks a graph to scroll to and flash the node behind a generated line. */
+  graphFocus?: { file: string; line: number; n: number };
   workspace: WorkspaceId;
   cursor: { line: number; col: number };
   toasts: Toast[];

@@ -8,18 +8,16 @@ import { callSnippet, monaco, signature } from "./language";
 import { TEMPLATES, fsSupported } from "./project";
 import { listRecent, type Recent } from "./recent";
 import { get, set, setSettings, useStore } from "./store";
-import { EventSheetPanel } from "./sheet";
 import { GraphPanel } from "./graphui";
 import { scan } from "./symbols";
 
 // ------------------------------------------------------------------ editor
 
-/** A file's tab: event sheets get the sheet editor, code gets Monaco. The "editor" panel shows the main file. */
+/** A file's tab: graphs get the node editor, code gets Monaco. The "editor" panel shows the main file. */
 export function FilePanel(props: IDockviewPanelProps<{ file?: string }>) {
   const main = useStore((s) => s.project.fileName);
   const file = props.params?.file ?? main;
-  if (A.isGraph(file)) return <GraphPanel key={file} file={file} />;
-  return A.isSheet(file) ? <EventSheetPanel key={file} file={file} /> : <EditorPanel key={file} {...props} />;
+  return A.isGraph(file) ? <GraphPanel key={file} file={file} /> : <EditorPanel key={file} {...props} />;
 }
 
 /** An editor for one file: the main file in the "editor" panel, others in "file:<name>" tabs. */
@@ -228,15 +226,6 @@ export function ConsolePanel() {
   );
 }
 
-/** "Event 3, action 2" for a generated line of a sheet. */
-function sheetPlace(file: string, line: number) {
-  const at = A.sheetMaps.get(file)?.get(line);
-  if (!at) return `line ${line}`;
-  const events = JSON.parse(get().project.files[file] ?? "{}").events as { id: number }[] | undefined;
-  const n = (events?.findIndex((e) => e.id === at.event) ?? -1) + 1;
-  return `Event ${n}${at.action !== undefined ? `, action ${at.action + 1}` : ""}`;
-}
-
 /** "Rect node" for a graph problem. */
 function graphPlace(file: string, node?: string) {
   const n = (JSON.parse(get().project.files[file] ?? "{}").nodes as { id: string; type: string }[] | undefined)?.find((x) => x.id === node);
@@ -255,7 +244,7 @@ export function ProblemsPanel() {
           <button key={i} className="row problem" onClick={() => A.revealLine(d.line, d.col, true, d.file)}>
             <Icon name="alert" size={15} className="err" />
             <span className="grow">{d.kind === "runtime" ? `Runtime error: ${d.message}` : d.message}</span>
-            <span className="muted mono">{A.isGraph(d.file) ? `${d.file} · ${graphPlace(d.file, d.node ?? A.graphMaps.get(d.file)?.get(d.line))}` : A.isSheet(d.file) ? `${d.file} · ${sheetPlace(d.file, d.line)}` : `${d.file}:${d.line}:${d.col}`}</span>
+            <span className="muted mono">{A.isGraph(d.file) ? `${d.file} · ${graphPlace(d.file, d.node ?? A.graphMaps.get(d.file)?.get(d.line))}` : `${d.file}:${d.line}:${d.col}`}</span>
           </button>
         ))}
       </div>
@@ -421,7 +410,7 @@ export function ProjectPanel() {
         {files.map((f) => (
           <div key={f} className={"row file nested" + (f === activeFile ? " active" : "")}>
             <button className="grow left file-open" onClick={() => A.openFile(f)}>
-              <Icon name={A.isGraph(f) ? "graph" : A.isSheet(f) ? "layout" : "code"} size={14} /> {f}
+              <Icon name={A.isGraph(f) ? "graph" : "code"} size={14} /> {f}
             </button>
             {f === project.fileName ? (
               <span className="file-badge" title="This file runs; it Includes the others">main</span>
@@ -516,8 +505,8 @@ export function OutlinePanel() {
       <div className="list outline">
         {!funcs.length && !types.length && !decls.length && (
           <div className="empty">
-            {A.isVisual(file)
-              ? "This is a visual file: its parts are on its own canvas. Open a .cb file to see its functions here."
+            {A.isGraph(file)
+              ? "This is a node graph: its parts are on its own canvas. Open a .cb file to see its functions here."
               : q
                 ? `Nothing matches “${q}”.`
                 : "Functions, Types, Globals and Consts you write show up here."}
@@ -686,7 +675,7 @@ export function Tab({ api }: IDockviewPanelHeaderProps) {
   const errors = useStore((s) => (kind === "problems" ? s.diagnostics.length : 0));
   return (
     <div className="tab" title={title}>
-      <Icon name={title?.endsWith(".graph") ? "graph" : title?.endsWith(".events") ? "layout" : TAB_ICON[kind] ?? "file"} size={14} className="tab-icon" />
+      <Icon name={title?.endsWith(".graph") ? "graph" : TAB_ICON[kind] ?? "file"} size={14} className="tab-icon" />
       <span className="tab-title">{title}</span>
       {(live === "running" || live === "paused") && <span className={"tab-live " + live} />}
       {errors > 0 && <span className="tab-count">{errors}</span>}

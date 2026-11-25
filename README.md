@@ -69,7 +69,6 @@ The app itself is `target/release/cyberbasic-ide.exe`. Linux and macOS builds us
 - **Workspaces** (Game, Code, Debug, Learn) rearrange the panels; your changes to each are remembered. *Workspace → Reset* restores the default.
 - **Popup panels**: every panel group has buttons to float it, pop it out into its own window, or maximize it.
 - **Node graphs** (visual scripting): *File → New File…* and name it `something.graph`, or start from the **Bouncer** template. Right-click or press Space to add nodes, drag from a pin to wire them (white wires set the order, blue wires carry values), and type values into unconnected inputs. Every CyberBasic command is a node. Breakpoints work on nodes, errors show on the node, and *Code* shows the CyberBasic the graph becomes.
-- **Event sheets**: make a game without code. *File → New File…* and name it `something.events` (or start from the **Coin Catcher** template). Each event is a row: conditions on the left (all must hold), actions on the right (done in order), under "When the game starts" or "Every frame". Every CyberBasic command is available, breakpoints work on events, and *Code* shows the CyberBasic the sheet becomes.
 - **Ctrl+Shift+P** opens the command palette: every action, every template, and docs for every command.
 - **File → Export Web Game** downloads one `.html` file with your game and its assets inside.
 
