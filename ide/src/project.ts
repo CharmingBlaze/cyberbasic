@@ -106,8 +106,10 @@ declare global {
 }
 export const fsSupported = typeof window !== "undefined" && "showDirectoryPicker" in window;
 
-export async function openFolder(): Promise<Project> {
-  const dir = await window.showDirectoryPicker({ mode: "readwrite" });
+export const openFolder = async () => readFolder(await window.showDirectoryPicker({ mode: "readwrite" }));
+
+/** Loads a project from a folder: its main .cb file plus everything under assets/. */
+export async function readFolder(dir: FileSystemDirectoryHandle): Promise<Project> {
   const cbFiles: string[] = [];
   for await (const [name, handle] of dir.entries()) {
     if (handle.kind === "file" && name.toLowerCase().endsWith(".cb")) cbFiles.push(name);
@@ -147,7 +149,7 @@ export async function saveProject(p: Project, saveAs = false): Promise<Project> 
   return { ...p, dir, name: dir.name };
 }
 
-async function writeFile(dir: FileSystemDirectoryHandle, path: string, data: string | Blob) {
+export async function writeFile(dir: FileSystemDirectoryHandle, path: string, data: string | Blob) {
   const parts = path.split("/");
   let d = dir;
   for (const part of parts.slice(0, -1)) d = await d.getDirectoryHandle(part, { create: true });

@@ -2,6 +2,8 @@
 import * as monaco from "./monaco";
 import EditorWorker from "monaco-editor/editor/editor.worker?worker";
 import { manifest, findCommand, type Command } from "./compiler";
+import { get } from "./store";
+import { definition, format, occurrences, scan, type Occurrence } from "./symbols";
 
 self.MonacoEnvironment = { getWorker: () => new EditorWorker() };
 
@@ -140,9 +142,87 @@ export function registerLanguage() {
         const tags = [c.category, c.returns && "returns a value", c.wait && "waits without freezing"].filter(Boolean).join(" · ");
         return { range, contents: [{ value: "```cyberbasic\n" + signature(c) + "\n```" }, { value: c.doc }, { value: `*${tags}*` }] };
       }
+      // While paused, show the variable's current value (the debugger reports names in lower case).
+      const run = get().run;
+      const value = run.state === "paused" ? run.vars?.[word.word.toLowerCase()] : undefined;
+      if (value !== undefined) {
+        return { range, contents: [{ value: "```cyberbasic\n" + word.word + " = " + value + "\n```" }, { value: `*value on line ${run.line}*` }] };
+      }
       const params = userSymbols(model.getValue()).funcs.get(word.word);
       if (params !== undefined) return { range, contents: [{ value: "```cyberbasic\nFunction " + word.word + "(" + params + ")\n```" }] };
       return null;
+    },
+  });
+
+  // --- Navigation and refactoring, built on symbols.ts
+
+  const userWord = (model: monaco.editor.ITextModel, pos: monaco.Position) => {
+    const w = model.getWordAtPosition(pos);
+    if (!w || findCommand(w.word) || manifest.keywords.includes(w.word.toLowerCase())) return null;
+    return w;
+  };
+  const toRange = (o: Occurrence) => new monaco.Range(o.line, o.col, o.line, o.col + o.length);
+
+  monaco.languages.registerDocumentSymbolProvider(LANG, {
+    provideDocumentSymbols(model) {
+      const s = scan(model.getValue());
+      const SK = monaco.languages.SymbolKind;
+      const sym = (name: string, kind: monaco.languages.SymbolKind, line: number, end = line, children: monaco.languages.DocumentSymbol[] = []) => {
+        const range = new monaco.Range(line, 1, end, model.getLineMaxColumn(end));
+        return { name, detail: "", kind, range, selectionRange: new monaco.Range(line, 1, line, model.getLineMaxColumn(line)), tags: [], children };
+      };
+      return [
+        ...s.decls.map((d) => sym(d.name, d.kind === "const" ? SK.Constant : d.kind === "array" ? SK.Array : SK.Variable, d.line)),
+        ...s.types.map((t) => sym(t.name, SK.Struct, t.line, t.endLine, t.fields.map((f) => sym(f.name, SK.Field, f.line)))),
+        ...s.funcs.map((f) => sym(`${f.name}(${f.params.join(", ")})`, SK.Function, f.line, f.endLine)),
+      ];
+    },
+  });
+
+  monaco.languages.registerDefinitionProvider(LANG, {
+    provideDefinition(model, pos) {
+      const w = userWord(model, pos);
+      const d = w && definition(model.getValue(), w.word, pos.lineNumber);
+      return d ? { uri: model.uri, range: new monaco.Range(d.line, d.col, d.line, d.col) } : null;
+    },
+  });
+
+  monaco.languages.registerReferenceProvider(LANG, {
+    provideReferences(model, pos) {
+      const w = userWord(model, pos);
+      return w ? occurrences(model.getValue(), w.word, pos.lineNumber).map((o) => ({ uri: model.uri, range: toRange(o) })) : [];
+    },
+  });
+
+  monaco.languages.registerDocumentHighlightProvider(LANG, {
+    provideDocumentHighlights(model, pos) {
+      const w = userWord(model, pos);
+      return w ? occurrences(model.getValue(), w.word, pos.lineNumber).map((o) => ({ range: toRange(o) })) : [];
+    },
+  });
+
+  monaco.languages.registerRenameProvider(LANG, {
+    resolveRenameLocation(model, pos) {
+      const w = userWord(model, pos);
+      if (!w) return { range: new monaco.Range(1, 1, 1, 1), text: "", rejectReason: "Only your own names (variables, functions, types) can be renamed." };
+      return { range: new monaco.Range(pos.lineNumber, w.startColumn, pos.lineNumber, w.endColumn), text: w.word };
+    },
+    provideRenameEdits(model, pos, newName) {
+      const w = userWord(model, pos)!;
+      if (!/^[A-Za-z_]\w*$/.test(newName)) return { edits: [], rejectReason: `“${newName}” isn't a valid name.` };
+      if (findCommand(newName) || manifest.keywords.includes(newName.toLowerCase())) return { edits: [], rejectReason: `“${newName}” is a built-in name.` };
+      const versionId = model.getVersionId();
+      return {
+        edits: occurrences(model.getValue(), w.word, pos.lineNumber).map((o) => ({ resource: model.uri, versionId, textEdit: { range: toRange(o), text: newName } })),
+      };
+    },
+  });
+
+  monaco.languages.registerDocumentFormattingEditProvider(LANG, {
+    provideDocumentFormattingEdits(model) {
+      const text = model.getValue();
+      const tidy = format(text, " ".repeat(model.getOptions().indentSize));
+      return tidy === text ? [] : [{ range: model.getFullModelRange(), text: tidy }];
     },
   });
 

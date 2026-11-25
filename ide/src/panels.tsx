@@ -6,7 +6,9 @@ import { manifest, type Command } from "./compiler";
 import { Icon, type IconName } from "./icons";
 import { callSnippet, monaco, signature } from "./language";
 import { TEMPLATES, fsSupported } from "./project";
-import { get, set, useStore } from "./store";
+import { listRecent, type Recent } from "./recent";
+import { get, set, setSettings, useStore } from "./store";
+import { scan } from "./symbols";
 
 // ------------------------------------------------------------------ editor
 
@@ -60,6 +62,16 @@ export function EditorPanel() {
     };
   }, []);
 
+  const settings = useStore((s) => s.settings);
+  useEffect(() => {
+    A.refs.editor?.updateOptions({
+      fontSize: settings.fontSize,
+      lineHeight: Math.round(settings.fontSize * 1.6),
+      minimap: { enabled: settings.minimap, renderCharacters: false },
+      wordWrap: settings.wordWrap ? "on" : "off",
+    });
+  }, [settings]);
+
   // Highlight where the debugger is paused.
   useEffect(() => {
     decorations.current?.set(
@@ -112,6 +124,13 @@ export function GamePanel() {
           <span>Run your game</span>
           <kbd>F5</kbd>
         </button>
+      )}
+      {page && (
+        <div className="game-tools">
+          <button title="Screenshot (PNG)" onClick={A.screenshot}><Icon name="image" size={14} /></button>
+          <button title="Fullscreen (Esc to leave)" onClick={A.fullscreen}><Icon name="maximize" size={14} /></button>
+          <button title="Restart" onClick={A.restart}><Icon name="restart" size={14} /></button>
+        </div>
       )}
       {state === "paused" && (
         <div className="game-badge">
@@ -295,8 +314,23 @@ export function ProjectPanel() {
   const project = useStore((s) => s.project);
   const dirty = useStore((s) => s.dirty);
   const assets = Object.keys(project.assets).sort();
+  const [dragging, setDragging] = useState(false);
+  const picker = useRef<HTMLInputElement>(null);
   return (
-    <div className="panel">
+    <div
+      className={"panel" + (dragging ? " drop-target" : "")}
+      onDragOver={(e) => {
+        if (!e.dataTransfer.types.includes("Files")) return;
+        e.preventDefault();
+        setDragging(true);
+      }}
+      onDragLeave={(e) => !e.currentTarget.contains(e.relatedTarget as Node) && setDragging(false)}
+      onDrop={(e) => {
+        e.preventDefault();
+        setDragging(false);
+        A.importAssets([...e.dataTransfer.files]);
+      }}
+    >
       <div className="project-head">
         <div className="project-name">
           <Icon name={project.dir ? "folder" : "sparkle"} size={15} />
@@ -314,7 +348,25 @@ export function ProjectPanel() {
         <button className="row file active" onClick={() => A.openPanel("editor")}>
           <Icon name="code" size={14} /> {project.fileName}
         </button>
-        {assets.length > 0 && <div className="tree-label"><Icon name="folder" size={14} /> assets</div>}
+        <div className="tree-label">
+          <Icon name="folder" size={14} /> assets
+          <span className="grow" />
+          <button className="icon-btn" title="Import images, sounds or models (or drop files here)" onClick={() => picker.current?.click()}>
+            <Icon name="plus" size={13} />
+          </button>
+          <input
+            ref={picker}
+            type="file"
+            multiple
+            hidden
+            accept=".png,.jpg,.jpeg,.gif,.svg,.webp,.ogg,.mp3,.wav,.gltf,.glb"
+            onChange={(e) => {
+              A.importAssets([...(e.target.files ?? [])]);
+              e.target.value = "";
+            }}
+          />
+        </div>
+        {assets.length === 0 && <div className="empty small">Drop images, sounds or models here.</div>}
         {assets.map((a) => (
           <button key={a} className="row file nested" onClick={() => A.openAsset(a)} title="Preview">
             <Icon name={/\.(gltf|glb)$/i.test(a) ? "cube" : /\.(png|jpe?g|gif|svg|webp)$/i.test(a) ? "image" : "file"} size={14} />
@@ -322,6 +374,7 @@ export function ProjectPanel() {
           </button>
         ))}
       </div>
+      {dragging && <div className="drop-hint"><Icon name="download" size={22} /> Drop to add to assets/</div>}
     </div>
   );
 }
@@ -346,7 +399,126 @@ export function AssetPanel({ params }: IDockviewPanelProps<{ path: string }>) {
   );
 }
 
+// ------------------------------------------------------------------ outline
+
+export function OutlinePanel() {
+  const source = useStore((s) => s.project.source);
+  const line = useStore((s) => s.cursor.line);
+  const [q, setQ] = useState("");
+  const s = useMemo(() => scan(source), [source]);
+  const hit = (n: string) => n.toLowerCase().includes(q.toLowerCase());
+  const item = (key: string, icon: IconName, name: string, at: number, end = at, detail = "") => (
+    <button key={key} className={"row sym" + (line >= at && line <= end ? " here" : "")} onClick={() => A.revealLine(at)}>
+      <Icon name={icon} size={14} className="sym-icon" />
+      <span className="grow ellipsis">
+        {name}
+        <span className="muted">{detail}</span>
+      </span>
+      <span className="muted mono small">{at}</span>
+    </button>
+  );
+  const funcs = s.funcs.filter((f) => hit(f.name));
+  const types = s.types.filter((t) => hit(t.name) || t.fields.some((f) => hit(f.name)));
+  const decls = s.decls.filter((d) => hit(d.name));
+  return (
+    <div className="panel">
+      <div className="panel-bar">
+        <div className="search">
+          <Icon name="search" size={14} />
+          <input placeholder="Filter symbols" value={q} onChange={(e) => setQ(e.target.value)} />
+        </div>
+      </div>
+      <div className="list outline">
+        {!funcs.length && !types.length && !decls.length && (
+          <div className="empty">{q ? `Nothing matches “${q}”.` : "Functions, Types, Globals and Consts you write show up here."}</div>
+        )}
+        {funcs.length > 0 && <div className="section-title">Functions</div>}
+        {funcs.map((f) => item("f" + f.line, "code", f.name, f.line, f.endLine, `(${f.params.join(", ")})`))}
+        {types.length > 0 && <div className="section-title">Types</div>}
+        {types.map((t) => (
+          <div key={"t" + t.line}>
+            {item("t" + t.line, "cube", t.name, t.line, t.endLine)}
+            {t.fields.map((f) => (
+              <div key={f.name} className="sym-field">
+                {item(f.name, "dot", f.name, f.line)}
+              </div>
+            ))}
+          </div>
+        ))}
+        {decls.length > 0 && <div className="section-title">Globals &amp; constants</div>}
+        {decls.map((d) =>
+          item("d" + d.name + d.line, d.kind === "array" ? "layout" : d.kind === "const" ? "sparkle" : "dot", d.name, d.line, d.line, d.kind === "array" ? " []" : d.kind === "const" ? " const" : ""),
+        )}
+      </div>
+      <div className="panel-foot muted small">F12 definition · Shift+F12 references · F2 rename</div>
+    </div>
+  );
+}
+
+// ------------------------------------------------------------------ settings
+
+export function SettingsPanel() {
+  const st = useStore((s) => s.settings);
+  const toggle = (key: "minimap" | "wordWrap" | "formatOnSave", label: string, hint: string) => (
+    <label className="setting">
+      <span>
+        <strong>{label}</strong>
+        <small>{hint}</small>
+      </span>
+      <input type="checkbox" className="switch" checked={st[key]} onChange={(e) => setSettings({ [key]: e.target.checked })} />
+    </label>
+  );
+  const resetLayouts = () => {
+    A.WORKSPACES.forEach((w) => localStorage.removeItem(`cyberbasic.layout.${w.id}`));
+    A.applyWorkspace(get().workspace, true);
+    A.toast("All workspace layouts reset", "success");
+  };
+  return (
+    <div className="panel settings">
+      <div className="section-title">Editor</div>
+      <label className="setting">
+        <span>
+          <strong>Font size</strong>
+          <small>{st.fontSize}px</small>
+        </span>
+        <input type="range" min={11} max={22} value={st.fontSize} onChange={(e) => setSettings({ fontSize: Number(e.target.value) })} />
+      </label>
+      {toggle("minimap", "Minimap", "Code overview on the right edge")}
+      {toggle("wordWrap", "Word wrap", "Wrap long lines instead of scrolling")}
+      {toggle("formatOnSave", "Format on save", "Fix indentation every time you save")}
+      <div className="section-title">Layout</div>
+      <div className="setting">
+        <span>
+          <strong>Reset all workspaces</strong>
+          <small>Forget your layout changes in every workspace</small>
+        </span>
+        <button className="tool" onClick={resetLayouts}>Reset</button>
+      </div>
+    </div>
+  );
+}
+
 // ------------------------------------------------------------------ start page
+
+function RecentList() {
+  const [recent, setRecent] = useState<Recent[]>([]);
+  useEffect(() => {
+    listRecent().then(setRecent);
+  }, []);
+  if (!recent.length) return null;
+  return (
+    <>
+      <h3>Recent</h3>
+      {recent.map((r) => (
+        <button key={r.name} className="action" onClick={() => A.openRecent(r)}>
+          <Icon name="folder" /> {r.name}
+          <span className="muted small recent-time">{new Date(r.time).toLocaleDateString()}</span>
+        </button>
+      ))}
+    </>
+  );
+}
+
 
 export function StartPanel() {
   return (
@@ -380,6 +552,7 @@ export function StartPanel() {
             <button className="action" onClick={() => A.openPanel("editor")}>
               <Icon name="code" /> Continue “{get().project.name}”
             </button>
+            <RecentList />
             <h3>Shortcuts</h3>
             <dl className="keys">
               {[
@@ -406,7 +579,7 @@ export function StartPanel() {
 
 const TAB_ICON: Record<string, IconName> = {
   start: "sparkle", editor: "code", game: "gamepad", console: "terminal", problems: "alert",
-  debugger: "bug", reference: "book", project: "folder", asset: "image",
+  debugger: "bug", reference: "book", project: "folder", asset: "image", outline: "layout", settings: "keyboard",
 };
 
 /** Tab with an icon and live status: unsaved dot (editor), running dot (game), error count (problems). */
@@ -450,5 +623,7 @@ export const COMPONENTS = {
   debugger: DebuggerPanel,
   reference: ReferencePanel,
   project: ProjectPanel,
+  outline: OutlinePanel,
+  settings: SettingsPanel,
   asset: AssetPanel,
 };

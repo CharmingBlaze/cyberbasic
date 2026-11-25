@@ -28,16 +28,23 @@ const COMMANDS: Cmd[] = [
   { id: "open", group: "File", label: "Open Folder…", keys: "Ctrl+O", icon: "folder", run: A.openProject, enabled: () => fsSupported },
   { id: "save", group: "File", label: "Save", keys: "Ctrl+S", icon: "save", run: () => A.save() },
   { id: "saveas", group: "File", label: "Save As…", keys: "Ctrl+Shift+S", run: () => A.save(true) },
+  { id: "import", group: "File", label: "Import Assets…", icon: "image", run: () => pickFiles() },
   { id: "export", group: "File", label: "Export Web Game…", keys: "Ctrl+Shift+E", icon: "download", run: A.exportWeb },
+  { id: "settings", group: "File", label: "Settings", keys: "Ctrl+,", icon: "keyboard", run: () => A.openPanel("settings") },
 
   { id: "undo", group: "Edit", label: "Undo", keys: "Ctrl+Z", run: () => A.editorAction("undo") },
   { id: "redo", group: "Edit", label: "Redo", keys: "Ctrl+Y", run: () => A.editorAction("redo") },
   { id: "find", group: "Edit", label: "Find", keys: "Ctrl+F", icon: "search", run: () => A.editorAction("actions.find") },
   { id: "replace", group: "Edit", label: "Replace", keys: "Ctrl+H", run: () => A.editorAction("editor.action.startFindReplaceAction") },
   { id: "comment", group: "Edit", label: "Toggle Comment", keys: "Ctrl+/", run: () => A.editorAction("editor.action.commentLine") },
+  { id: "format", group: "Edit", label: "Format Document", keys: "Shift+Alt+F", icon: "layout", run: A.formatDocument },
+  { id: "definition", group: "Edit", label: "Go to Definition", keys: "F12", run: () => A.editorAction("editor.action.revealDefinition") },
+  { id: "references", group: "Edit", label: "Find All References", keys: "Shift+F12", run: () => A.editorAction("editor.action.goToReferences") },
+  { id: "rename", group: "Edit", label: "Rename Symbol", keys: "F2", run: () => A.editorAction("editor.action.rename") },
+  { id: "symbol", group: "Edit", label: "Go to Function or Type…", keys: "Ctrl+Shift+O", run: () => A.editorAction("editor.action.quickOutline") },
   { id: "palette", group: "Edit", label: "Command Palette…", keys: "Ctrl+Shift+P", icon: "search", run: () => set({ palette: true }) },
 
-  ...(["project", "game", "console", "problems", "debugger", "reference", "start"] as A.PanelId[]).map((id) => ({
+  ...(["project", "outline", "game", "console", "problems", "debugger", "reference", "settings", "start"] as A.PanelId[]).map((id) => ({
     id: "view." + id,
     group: "View",
     label: A.PANELS[id],
@@ -72,7 +79,17 @@ const COMMANDS: Cmd[] = [
   { id: "help.repo", group: "Help", label: "CyberBasic on GitHub", icon: "external", run: () => window.open("https://github.com/CharmingBlaze/cyberbasic", "_blank", "noopener") },
 ];
 const MENUS = ["File", "Edit", "View", "Run", "Debug", "Workspace", "Help"];
-const SEPARATE_BEFORE = new Set(["export", "find", "palette", "restart", "bp", "ws.reset", "help.repo", "view.start"]);
+const SEPARATE_BEFORE = new Set(["import", "settings", "find", "format", "definition", "palette", "restart", "bp", "ws.reset", "help.repo", "view.start"]);
+
+/** Opens the system file picker for assets (menus and the palette can't render an <input>). */
+function pickFiles() {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.multiple = true;
+  input.accept = ".png,.jpg,.jpeg,.gif,.svg,.webp,.ogg,.mp3,.wav,.gltf,.glb";
+  input.onchange = () => A.importAssets([...(input.files ?? [])]);
+  input.click();
+}
 
 // ------------------------------------------------------------------ app
 
@@ -421,6 +438,7 @@ function useShortcuts() {
         "Ctrl+O": A.openProject,
         "Ctrl+N": A.newProject,
         "Ctrl+Shift+E": A.exportWeb,
+        "Ctrl+,": () => A.openPanel("settings"),
         "Ctrl+Shift+P": () => set({ palette: !get().palette }),
         "Ctrl+K": () => set({ palette: !get().palette }),
         ...Object.fromEntries(A.WORKSPACES.map((w, i) => [`Ctrl+${i + 1}`, () => A.applyWorkspace(w.id)])),

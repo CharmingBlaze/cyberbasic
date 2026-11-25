@@ -17,6 +17,26 @@ export interface Diagnostic { line: number; col: number; message: string; kind: 
 export interface LogEntry { id: number; kind: "log" | "error" | "info"; text: string; line?: number; time: string }
 export interface Toast { id: number; text: string; kind: "info" | "error" | "success" }
 
+export interface Settings {
+  fontSize: number;
+  minimap: boolean;
+  wordWrap: boolean;
+  formatOnSave: boolean;
+}
+const SETTINGS_KEY = "cyberbasic.settings";
+const DEFAULT_SETTINGS: Settings = { fontSize: 14, minimap: true, wordWrap: false, formatOnSave: false };
+const loadSettings = (): Settings => {
+  try {
+    return { ...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}") };
+  } catch {
+    return DEFAULT_SETTINGS;
+  }
+};
+export function setSettings(patch: Partial<Settings>) {
+  set((s) => ({ settings: { ...s.settings, ...patch } }));
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(state.settings));
+}
+
 export interface State {
   ready: boolean;
   project: Project;
@@ -38,6 +58,7 @@ export interface State {
   toasts: Toast[];
   palette: boolean;
   referenceFilter: string;
+  settings: Settings;
 }
 
 let state: State = {
@@ -53,6 +74,7 @@ let state: State = {
   toasts: [],
   palette: false,
   referenceFilter: "",
+  settings: typeof localStorage === "undefined" ? DEFAULT_SETTINGS : loadSettings(),
 };
 
 const listeners = new Set<() => void>();

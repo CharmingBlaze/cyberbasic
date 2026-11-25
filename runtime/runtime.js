@@ -105,7 +105,7 @@ const CB = (() => {
       const c3 = canvas(w, h);
       box.append(c3);
       c2.style.cssText += ";position:absolute;inset:0;pointer-events:none";
-      engine = new B.Engine(c3, true);
+      engine = new B.Engine(c3, true, { preserveDrawingBuffer: !!ide }); // lets the IDE take screenshots
       scene = new B.Scene(engine);
       scene.clearColor = new B.Color4(0.05, 0.05, 0.08, 1);
       ambient = new B.HemisphericLight("ambient", V(0, 1, 0), scene);

@@ -3,7 +3,9 @@
 import type { DockviewApi } from "dockview-react";
 import { compile, loadCompiler } from "./compiler";
 import { monaco, registerLanguage } from "./language";
-import { EXAMPLE_ASSETS, TEMPLATES, exportGame, fromTemplate, fsSupported, gamePage, openFolder, saveProject, type Template } from "./project";
+import { EXAMPLE_ASSETS, TEMPLATES, exportGame, fromTemplate, fsSupported, gamePage, openFolder, readFolder, saveProject, writeFile, type Template } from "./project";
+import { addRecent, removeRecent, type Recent } from "./recent";
+import { format } from "./symbols";
 import { get, set, type Project, type WorkspaceId } from "./store";
 
 export const refs: {
@@ -259,16 +261,74 @@ export async function openProject() {
   try {
     const p = await openFolder();
     loadProject(p);
+    if (p.dir) addRecent(p.dir);
     toast(`Opened ${p.name}`, "success");
   } catch (e) {
     if ((e as Error).name !== "AbortError") toast((e as Error).message, "error");
   }
 }
 
+export async function openRecent(r: Recent) {
+  try {
+    // Browsers ask again for access to a folder after a restart; this must run from a click.
+    const handle = r.handle as FileSystemDirectoryHandle & { requestPermission(o: { mode: string }): Promise<PermissionState> };
+    if ((await handle.requestPermission({ mode: "readwrite" })) !== "granted") return toast(`No access to ${r.name}`, "error");
+    const p = await readFolder(r.handle);
+    loadProject(p);
+    addRecent(r.handle);
+    toast(`Opened ${p.name}`, "success");
+  } catch (e) {
+    toast(`Couldn't open ${r.name}: ${(e as Error).message}`, "error");
+    removeRecent(r.name);
+  }
+}
+
+/** Adds image, sound and model files to the project's assets/ folder (on disk too, when linked). */
+export async function importAssets(files: File[]) {
+  const ok = files.filter((f) => /\.(png|jpe?g|gif|svg|webp|ogg|mp3|wav|gltf|glb)$/i.test(f.name));
+  if (!ok.length) return toast("Drop images (png, jpg, svg), sounds (ogg, mp3, wav) or models (gltf, glb).", "error");
+  const { project } = get();
+  const assets = { ...project.assets };
+  for (const f of ok) {
+    const path = `assets/${f.name}`;
+    assets[path] = URL.createObjectURL(f);
+    if (project.dir) await writeFile(project.dir, path, f);
+  }
+  set((s) => ({ project: { ...s.project, assets } }));
+  toast(`Added ${ok.map((f) => f.name).join(", ")}${project.dir ? "" : " (saved with the project)"}`, "success");
+}
+
+export function formatDocument() {
+  const text = model.getValue();
+  const tidy = format(text, " ".repeat(model.getOptions().indentSize));
+  if (tidy !== text) model.pushEditOperations([], [{ range: model.getFullModelRange(), text: tidy }], () => null);
+}
+
+/** PNG of the game as it looks now (3D view plus 2D/HUD layer). */
+export function screenshot() {
+  const doc = refs.frame?.contentDocument;
+  const canvases = [...(doc?.querySelectorAll("canvas") ?? [])];
+  if (!canvases.length) return toast("Run the game first, then take a screenshot.", "error");
+  const out = document.createElement("canvas");
+  out.width = canvases[0].width;
+  out.height = canvases[0].height;
+  const ctx = out.getContext("2d")!;
+  for (const c of canvases) ctx.drawImage(c, 0, 0);
+  const a = document.createElement("a");
+  a.href = out.toDataURL("image/png");
+  a.download = `${get().project.name.replace(/[^\w-]+/g, "-").toLowerCase()}-${Date.now()}.png`;
+  a.click();
+  toast("Screenshot saved", "success");
+}
+
+export const fullscreen = () => refs.frame?.requestFullscreen().catch(() => toast("Fullscreen isn't available here.", "error"));
+
 export async function save(saveAs = false) {
+  if (get().settings.formatOnSave) formatDocument();
   try {
     const p = await saveProject(get().project, saveAs);
     set({ project: p, dirty: false });
+    if (p.dir) addRecent(p.dir);
     persist();
     toast(p.dir ? `Saved to ${p.dir.name}/${p.fileName}` : `Downloaded ${p.fileName}`, "success");
     if (get().run.state === "running" || get().run.state === "paused") restart(); // save = see it
@@ -310,6 +370,8 @@ export const PANELS = {
   debugger: "Debugger",
   reference: "Reference",
   project: "Project",
+  outline: "Outline",
+  settings: "Settings",
 } as const;
 export type PanelId = keyof typeof PANELS;
 
@@ -347,6 +409,7 @@ const PRESETS: Record<WorkspaceId, () => void> = {
     add("editor");
     add("game", { ref: "editor", dir: "right", size: Math.round(window.innerWidth * 0.42) });
     add("project", { ref: "editor", dir: "left", size: 240 });
+    add("outline", { ref: "project", dir: "within" });
     add("console", { ref: "editor", dir: "below", size: 190 });
     add("problems", { ref: "console", dir: "within" });
     add("debugger", { ref: "console", dir: "within" });
@@ -355,6 +418,7 @@ const PRESETS: Record<WorkspaceId, () => void> = {
     add("editor");
     add("reference", { ref: "editor", dir: "right", size: 340 });
     add("project", { ref: "editor", dir: "left", size: 240 });
+    add("outline", { ref: "project", dir: "below", size: Math.round(window.innerHeight * 0.45) });
     add("console", { ref: "editor", dir: "below", size: 170 });
     add("problems", { ref: "console", dir: "within" });
     // Float the game in the editor's bottom-right corner, above the console, clear of the code.
@@ -428,8 +492,10 @@ export function openPanel(id: PanelId, { focus = true } = {}) {
     api.getPanel(id)?.api.setActive();
     return;
   }
+  // Tool windows open in the bottom-right corner, cascading so they don't cover each other or the code.
   const w = id === "game" ? 520 : 380, h = id === "game" ? 340 : 320;
-  add(id, "float", { x: Math.max(20, window.innerWidth / 2 - w / 2), y: Math.max(60, window.innerHeight / 2 - h / 2 - 40), width: w, height: h });
+  const n = api.groups.filter((g) => g.api.location.type === "floating").length;
+  add(id, "float", { x: Math.max(20, window.innerWidth - w - 40 - n * 36), y: Math.max(60, window.innerHeight - h - 80 - n * 36), width: w, height: h });
 }
 
 export function togglePanel(id: PanelId) {

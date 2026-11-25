@@ -7,7 +7,8 @@
     "wasm": "cargo build --release -p cyberbasic --lib --target wasm32-unknown-unknown",
     "dev": "npm run wasm && vite",
     "build": "npm run wasm && tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node --test src/*.test.ts"
   },
   "dependencies": {
     "dockview-react": "^8.9.1",
