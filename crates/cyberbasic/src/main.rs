@@ -43,6 +43,18 @@ fn main() {
     write("index.html", cyberbasic_core::INDEX_HTML);
     write("runtime.js", cyberbasic_core::RUNTIME_JS);
     write("game.js", &js);
+    // The engine libraries, so the game runs without internet.
+    let lib = out.join("lib");
+    fs::create_dir_all(&lib).unwrap_or_else(|e| die(&format!("cannot create {}: {e}", lib.display())));
+    for (name, bytes) in cyberbasic_core::LIB_FILES {
+        fs::write(lib.join(name), bytes).unwrap_or_else(|e| die(&format!("cannot write {}: {e}", lib.join(name).display())));
+        if name.ends_with(".wasm") {
+            // Opened from disk (file://), a page can't fetch a .wasm but can load a script.
+            let js = format!("CB_HAVOK_WASM=\"{}\";
+", cyberbasic_core::model::base64(bytes));
+            fs::write(lib.join(format!("{name}.js")), js).unwrap_or_else(|e| die(&format!("cannot write lib: {e}")));
+        }
+    }
     let assets = Path::new(file).parent().unwrap_or(Path::new(".")).join("assets");
     if assets.is_dir() {
         copy_dir(&assets, &out.join("assets")).unwrap_or_else(|e| die(&format!("cannot copy assets: {e}")));

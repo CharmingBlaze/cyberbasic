@@ -5,7 +5,7 @@
 "use strict";
 if (typeof BABYLON === "undefined") {
   document.body.insertAdjacentHTML("beforeend",
-    '<pre class="cb-msg err">Babylon.js failed to load. Games load it from cdn.babylonjs.com, so they need internet.</pre>');
+    '<pre class="cb-msg err">Babylon.js failed to load: lib/babylon.js is missing next to this page (and cdn.babylonjs.com couldn\'t be reached).</pre>');
   throw new Error("Babylon.js not loaded");
 }
 
@@ -151,20 +151,28 @@ const CB = (() => {
     return value;
   }
 
-  // Optional engine parts load only when a game first uses them, so plain games stay small.
-  const CDN = "https://cdn.babylonjs.com/";
+  // Optional engine parts load only when a game first uses them, so plain games stay small. They
+  // come from the game's lib/ folder (CB_LIBS maps names to URLs in the IDE and single-file
+  // exports), falling back to Babylon's CDN for pages built without one.
+  const CDN = { "babylonjs.loaders.min.js": "https://cdn.babylonjs.com/loaders/", "HavokPhysics_umd.js": "https://cdn.babylonjs.com/havok/", "HavokPhysics.wasm": "https://cdn.babylonjs.com/havok/", "HavokPhysics.wasm.js": "" };
+  const libUrl = (name) => globalThis.CB_LIBS?.[name] ?? "lib/" + name;
   const scripts = new Map();
-  function* script(url) {
-    if (!scripts.has(url)) {
-      scripts.set(url, new Promise((ok, fail) => {
-        const s = document.createElement("script");
-        s.onload = ok;
-        s.onerror = () => fail(new Error(`could not load ${url} (games need internet for now)`));
-        s.src = url;
-        document.head.append(s);
+  const loadScript = (url) => new Promise((ok, fail) => {
+    const s = document.createElement("script");
+    s.onload = ok;
+    s.onerror = () => { s.remove(); fail(new Error(`could not load ${url}`)); };
+    s.src = url;
+    document.head.append(s);
+  });
+  let fromCdn = false; // set once a library had to come from the CDN; its siblings then do too
+  function* library(name) {
+    if (!scripts.has(name)) {
+      scripts.set(name, loadScript(libUrl(name)).catch(() => {
+        fromCdn = true;
+        return loadScript(CDN[name] + name).catch(() => { throw new Error(`could not load ${name}: it isn't in lib/ next to the game, and the internet isn't reachable`); });
       }));
     }
-    yield* settle(scripts.get(url));
+    yield* settle(scripts.get(name));
   }
 
   const body = (e) => {
@@ -485,7 +493,7 @@ const CB = (() => {
     // Loads a .glb/.gltf model. Returns a node you can move like any entity.
     *LoadMesh(path) {
       need3d();
-      yield* script(CDN + "loaders/babylonjs.loaders.min.js");
+      yield* library("babylonjs.loaders.min.js");
       const p = String(path), url = asset(p), cut = p.lastIndexOf("/") + 1;
       const result = yield* settle(url === p
         ? B.SceneLoader.ImportMeshAsync("", p.slice(0, cut), p.slice(cut), scene)
@@ -514,8 +522,20 @@ const CB = (() => {
     *EnablePhysics(gx = 0, gy = -9.81, gz = 0) {
       need3d();
       if (scene.isPhysicsEnabled()) return;
-      yield* script(CDN + "havok/HavokPhysics_umd.js");
-      const havok = yield* settle(HavokPhysics());
+      yield* library("HavokPhysics_umd.js");
+      const cdnWasm = CDN["HavokPhysics.wasm"] + "HavokPhysics.wasm";
+      let havok;
+      try {
+        havok = yield* settle(HavokPhysics({ locateFile: () => (fromCdn ? cdnWasm : libUrl("HavokPhysics.wasm")) }));
+      } catch {
+        try {
+          // Pages opened from disk (file://) can't fetch a .wasm; lib/HavokPhysics.wasm.js carries it as base64.
+          yield* library("HavokPhysics.wasm.js");
+          havok = yield* settle(HavokPhysics({ wasmBinary: Uint8Array.from(atob(globalThis.CB_HAVOK_WASM), (c) => c.charCodeAt(0)) }));
+        } catch {
+          havok = yield* settle(HavokPhysics({ locateFile: () => cdnWasm }));
+        }
+      }
       scene.enablePhysics(V(gx, gy, gz), new B.HavokPlugin(true, havok));
     },
     // mass 0 = static (floors, walls). Spheres get a sphere shape, everything else a box.

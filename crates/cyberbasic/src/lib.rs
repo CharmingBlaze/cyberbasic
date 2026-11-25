@@ -14,6 +14,14 @@ mod wasm;
 /// Runtime and page template, embedded so the CLI is a single self-contained binary.
 pub const RUNTIME_JS: &str = include_str!("../../../runtime/runtime.js");
 pub const INDEX_HTML: &str = include_str!("../../../runtime/index.html");
+/// The engine libraries (Babylon.js, its glTF loaders, Havok physics), written to a build's lib/
+/// folder so games run offline. Refresh them with `npm run lib` in ide/.
+pub const LIB_FILES: &[(&str, &[u8])] = &[
+    ("babylon.js", include_bytes!("../../../runtime/lib/babylon.js")),
+    ("babylonjs.loaders.min.js", include_bytes!("../../../runtime/lib/babylonjs.loaders.min.js")),
+    ("HavokPhysics_umd.js", include_bytes!("../../../runtime/lib/HavokPhysics_umd.js")),
+    ("HavokPhysics.wasm", include_bytes!("../../../runtime/lib/HavokPhysics.wasm")),
+];
 
 #[derive(Debug, PartialEq)]
 pub struct Error {

@@ -1,0 +1,2 @@
+# Vendored engine libraries: keep them byte-for-byte as published.
+runtime/lib/** -text

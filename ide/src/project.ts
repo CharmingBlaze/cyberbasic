@@ -1,6 +1,7 @@
 // Projects: templates, building the game page, and folders on disk (File System Access API).
 import runtimeJs from "../../runtime/runtime.js?raw";
 import pageTemplate from "../../runtime/index.html?raw";
+import { LIB_URLS } from "./libs";
 import type { Project } from "./store";
 
 const exampleSources = import.meta.glob("../../examples/*.cb", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
@@ -145,11 +146,16 @@ export const fromTemplate = (t: Template): Project => ({
 const json = (v: unknown) => JSON.stringify(v).replace(/</g, "\\u003c");
 const inline = (s: string) => s.replaceAll("</script", "<\\/script");
 
-/** A complete, self-contained HTML page that runs compiled game code. */
-export function gamePage(js: string, opts: { assets: Record<string, string>; breakpoints?: number[]; title?: string }) {
-  const config = `<script>CB_FIT=true;CB_ASSETS=${json(opts.assets)};CB_BREAKPOINTS=${json(opts.breakpoints ?? [])};</script>`;
+/**
+ * A complete HTML page that runs compiled game code. The engine libraries come from `libs`
+ * (name -> URL; the IDE's own copies by default); `babylon` inlines Babylon.js instead.
+ */
+export function gamePage(js: string, opts: { assets: Record<string, string>; breakpoints?: number[]; title?: string; libs?: Record<string, string>; babylon?: string }) {
+  const libs = opts.libs ?? LIB_URLS;
+  const config = `<script>CB_FIT=true;CB_ASSETS=${json(opts.assets)};CB_BREAKPOINTS=${json(opts.breakpoints ?? [])};CB_LIBS=${json(libs)};</script>`;
   let page = pageTemplate
     .replace('<meta charset="utf-8">', (m) => m + config)
+    .replace('<script src="lib/babylon.js"></script>', () => (opts.babylon ? `<script>${inline(opts.babylon)}</script>` : `<script src="${libs["babylon.js"]}"></script>`))
     .replace('<script src="runtime.js"></script>', () => `<script>${inline(runtimeJs)}</script>`)
     .replace('<script src="game.js"></script>', () => `<script>${inline(js)}</script>`);
   if (opts.title) page = page.replace("<title>CyberBasic</title>", () => `<title>${opts.title!.replace(/[<&]/g, "")}</title>`);
@@ -223,12 +229,23 @@ export async function writeFile(dir: FileSystemDirectoryHandle, path: string, da
 
 const usedAssets = (p: Project) => Object.entries(p.assets).filter(([path]) => Object.values(p.files).some((src) => src.includes(path)));
 
-/** Downloads the game as one HTML file with the runtime and every used asset embedded. */
+/**
+ * Downloads the game as one HTML file that runs offline: the runtime, Babylon.js, every used asset
+ * and, only if the game uses them, the glTF loaders and Havok physics are embedded.
+ */
 export async function exportGame(p: Project, js: string) {
   const assets: Record<string, string> = {};
   for (const [path, url] of usedAssets(p)) assets[path] = await dataUrl(await (await fetch(url)).blob());
+  const libs: Record<string, string> = {};
+  const embed = async (name: string, type: string) => (libs[name] = await dataUrl(new Blob([await (await fetch(LIB_URLS[name])).arrayBuffer()], { type })));
+  if (js.includes("CB.LoadMesh(")) await embed("babylonjs.loaders.min.js", "text/javascript");
+  if (js.includes("CB.EnablePhysics(")) {
+    await embed("HavokPhysics_umd.js", "text/javascript");
+    await embed("HavokPhysics.wasm", "application/wasm");
+  }
+  const babylon = await (await fetch(LIB_URLS["babylon.js"])).text();
   const file = `${p.name.replace(/[^\w-]+/g, "-").replace(/^-|-$/g, "").toLowerCase() || "game"}.html`;
-  download(file, gamePage(js, { assets, title: p.name }), "text/html");
+  download(file, gamePage(js, { assets, title: p.name, libs, babylon }), "text/html");
   return file;
 }
 

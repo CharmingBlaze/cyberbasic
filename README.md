@@ -39,7 +39,7 @@ This compiles `examples/pong.cb` into `examples/build/pong/` and opens it. Use `
 
 Projects made with nodes build the same way: `cargo run --release -- run examples/behaviours/main.graph`. The main file's folder is the project, so graphs and code in it can call each other's functions.
 
-> Games load Babylon.js from its CDN, so for now they need an internet connection.
+Games work offline: builds include a `lib/` folder with Babylon.js, its glTF loaders and Havok physics (the CLI carries them inside it). To update those libraries, run `npm run lib` in `ide/` after updating the `babylonjs`, `babylonjs-loaders` and `@babylonjs/havok` packages.
 
 ### IDE
 
@@ -77,7 +77,7 @@ The app itself is `target/release/cyberbasic-ide.exe`. Linux and macOS builds us
 - **Modeller**: *File → New File…* and name it `hero.model` (it starts as a little robot), or try the **Robot (3D)** template. Build models from boxes, spheres, cylinders and cones hung from **joints** (invisible pivots: shoulders, hips) so parts turn around them. Switch to **Animate** to make clips: pick a time on the timeline and pose parts; each pose becomes a key (◆), and Play previews it. In code, `hero = CreateModel_Hero()` makes one (or place it in a level), `AnimateEntity hero, "walk"` plays a clip, `StopAnimating` and `EntityAnimation(hero)` too. `AnimateEntity` also plays the animations glTF models come with.
 - **Canvas tools**: Ctrl+C / Ctrl+X / Ctrl+V copy nodes (with the wires between them) and paste at the mouse, also into another graph; Ctrl+D duplicates. **C** (or the *Comment* button) puts a comment box around the selected nodes: drag its title to move it with everything inside, double-click to rename, drag the corner to resize.
 - **Ctrl+Shift+P** opens the command palette: every action, every template, and docs for every command.
-- **File → Export Web Game** downloads one `.html` file with your game and its assets inside.
+- **File → Export Web Game** downloads one `.html` file with your game, its assets and the engine inside, so it runs offline (about 10 MB; games that use physics or glTF models add those parts too).
 
 ### Playground
 

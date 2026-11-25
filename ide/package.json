@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test": "node --test src/*.test.ts",
     "desktop": "tauri build",
-    "desktop:dev": "tauri dev"
+    "desktop:dev": "tauri dev",
+    "lib": "node scripts/copy-lib.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.12.5",
@@ -20,10 +21,13 @@
     "react-dom": "^19.3.1"
   },
   "devDependencies": {
+    "@babylonjs/havok": "1.3.14",
     "@tauri-apps/cli": "^2.12.6",
     "@types/react": "^19.3.1",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.3.0",
+    "babylonjs": "9.37.2",
+    "babylonjs-loaders": "9.37.2",
     "typescript": "^7.0.2",
     "vite": "^8.3.8"
   }

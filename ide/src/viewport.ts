@@ -1,8 +1,9 @@
-// The 3D view shared by the level editor and the modeller: Babylon from the CDN, an orbit camera,
+// The 3D view shared by the level editor and the modeller: Babylon (the IDE's own copy), an orbit camera,
 // a ground grid, click-to-select and move/rotate/scale gizmos.
 import { useEffect, useRef, useState, type RefObject } from "react";
+import { LIB_URLS } from "./libs";
 
-// shortcut: Babylon is untyped here (loaded from the CDN like the games, not bundled); type it if the editors grow.
+// shortcut: Babylon is untyped here (loaded as a script like the games, not bundled); type it if the editors grow.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Any = any;
 export type GizmoMode = "move" | "rotate" | "scale";
@@ -10,7 +11,6 @@ export const D2R = Math.PI / 180;
 export const round = (n: number, step = 1e-3) => Math.round(n / step) * step;
 export type Vec3 = [number, number, number];
 
-const CDN = "https://cdn.babylonjs.com/";
 const scripts = new Map<string, Promise<void>>();
 function script(url: string) {
   if (!scripts.has(url)) {
@@ -20,7 +20,7 @@ function script(url: string) {
         const s = document.createElement("script");
         s.src = url;
         s.onload = () => ok();
-        s.onerror = () => fail(new Error(`Couldn't load ${url} (the 3D editors need internet for now)`));
+        s.onerror = () => fail(new Error(`Couldn't load ${url}`));
         document.head.append(s);
       }),
     );
@@ -45,8 +45,8 @@ export function useViewport(canvas: RefObject<HTMLCanvasElement | null>, onPick:
     let disposed = false, observer: ResizeObserver | undefined;
     (async () => {
       try {
-        await script(CDN + "babylon.js");
-        await script(CDN + "loaders/babylonjs.loaders.min.js");
+        await script(LIB_URLS["babylon.js"]);
+        await script(LIB_URLS["babylonjs.loaders.min.js"]);
       } catch (e) {
         return setError((e as Error).message);
       }
