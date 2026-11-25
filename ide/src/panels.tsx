@@ -9,6 +9,7 @@ import { TEMPLATES, fsSupported } from "./project";
 import { listRecent, type Recent } from "./recent";
 import { get, set, setSettings, useStore } from "./store";
 import { EventSheetPanel } from "./sheet";
+import { GraphPanel } from "./graphui";
 import { scan } from "./symbols";
 
 // ------------------------------------------------------------------ editor
@@ -17,6 +18,7 @@ import { scan } from "./symbols";
 export function FilePanel(props: IDockviewPanelProps<{ file?: string }>) {
   const main = useStore((s) => s.project.fileName);
   const file = props.params?.file ?? main;
+  if (A.isGraph(file)) return <GraphPanel key={file} file={file} />;
   return A.isSheet(file) ? <EventSheetPanel key={file} file={file} /> : <EditorPanel key={file} {...props} />;
 }
 
@@ -235,6 +237,12 @@ function sheetPlace(file: string, line: number) {
   return `Event ${n}${at.action !== undefined ? `, action ${at.action + 1}` : ""}`;
 }
 
+/** "Rect node" for a graph problem. */
+function graphPlace(file: string, node?: string) {
+  const n = (JSON.parse(get().project.files[file] ?? "{}").nodes as { id: string; type: string }[] | undefined)?.find((x) => x.id === node);
+  return n ? `${A.nodeDefs().get(n.type)?.title ?? n.type} node` : "graph";
+}
+
 export function ProblemsPanel() {
   const diags = useStore((s) => s.diagnostics);
   return (
@@ -247,7 +255,7 @@ export function ProblemsPanel() {
           <button key={i} className="row problem" onClick={() => A.revealLine(d.line, d.col, true, d.file)}>
             <Icon name="alert" size={15} className="err" />
             <span className="grow">{d.kind === "runtime" ? `Runtime error: ${d.message}` : d.message}</span>
-            <span className="muted mono">{A.isSheet(d.file) ? `${d.file} · ${sheetPlace(d.file, d.line)}` : `${d.file}:${d.line}:${d.col}`}</span>
+            <span className="muted mono">{A.isGraph(d.file) ? `${d.file} · ${graphPlace(d.file, d.node ?? A.graphMaps.get(d.file)?.get(d.line))}` : A.isSheet(d.file) ? `${d.file} · ${sheetPlace(d.file, d.line)}` : `${d.file}:${d.line}:${d.col}`}</span>
           </button>
         ))}
       </div>
@@ -413,7 +421,7 @@ export function ProjectPanel() {
         {files.map((f) => (
           <div key={f} className={"row file nested" + (f === activeFile ? " active" : "")}>
             <button className="grow left file-open" onClick={() => A.openFile(f)}>
-              <Icon name={A.isSheet(f) ? "layout" : "code"} size={14} /> {f}
+              <Icon name={A.isGraph(f) ? "graph" : A.isSheet(f) ? "layout" : "code"} size={14} /> {f}
             </button>
             {f === project.fileName ? (
               <span className="file-badge" title="This file runs; it Includes the others">main</span>
@@ -508,8 +516,8 @@ export function OutlinePanel() {
       <div className="list outline">
         {!funcs.length && !types.length && !decls.length && (
           <div className="empty">
-            {A.isSheet(file)
-              ? "This is an event sheet: its events are listed in the sheet. Open a .cb file to see its functions here."
+            {A.isVisual(file)
+              ? "This is a visual file: its parts are on its own canvas. Open a .cb file to see its functions here."
               : q
                 ? `Nothing matches “${q}”.`
                 : "Functions, Types, Globals and Consts you write show up here."}
@@ -678,7 +686,7 @@ export function Tab({ api }: IDockviewPanelHeaderProps) {
   const errors = useStore((s) => (kind === "problems" ? s.diagnostics.length : 0));
   return (
     <div className="tab" title={title}>
-      <Icon name={title?.endsWith(".events") ? "layout" : TAB_ICON[kind] ?? "file"} size={14} className="tab-icon" />
+      <Icon name={title?.endsWith(".graph") ? "graph" : title?.endsWith(".events") ? "layout" : TAB_ICON[kind] ?? "file"} size={14} className="tab-icon" />
       <span className="tab-title">{title}</span>
       {(live === "running" || live === "paused") && <span className={"tab-live " + live} />}
       {errors > 0 && <span className="tab-count">{errors}</span>}

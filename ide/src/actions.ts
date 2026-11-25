@@ -1,8 +1,9 @@
 // Everything the UI can do: run/debug, project files, panels and workspaces. Menus, the command
 // palette, toolbar buttons and keyboard shortcuts all call these.
 import type { DockviewApi } from "dockview-react";
-import { compile, findCommand, loadCompiler } from "./compiler";
+import { compile, findCommand, loadCompiler, manifest } from "./compiler";
 import { emptySheet, eventLine, generate, parseSheet, sheetText, type LineInfo, type Sheet } from "./events";
+import { emptyGraph, generateGraph, graphText, nodeCatalog, nodeLine, parseGraph, type Graph, type NodeDef } from "./graph";
 import { monaco, registerLanguage } from "./language";
 import { EXAMPLE_ASSETS, TEMPLATES, exportGame, fromTemplate, fsSupported, gamePage, openFolder, readFolder, saveProject, writeFile, type Template } from "./project";
 import { addRecent, removeRecent, type Recent } from "./recent";
@@ -58,12 +59,20 @@ export async function init() {
 function createModels(project: Project) {
   for (const m of models.values()) m.dispose();
   models.clear();
-  for (const [file, src] of Object.entries(project.files)) if (!isSheet(file)) addModel(file, src);
+  for (const [file, src] of Object.entries(project.files)) if (!isVisual(file)) addModel(file, src);
 }
 
 // ---------------------------------------------------------------- event sheets
 
 export const isSheet = (file: string) => file.toLowerCase().endsWith(".events");
+export const isGraph = (file: string) => file.toLowerCase().endsWith(".graph");
+/** Files edited visually (no Monaco model): event sheets and node graphs. */
+export const isVisual = (file: string) => isSheet(file) || isGraph(file);
+/** Generated-line -> node id for each graph, and problems in the graphs' wiring, from the last build. */
+export const graphMaps = new Map<string, Map<number, string>>();
+let graphProblems: { file: string; node: string; message: string }[] = [];
+let catalog: Map<string, NodeDef> | undefined;
+export const nodeDefs = () => (catalog ??= nodeCatalog(manifest.commands));
 /** Generated-line -> event map for each sheet, from the last build. */
 export const sheetMaps = new Map<string, Map<number, LineInfo>>();
 const requiredArgs = (name: string) =>
@@ -73,7 +82,15 @@ const requiredArgs = (name: string) =>
 function sources() {
   const { files, fileName } = get().project;
   const out: Record<string, string> = {};
+  graphProblems = [];
   for (const [file, text] of Object.entries(files)) {
+    if (isGraph(file)) {
+      const g = generateGraph(file, parseGraph(text), file === fileName, nodeDefs());
+      graphMaps.set(file, g.map);
+      graphProblems.push(...g.problems.map((p) => ({ file, ...p })));
+      out[file] = g.code;
+      continue;
+    }
     if (!isSheet(file)) {
       out[file] = text;
       continue;
@@ -87,17 +104,49 @@ function sources() {
 
 export const generatedCode = (file: string) => sources()[file] ?? "";
 
-export function updateSheet(file: string, sheet: Sheet) {
-  set((s) => ({ project: { ...s.project, files: { ...s.project.files, [file]: sheetText(sheet) } }, dirty: true }));
+export const updateSheet = (file: string, sheet: Sheet) => editVisual(file, sheetText(sheet));
+export const updateGraph = (file: string, graph: Graph) => editVisual(file, graphText(graph));
+
+// Undo history for visual files (code files use Monaco's own). Quick successive edits, like
+// typing in a field, merge into one step.
+const history = new Map<string, { past: string[]; future: string[]; at: number }>();
+
+function editVisual(file: string, text: string, record = true) {
+  const before = get().project.files[file];
+  if (before === text) return;
+  if (record && before !== undefined) {
+    const h = history.get(file) ?? { past: [], future: [], at: 0 };
+    if (Date.now() - h.at > 600) h.past.push(before);
+    h.past = h.past.slice(-200);
+    h.future = [];
+    h.at = Date.now();
+    history.set(file, h);
+  }
+  set((s) => ({ project: { ...s.project, files: { ...s.project.files, [file]: text } }, dirty: true }));
   clearRuntimeErrors();
   scheduleCheck();
   persist();
-  sources(); // refresh line maps before resending breakpoints (events may have moved)
+  sources(); // refresh line maps before resending breakpoints (things may have moved)
   sendBreakpoints();
 }
 
-/** The event each sheet has selected, for F9. */
+/** Undo/redo in the active visual file. Returns false when the active file isn't visual. */
+export function undoVisual(redo = false) {
+  const file = get().activeFile;
+  if (!isVisual(file)) return false;
+  const h = history.get(file);
+  const from = redo ? h?.future : h?.past;
+  const text = from?.pop();
+  if (text === undefined) return true;
+  (redo ? h!.past : h!.future).push(get().project.files[file]);
+  h!.at = 0;
+  editVisual(file, text, false);
+  return true;
+}
+
+/** The event each sheet has selected, and the nodes each graph has selected, for F9. */
 export const sheetSelection = new Map<string, number>();
+export const graphSelection = new Map<string, string[]>();
 
 function addModel(file: string, src: string) {
   const model = monaco.editor.createModel(src, "cyberbasic", uriOf(file));
@@ -128,6 +177,7 @@ function loadProject(project: Project) {
   const mainModel = models.get(project.fileName);
   if (mainModel) mainEditor?.setModel(mainModel); // the "editor" panel always shows the main file
   loading = false;
+  history.clear();
   set({ project, activeFile: project.fileName, dirty: false, breakpoints: [], logs: [], diagnostics: [] });
   bpDecorations.clear();
   check();
@@ -159,17 +209,20 @@ const validName = (name: string) => /^[\w-]+\.cb$/i.test(name);
 
 /** Adds a file and an `Include` for it at the top of the main file, then opens it. */
 export function newFile() {
-  const input = prompt("Name of the new file: enemies.cb for code, or enemies.events for an event sheet:", "");
+  const input = prompt("Name of the new file: enemies.cb for code, enemies.graph for a node graph, or enemies.events for an event sheet:", "");
   if (!input) return;
   const name = input.trim();
-  const file = /\.(cb|events)$/i.test(name) ? name : `${name}.cb`;
-  if (!validName(file)) return toast("Use letters, numbers, - or _ and end with .cb or .events", "error");
+  const file = /\.(cb|events|graph)$/i.test(name) ? name : `${name}.cb`;
+  if (!validName(file)) return toast("Use letters, numbers, - or _ and end with .cb, .graph or .events", "error");
   if (Object.keys(get().project.files).some((f) => f.toLowerCase() === file.toLowerCase())) return toast(`${file} already exists`, "error");
-  const text = isSheet(file) ? sheetText(emptySheet(false)) : `' ${file}\n`;
-  if (!isSheet(file)) addModel(file, text);
+  const text = isGraph(file) ? graphText(emptyGraph(false)) : isSheet(file) ? sheetText(emptySheet(false)) : `' ${file}\n`;
+  if (!isVisual(file)) addModel(file, text);
   set((s) => ({ project: { ...s.project, files: { ...s.project.files, [file]: text } }, dirty: true }));
   const mainFile = get().project.fileName;
-  if (isSheet(mainFile)) {
+  if (isGraph(mainFile)) {
+    const g = parseGraph(get().project.files[mainFile]);
+    updateGraph(mainFile, { ...g, includes: [...g.includes, file] });
+  } else if (isSheet(mainFile)) {
     const sheet = parseSheet(get().project.files[mainFile]);
     updateSheet(mainFile, { ...sheet, includes: [...sheet.includes, file] });
   } else {
@@ -182,7 +235,7 @@ export function newFile() {
   }
   persist();
   openFile(file);
-  toast(`Created ${file} and included it from ${mainFile}${isSheet(file) ? `. Call ${file.replace(/\.events$/i, "")} events with Sheet_${file.replace(/\.events$/i, "").replace(/\W/g, "_")}_Frame each frame.` : ""}`, "success");
+  toast(`Created ${file} and included it from ${mainFile}${isVisual(file) && !isVisual(mainFile) ? `. Call ${isGraph(file) ? "Graph" : "Sheet"}_${file.replace(/\.\w+$/i, "").replace(/\W/g, "_")}_Frame each frame from your loop.` : ""}`, "success");
 }
 
 export async function deleteFile(file: string) {
@@ -213,6 +266,10 @@ export async function deleteFile(file: string) {
     const sheet = parseSheet(get().project.files[mainFile]);
     if (sheet.includes.includes(file)) updateSheet(mainFile, { ...sheet, includes: sheet.includes.filter((f) => f !== file) });
   }
+  if (isGraph(mainFile)) {
+    const g = parseGraph(get().project.files[mainFile]);
+    if (g.includes.includes(file)) updateGraph(mainFile, { ...g, includes: g.includes.filter((f) => f !== file) });
+  }
   bpDecorations.delete(file);
   set((s) => ({ project: { ...s.project, files: Object.fromEntries(Object.entries(s.project.files).filter(([f]) => f !== file)) }, activeFile: s.activeFile === file ? s.project.fileName : s.activeFile, breakpoints: s.breakpoints.filter((b) => b.file !== file) }));
   persist();
@@ -232,7 +289,8 @@ export function check() {
   const { project } = get();
   const r = compile(sources(), project.fileName, false);
   const runtime = get().diagnostics.filter((d) => d.kind === "runtime");
-  set({ diagnostics: r.ok ? runtime : [{ file: r.file, line: r.line, col: r.col, message: r.message, kind: "compile" }, ...runtime] });
+  const wiring = graphProblems.map((p) => ({ file: p.file, line: nodeLine(graphMaps.get(p.file)!, p.node) ?? 0, col: 1, message: p.message, kind: "compile" as const, node: p.node }));
+  set({ diagnostics: [...wiring, ...(r.ok ? [] : [{ file: r.file, line: r.line, col: 1, message: r.message, kind: "compile" as const }]), ...runtime] });
   for (const [file, model] of models) {
     monaco.editor.setModelMarkers(
       model,
@@ -275,7 +333,7 @@ export const pendingReveal = new Map<string, { line: number; col: number; focus:
 
 export function revealLine(line: number, col = 1, focus = true, file = get().activeFile) {
   openFile(file);
-  if (isSheet(file)) return void set((s) => ({ sheetFocus: { file, line, n: (s.sheetFocus?.n ?? 0) + 1 } }));
+  if (isVisual(file)) return void set((s) => ({ sheetFocus: { file, line, n: (s.sheetFocus?.n ?? 0) + 1 } }));
   const e = editors.get(file);
   if (!e) return void pendingReveal.set(file, { line, col, focus }); // its editor mounts on the next render
   e.revealLineInCenterIfOutsideViewport(line);
@@ -296,6 +354,14 @@ const encode = (bps: Breakpoint[], files = get().run.files) =>
 function allBreakpoints(files = get().run.files) {
   const fromSheets: Breakpoint[] = [];
   for (const [file, text] of Object.entries(get().project.files)) {
+    if (isGraph(file)) {
+      const map = graphMaps.get(file);
+      for (const n of parseGraph(text).nodes) {
+        const line = n.breakpoint && map ? nodeLine(map, n.id) : undefined;
+        if (line) fromSheets.push({ file, line });
+      }
+      continue;
+    }
     if (!isSheet(file)) continue;
     const map = sheetMaps.get(file);
     for (const e of parseSheet(text).events) {
@@ -403,6 +469,12 @@ export function onGameMessage(m: { type: string; [k: string]: unknown }) {
 const bpDecorations = new Map<string, string[]>();
 
 export function toggleBreakpoint(line = refs.editor?.getPosition()?.lineNumber, file = get().activeFile) {
+  if (isGraph(file)) {
+    const ids = graphSelection.get(file) ?? [];
+    const g = parseGraph(get().project.files[file] ?? "");
+    if (ids.length) updateGraph(file, { ...g, nodes: g.nodes.map((n) => (ids.includes(n.id) ? { ...n, breakpoint: !n.breakpoint } : n)) });
+    return;
+  }
   if (isSheet(file)) {
     // In a sheet, F9 toggles the selected event.
     const id = sheetSelection.get(file);
@@ -564,6 +636,7 @@ export function insertSnippet(snippet: string) {
 }
 
 export const editorAction = (id: string) => {
+  if ((id === "undo" || id === "redo") && undoVisual(id === "redo")) return;
   refs.editor?.focus();
   refs.editor?.trigger("menu", id, null);
 };

@@ -1,0 +1,396 @@
+{
+  "version": 1,
+  "variables": [
+    {
+      "name": "x",
+      "value": "400"
+    },
+    {
+      "name": "y",
+      "value": "300"
+    },
+    {
+      "name": "dx",
+      "value": "260"
+    },
+    {
+      "name": "dy",
+      "value": "190"
+    },
+    {
+      "name": "bounces",
+      "value": "0"
+    }
+  ],
+  "includes": [],
+  "nodes": [
+    {
+      "id": "n1",
+      "type": "event.start",
+      "x": 40,
+      "y": 40,
+      "values": {}
+    },
+    {
+      "id": "n2",
+      "type": "cmd.Game",
+      "x": 260,
+      "y": 40,
+      "values": {
+        "title": "\"Bouncer\""
+      }
+    },
+    {
+      "id": "n3",
+      "type": "cmd.Graphics",
+      "x": 500,
+      "y": 40,
+      "values": {
+        "width": "800",
+        "height": "600"
+      }
+    },
+    {
+      "id": "n4",
+      "type": "cmd.ClsColor",
+      "x": 740,
+      "y": 40,
+      "values": {
+        "r": "10",
+        "g": "12",
+        "b": "24"
+      }
+    },
+    {
+      "id": "n5",
+      "type": "event.frame",
+      "x": 40,
+      "y": 280,
+      "values": {}
+    },
+    {
+      "id": "n6",
+      "type": "flow.sequence",
+      "x": 240,
+      "y": 280,
+      "values": {}
+    },
+    {
+      "id": "n7",
+      "type": "var.set",
+      "x": 480,
+      "y": 240,
+      "values": {
+        "name": "x",
+        "op": "+="
+      }
+    },
+    {
+      "id": "n8",
+      "type": "math.op",
+      "x": 480,
+      "y": 400,
+      "values": {
+        "op": "*",
+        "b": "Delta"
+      }
+    },
+    {
+      "id": "n9",
+      "type": "var.get",
+      "x": 260,
+      "y": 460,
+      "values": {
+        "name": "dx"
+      }
+    },
+    {
+      "id": "n10",
+      "type": "var.set",
+      "x": 720,
+      "y": 240,
+      "values": {
+        "name": "y",
+        "op": "+=",
+        "value": "dy * Delta"
+      }
+    },
+    {
+      "id": "n11",
+      "type": "cmd.Cls",
+      "x": 960,
+      "y": 240,
+      "values": {}
+    },
+    {
+      "id": "n12",
+      "type": "cmd.Color",
+      "x": 1160,
+      "y": 240,
+      "values": {
+        "r": "255",
+        "g": "214",
+        "b": "90"
+      }
+    },
+    {
+      "id": "n13",
+      "type": "cmd.Oval",
+      "x": 1400,
+      "y": 240,
+      "values": {
+        "x": "x",
+        "y": "y",
+        "width": "20",
+        "height": "20"
+      }
+    },
+    {
+      "id": "n14",
+      "type": "cmd.Text",
+      "x": 1640,
+      "y": 240,
+      "values": {
+        "x": "10",
+        "y": "10",
+        "value": "\"Bounces: \" + bounces"
+      }
+    },
+    {
+      "id": "n15",
+      "type": "flow.branch",
+      "x": 720,
+      "y": 600,
+      "values": {}
+    },
+    {
+      "id": "n16",
+      "type": "logic.or",
+      "x": 480,
+      "y": 660,
+      "values": {}
+    },
+    {
+      "id": "n17",
+      "type": "math.compare",
+      "x": 260,
+      "y": 620,
+      "values": {
+        "op": "<",
+        "b": "0"
+      }
+    },
+    {
+      "id": "n18",
+      "type": "math.compare",
+      "x": 260,
+      "y": 760,
+      "values": {
+        "op": ">",
+        "b": "780"
+      }
+    },
+    {
+      "id": "n19",
+      "type": "var.get",
+      "x": 40,
+      "y": 700,
+      "values": {
+        "name": "x"
+      }
+    },
+    {
+      "id": "n20",
+      "type": "var.set",
+      "x": 960,
+      "y": 600,
+      "values": {
+        "name": "dx",
+        "op": "=",
+        "value": "-dx"
+      }
+    },
+    {
+      "id": "n21",
+      "type": "var.set",
+      "x": 1200,
+      "y": 600,
+      "values": {
+        "name": "bounces",
+        "op": "+=",
+        "value": "1"
+      }
+    },
+    {
+      "id": "n22",
+      "type": "flow.branch",
+      "x": 720,
+      "y": 920,
+      "values": {
+        "condition": "y < 0 Or y > 580"
+      }
+    },
+    {
+      "id": "n23",
+      "type": "var.set",
+      "x": 960,
+      "y": 920,
+      "values": {
+        "name": "dy",
+        "op": "=",
+        "value": "-dy"
+      }
+    },
+    {
+      "id": "n24",
+      "type": "var.set",
+      "x": 1200,
+      "y": 920,
+      "values": {
+        "name": "bounces",
+        "op": "+=",
+        "value": "1"
+      }
+    }
+  ],
+  "links": [
+    {
+      "from": "n1",
+      "out": "then",
+      "to": "n2",
+      "in": "in"
+    },
+    {
+      "from": "n2",
+      "out": "then",
+      "to": "n3",
+      "in": "in"
+    },
+    {
+      "from": "n3",
+      "out": "then",
+      "to": "n4",
+      "in": "in"
+    },
+    {
+      "from": "n5",
+      "out": "then",
+      "to": "n6",
+      "in": "in"
+    },
+    {
+      "from": "n6",
+      "out": "then1",
+      "to": "n7",
+      "in": "in"
+    },
+    {
+      "from": "n7",
+      "out": "then",
+      "to": "n10",
+      "in": "in"
+    },
+    {
+      "from": "n10",
+      "out": "then",
+      "to": "n11",
+      "in": "in"
+    },
+    {
+      "from": "n11",
+      "out": "then",
+      "to": "n12",
+      "in": "in"
+    },
+    {
+      "from": "n12",
+      "out": "then",
+      "to": "n13",
+      "in": "in"
+    },
+    {
+      "from": "n13",
+      "out": "then",
+      "to": "n14",
+      "in": "in"
+    },
+    {
+      "from": "n9",
+      "out": "value",
+      "to": "n8",
+      "in": "a"
+    },
+    {
+      "from": "n8",
+      "out": "result",
+      "to": "n7",
+      "in": "value"
+    },
+    {
+      "from": "n6",
+      "out": "then2",
+      "to": "n15",
+      "in": "in"
+    },
+    {
+      "from": "n15",
+      "out": "true",
+      "to": "n20",
+      "in": "in"
+    },
+    {
+      "from": "n20",
+      "out": "then",
+      "to": "n21",
+      "in": "in"
+    },
+    {
+      "from": "n16",
+      "out": "result",
+      "to": "n15",
+      "in": "condition"
+    },
+    {
+      "from": "n17",
+      "out": "result",
+      "to": "n16",
+      "in": "a"
+    },
+    {
+      "from": "n18",
+      "out": "result",
+      "to": "n16",
+      "in": "b"
+    },
+    {
+      "from": "n19",
+      "out": "value",
+      "to": "n17",
+      "in": "a"
+    },
+    {
+      "from": "n19",
+      "out": "value",
+      "to": "n18",
+      "in": "a"
+    },
+    {
+      "from": "n6",
+      "out": "then3",
+      "to": "n22",
+      "in": "in"
+    },
+    {
+      "from": "n22",
+      "out": "true",
+      "to": "n23",
+      "in": "in"
+    },
+    {
+      "from": "n23",
+      "out": "then",
+      "to": "n24",
+      "in": "in"
+    }
+  ]
+}

@@ -476,6 +476,14 @@ function useShortcuts() {
         "Ctrl+K": () => set({ palette: !get().palette }),
         ...Object.fromEntries(A.WORKSPACES.map((w, i) => [`Ctrl+${i + 1}`, () => A.applyWorkspace(w.id)])),
       };
+      // Undo/redo in sheets and graphs (Monaco keeps its own history for code).
+      const undo = k === "Ctrl+Z" ? false : k === "Ctrl+Y" || k === "Ctrl+Shift+Z" ? true : undefined;
+      if (undo !== undefined && A.isVisual(get().activeFile) && !(document.activeElement as HTMLElement | null)?.closest(".monaco-editor")) {
+        e.preventDefault();
+        e.stopPropagation();
+        A.undoVisual(undo);
+        return;
+      }
       const fn = map[k];
       if (!fn) return;
       e.preventDefault();

@@ -445,3 +445,73 @@ button.status-item:hover { background: var(--bg3); }
 .sheet-code { flex: 1; overflow: auto; padding: 10px 14px; }
 .sheet-code pre { margin: 0; font-size: 13px; line-height: 1.6; }
 .sheet-code-note { margin-bottom: 8px; }
+
+/* ---------------------------------------------------------------- node graphs */
+
+.graph-panel { position: relative; }
+.graph-vars { padding: 6px 10px; border-bottom: 1px solid var(--line-soft); }
+.graph-vars .sheet-vars { padding: 4px 8px; }
+.graph-canvas {
+  position: relative; flex: 1; min-height: 0; overflow: hidden; outline: none; cursor: grab;
+  background-color: #0e1017;
+  background-image: radial-gradient(circle, #252a3a 1px, transparent 1.2px);
+}
+.graph-canvas:active { cursor: grabbing; }
+.graph-world { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.graph-wires { position: absolute; left: 0; top: 0; width: 1px; height: 1px; overflow: visible; pointer-events: none; }
+.wire-hit { fill: none; stroke: transparent; stroke-width: 14; pointer-events: stroke; cursor: pointer; }
+.wire-line { fill: none; stroke-width: 2.4; pointer-events: none; }
+.wire.data .wire-line, .wire-line.draft.data { stroke: #4cc2ff; opacity: .85; }
+.wire.exec .wire-line, .wire-line.draft.exec { stroke: #e6e8f0; stroke-width: 3; }
+.wire.selected .wire-line { stroke: var(--warn); filter: drop-shadow(0 0 4px #ffb54788); }
+.wire.live .wire-line { stroke: var(--warn); }
+.wire-line.draft { stroke-dasharray: 6 5; }
+
+.node {
+  position: absolute; border-radius: 10px; background: #171a25f2; border: 1px solid #2a2f43;
+  box-shadow: 0 10px 28px #0009; cursor: default; user-select: none; --c: #8b90a3;
+}
+.node.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 10px 28px #0009; }
+.node.has-error { border-color: var(--err); box-shadow: 0 0 0 1px var(--err), 0 10px 28px #0009; }
+.node.paused { border-color: var(--warn); box-shadow: 0 0 0 2px var(--warn), 0 0 30px #ffb54744; }
+.node.flash { animation: flash 1.2s ease-out; }
+.node-head {
+  height: 30px; display: flex; align-items: center; gap: 8px; padding: 0 22px 0 12px; border-radius: 9px 9px 0 0;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--c) 34%, #171a25), color-mix(in srgb, var(--c) 10%, #171a25));
+  border-bottom: 1px solid #ffffff0d; cursor: move;
+}
+.node-title { font-weight: 600; font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.node-bp { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid #ffffff33; flex: none; }
+.node-bp:hover { background: #ff6b6b55; }
+.node-bp.on { background: var(--err); border-color: var(--err); box-shadow: 0 0 0 2px #ff6b6b44; }
+.c-event { --c: #ff6b6b; }
+.c-flow { --c: #c9ccd8; }
+.c-var { --c: #3ddc97; }
+.c-math { --c: #4cc2ff; }
+.c-command { --c: #6c8cff; }
+.c-value { --c: #8f7cff; }
+.c-code { --c: #ffb547; }
+.node-field { position: absolute; left: 10px; right: 10px; height: 32px; display: flex; align-items: center; gap: 6px; font-size: 12px; }
+.node-field select { background: var(--bg1); color: var(--text); border: 1px solid var(--line); border-radius: 5px; font: 12.5px var(--mono); padding: 2px; }
+.node-field .field.wide { min-width: 0; flex: 1; }
+.node-row { position: absolute; left: 0; right: 0; height: 28px; display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-2); }
+.node-row.out { justify-content: flex-end; padding-right: 14px; }
+.node-row.in { padding-left: 14px; padding-right: 10px; }
+.pin-label { white-space: nowrap; }
+.node-input { flex: 1; min-width: 0; background: var(--bg1); border: 1px solid var(--line); border-radius: 5px; padding: 2px 6px; font-size: 12px; color: var(--text); outline: none; }
+.node-input:focus { border-color: #4cc2ff88; }
+.node-input::placeholder { color: #565d78; font-style: italic; }
+.pin { position: absolute; width: 14px; height: 14px; cursor: crosshair; z-index: 1; }
+.pin.in { left: -7px; }
+.pin.out { right: -7px; }
+.pin.data::after { content: ""; position: absolute; inset: 2px; border-radius: 50%; border: 2px solid #4cc2ff; background: #0e1017; }
+.pin.data.linked::after { background: #4cc2ff; }
+.pin.exec::after { content: ""; position: absolute; left: 3px; top: 2px; border: 5px solid transparent; border-left: 8px solid #c9ccd8; opacity: .55; }
+.pin.exec.linked::after { opacity: 1; border-left-color: #fff; }
+.pin:hover::after { transform: scale(1.25); filter: drop-shadow(0 0 4px #4cc2ff); }
+.node-error { position: absolute; left: 0; right: 0; top: calc(100% + 4px); padding: 4px 8px; border-radius: 6px; background: #2a1215f0; border: 1px solid #ff6b6b66; color: var(--err); font-size: 11.5px; line-height: 1.35; }
+.node-paused { position: absolute; left: 0; top: -22px; display: flex; align-items: center; gap: 4px; color: var(--warn); font-size: 11.5px; font-weight: 600; }
+.graph-empty { position: absolute; inset: 0; display: grid; place-content: center; color: var(--muted); pointer-events: none; text-align: center; padding: 20px; }
+.graph-hint { position: absolute; left: 12px; bottom: 8px; pointer-events: none; opacity: .7; }
+.node-palette { position: absolute; z-index: 20; top: 0; }
+.swatch { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 7px; background: var(--c); vertical-align: 1px; }

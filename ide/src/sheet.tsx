@@ -92,7 +92,7 @@ export function EventSheetPanel({ file }: { file: string }) {
         <CodeView file={file} />
       ) : (
         <div className="sheet-body">
-          <Variables sheet={sheet} update={update} />
+          <Variables variables={sheet.variables} change={(variables) => update((s) => ({ ...s, variables }))} />
           {sections.map(({ trigger, title, hint }) => {
             const events = sheet.events.filter((e) => e.trigger === trigger);
             return (
@@ -205,7 +205,7 @@ export function EventSheetPanel({ file }: { file: string }) {
 // ------------------------------------------------------------------ rows
 
 /** An input that grows with its text; shows the argument name until filled. */
-function Field({ value, placeholder, onChange, wide }: { value: string; placeholder: string; onChange: (v: string) => void; wide?: boolean }) {
+export function Field({ value, placeholder, onChange, wide }: { value: string; placeholder: string; onChange: (v: string) => void; wide?: boolean }) {
   return (
     <input
       className={"field mono" + (wide ? " wide" : "")}
@@ -377,29 +377,32 @@ function Picker({ kind, add }: { kind: "condition" | "action"; add: (x: Conditio
 
 // ------------------------------------------------------------------ variables & code view
 
-function Variables({ sheet, update }: { sheet: Sheet; update: (fn: (s: Sheet) => Sheet) => void }) {
-  const setVar = (i: number, v: { name: string; value: string }) => update((s) => ({ ...s, variables: s.variables.map((x, j) => (j === i ? v : x)) }));
+type Vars = { name: string; value: string }[];
+
+/** The Variables strip shared by event sheets and node graphs: each becomes a Global. */
+export function Variables({ variables, change }: { variables: Vars; change: (v: Vars) => void }) {
+  const setVar = (i: number, v: { name: string; value: string }) => change(variables.map((x, j) => (j === i ? v : x)));
   return (
     <section className="sheet-vars">
       <span className="col-label">Variables</span>
-      {sheet.variables.map((v, i) => (
+      {variables.map((v, i) => (
         <span key={i} className="var-chip">
           <Field value={v.name} placeholder="name" onChange={(name) => setVar(i, { ...v, name })} />
           <span className="muted">=</span>
           <Field value={v.value} placeholder="0" onChange={(value) => setVar(i, { ...v, value })} />
-          <button className="row-del" title="Remove" onClick={() => update((s) => ({ ...s, variables: s.variables.filter((_, j) => j !== i) }))}>
+          <button className="row-del" title="Remove" onClick={() => change(variables.filter((_, j) => j !== i))}>
             <Icon name="close" size={11} />
           </button>
         </span>
       ))}
-      <button className="add-row" onClick={() => update((s) => ({ ...s, variables: [...s.variables, { name: "", value: "0" }] }))}>
+      <button className="add-row" onClick={() => change([...variables, { name: "", value: "0" }])}>
         <Icon name="plus" size={12} /> Variable
       </button>
     </section>
   );
 }
 
-function CodeView({ file }: { file: string }) {
+export function CodeView({ file }: { file: string }) {
   const text = useStore((s) => s.project.files[file]);
   const [html, setHtml] = useState("");
   useEffect(() => {
@@ -407,7 +410,7 @@ function CodeView({ file }: { file: string }) {
   }, [file, text]);
   return (
     <div className="sheet-code">
-      <div className="muted small sheet-code-note">Read only: this is the CyberBasic the sheet becomes. Edit the sheet to change it.</div>
+      <div className="muted small sheet-code-note">Read only: this is the CyberBasic this file becomes. Edit it visually to change it.</div>
       <pre className="mono" dangerouslySetInnerHTML={{ __html: html }} />
     </div>
   );

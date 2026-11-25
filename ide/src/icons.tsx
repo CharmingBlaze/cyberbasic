@@ -34,6 +34,8 @@ const P: Record<string, string> = {
   chevron: "M9 6l6 6-6 6",
   external: "M14 4h6v6M20 4l-9 9M19 14v6H4V5h6",
   keyboard: "M3 6h18v12H3zM7 10h.01M11 10h.01M15 10h.01M7 14h10",
+  graph: "M4 5h6v5H4zM14 14h6v5h-6zM10 7.5h2a2 2 0 0 1 2 2v5a2 2 0 0 0 2 2",
+  fit: "M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5M9 9h6v6H9z",
 };
 
 export function Icon({ name, size = 16, className }: { name: keyof typeof P; size?: number; className?: string }) {

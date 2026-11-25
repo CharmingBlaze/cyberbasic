@@ -14,7 +14,7 @@ export interface Project {
   dir?: FileSystemDirectoryHandle;
   fileName: string;
 }
-export interface Diagnostic { file: string; line: number; col: number; message: string; kind: "compile" | "runtime" }
+export interface Diagnostic { file: string; line: number; col: number; message: string; kind: "compile" | "runtime"; node?: string }
 export interface LogEntry { id: number; kind: "log" | "error" | "info"; text: string; file?: string; line?: number; time: string }
 export interface Breakpoint { file: string; line: number }
 export interface Toast { id: number; text: string; kind: "info" | "error" | "success" }
