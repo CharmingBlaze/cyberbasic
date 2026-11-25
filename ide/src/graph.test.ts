@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { emptyGraph, generateGraph, nodeCatalog, nodeLine, parseGraph, type Graph } from "./graph.ts";
+import { copyNodes, emptyGraph, generateGraph, nodesIn, pasteNodes, nodeCatalog, nodeLine, parseGraph, type Graph } from "./graph.ts";
 
 const { instance } = await WebAssembly.instantiate(readFileSync(new URL("../../target/wasm32-unknown-unknown/release/cyberbasic_core.wasm", import.meta.url)));
 const w = instance.exports as Record<string, any>;
@@ -149,4 +149,21 @@ test("behaviour graphs: each object gets its own variables, and the Behaviours e
   assert.match(files["main.graph"], /Behaviour_Spinner_Attach c\n\s+Behaviour_Bobber_Attach c/);
   const r = compile(files);
   assert.ok(r.ok, r.ok ? "" : `${r.line}: ${r.message}\n${Object.values(files).join("\n----\n")}`);
+});
+
+test("copy and paste keeps the wires between copied nodes and gives fresh ids", () => {
+  const from = G([at("n1", "event.frame"), at("n2", "cmd.Cls"), at("n3", "cmd.Cls")], [
+    { from: "n1", out: "then", to: "n2", in: "in" },
+    { from: "n2", out: "then", to: "n3", in: "in" },
+  ]);
+  from.nodes[2] = { ...from.nodes[2], x: 300, y: 50, breakpoint: true };
+  const clip = copyNodes(from, ["n2", "n3"]);
+  assert.equal(clip.links.length, 1); // the wire from n1 stays behind
+  const into = G([at("n1", "event.frame"), at("n7", "cmd.Cls")], []);
+  const { graph, ids } = pasteNodes(into, clip, { x: 1000, y: 500 });
+  assert.deepEqual(ids, ["n8", "n9"]);
+  assert.deepEqual(graph.nodes.slice(2).map((n) => [n.id, n.x, n.y, n.breakpoint]), [["n8", 1000, 500, false], ["n9", 1300, 550, false]]);
+  assert.deepEqual(graph.links, [{ from: "n8", out: "then", to: "n9", in: "in" }]);
+  const box = { id: "c1", x: 950, y: 450, w: 400, h: 200, text: "" };
+  assert.deepEqual(nodesIn(graph, box, () => 100, 236), ["n8"]); // n9 sticks out on the right
 });

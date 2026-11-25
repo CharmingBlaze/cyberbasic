@@ -2,13 +2,15 @@
 // type values into unconnected inputs. Every change is saved into the file (with undo).
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import * as A from "./actions";
-import { attachFunction, behaviourName, canLink, graphPrefix, nextNodeId, nodeDef, parseGraph, type FuncSig, type GNode, type Graph, type NodeColor, type NodeDef, type PinDef } from "./graph";
+import { attachFunction, behaviourName, canLink, copyNodes, graphPrefix, nextCommentId, nextNodeId, nodeDef, nodesIn, parseGraph, pasteNodes, type Clip, type FuncSig, type GComment, type GNode, type Graph, type NodeColor, type NodeDef, type PinDef } from "./graph";
 import { Icon } from "./icons";
 import { monaco } from "./language";
 import { get, set, useStore } from "./store";
 
 // Node geometry. Rows are absolutely positioned with these numbers, so wires always meet the pins.
 const W = 236, HEAD = 30, ROW = 28, FIELD = 32, PAD = 8;
+/** Copied nodes, shared by every graph so you can paste into another file. */
+let clip: Clip | undefined;
 
 interface Layout {
   height: number;
@@ -72,7 +74,9 @@ export function GraphPanel({ file }: { file: string }) {
   };
   const [selected, setSelected] = useState<string[]>([]);
   const [selectedLink, setSelectedLink] = useState<number>();
-  const [moving, setMoving] = useState<Record<string, { x: number; y: number }>>({}); // live drag positions
+  const [moving, setMoving] = useState<Record<string, { x?: number; y?: number; w?: number; h?: number }>>({}); // live drag positions and sizes
+  const [renaming, setRenaming] = useState<string>(); // the comment whose title is being edited
+  const pointer = useRef<{ x: number; y: number } | undefined>(undefined); // the mouse, in canvas coordinates (where Paste puts nodes)
   const [wire, setWire] = useState<{ from: PinRef; to: { x: number; y: number } }>();
   const [palette, setPalette] = useState<{ x: number; y: number; at: { x: number; y: number }; pending?: PinRef }>();
   const [flash, setFlash] = useState<string>();
@@ -254,18 +258,81 @@ export function GraphPanel({ file }: { file: string }) {
       return;
     }
     if (!selected.length) return;
-    save({ ...g, nodes: g.nodes.filter((n) => !selected.includes(n.id)), links: g.links.filter((l) => !selected.includes(l.from) && !selected.includes(l.to)) });
+    save({
+      ...g,
+      nodes: g.nodes.filter((n) => !selected.includes(n.id)),
+      links: g.links.filter((l) => !selected.includes(l.from) && !selected.includes(l.to)),
+      comments: g.comments?.filter((c) => !selected.includes(c.id)),
+    });
     select([]);
   };
 
+  const centre = () => {
+    const r = host.current!.getBoundingClientRect();
+    return toCanvas(r.left + r.width / 2, r.top + r.height / 2);
+  };
+  const paste = (c = clip, at = pointer.current ?? centre()) => {
+    if (!c?.nodes.length) return;
+    const r = pasteNodes(latest(), c, at);
+    save(r.graph);
+    select(r.ids);
+  };
+  const copy = () => {
+    const c = copyNodes(latest(), selected);
+    if (c.nodes.length) clip = c;
+    return c;
+  };
   const duplicate = () => {
+    const c = copyNodes(latest(), selected);
+    if (c.nodes.length) paste(c, { x: Math.min(...c.nodes.map((n) => n.x)) + 30, y: Math.min(...c.nodes.map((n) => n.y)) + 30 });
+  };
+
+  /** A comment box around the selected nodes, or an empty one in the middle of the view. */
+  const addComment = () => {
     const g = latest();
-    let next = Number(nextNodeId(g).slice(1));
-    const ids = new Map(selected.map((id) => [id, `n${next++}`]));
-    const copies = g.nodes.filter((n) => ids.has(n.id)).map((n) => ({ ...structuredClone(n), id: ids.get(n.id)!, x: n.x + 30, y: n.y + 30, breakpoint: false }));
-    const wires = g.links.filter((l) => ids.has(l.from) && ids.has(l.to)).map((l) => ({ ...l, from: ids.get(l.from)!, to: ids.get(l.to)! }));
-    save({ ...g, nodes: [...g.nodes, ...copies], links: [...g.links, ...wires] });
-    select([...ids.values()]);
+    const sel = g.nodes.filter((n) => selected.includes(n.id));
+    const id = nextCommentId(g);
+    let box = { x: Math.round(centre().x - 200), y: Math.round(centre().y - 120), w: 400, h: 240 };
+    if (sel.length) {
+      const x = Math.min(...sel.map((n) => n.x)) - 20, y = Math.min(...sel.map((n) => n.y)) - 54;
+      const x1 = Math.max(...sel.map((n) => n.x + W)) + 20, y1 = Math.max(...sel.map((n) => n.y + layoutOf(defOf(n)).height)) + 20;
+      box = { x, y, w: x1 - x, h: y1 - y };
+    }
+    save({ ...g, comments: [...(g.comments ?? []), { id, text: "Comment", ...box }] });
+    select([id]);
+    setRenaming(id);
+  };
+  const setComment = (id: string, change: Partial<GComment>) => {
+    const g = latest();
+    save({ ...g, comments: g.comments?.map((c) => (c.id === id ? { ...c, ...change } : c)) });
+  };
+  /** Drags a comment's title (moving the nodes inside it) or its corner (resizing it). */
+  const onCommentDown = (e: React.PointerEvent, c: GComment, how: "move" | "size") => {
+    if (e.button !== 0) return;
+    e.stopPropagation();
+    select([c.id]);
+    const inside = how === "move" ? nodesIn(graph, c, (n) => layoutOf(defOf(n)).height, W) : [];
+    const start = { x: e.clientX, y: e.clientY };
+    let last: typeof moving = {};
+    const move = (ev: PointerEvent) => {
+      const dx = Math.round((ev.clientX - start.x) / view.zoom), dy = Math.round((ev.clientY - start.y) / view.zoom);
+      last =
+        how === "size"
+          ? { [c.id]: { w: Math.max(160, c.w + dx), h: Math.max(80, c.h + dy) } }
+          : Object.fromEntries([[c.id, { x: c.x + dx, y: c.y + dy }], ...inside.map((i) => [i, { x: node(i).x + dx, y: node(i).y + dy }])]);
+      setMoving(last);
+    };
+    const up = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      if (Object.keys(last).length) {
+        const g = latest();
+        save({ ...g, nodes: g.nodes.map((n) => (last[n.id] ? { ...n, ...last[n.id] } : n)), comments: g.comments?.map((x) => (last[x.id] ? { ...x, ...last[x.id] } : x)) });
+      }
+      setMoving({});
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
   };
 
   const onKeyDown = (e: React.KeyboardEvent) => {
@@ -273,6 +340,10 @@ export function GraphPanel({ file }: { file: string }) {
     const ctrl = e.ctrlKey || e.metaKey;
     if (e.key === "Delete" || e.key === "Backspace") removeSelected();
     else if (ctrl && e.key.toLowerCase() === "d") duplicate();
+    else if (ctrl && e.key.toLowerCase() === "c") copy();
+    else if (ctrl && e.key.toLowerCase() === "x") copy().nodes.length && removeSelected();
+    else if (ctrl && e.key.toLowerCase() === "v") paste();
+    else if (!ctrl && e.key.toLowerCase() === "c") addComment();
     else if (ctrl && e.key.toLowerCase() === "a") select(graph.nodes.map((n) => n.id));
     else if (e.key.toLowerCase() === "f") fit(selected.length ? graph.nodes.filter((n) => selected.includes(n.id)) : graph.nodes);
     else if (e.key === " " || e.key === "Tab") {
@@ -343,6 +414,7 @@ export function GraphPanel({ file }: { file: string }) {
             <button className="tool" onClick={() => { const r = host.current!.getBoundingClientRect(); setPalette({ x: 16, y: 12, at: toCanvas(r.left + r.width / 2 - W / 2, r.top + 80) }); }}>
               <Icon name="plus" size={13} /> Node
             </button>
+            <button className="tool" title="Add a comment box, around the selected nodes if any (C)" onClick={addComment}>Comment</button>
             <button className="icon-btn" title="Fit everything in view (F)" onClick={() => fit()}><Icon name="fit" size={14} /></button>
           </>
         )}
@@ -369,6 +441,8 @@ export function GraphPanel({ file }: { file: string }) {
             onPointerDown={onBackgroundDown}
             onWheel={onWheel}
             onKeyDown={onKeyDown}
+            onPointerMove={(e) => (pointer.current = toCanvas(e.clientX, e.clientY))}
+            onPointerLeave={() => (pointer.current = undefined)}
             onContextMenu={(e) => {
               e.preventDefault();
               const r = host.current!.getBoundingClientRect();
@@ -377,6 +451,37 @@ export function GraphPanel({ file }: { file: string }) {
             style={{ backgroundPosition: `${view.x}px ${view.y}px`, backgroundSize: `${24 * view.zoom}px ${24 * view.zoom}px` }}
           >
             <div className="graph-world" style={{ transform: `translate(${view.x}px, ${view.y}px) scale(${view.zoom})` }}>
+              {(graph.comments ?? []).map((raw) => {
+                const c = { ...raw, ...moving[raw.id] };
+                return (
+                  <div key={c.id} className={"comment" + (selected.includes(c.id) ? " selected" : "")} style={{ left: c.x, top: c.y, width: c.w, height: c.h }}>
+                    <div
+                      className="comment-head"
+                      title="Drag to move it with the nodes inside · double-click to rename"
+                      onPointerDown={(e) => onCommentDown(e, raw, "move")}
+                      onDoubleClick={() => setRenaming(c.id)}
+                    >
+                      {renaming === c.id ? (
+                        <input
+                          autoFocus
+                          defaultValue={c.text}
+                          spellCheck={false}
+                          onFocus={(e) => e.target.select()}
+                          onPointerDown={(e) => e.stopPropagation()}
+                          onBlur={(e) => {
+                            setComment(c.id, { text: e.target.value });
+                            setRenaming(undefined);
+                          }}
+                          onKeyDown={(e) => (e.key === "Enter" || e.key === "Escape") && e.currentTarget.blur()}
+                        />
+                      ) : (
+                        <span className="ellipsis">{c.text}</span>
+                      )}
+                    </div>
+                    <div className="comment-size" title="Drag to resize" onPointerDown={(e) => onCommentDown(e, raw, "size")} />
+                  </div>
+                );
+              })}
               <svg className="graph-wires">
                 {wires}
                 {draft}

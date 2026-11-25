@@ -17,6 +17,8 @@ export interface GNode {
   breakpoint?: boolean;
 }
 export interface GLink { from: string; out: string; to: string; in: string }
+/** A comment box on the canvas. Dragging it moves the nodes inside it. */
+export interface GComment { id: string; x: number; y: number; w: number; h: number; text: string }
 export interface Graph {
   version: 1;
   /** "behaviour": attached to objects with an Add node; its variables belong to each object. */
@@ -25,6 +27,7 @@ export interface Graph {
   includes: string[];
   nodes: GNode[];
   links: GLink[];
+  comments?: GComment[];
 }
 
 export type PinKind = "exec" | "data";
@@ -111,7 +114,7 @@ export const emptyGraph = (main: boolean): Graph => ({
 export function parseGraph(text: string): Graph {
   try {
     const g = JSON.parse(text) as Partial<Graph>;
-    return { version: 1, kind: g.kind === "behaviour" ? "behaviour" : "script", variables: g.variables ?? [], includes: g.includes ?? [], nodes: g.nodes ?? [], links: g.links ?? [] };
+    return { version: 1, kind: g.kind === "behaviour" ? "behaviour" : "script", variables: g.variables ?? [], includes: g.includes ?? [], nodes: g.nodes ?? [], links: g.links ?? [], comments: g.comments ?? [] };
   } catch {
     return emptyGraph(false);
   }
@@ -120,6 +123,27 @@ export function parseGraph(text: string): Graph {
 export const graphText = (g: Graph) => JSON.stringify(g, null, 2) + "\n";
 export const graphPrefix = (file: string) => "Graph_" + file.replace(/\.graph$/i, "").replace(/\W/g, "_");
 export const nextNodeId = (g: Graph) => `n${Math.max(0, ...g.nodes.map((n) => Number(n.id.slice(1)) || 0)) + 1}`;
+
+export const nextCommentId = (g: Graph) => `c${Math.max(0, ...(g.comments ?? []).map((c) => Number(c.id.slice(1)) || 0)) + 1}`;
+
+/** What Copy puts on the clipboard: the nodes and the wires between them. */
+export interface Clip { nodes: GNode[]; links: GLink[] }
+export const copyNodes = (g: Graph, ids: string[]): Clip => ({
+  nodes: g.nodes.filter((n) => ids.includes(n.id)),
+  links: g.links.filter((l) => ids.includes(l.from) && ids.includes(l.to)),
+});
+/** Adds copies of the clip's nodes with fresh ids, its top-left corner at `at`. */
+export function pasteNodes(g: Graph, clip: Clip, at: { x: number; y: number }) {
+  let next = Number(nextNodeId(g).slice(1));
+  const ids = new Map(clip.nodes.map((n) => [n.id, `n${next++}`]));
+  const x0 = Math.min(...clip.nodes.map((n) => n.x)), y0 = Math.min(...clip.nodes.map((n) => n.y));
+  const nodes = clip.nodes.map((n) => ({ ...structuredClone(n), id: ids.get(n.id)!, x: Math.round(at.x + n.x - x0), y: Math.round(at.y + n.y - y0), breakpoint: false }));
+  const links = clip.links.map((l) => ({ ...l, from: ids.get(l.from)!, to: ids.get(l.to)! }));
+  return { graph: { ...g, nodes: [...g.nodes, ...nodes], links: [...g.links, ...links] }, ids: [...ids.values()] };
+}
+/** Nodes lying wholly inside a comment box (`height` gives each node's height). */
+export const nodesIn = (g: Graph, c: GComment, height: (n: GNode) => number, width: number) =>
+  g.nodes.filter((n) => n.x >= c.x && n.y >= c.y && n.x + width <= c.x + c.w && n.y + height(n) <= c.y + c.h).map((n) => n.id);
 
 /** The names typed into a Function node's "inputs" field. */
 export const paramsOf = (text = "") =>
