@@ -39,7 +39,7 @@ A modern successor to Blitz3D, BlitzMax and AGK2: **one environment where you wr
 |------|-------|
 | Beginners / hobbyists | Instant feedback, readable commands, great examples and docs |
 | Returning Blitz/AGK users | Familiar procedural style, the `While … Sync … Wend` main loop |
-| Visual-first creators | Event sheets and node graphs with no typing required |
+| Visual-first creators | Node graphs with no typing required |
 | Experienced devs | Types, modules, debugger, CLI builds, CI-friendly projects |
 
 ### Non-goals for 1.0
@@ -77,7 +77,7 @@ These are the big corrections. Each one is explained in the section it links to.
 | Mode | For | Tech | 1.0? |
 |------|-----|------|------|
 | **CyberBasic** | The main language and the product's identity | Rust compiler → IR → JS | ✅ |
-| **Visual scripting** | Event sheets, visual functions, entity behaviours, animation state machines | Rete.js v2 + custom event-sheet UI | ✅ |
+| **Visual scripting** | Node graphs: gameplay, visual functions, entity behaviours, animation state machines | Custom node editor in the IDE (decided against Rete.js and event sheets) | ✅ |
 | **Technical graphs** | AI decision graphs, behaviour trees, procedural generation, dataflow | Custom runtime; graph UI TBD (Rete or LiteGraph) | ❌ post-1.0 |
 | **Material/shader graphs** | Materials | Babylon Node Material Editor (embedded, bundled offline) | ✅ |
 
@@ -238,7 +238,6 @@ This is designed in from Phase 1 (behaviour entry points exist in the language) 
 
 | System | UI | Compiles to | 1.0? |
 |--------|----|-------------|------|
-| Event sheets (Construct-style condition → action rows) | Custom React component, **not** a node graph | IR event handlers | ✅ |
 | Visual functions | Rete.js | IR functions | ✅ |
 | Entity behaviours | Rete.js | IR behaviour (OnStart/OnUpdate/…) | ✅ |
 | Animation state machines | Rete.js (state/transition editor) | IR state machine, no XState at runtime | ✅ |
@@ -304,7 +303,6 @@ export const MoveEntity: Cmd = (e, x, y, z) => e.node.locallyTranslate(new Vecto
 |----------|--------------------|
 | Compiler | Builtin signatures for name resolution and type checking |
 | Visual editor | Node in the palette (category, typed sockets, defaults) |
-| Event sheets | Action/condition entry |
 | Monaco / LSP | Autocomplete, signature help, hover docs |
 | Docs site | Command reference page with example |
 | Runtime | Typed binding table |
@@ -318,9 +316,9 @@ export const MoveEntity: Cmd = (e, x, y, z) => e.node.locallyTranslate(new Vecto
 ### 7.1 Pipeline
 
 ```
-  CyberBasic (.cb)           Rete graphs (.graph.json)      Event sheets (.events.json)
-         │                            │                               │
-   lex + parse (CST)                  └──────────┬────────────────────┘
+  CyberBasic (.cb)                  Node graphs (.graph)
+         │                                       │
+   lex + parse (CST)                             │
          │                                       │
    name resolve + type check              graph → IR lowering
          │                                       │
@@ -437,7 +435,7 @@ MyGame/
 | Debugger | Breakpoints, call stack, variables, watch | 3 |
 | Project / Assets | File tree, asset import, thumbnails | 3 / 5 |
 | Command Reference | Searchable docs generated from the manifest | 3 |
-| Visual Editor | Rete graphs, event sheets | 4 |
+| Visual Editor | Node graphs | 4 |
 | Scene View | 2D/3D editing with gizmos | 5 |
 | Hierarchy | Scene entities | 5 |
 | Inspector | Entity properties, attached behaviours | 5 |
@@ -499,7 +497,7 @@ Prove the whole pipeline end to end, badly.
 ### Phase 4: Visual scripting (3 months)
 - Rete.js editor with nodes generated from the manifest
 - Graph → IR lowering in the compiler; graph errors and breakpoints on nodes
-- Event sheets, visual functions, behaviours, "View as code"
+- Node graphs, visual functions, behaviours, "View as code"
 - **Exit:** Breakout rebuilt with **zero lines of BASIC**, and a hybrid project (BASIC main + graph behaviours) debugs cleanly across both.
 
 ### Phase 5: Scene & creation tools (3–4 months)
